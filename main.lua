@@ -1,8 +1,8 @@
-require 'classes/arrow.lua'
-require 'classes/turret.lua'
-require 'classes/brick.lua'
-require 'classes/exit.lua'
-require 'classes/room.lua'
+require 'class/arrow.lua'
+require 'class/turret.lua'
+require 'class/brick.lua'
+require 'class/exit.lua'
+require 'class/room.lua'
 
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
