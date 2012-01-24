@@ -162,7 +162,7 @@ function RoomBuilder:build()
 		freeTiles = ff:flood()
 		--numFreeTiles = len(freeTiles)
 
-		-- Pick 1-3 random points in the avaiable space
+		-- Pick 1-3 random intermediate points in the avaiable space
 		numPoints = math.random(1, 3)
 		points = {}
 		for p = 1,numPoints do
@@ -180,12 +180,12 @@ function RoomBuilder:build()
 
 		-- Add all points to a table of destinations
 		destinations = {}
-		for p = 1,numPoints do
-			destinations[p] = {x = points[p].x, y = points[p].y}
+		for j,p in ipairs(points) do
+			destinations[j] = {x = p.x, y = p.y}
 		end
-		destinations[numPoints + 1] = {x = destX, y = destY}
+		destinations[#points + 1] = {x = destX, y = destY}
 
-		for i,d in ipairs(destinations) do
+		for j,d in ipairs(destinations) do
 			print('destination ' .. i .. ': ' .. d.x .. ',' .. d.y)
 		end
 
