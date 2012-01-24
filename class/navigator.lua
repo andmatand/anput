@@ -19,7 +19,6 @@ end
 
 function Navigator:plot()
 	print('starting Navigator:plot()')
-	numPoints = 0
 	self.points = {}
 
 	for i,d in ipairs(self.destinations) do
@@ -38,13 +37,11 @@ function Navigator:plot()
 		points = pf:plot()
 
 		for j,p in ipairs(points) do
-			print(p.x, p.y)
 			-- Add this point to the self.points
-			numPoints = numPoints + 1
-			self.points[numPoints] = {x = p.x, y = p.y}
+			table.insert(self.points, {x = p.x, y = p.y})
 
 			-- Add this point to hotlava
-			table.insert(self.hotLava, {x = p.x, y = p.y})
+			--table.insert(self.hotLava, {x = p.x, y = p.y})
 		end
 	end
 

@@ -14,6 +14,88 @@ function RoomBuilder:new(exits)
 	return o
 end
 
+local function order_axis(key, src, dest, nodes)
+	print('starting order_axis')
+	for i,n in pairs(nodes) do
+		print(n[key])
+	end
+	ordered = {}
+
+	-- Choose direction for ordering based on which way we are going
+	if src < dest then
+		best = 999
+		-- Low to high
+		print('low to high')
+		compare =
+			function(a, b)
+				if a <= b then
+					return true
+				end
+				return false
+			end
+	elseif src > dest then
+		best = -1
+		-- High to low
+		print('high to low')
+		compare =
+			function(a, b)
+				if a >= b then
+					return true
+				end
+				return false
+			end
+	end
+
+	if compare ~= nil then
+		-- Order based on position on axis
+		while true do
+			-- Find best next position on the axis
+			for i,n in pairs(nodes) do
+				if compare(n[key], best) then
+					best = n[key]
+				end
+			end
+
+			--print('\nnodes:')
+			--for i,n in pairs(nodes) do
+			--	print(n[key])
+			--end
+			--print('best:', best)
+			--if #nodes == 2 then love.timer.sleep(1000) end
+
+			-- Find the first node that has the best next position
+			for i,n in ipairs(nodes) do
+				if n[key] == best then
+					-- Add this point to the ordered table
+					table.insert(ordered, table.remove(nodes, i))
+
+					-- Reset best to an arbitrary existing node's value
+					if #nodes ~= 0 then
+						best = nodes[#nodes][key]
+					end
+					
+					break
+				end
+			end
+
+			if #nodes == 0 then
+				break
+			end
+		end
+	end
+	return ordered
+end
+
+local function order_nodes(srcX, srcY, destX, destY, nodes)
+	print('starting order_nodes()')
+
+	orderedX = order_axis('x', srcX, destX, nodes)
+	orderedY = order_axis('y', srcY, destY, orderedX)
+
+	print('done with order_nodes()')
+	return orderedY
+end
+
 -- Returns a table of bricks
 function RoomBuilder:build()
 	self.bricks = {}
@@ -74,40 +156,45 @@ function RoomBuilder:build()
 		destX = destDw.x1
 		destY = destDw.y1
 
-	--	-- Find all vacant tiles accessible from the source doorway
-	--	print(srcX, srcY)
-	--	ff = FloodFiller:new(srcX, srcY, occupiedTiles)
-	--	freeTiles = ff:flood()
-	--	numFreeTiles = len(freeTiles)
+		-- Find all vacant tiles accessible from the source doorway
+		print(srcX, srcY)
+		ff = FloodFiller:new(srcX, srcY, occupiedTiles)
+		freeTiles = ff:flood()
+		--numFreeTiles = len(freeTiles)
 
-	--	-- Pick 1-3 random points in the avaiable space
-	--	numPoints = math.random(1, 3)
-	--	points = {}
-	--	for p = 1,numPoints do
-	--		tile = freeTiles[math.random(1, numFreeTiles)] 
-	--		table.insert(points, {x = tile.x, y = tile.y})
-	--	end
-	--	
-	--	-- Index the points in the best order
-	--	points = RoomBuilder:order_points(srcX, srcY, destX, destY, points)
+		-- Pick 1-3 random points in the avaiable space
+		numPoints = math.random(1, 3)
+		points = {}
+		for p = 1,numPoints do
+			tile = freeTiles[math.random(1, #freeTiles)] 
+			--
+			if not ((tile.x == srcX and tile.y == srcY) or
+			        (tile.x == destX and tile.y == destY)) then
+				table.insert(points, {x = tile.x, y = tile.y})
+			end
+		end
+		
+		-- Index the points in the best order
+		points = order_nodes(srcX, srcY, destX, destY, points)
+		print('ordered points:', points)
 
-	--	-- Add all points to a table of destinations
-	--	destinations = {}
-	--	for p = 1,numPoints do
-	--		destinations[p] = {x = points[p].x, y = points[p].y}
-	--	end
-	--	destinations[numPoints + 1] = {x = destX, y = destY}
+		-- Add all points to a table of destinations
+		destinations = {}
+		for p = 1,numPoints do
+			destinations[p] = {x = points[p].x, y = points[p].y}
+		end
+		destinations[numPoints + 1] = {x = destX, y = destY}
 
-	--	for i,d in ipairs(destinations) do
-	--		print('destination ' .. i .. ': ' .. d.x .. ',' .. d.y)
-	--	end
+		for i,d in ipairs(destinations) do
+			print('destination ' .. i .. ': ' .. d.x .. ',' .. d.y)
+		end
 
 		-- Plot a path along all points
-		--nav = Navigator:new(dw.x2, dw.y2, destinations, occupiedTiles)
-		--tiles = nav:plot()
+		nav = Navigator:new(dw.x2, dw.y2, destinations, occupiedTiles)
+		tiles = nav:plot()
 
-		pf = PathFinder:new(dw.x2, dw.y2, destX, destY, occupiedTiles, true)
-		tiles = pf:plot()
+		--pf = PathFinder:new(dw.x2, dw.y2, destX, destY, occupiedTiles, true)
+		--tiles = pf:plot()
 
 		-- Make bricks at these coordinates
 		for j,b in pairs(tiles) do
@@ -185,51 +272,4 @@ function RoomBuilder:order_exits()
 
 	-- Replace old exit table with indexed version
 	self.exits = temp
-end
-
-function RoomBuilder:order_points(srcX, srcY, destX, destY, points)
-	print('starting order_points()')
-	ot = {} -- The new, ordered table
-	otSize = 0
-
-	-- TEMP: just return them in any order
-	for i,p in pairs(points) do
-		ot[i] = p
-	end
-
---	-- Choose x direction for ordering based on x-value
---	if srcX < destX then
---		xDir = 1
---	elseif srcX > destX then
---		xDir = -1
---	else
---		xDir = 0
---	end
---
---	if xDir ~= 0 then
---		-- Order based on x-value
---		if xDir == 1 then
---			prevX = 0
---		else
---			prevX = ROOM_W - 1
---		end
---		while true do
---			for i,p in ipairs(points) do
---				if (xDir == 1 and p.x >= prevX) or
---				   (xDir == -1 and p.x <= prevX) then
---					prevX = p.x
---
---					-- Add this point to the ordered table
---					otSize = otSize + 1
---					ot[otSize] = table.remove(points, i)
---					break
---				end
---			end
---
---			if len(points) == 0 then break end
---		end
---	end
---
---	print('done')
-	return ot
 end

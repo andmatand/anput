@@ -42,16 +42,6 @@ function PathFinder:plot()
 	return self.nodes
 end
 
-function PathFinder:tile_taken(otherTiles, x, y)
-	for i, b in pairs(otherTiles) do
-		if b.x == x and b.y == y then
-			return true
-		end
-	end
-
-	return false
-end
-
 local function changed_direction(a, b, c)
 	if (a.x == b.x and b.x == c.x) or (a.y == b.y and b.y == c.y) then
 		return false
@@ -66,9 +56,6 @@ local function distance(x1, y1, x2, y2)
 end
 
 function PathFinder:AStar(src, dest)
-	print('in AStar')
-	print('src:', src.x, src.y)
-	print('dest:', dest.x, dest.y)
 	openNodes = {}
 	closedNodes = {}
 	reachedDest = false
@@ -89,6 +76,8 @@ function PathFinder:AStar(src, dest)
 		end
 		
 		if best == nil then
+			print('A*: no path exists !!!!!!!!!!!!')
+			love.timer.sleep(1000)
 			-- No path exists
 			break
 		end
@@ -148,7 +137,7 @@ function PathFinder:AStar(src, dest)
 						if changed_direction({x = x, y = y}, currentNode,
 											 closedNodes[currentNode.parent])
 						then
-							gTurnPenalty = 1
+							gTurnPenalty = 2
 						end
 					end
 					table.insert(openNodes,
@@ -158,7 +147,6 @@ function PathFinder:AStar(src, dest)
 				end
 
 				if x == dest.x and y == dest.y then
-					print('reached destination')
 					table.insert(closedNodes, openNodes[#openNodes])
 					reachedDest = true
 					break
@@ -186,6 +174,5 @@ function PathFinder:AStar(src, dest)
 		table.insert(nodes, {x = temp[i].x, y = temp[i].y})
 	end
 
-	print('done with AStar')
 	return nodes
 end

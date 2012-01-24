@@ -16,72 +16,86 @@ function FloodFiller:new(x, y, hotLava)
 end
 
 function FloodFiller:flood()
-	self.tiles = {}
-	self:search()
+	self.nodes = {}
+	self.nodes = self:search()
 
-	return self.tiles
+	return self.nodes
 end
 
 function FloodFiller:search()
-	x = self.x
-	y = self.y
-	numTiles = 0
 	print('starting floodfiller search()')
 
-	xDir = -1 -- West
-	yDir = -1 -- North
-	movedY = false
-	while true do
-		if movedY == false then
-			x = x + xDir
-		end
+	found = {}
+	used = {}
 
-		if self:tile_vacant(x, y) then
-			movedY = false
-			numTiles = numTiles + 1
-			self.tiles[numTiles] = {x = x, y = y}
-		else
-			if movedY == false then 
-				if xDir == -1 then
-					-- Switch to east
-					x = self.x
-					xDir = 1
-				elseif xDir == 1 then
-					-- Move y and reset xDir to west
-					y = y + yDir
-					movedY = true
-					xDir = -1
+	-- Add the source position as the first node
+	table.insert(found, {x = self.x, y = self.y})
+
+	while #found > 0 do
+		-- Pop the last node off the table found nodes
+		currentNode = found[#found]
+		table.insert(used, table.remove(found, #found))
+
+		-- Investigate the (non-diagonal) surroundings
+		for d = 1,4 do
+			if d == 1 then
+				-- North
+				x = currentNode.x
+				y = currentNode.y - 1
+			elseif d == 2 then
+				-- East
+				x = currentNode.x + 1
+				y = currentNode.y
+			elseif d == 3 then
+				-- South
+				x = currentNode.x
+				y = currentNode.y + 1
+			elseif d == 4 then
+				-- West
+				x = currentNode.x - 1
+				y = currentNode.y
+			end
+
+			if self:legal_position(x, y) then
+				alreadyFound = false
+				for i,n in pairs(found) do
+					if x == n.x and y == n.y then
+						alreadyFound = true
+						break
+					end
 				end
-			else
-				movedY = false
-				if yDir == -1 then
-					-- Switch to south
-					movedY = true
-					yDir = 1
-					y = self.y + 1
-					x = self.x
-					xDir = -1
-				else
-					-- We're done
-					break
+				for i,n in pairs(used) do
+					if x == n.x and y == n.y then
+						alreadyFound = true
+						break
+					end
+				end
+
+				-- Add these coordinates to the table of found nodes
+				if not alreadyFound then
+					table.insert(found, {x = x, y = y})
 				end
 			end
 		end
 	end
+
 	print('done')
+	return used
 end
 
-function FloodFiller:tile_vacant(x, y)
-	-- If this tile is hotLava
-	for i,t in pairs(self.hotLava) do
-		if x == t.x and y == t.y then
-			return false
-		end
-	end
-
+function FloodFiller:legal_position(x, y)
 	-- If this tile is outside the bounds of the room
 	if x < 0 or x > ROOM_W - 1 or y < 0 or y > ROOM_H - 1 then
 		return false
+	end
+
+	-- If this is an illegal tile
+	if self.hotLava ~= nil then
+		for i,b in pairs(self.hotLava) do
+			if x == b.x and y == b.y then
+				return false
+			end
+		end
 	end
 
 	return true
