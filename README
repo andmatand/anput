@@ -1,0 +1,12 @@
+Temple of Anput
+===============
+
+a retro procedurally generated dungeon crawler
+written using the LÖVE framework <love2d.org>
+
+History
+-------
+
+This is a remake of an old game I wrote for QBASIC back in 2003.  It was
+inspired by a fake game shown at the end of Strong Bad Email #4
+<www.homestarrunner.com/sbemail4.html>
