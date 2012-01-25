@@ -18,7 +18,6 @@ function Navigator:new(srcX, srcY, destinations, hotLava)
 end
 
 function Navigator:plot()
-	print('starting Navigator:plot()')
 	self.points = {}
 
 	for i,d in ipairs(self.destinations) do
@@ -33,7 +32,8 @@ function Navigator:plot()
 			sY = destinations[i - 1].y
 		end
 
-		pf = PathFinder:new(sX, sY, d.x, d.y, self.hotLava)
+		pf = PathFinder:new(sX, sY, d.x, d.y, self.hotLava, self.points,
+		                    {smooth = true})
 		points = pf:plot()
 
 		for j,p in ipairs(points) do
@@ -45,6 +45,5 @@ function Navigator:plot()
 		end
 	end
 
-	print('done with Navigator:plot()')
 	return self.points
 end

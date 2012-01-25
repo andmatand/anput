@@ -133,7 +133,7 @@ function RoomBuilder:build()
 	--end
 
 	-- TEMP: draw tiles as bricks
-	table.insert(self.bricks, Brick:new(midX, midY))
+	--table.insert(self.bricks, Brick:new(midX, midY))
 	--for j,b in pairs(occupiedTiles) do
 	--	table.insert(self.bricks, Brick:new(b.x, b.y))
 	--end
@@ -165,13 +165,29 @@ function RoomBuilder:build()
 		-- Pick 1-3 random intermediate points in the avaiable space
 		numPoints = math.random(1, 3)
 		points = {}
-		for p = 1,numPoints do
+		for j = 1, (numPoints * 2) do
 			tile = freeTiles[math.random(1, #freeTiles)] 
-			--
+
+			ok = true
+			-- Don't pick points that overlap with src or dest
 			if not ((tile.x == srcX and tile.y == srcY) or
 			        (tile.x == destX and tile.y == destY)) then
+			end
+
+			-- Look at the other points
+			for k,p2 in pairs(points) do
+				--If these two nodes are too close together on one axis
+				if math.abs(tile.x - p2.x) < 2 or
+				   math.abs(tile.y - p2.y) < 2 then
+					ok = false
+				end
+			end
+
+			if ok then
 				table.insert(points, {x = tile.x, y = tile.y})
 			end
+
+			if #points == numPoints then break end
 		end
 		
 		-- Index the points in the best order
@@ -186,7 +202,7 @@ function RoomBuilder:build()
 		destinations[#points + 1] = {x = destX, y = destY}
 
 		for j,d in ipairs(destinations) do
-			print('destination ' .. i .. ': ' .. d.x .. ',' .. d.y)
+			print('destination ' .. j .. ': ' .. d.x .. ',' .. d.y)
 		end
 
 		-- Plot a path along all points

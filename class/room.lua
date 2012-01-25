@@ -14,9 +14,9 @@ end
 
 function Room:draw()
 	for i,b in pairs(self.bricks) do
-		if i <= wallNum then -- TEMP: draw one brick at a time
+		--if i <= wallNum then -- TEMP: draw one brick at a time
 			b:draw()
-		end
+		--end
 	end
 end
 
