@@ -3,7 +3,12 @@ FloodFiller.__index = FloodFiller
 
 -- A FloodFiller finds all tiles accessible from x, y which are neither hotLava
 -- nor outside the bounds of the room.
--- Returns a table of coordinates
+-- Returns a table consisting of:
+--   freeTiles: a table of coordinates of free tiles
+--   hotLava: the same a table of coordinates that was passed in as a
+--            parameter, with an extra key on each element denoting whether it
+--            was touched (including by diagonal searching, which freeTiles
+--            does not use) e.g. {x = 17, y = 3, touched = true}
 function FloodFiller:new(x, y, hotLava)
 	local o = {}
 	setmetatable(o, self)
@@ -16,14 +21,7 @@ function FloodFiller:new(x, y, hotLava)
 end
 
 function FloodFiller:flood()
-	self.nodes = {}
-	self.nodes = self:search()
-
-	return self.nodes
-end
-
-function FloodFiller:search()
-	print('starting floodfiller search()')
+	print('starting floodfiller flood()')
 
 	found = {}
 	used = {}
@@ -36,7 +34,7 @@ function FloodFiller:search()
 		currentNode = found[#found]
 		table.insert(used, table.remove(found, #found))
 
-		-- Investigate the (non-diagonal) surroundings
+		-- Investigate the non-diagonal surroundings
 		for d = 1,4 do
 			if d == 1 then
 				-- North
@@ -77,10 +75,37 @@ function FloodFiller:search()
 				end
 			end
 		end
+
+		-- Search the diagonals only to mark hotLava tiles as touched
+		for d = 1,4 do
+			if d == 1 then
+				-- NE
+				x = currentNode.x + 1
+				y = currentNode.y - 1
+			elseif d == 2 then
+				-- SE
+				x = currentNode.x + 1
+				y = currentNode.y + 1
+			elseif d == 3 then
+				-- SW
+				x = currentNode.x - 1
+				y = currentNode.y + 1
+			elseif d == 4 then
+				-- NW
+				x = currentNode.x - 1
+				y = currentNode.y - 1
+			end
+
+			for i,l in pairs(self.hotLava) do
+				if x == l.x and y == l.y then
+					l.touched = true
+				end
+			end
+		end
 	end
 
 	print('done')
-	return used
+	return {freeTiles = used, hotLava = self.hotLava}
 end
 
 function FloodFiller:legal_position(x, y)
@@ -91,8 +116,9 @@ function FloodFiller:legal_position(x, y)
 
 	-- If this is an illegal tile
 	if self.hotLava ~= nil then
-		for i,b in pairs(self.hotLava) do
-			if x == b.x and y == b.y then
+		for i,l in pairs(self.hotLava) do
+			if x == l.x and y == l.y then
+				l.touched = true
 				return false
 			end
 		end

@@ -154,7 +154,7 @@ function RoomBuilder:build()
 		-- Find all vacant tiles accessible from the source doorway
 		print(srcX, srcY)
 		ff = FloodFiller:new(srcX, srcY, occupiedTiles)
-		freeTiles = ff:flood()
+		freeTiles = ff:flood().freeTiles
 		--numFreeTiles = len(freeTiles)
 
 		-- Pick 1-3 random intermediate points in the avaiable space
@@ -213,8 +213,33 @@ function RoomBuilder:build()
 		end
 	end
 
+	-- Do a floodfill on the inside of the room
+	--ff = FloodFiller:new(exits[1].x, exits[1].y, self.bricks)
+	ff = FloodFiller:new(midX, midY, self.bricks)
+	ffResults = ff:flood()
+
+	-- Save freeTiles and bricks
+	self.freeTiles = ffResults.freeTiles
+	tempBricks = ffResults.hotLava
+
+	-- Remove any bricks that could not be touched from inside the room
+	self.bricks = {}
+	for i,b in pairs(tempBricks) do
+		if b.touched == true then
+			table.insert(self.bricks, Brick:new(b.x, b.y))
+		else
+			print('removed an unreachable brick')
+		end
+	end
+
 	print('room built')
-	return self.bricks
+
+	-- DEBUG: Replace bricks with freeTiles
+	--self.bricks = {}
+	--for j,b in pairs(self.freeTiles) do
+	--	table.insert(self.bricks, Brick:new(b.x, b.y))
+	--end
+	return {bricks = self.bricks, freeTiles = self.freeTiles}
 end
 
 function RoomBuilder:order_exits()

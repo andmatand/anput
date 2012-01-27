@@ -22,5 +22,7 @@ end
 
 function Room:generate()
 	rb = RoomBuilder:new(self.exits)
-	self.bricks = rb:build()
+	rbResults = rb:build()
+	self.bricks = rbResults.bricks
+	self.freeTiles = rbResults.freeTiles
 end
