@@ -4,6 +4,48 @@ require 'class/brick.lua'
 require 'class/exit.lua'
 require 'class/room.lua'
 
+local function distance(a, b)
+	return math.sqrt( (b.x - a.x)^2 + (b.y - a.y)^2 )
+end
+
+function random_exits()
+	-- DEBUG: Make some random exits
+	exits = {}
+	while #exits == 0 do
+		for i = 1,math.random(1,4) do
+			x = math.random(2, ROOM_W - 2)
+			y = math.random(2, ROOM_H - 2)
+
+			wall = math.random(1, 4)
+			if wall == 1 then
+				y = -1 -- North
+			elseif wall == 2 then
+				x = ROOM_W -- East
+			elseif wall == 3 then
+				y = ROOM_H -- South
+			elseif wall == 4 then
+				x = -1 -- West
+			end
+
+			-- Make sure it's not too close to another exit
+			ok = true
+			for j,e in pairs(exits) do
+				if distance({x = x, y = y}, e) < 4 then
+					ok = false
+					break
+				end
+			end
+
+			if ok then
+				print('making exit...')
+				table.insert(exits, Exit:new(x, y))
+			end
+		end
+	end
+
+	return exits
+end
+
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
 	math.randomseed(os.time())
@@ -15,10 +57,11 @@ function love.load()
 	ROOM_W = 27
 	ROOM_H = 25
 
-	-- TEMP: make some statically-positioned exits
-	exits = {Exit:new(ROOM_W, 14), Exit:new(1, -1), Exit:new(4, ROOM_H)}
 
-	room = Room:new(exits)
+	--exits = {Exit:new(ROOM_W, 14), Exit:new(1, -1), Exit:new(4, ROOM_H)}
+	--exits = {Exit:new(ROOM_W, 2), Exit:new(ROOM_W, 15)}
+
+	room = Room:new(random_exits())
 	room:generate()
 	wallNum = 1
 
@@ -32,7 +75,7 @@ end
 
 function love.keypressed(key, unicode)
 	if key == 'a' then
-		room = Room:new(exits)
+		room = Room:new(random_exits())
 		room:generate()
 		wallNum = 1
 	end

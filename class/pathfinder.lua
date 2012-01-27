@@ -124,9 +124,9 @@ function PathFinder:too_thick(x, y, currentNode)
 	return false
 end
 
-local function distance(x1, y1, x2, y2)
+local function distance(a, b)
 	-- Manhattan distance
-	return math.abs(x2 - x1) + math.abs(y2 - y1)
+	return math.abs(b.x - a.x) + math.abs(b.y - a.y)
 end
 
 function PathFinder:AStar(src, dest)
@@ -136,7 +136,7 @@ function PathFinder:AStar(src, dest)
 
 	-- Add source to self.openNodes
 	table.insert(self.openNodes, {x = src.x, y = src.y, g = 0,
-	                         h = distance(src.x, src.y, dest.x, dest.y)})
+	                         h = distance(src, dest)})
 
 	while reachedDest == false do
 		-- Find best next openNode to use
@@ -213,7 +213,7 @@ function PathFinder:AStar(src, dest)
 					--	gPenalty = 0
 					--end
 
-					gPenalty = -1
+					gPenalty = 0
 					if self.options.smooth == true and
 					   currentNode.parent ~= nil then
 						if changed_direction(
@@ -223,10 +223,23 @@ function PathFinder:AStar(src, dest)
 							gPenalty = 4
 						end
 					end
+
+					-- Don't overlap other paths unless absolutely necessary
+					if self.otherNodes ~= nil then
+						for i,n in pairs(self.otherNodes) do
+							if x == (n.x) and y == (n.y) then
+								gPenalty = 20
+							elseif math.abs(x - n.x) <= 1 and
+							       math.abs(y - n.y) <= 1 then
+								gPenalty = 10
+							end
+						end
+					end
+
 					table.insert(self.openNodes,
 					             {x = x, y = y, parent = parent,
 					              g = currentNode.g + 10 + gPenalty,
-					              h = distance(x, y, dest.x, dest.y)})
+					              h = distance({x = x,  y = y}, dest)})
 				end
 
 				if x == dest.x and y == dest.y then

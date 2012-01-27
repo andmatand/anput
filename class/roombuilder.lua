@@ -16,16 +16,12 @@ end
 
 local function order_axis(key, src, dest, nodes)
 	print('starting order_axis')
-	for i,n in pairs(nodes) do
-		print(n[key])
-	end
 	ordered = {}
 
 	-- Choose direction for ordering based on which way we are going
 	if src < dest then
 		best = 999
 		-- Low to high
-		print('low to high')
 		compare =
 			function(a, b)
 				if a <= b then
@@ -36,7 +32,6 @@ local function order_axis(key, src, dest, nodes)
 	elseif src > dest then
 		best = -1
 		-- High to low
-		print('high to low')
 		compare =
 			function(a, b)
 				if a >= b then
@@ -44,6 +39,9 @@ local function order_axis(key, src, dest, nodes)
 				end
 				return false
 			end
+	else
+		-- Source and destination are equal; do nothing
+		return nodes
 	end
 
 	if compare ~= nil then
@@ -87,12 +85,8 @@ local function order_axis(key, src, dest, nodes)
 end
 
 local function order_nodes(srcX, srcY, destX, destY, nodes)
-	print('starting order_nodes()')
-
 	orderedX = order_axis('x', srcX, destX, nodes)
 	orderedY = order_axis('y', srcY, destY, orderedX)
-
-	print('done with order_nodes()')
 	return orderedY
 end
 
@@ -102,6 +96,7 @@ function RoomBuilder:build()
 	occupiedTiles = {}
 
 	self:order_exits()
+	print('building room with ' .. #self.exits .. ' exits')
 
 	-- Save positions of doorway tiles at each exit
 	doorwayTiles = {}
@@ -163,7 +158,7 @@ function RoomBuilder:build()
 		--numFreeTiles = len(freeTiles)
 
 		-- Pick 1-3 random intermediate points in the avaiable space
-		numPoints = math.random(1, 3)
+		numPoints = 1--math.random(1, 3)
 		points = {}
 		for j = 1, (numPoints * 2) do
 			tile = freeTiles[math.random(1, #freeTiles)] 
@@ -192,7 +187,6 @@ function RoomBuilder:build()
 		
 		-- Index the points in the best order
 		points = order_nodes(srcX, srcY, destX, destY, points)
-		print('ordered points:', points)
 
 		-- Add all points to a table of destinations
 		destinations = {}
@@ -209,7 +203,8 @@ function RoomBuilder:build()
 		nav = Navigator:new(dw.x2, dw.y2, destinations, occupiedTiles)
 		tiles = nav:plot()
 
-		--pf = PathFinder:new(dw.x2, dw.y2, destX, destY, occupiedTiles, true)
+		--pf = PathFinder:new(dw.x2, dw.y2, destX, destY, occupiedTiles, nil,
+		--                  {smooth = true})
 		--tiles = pf:plot()
 
 		-- Make bricks at these coordinates
@@ -225,64 +220,65 @@ end
 function RoomBuilder:order_exits()
 	-- Index the exits in clockwise order
 	temp = {}
-	exitNum = 1
 
 	x = -1
 	y = -1
 	while true do
 		-- Find the next exit on the current edge
+		foundOne = false
 		for i,e in pairs(self.exits) do
 			-- Top
 			if y == -1 and x < ROOM_W then
 				if e.y == y and e.x > x then
+					foundOne = true
 					x = e.x
-					temp[exitNum] = e
-					break
+					table.insert(temp, e)
 				end
 
 			-- Right
 			elseif x == ROOM_W and y < ROOM_H then
 				if e.x == x and e.y > y then
+					foundOne = true
 					y = e.y
-					temp[exitNum] = e
-					break
+					table.insert(temp, e)
 				end
 
 			-- Bottom
 			elseif y == ROOM_H and x > -1 then
 				if e.y == y and e.x < x then
+					foundOne = true
 					x = e.x
-					temp[exitNum] = e
-					break
+					table.insert(temp, e)
 				end
 
 			-- Left
 			elseif x == -1 then
 				if e.x == x and e.y < y then
+					foundOne = true
 					y = e.y
-					temp[exitNum] = e
-					break
+					table.insert(temp, e)
 				end
 			end
 		end 
-		exitNum = exitNum + 1
 		
-		-- Proceed clockwise to the next edge
-		-- Top goes right
-		if y == -1 and x < ROOM_W then
-			x = ROOM_W
+		if foundOne == false then 
+			-- Proceed clockwise to the next edge
+			-- Top goes right
+			if y == -1 and x < ROOM_W then
+				x = ROOM_W
 
-		-- Right goes to bottom
-		elseif x == ROOM_W and y < ROOM_H then
-			y = ROOM_H
+			-- Right goes to bottom
+			elseif x == ROOM_W and y < ROOM_H then
+				y = ROOM_H
 
-		-- Bottom goes to left
-		elseif y == ROOM_H and x > -1 then
-			x = -1
-		
-		-- Left
-		elseif x == -1 then
-			break
+			-- Bottom goes to left
+			elseif y == ROOM_H and x > -1 then
+				x = -1
+			
+			-- Left
+			elseif x == -1 then
+				break
+			end
 		end
 	end
 
