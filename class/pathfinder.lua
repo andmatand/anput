@@ -58,6 +58,7 @@ function find_neighbors(node, otherNodes, options)
 	for i,o in pairs(otherNodes) do
 		for j,n in pairs(neighbors) do
 			if o.x == n.x and o.y == n.y then
+				n.room = o.room
 				n.occupied = true
 			end
 		end
@@ -76,11 +77,14 @@ function find_neighbors(node, otherNodes, options)
 	end
 
 	if options.diagonals == false then
+		-- Remove diagonal neighbors
+		temp = {}
 		for i,n in ipairs(neighbors) do
-			if i == 2 or i == 4 or i == 6 or i == 8 then
-				n.occupied = true
+			if i == 1 or i == 3 or i == 5 or i == 7 then
+				table.insert(temp, n)
 			end
 		end
+		neighbors = temp
 	end
 
 	return neighbors

@@ -59,6 +59,8 @@ function new_map()
 	mapPath = {}
 	map = Map:new()
 	map:generate()
+	room = map.rooms[1]
+	room:generate()
 end
 
 function love.load()
@@ -126,7 +128,7 @@ end
 function love.draw()
 	love.graphics.scale(2, 2)
 	love.graphics.translate(camera.x, camera.y)
-	--room:draw()
+	room:draw()
 	--love.timer.sleep(25)
 	--wallNum = wallNum + 1
 

@@ -8,7 +8,7 @@ function Exit:new(x, y)
 	-- X and Y coordinates
 	o.x = x
 	o.y = y
-	print('new exit at ', x, y)
+	--print('new exit at ', x, y)
 
 	return o
 end

@@ -1,3 +1,4 @@
+require 'class/brick.lua'
 require 'class/navigator.lua'
 require 'class/floodfiller.lua'
 
@@ -99,7 +100,7 @@ function RoomBuilder:build()
 		-- Append these coordinates to list of illegal coordinates
 		for j,b in pairs(tiles) do
 			table.insert(occupiedTiles, {x = b.x, y = b.y})
-			table.insert(midPath, {x = b.x, y = b.y})
+			--table.insert(midPath, {x = b.x, y = b.y}) -- DEBUG
 		end
 	end
 
@@ -170,7 +171,7 @@ function RoomBuilder:build()
 
 			if ok then
 				table.insert(destinations, tile)
-				table.insert(interPoints, tile)
+				--table.insert(interPoints, tile) -- DEBUG
 			end
 		end
 		-- Add dest to table of destinations

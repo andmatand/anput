@@ -26,3 +26,11 @@ function Room:generate()
 	self.bricks = rbResults.bricks
 	self.freeTiles = rbResults.freeTiles
 end
+
+function Room:get_exit(position)
+	for i,e in pairs(self.exits) do
+		if e.x == position.x or e.y == position.y then
+			return e
+		end
+	end
+end

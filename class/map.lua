@@ -1,8 +1,11 @@
 require 'class/pathfinder.lua'
+require 'class/room.lua'
+require 'class/exit.lua'
 
 Map = {}
 Map.__index = Map
 
+-- A Map generates a random contiguous layout of rooms and their exits
 function Map:new()
 	local o = {}
 	setmetatable(o, self)
@@ -14,9 +17,11 @@ end
 
 function Map:generate()
 	self.path = self:generate_path()
-	self:add_branches(self.path)
+	self.branches = self:add_branches(self.path)
 
-	return self:generate_rooms()
+	self.rooms = self:generate_rooms()
+
+	return self.rooms
 end
 
 function move_random(node)
@@ -48,14 +53,19 @@ function tile_occupied(tile, otherTilesTable)
 	return false
 end
 
-function find_empty_neighbors(node, otherNodesTables)
-	-- Combine all tables in otherNodesTables
-	allOtherNodes = {}
-	for i,t in pairs(otherNodesTables) do
-		for k,v in pairs(t) do
-			table.insert(allOtherNodes, v)
+function concat_tables(tableList)
+	combined = {}
+	for i,t in ipairs(tableList) do
+		for k,v in ipairs(t) do
+			table.insert(combined, v)
 		end
 	end
+	return combined
+end
+
+function find_empty_neighbors(node, otherNodesTables)
+	-- Combine all tables in otherNodesTables
+	allOtherNodes = concat_tables(otherNodesTables)
 
 	neighbors = find_neighbors(node, allOtherNodes, {diagonals = false})
 
@@ -83,32 +93,32 @@ function find_empty_neighbors(node, otherNodesTables)
 end
 
 function Map:add_branches(path)
-	self.branches = {}
+	branches = {}
 	for i,p in pairs(path) do
 		-- Don't branch off from the final room
 		if i == #path then break end
 
 		--print('\npath node ' .. i .. ':', p.x, p.y)
 
-		neighbors = find_empty_neighbors(p, {path, self.branches})
+		neighbors = find_empty_neighbors(p, {path, branches})
 
 		for j,n in pairs(neighbors) do
 			if math.random(0, 2) == 0 then
 				-- Form a branch starting from this neighbor
-				table.insert(self.branches, n)
+				table.insert(branches, n)
 
 				maxLength = math.random(1, 6)
 				branchLength = 1
 				tile = n
 				while branchLength < maxLength do
 					possibleMoves = find_empty_neighbors(tile,
-														 {path, self.branches})
+														 {path, branches})
 
 					if #possibleMoves > 0 then
 						-- Move randomly to one of the open neighbors
 						tile = possibleMoves[math.random(1, #possibleMoves)]
 						branchLength = branchLength + 1
-						table.insert(self.branches, tile)
+						table.insert(branches, tile)
 					else
 						break
 					end
@@ -116,6 +126,8 @@ function Map:add_branches(path)
 			end
 		end
 	end
+
+	return branches
 end
 
 function Map:generate_path()
@@ -173,6 +185,68 @@ function Map:generate_path()
 end
 
 function Map:generate_rooms()
-	for i,n in pairs(self.path) do
+	-- Combine the path and branches into one table
+	allNodes = concat_tables({self.path, self.branches})
+
+	-- Make a new room for each node
+	rooms = {}
+	for i,node in ipairs(allNodes) do
+		print('\nnode ' .. i)
+		neighbors = find_neighbors(node, allNodes, {diagonals = false})
+
+		-- Add exits to correct walls of room
+		exits = {}
+		for j,n in ipairs(neighbors) do
+			if n.occupied then
+				if n.room ~= nil then
+					print('neighbor ' .. j .. ' is a room with ' ..
+					      #n.room.exits .. ' exits:')
+					for k,e in pairs(n.room.exits) do
+						print('  ', e.x, e.y)
+					end
+				end
+
+				x = math.random(2, ROOM_W - 2)
+				y = math.random(2, ROOM_H - 2)
+				if j == 1 then
+					print('north')
+					y = -1 -- North
+
+					-- If this neighbor has already been converted into a room
+					-- with exits, use the position of its corresponding exit
+					if n.room ~= nil then
+						x = n.room:get_exit({y = ROOM_H}).x
+					end
+				elseif j == 2 then
+					print('east')
+					x = ROOM_W -- East
+					if n.room ~= nil then
+						y = n.room:get_exit({x = -1}).y
+					end
+				elseif j == 3 then
+					print('south')
+					y = ROOM_H -- South
+					if n.room ~= nil then
+						x = n.room:get_exit({y = -1}).x
+					end
+				elseif j == 4 then
+					print('west')
+					x = -1 -- West
+					if n.room ~= nil then
+						y = n.room:get_exit({x = ROOM_W}).y
+					end
+				end
+
+				table.insert(exits, Exit:new(x, y))
+			end
+		end
+
+		-- Add the new room and attach it to this node
+		print('creating room with ' .. #exits .. ' exits')
+		r = Room:new(exits)
+		table.insert(rooms, r)
+		node.room = r
 	end
+
+	return rooms
 end
