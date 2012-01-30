@@ -1,14 +1,12 @@
 PathFinder = {}
 PathFinder.__index = PathFinder
 
-function PathFinder:new(srcX, srcY, destX, destY, hotLava, otherNodes, options)
+function PathFinder:new(src, dest, hotLava, otherNodes, options)
 	local o = {}
 	setmetatable(o, self)
 
-	o.srcX = srcX
-	o.srcY = srcY
-	o.destX = destX
-	o.destY = destY
+	o.src = src
+	o.dest = dest
 	o.hotLava = hotLava -- Coordinates which are illegal to traverse
 	o.otherNodes = otherNodes -- Other nodes (used to limit thickness)
 
@@ -18,6 +16,74 @@ function PathFinder:new(srcX, srcY, destX, destY, hotLava, otherNodes, options)
 	end
 
 	return o
+end
+
+function find_neighbors(node, otherNodes, options)
+	if options == nil then options = {} end
+
+	-- Initialize all 8 neighbors' positions
+	neighbors = {}
+	for d = 1,8 do
+		n = {occupied = false}
+		if d == 1 then -- N
+			n.x = node.x
+			n.y = node.y - 1
+		elseif d == 2 then -- NE
+			n.x = node.x + 1
+			n.y = node.y - 1
+		elseif d == 3 then -- E
+			n.x = node.x + 1
+			n.y = node.y
+		elseif d == 4 then -- SE
+			n.x = node.x + 1
+			n.y = node.y + 1
+		elseif d == 5 then -- S
+			n.x = node.x
+			n.y = node.y + 1
+		elseif d == 6 then -- SW
+			n.x = node.x - 1
+			n.y = node.y + 1
+		elseif d == 7 then -- W
+			n.x = node.x - 1
+			n.y = node.y
+		elseif d == 8 then -- NW
+			n.x = node.x - 1
+			n.y = node.y - 1
+		end
+
+		neighbors[d] = n
+	end
+
+	-- Check if any of the otherNodes are in the neighbor positions
+	for i,o in pairs(otherNodes) do
+		for j,n in pairs(neighbors) do
+			if o.x == n.x and o.y == n.y then
+				n.occupied = true
+			end
+		end
+	end
+
+	if options.countBorders == true then
+		-- Check if any of the neighbor positions touch the room border
+		for i,n in pairs(neighbors) do
+			if n.y == 0 or
+			   n.x == ROOM_W - 1 or
+			   n.y == ROOM_H - 1 or
+			   n.x == 0 then
+				n.occupied = true
+			end
+		end
+	end
+
+	if options.diagonals == false then
+		for i,n in ipairs(neighbors) do
+			if i == 2 or i == 4 or i == 6 or i == 8 then
+				n.occupied = true
+			end
+		end
+	end
+
+	return neighbors
 end
 
 function PathFinder:legal_position(x, y)
@@ -31,8 +97,10 @@ function PathFinder:legal_position(x, y)
 	end
 
 	-- If this tile is outside the bounds of the room
-	if x < 0 or x > ROOM_W - 1 or y < 0 or y > ROOM_H - 1 then
-		return false
+	if self.options.bounds ~= false then
+		if x < 0 or x > ROOM_W - 1 or y < 0 or y > ROOM_H - 1 then
+			return false
+		end
 	end
 
 	-- If this tile is surrounded by
@@ -43,8 +111,7 @@ end
 -- Plot a course which avoids the hotLava and room edges
 -- Returns table of indexed coordinate pairs
 function PathFinder:plot()
-	self.nodes = self:AStar({x = self.srcX, y = self.srcY},
-	             {x = self.destX, y = self.destY})
+	self.nodes = self:AStar(self.src, self.dest)
 
 	return self.nodes
 end
@@ -73,51 +140,27 @@ function PathFinder:too_thick(x, y, currentNode)
 	-- Also add knowledge of other nodes
 	table.insert(map, self.otherNodes)
 
-	-- Check if there are 3 nodes bordering x, y so that a 2x2 square would be
-	-- formed
-	neighbors = {}
-	for i = 1,8 do
-		neighbors[i] = false
-	end
-	for i,n in pairs(map) do
-		if n.x == x and n.y == y - 1 then
-			neighbors[1] = true -- N
-		elseif n.x == x + 1 and n.y == y - 1 then
-			neighbors[2] = true -- NE
-		elseif n.x == x + 1 and n.y == y then
-			neighbors[3] = true -- E
-		elseif n.x == x + 1 and n.y == y + 1 then
-			neighbors[4] = true -- SE
-		elseif n.x == x and n.y == y + 1 then
-			neighbors[5] = true -- S
-		elseif n.x == x - 1 and n.y == y + 1 then
-			neighbors[6] = true -- SW
-		elseif n.x == x - 1 and n.y == y then
-			neighbors[7] = true -- W
-		elseif n.x == x - 1 and n.y == y - 1 then
-			neighbors[8] = true -- NW
+	neighbors = find_neighbors({x = x, y = y}, map)
+
+	-- Check for 3 in a row going clockwise
+	numInARow = 0
+	for j = 1,10 do
+		-- Wrap around for last two
+		if j > 8 then
+			index = j - 8
+		else
+			index = j
 		end
 
-		-- Check for 3 in a row going clockwise
-		numInARow = 0
-		for j = 1,10 do
-			-- Wrap around for last two
-			if j > 8 then
-				index = j - 8
-			else
-				index = j
-			end
+		if neighbors[index].occupied then
+			numInARow = numInARow + 1
+		else
+			numInARow = 0
+		end
 
-			if neighbors[index] == true then
-				numInARow = numInARow + 1
-			else
-				numInARow = 0
-			end
-
-			if numInARow == 3 then
-				print('\n\ntoo thick')
-				return true
-			end
+		if numInARow == 3 then
+			print('\n\ntoo thick')
+			return true
 		end
 	end
 
@@ -165,6 +208,7 @@ function PathFinder:AStar(src, dest)
 
 		-- Add adjacent non-diagonal nodes to self.openNodes
 		for d = 1,4 do
+			gPenalty = 0
 			if d == 1 then
 				-- North
 				x = currentNode.x
@@ -182,6 +226,28 @@ function PathFinder:AStar(src, dest)
 				x = currentNode.x - 1
 				y = currentNode.y
 			end
+
+			--if d == 5 then
+			--	-- NE
+			--	x = currentNode.x + 1
+			--	y = currentNode.y - 1
+			--	gPenalty = 4
+			--elseif d == 6 then
+			--	-- SE
+			--	x = currentNode.x + 1
+			--	y = currentNode.y + 1
+			--	gPenalty = 4
+			--elseif d == 7 then
+			--	-- SW
+			--	x = currentNode.x - 1
+			--	y = currentNode.y + 1
+			--	gPenalty = 4
+			--elseif d == 8 then
+			--	-- NW
+			--	x = currentNode.x - 1
+			--	y = currentNode.y - 1
+			--	gPenalty = 4
+			--end
 
 			if self:legal_position(x, y) then
 				alreadyFound = false
@@ -213,14 +279,13 @@ function PathFinder:AStar(src, dest)
 					--	gPenalty = 0
 					--end
 
-					gPenalty = 0
 					if self.options.smooth == true and
 					   currentNode.parent ~= nil then
 						if changed_direction(
 							{x = x, y = y}, currentNode,
 							self.closedNodes[currentNode.parent])
 						then
-							gPenalty = 4
+							gPenalty = gPenalty + 4
 						end
 					end
 

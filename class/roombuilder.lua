@@ -14,80 +14,61 @@ function RoomBuilder:new(exits)
 	return o
 end
 
-local function order_axis(key, src, dest, nodes)
-	print('starting order_axis')
-	ordered = {}
-
-	-- Choose direction for ordering based on which way we are going
-	if src < dest then
-		best = 999
-		-- Low to high
-		compare =
-			function(a, b)
-				if a <= b then
-					return true
-				end
-				return false
-			end
-	elseif src > dest then
-		best = -1
-		-- High to low
-		compare =
-			function(a, b)
-				if a >= b then
-					return true
-				end
-				return false
-			end
-	else
-		-- Source and destination are equal; do nothing
-		return nodes
-	end
-
-	if compare ~= nil then
-		-- Order based on position on axis
-		while true do
-			-- Find best next position on the axis
-			for i,n in pairs(nodes) do
-				if compare(n[key], best) then
-					best = n[key]
-				end
-			end
-
-			--print('\nnodes:')
-			--for i,n in pairs(nodes) do
-			--	print(n[key])
-			--end
-			--print('best:', best)
-			--if #nodes == 2 then love.timer.sleep(1000) end
-
-			-- Find the first node that has the best next position
-			for i,n in ipairs(nodes) do
-				if n[key] == best then
-					-- Add this point to the ordered table
-					table.insert(ordered, table.remove(nodes, i))
-
-					-- Reset best to an arbitrary existing node's value
-					if #nodes ~= 0 then
-						best = nodes[#nodes][key]
-					end
-					
-					break
-				end
-			end
-
-			if #nodes == 0 then
-				break
-			end
-		end
-	end
-	return ordered
+function tile_on_border(tile)
+	if (tile.x == 0 or tile.x == TILE_W - 1 or
+	    tile.y == 0 or tile.y == TILE_H - 1) then
+	   return true
+   else
+	   return false
+   end
 end
 
-local function order_nodes(srcX, srcY, destX, destY, nodes)
-	orderedX = order_axis('x', srcX, destX, nodes)
-	orderedY = order_axis('y', srcY, destY, orderedX)
-	return orderedY
+function tiles_touching(a, b)
+	if (a.x == b.x and a.y == b.y - 1) or -- North
+	   (a.x == b.x + 1 and a.y == b.y) or -- East
+	   (a.x == b.x and a.y == b.y + 1) or -- South
+	   (a.x == b.x - 1 and a.y == b.y) then  -- West
+		return true
+	else
+		return false
+	end
+end
+
+function num_neighbors(tile, otherTiles)
+	neighbors = find_neighbors(tile, otherTiles, {countBorders = true})
+	num = 0
+	for i,n in pairs(neighbors) do
+		if n ~= nil then
+			num = num + 1
+		end
+	end
+	return num
+end
+
+function add_obstacles(freeTiles, occupiedTiles)
+	obstacles = {}
+	for j = 1, math.random(1, 50) do
+		tile = freeTiles[math.random(1, #freeTiles)] 
+
+		ok = true
+
+		-- Don't add the tile if it has more than one occupied neighbor tile
+		numNeighbors =
+			num_neighbors({x = tile.x, y = tile.y}, occupiedTiles) + 
+			num_neighbors({x = tile.x, y = tile.y}, obstacles)
+
+		--if num_neighbors({x = tile.x, y = tile.y}, occupiedTiles) > 1 then
+		if numNeighbors > 1 then
+			ok = false
+		end
+
+		if ok then
+			-- Add this tile to occupiedTiles
+			table.insert(obstacles, {x = tile.x, y = tile.y})
+		end
+	end
+
+	return obstacles
 end
 
 -- Returns a table of bricks
@@ -107,38 +88,26 @@ function RoomBuilder:build()
 	end
 
 	-- Pick a random point in the middle of the room
-	midX = math.random(1, ROOM_W - 2)
-	midY = math.random(1, ROOM_H - 2)
+	midPoint = {x = math.random(1, ROOM_W - 2), y = math.random(1, ROOM_H - 2)}
 
 	-- Plot paths from all exits to the midpoint
 	for i,e in ipairs(self.exits) do
 		-- Give doorwayTiles as the only hotLava for this path
-		pf = PathFinder:new(e.x, e.y, midX, midY, doorwayTiles)
+		pf = PathFinder:new(e, midPoint, doorwayTiles)
 		tiles = pf:plot()
 
 		-- Append these coordinates to list of illegal coordinates
 		for j,b in pairs(tiles) do
 			table.insert(occupiedTiles, {x = b.x, y = b.y})
+			table.insert(midPath, {x = b.x, y = b.y})
 		end
 	end
-
-	-- Add doorwayTiles to occupiedTiles
-	--for i,d in pairs(doorwayTiles) do
-	--	table.insert(occupiedTiles, {x = d.x, y = d.y})
-	--end
-
-	-- TEMP: draw tiles as bricks
-	--table.insert(self.bricks, Brick:new(midX, midY))
-	--for j,b in pairs(occupiedTiles) do
-	--	table.insert(self.bricks, Brick:new(b.x, b.y))
-	--end
 
 	-- Make wall from right doorway of each exit to left doorway of next exit
 	for i,e in ipairs(self.exits) do
 		print('\nexit ' .. i)
 		dw = e:get_doorways()
-		srcX = dw.x2
-		srcY = dw.y2
+		src = {x = dw.x2, y = dw.y2}
 
 		-- If there is another exit to connect to
 		if self.exits[i + 1] ~= nil then
@@ -148,64 +117,68 @@ function RoomBuilder:build()
 			-- Set the first exit's left doorway as the destination
 			destDw = self.exits[1]:get_doorways()
 		end
-		destX = destDw.x1
-		destY = destDw.y1
+		dest = {x = destDw.x1, y = destDw.y1}
+		print('src:', src.x, src.y)
+		print('dest:', dest.x, dest.y)
 
 		-- Find all vacant tiles accessible from the source doorway
-		print(srcX, srcY)
-		ff = FloodFiller:new(srcX, srcY, occupiedTiles)
+		ff = FloodFiller:new(src, occupiedTiles)
 		freeTiles = ff:flood().freeTiles
-		--numFreeTiles = len(freeTiles)
 
-		-- Pick 1-3 random intermediate points in the avaiable space
-		numPoints = 1--math.random(1, 3)
-		points = {}
-		for j = 1, (numPoints * 2) do
+		-- Remove src and dest from freeTiles
+		for j,t in pairs(freeTiles) do
+			if t.x == dest.x and t.y == dest.y then
+				table.remove(freeTiles, j)
+				break
+			end
+		end
+
+		-- Turn some random free tiles into occupied tiles to spice up the
+		-- pathfinding a bit
+		--obstacles = add_obstacles(freeTiles, occupiedTiles)
+
+		---- Remove illegal tiles from occupiedTiles
+		--for j,t in pairs(obstacles) do
+		--	ok = true
+
+		--	if distance(t, src) < 4 or distance(t, dest) < 4 then
+		--		print('removed obstacle:', t.x, t.y)
+		--		ok = false
+		--	end
+		--		
+		--	if ok then
+		--		table.insert(occupiedTiles, t)
+		--		table.insert(globalObstacles, t) -- DEBUG
+		--	end
+		--end
+
+		---- Plot a path from around the occupied tiles
+		--pf = PathFinder:new(src, dest, occupiedTiles, nil, {smooth = true})
+		--tiles = pf:plot()
+
+		-- Pick a random intermediate point for this wall's path
+		destinations = {}
+		while #destinations == 0 do
 			tile = freeTiles[math.random(1, #freeTiles)] 
 
 			ok = true
 			-- Don't pick points that overlap with src or dest
-			if not ((tile.x == srcX and tile.y == srcY) or
-			        (tile.x == destX and tile.y == destY)) then
-			end
-
-			-- Look at the other points
-			for k,p2 in pairs(points) do
-				--If these two nodes are too close together on one axis
-				if math.abs(tile.x - p2.x) < 2 or
-				   math.abs(tile.y - p2.y) < 2 then
-					ok = false
-				end
+			if (tile.x == src.x and tile.y == src.y) or
+			   (tile.x == dest.x and tile.y == dest.y) then
+				ok = false
 			end
 
 			if ok then
-				table.insert(points, {x = tile.x, y = tile.y})
+				table.insert(destinations, tile)
+				table.insert(interPoints, tile)
 			end
-
-			if #points == numPoints then break end
 		end
-		
-		-- Index the points in the best order
-		points = order_nodes(srcX, srcY, destX, destY, points)
+		-- Add dest to table of destinations
+		table.insert(destinations, dest)
 
-		-- Add all points to a table of destinations
-		destinations = {}
-		for j,p in ipairs(points) do
-			destinations[j] = {x = p.x, y = p.y}
-		end
-		destinations[#points + 1] = {x = destX, y = destY}
-
-		for j,d in ipairs(destinations) do
-			print('destination ' .. j .. ': ' .. d.x .. ',' .. d.y)
-		end
-
-		-- Plot a path along all points
-		nav = Navigator:new(dw.x2, dw.y2, destinations, occupiedTiles)
+		-- Plot a path along both points
+		nav = Navigator:new(src, destinations, occupiedTiles)
 		tiles = nav:plot()
-
-		--pf = PathFinder:new(dw.x2, dw.y2, destX, destY, occupiedTiles, nil,
-		--                  {smooth = true})
-		--tiles = pf:plot()
 
 		-- Make bricks at these coordinates
 		for j,b in pairs(tiles) do
@@ -214,8 +187,7 @@ function RoomBuilder:build()
 	end
 
 	-- Do a floodfill on the inside of the room
-	--ff = FloodFiller:new(exits[1].x, exits[1].y, self.bricks)
-	ff = FloodFiller:new(midX, midY, self.bricks)
+	ff = FloodFiller:new(midPoint, self.bricks)
 	ffResults = ff:flood()
 
 	-- Save freeTiles and bricks

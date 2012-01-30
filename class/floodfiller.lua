@@ -9,12 +9,11 @@ FloodFiller.__index = FloodFiller
 --            parameter, with an extra key on each element denoting whether it
 --            was touched (including by diagonal searching, which freeTiles
 --            does not use) e.g. {x = 17, y = 3, touched = true}
-function FloodFiller:new(x, y, hotLava)
+function FloodFiller:new(source, hotLava)
 	local o = {}
 	setmetatable(o, self)
 
-	o.x = x
-	o.y = y
+	o.source = source -- Needs to have and x and y key, e.g. {x = 2, y = 47}
 	o.hotLava = hotLava -- Coordinates which are illegal to traverse
 
 	return o
@@ -27,7 +26,7 @@ function FloodFiller:flood()
 	used = {}
 
 	-- Add the source position as the first node
-	table.insert(found, {x = self.x, y = self.y})
+	table.insert(found, self.source)
 
 	while #found > 0 do
 		-- Pop the last node off the table found nodes
@@ -77,33 +76,37 @@ function FloodFiller:flood()
 		end
 
 		-- Search the diagonals only to mark hotLava tiles as touched
-		for d = 1,4 do
-			if d == 1 then
-				-- NE
-				x = currentNode.x + 1
-				y = currentNode.y - 1
-			elseif d == 2 then
-				-- SE
-				x = currentNode.x + 1
-				y = currentNode.y + 1
-			elseif d == 3 then
-				-- SW
-				x = currentNode.x - 1
-				y = currentNode.y + 1
-			elseif d == 4 then
-				-- NW
-				x = currentNode.x - 1
-				y = currentNode.y - 1
-			end
+		if math.random(0, 2) == 0 then
+			for d = 1,4 do
+				if d == 1 then
+					-- NE
+					x = currentNode.x + 1
+					y = currentNode.y - 1
+				elseif d == 2 then
+					-- SE
+					x = currentNode.x + 1
+					y = currentNode.y + 1
+				elseif d == 3 then
+					-- SW
+					x = currentNode.x - 1
+					y = currentNode.y + 1
+				elseif d == 4 then
+					-- NW
+					x = currentNode.x - 1
+					y = currentNode.y - 1
+				end
 
-			for i,l in pairs(self.hotLava) do
-				if x == l.x and y == l.y then
-					l.touched = true
+				for i,l in pairs(self.hotLava) do
+					if x == l.x and y == l.y then
+						l.touched = true
+					end
 				end
 			end
 		end
 	end
 
+	-- Remove the starting node
+	table.remove(used, 1)
 	print('done')
 	return {freeTiles = used, hotLava = self.hotLava}
 end
