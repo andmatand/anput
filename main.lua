@@ -36,7 +36,7 @@ function love.keypressed(key, unicode)
 	if key == 'n' then
 		game = Game:new()
 		game:generate()
-	elseif key == 'd' then
+	elseif key == '1' then
 		if showDebug == true then
 			showDebug = false
 		else
@@ -75,7 +75,11 @@ function love.draw()
 
 		-- DEBUG show map path
 		for i,o in pairs(game.map.path) do
-			love.graphics.setColor(0, 255, 0)
+			if o.room.index == game.currentRoom.index then
+				love.graphics.setColor(255, 255, 255)
+			else
+				love.graphics.setColor(0, 255, 0)
+			end
 			love.graphics.circle('fill',
 								 (o.x * TILE_W) + (TILE_W / 2) - (TILE_W * 5),
 								 (o.y * TILE_H) + (TILE_H / 2) - (TILE_H * 5),
@@ -84,6 +88,11 @@ function love.draw()
 
 		-- DEBUG show map branches
 		for i,o in pairs(game.map.branches) do
+			if o.room.index == game.currentRoom.index then
+				love.graphics.setColor(255, 255, 255)
+			else
+				love.graphics.setColor(0, 255, 0)
+			end
 			love.graphics.setColor(0, 0, 255)
 			love.graphics.rectangle('fill',
 			                        (o.x * TILE_W) - (TILE_W * 5),

@@ -19,7 +19,7 @@ function Game:switch_to_room(roomIndex)
 	table.insert(self.currentRoom.sprites, 1, self.player)
 
 	-- Move player to corresponding doorway
-	exit = self.currentRoom:get_exit({roomIndex = prevRoom.roomIndex})
+	exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
 	self.player:move_to(exit:get_doorway())
 end
 

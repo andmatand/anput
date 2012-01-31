@@ -39,8 +39,9 @@ end
 
 function Room:get_exit(search)
 	for i,e in pairs(self.exits) do
-		if e.x == search.x or e.y == search.y or
-		   e.roomIndex == search.roomIndex then
+		if (e.x ~= nil and e.x == search.x) or
+		   (e.y ~= nil and e.y == search.y) or
+		   (e.roomIndex ~= nil and e.roomIndex == search.roomIndex) then
 			return e
 		end
 	end

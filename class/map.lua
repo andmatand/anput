@@ -233,7 +233,7 @@ function Map:generate_rooms()
 				newExit = Exit:new(x, y)
 				if linkedExit ~= nil then
 					linkedExit.roomIndex = #rooms + 1
-					newExit.roomIndex = n.room.roomIndex
+					newExit.roomIndex = n.room.index
 				end
 
 				table.insert(exits, newExit)
@@ -245,6 +245,15 @@ function Map:generate_rooms()
 		r = Room:new(exits, #rooms + 1)
 		table.insert(rooms, r)
 		node.room = r
+	end
+
+	for i,r in ipairs(rooms) do
+		print('\nroom ' .. i)
+		print('  index:', r.index)
+		print('  ' .. #r.exits .. ' exits:')
+		for j,e in pairs(r.exits) do
+			print('    ', e.x, e.y, e.roomIndex)
+		end
 	end
 
 	return rooms
