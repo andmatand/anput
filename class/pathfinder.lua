@@ -1,5 +1,4 @@
-PathFinder = {}
-PathFinder.__index = PathFinder
+PathFinder = class()
 
 function PathFinder:new(src, dest, hotLava, otherNodes, options)
 	local o = {}

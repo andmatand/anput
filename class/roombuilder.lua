@@ -80,12 +80,12 @@ function RoomBuilder:build()
 	self:order_exits()
 	print('building room with ' .. #self.exits .. ' exits')
 
-	-- Save positions of doorway tiles at each exit
-	doorwayTiles = {}
+	-- Save positions of doorframe tiles at each exit
+	doorframeTiles = {}
 	for i,e in ipairs(self.exits) do
-		dw = e:get_doorways()
-		table.insert(doorwayTiles, {x = dw.x1, y = dw.y1})
-		table.insert(doorwayTiles, {x = dw.x2, y = dw.y2})
+		df = e:get_doorframes()
+		table.insert(doorframeTiles, {x = df.x1, y = df.y1})
+		table.insert(doorframeTiles, {x = df.x2, y = df.y2})
 	end
 
 	-- Pick a random point in the middle of the room
@@ -93,8 +93,8 @@ function RoomBuilder:build()
 
 	-- Plot paths from all exits to the midpoint
 	for i,e in ipairs(self.exits) do
-		-- Give doorwayTiles as the only hotLava for this path
-		pf = PathFinder:new(e, midPoint, doorwayTiles)
+		-- Give doorframeTiles as the only hotLava for this path
+		pf = PathFinder:new(e, midPoint, doorframeTiles)
 		tiles = pf:plot()
 
 		-- Append these coordinates to list of illegal coordinates
@@ -104,25 +104,26 @@ function RoomBuilder:build()
 		end
 	end
 
-	-- Make wall from right doorway of each exit to left doorway of next exit
+	-- Make wall from right doorframe of each exit to left doorframe of next
+	-- exit
 	for i,e in ipairs(self.exits) do
 		print('\nexit ' .. i)
-		dw = e:get_doorways()
-		src = {x = dw.x2, y = dw.y2}
+		df = e:get_doorframes()
+		src = {x = df.x2, y = df.y2}
 
 		-- If there is another exit to connect to
 		if self.exits[i + 1] ~= nil then
-			-- Set the next exit's left doorway as the destination
-			destDw = self.exits[i + 1]:get_doorways()
+			-- Set the next exit's left doorframe as the destination
+			destdf = self.exits[i + 1]:get_doorframes()
 		else
-			-- Set the first exit's left doorway as the destination
-			destDw = self.exits[1]:get_doorways()
+			-- Set the first exit's left doorframe as the destination
+			destdf = self.exits[1]:get_doorframes()
 		end
-		dest = {x = destDw.x1, y = destDw.y1}
+		dest = {x = destdf.x1, y = destdf.y1}
 		print('src:', src.x, src.y)
 		print('dest:', dest.x, dest.y)
 
-		-- Find all vacant tiles accessible from the source doorway
+		-- Find all vacant tiles accessible from the source doorframe
 		ff = FloodFiller:new(src, occupiedTiles)
 		freeTiles = ff:flood().freeTiles
 
@@ -200,8 +201,8 @@ function RoomBuilder:build()
 	for i,b in pairs(tempBricks) do
 		if b.touched == true then
 			table.insert(self.bricks, Brick:new(b.x, b.y))
-		else
-			print('removed an unreachable brick')
+		--else
+		--	print('removed an unreachable brick')
 		end
 	end
 
@@ -212,7 +213,8 @@ function RoomBuilder:build()
 	--for j,b in pairs(self.freeTiles) do
 	--	table.insert(self.bricks, Brick:new(b.x, b.y))
 	--end
-	return {bricks = self.bricks, freeTiles = self.freeTiles}
+	return {bricks = self.bricks, freeTiles = self.freeTiles,
+	        midPoint = midPoint}
 end
 
 function RoomBuilder:order_exits()

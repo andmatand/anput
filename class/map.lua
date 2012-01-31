@@ -2,26 +2,14 @@ require 'class/pathfinder.lua'
 require 'class/room.lua'
 require 'class/exit.lua'
 
-Map = {}
-Map.__index = Map
-
 -- A Map generates a random contiguous layout of rooms and their exits
-function Map:new()
-	local o = {}
-	setmetatable(o, self)
-
-	o.source = source
-
-	return o
-end
+Map = class()
 
 function Map:generate()
 	self.path = self:generate_path()
 	self.branches = self:add_branches(self.path)
 
-	self.rooms = self:generate_rooms()
-
-	return self.rooms
+	return self:generate_rooms()
 end
 
 function move_random(node)
@@ -198,6 +186,7 @@ function Map:generate_rooms()
 		exits = {}
 		for j,n in ipairs(neighbors) do
 			if n.occupied then
+				linkedExit = nil
 				if n.room ~= nil then
 					print('neighbor ' .. j .. ' is a room with ' ..
 					      #n.room.exits .. ' exits:')
@@ -215,35 +204,45 @@ function Map:generate_rooms()
 					-- If this neighbor has already been converted into a room
 					-- with exits, use the position of its corresponding exit
 					if n.room ~= nil then
-						x = n.room:get_exit({y = ROOM_H}).x
+						linkedExit = n.room:get_exit({y = ROOM_H})
+						x = linkedExit.x
 					end
 				elseif j == 2 then
 					print('east')
 					x = ROOM_W -- East
 					if n.room ~= nil then
-						y = n.room:get_exit({x = -1}).y
+						linkedExit = n.room:get_exit({x = -1})
+						y = linkedExit.y
 					end
 				elseif j == 3 then
 					print('south')
 					y = ROOM_H -- South
 					if n.room ~= nil then
-						x = n.room:get_exit({y = -1}).x
+						linkedExit = n.room:get_exit({y = -1})
+						x = linkedExit.x
 					end
 				elseif j == 4 then
 					print('west')
 					x = -1 -- West
 					if n.room ~= nil then
-						y = n.room:get_exit({x = ROOM_W}).y
+						linkedExit = n.room:get_exit({x = ROOM_W})
+						y = linkedExit.y
 					end
 				end
 
-				table.insert(exits, Exit:new(x, y))
+				newExit = Exit:new(x, y)
+				if linkedExit ~= nil then
+					linkedExit.roomIndex = #rooms + 1
+					newExit.roomIndex = n.room.roomIndex
+				end
+
+				table.insert(exits, newExit)
 			end
 		end
 
 		-- Add the new room and attach it to this node
 		print('creating room with ' .. #exits .. ' exits')
-		r = Room:new(exits)
+		r = Room:new(exits, #rooms + 1)
 		table.insert(rooms, r)
 		node.room = r
 	end

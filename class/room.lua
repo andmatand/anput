@@ -3,20 +3,27 @@ require 'class/roombuilder.lua'
 Room = {}
 Room.__index = Room
 
-function Room:new(exits)
+function Room:new(exits, index)
 	local o = {}
 	setmetatable(o, self)
 
 	o.exits = exits
+	o.index = index
+	o.generated = false
+	o.sprites = {}
 
 	return o
 end
 
 function Room:draw()
 	for i,b in pairs(self.bricks) do
-		--if i <= wallNum then -- TEMP: draw one brick at a time
-			b:draw()
-		--end
+		b:draw()
+	end
+
+	if #self.sprites > 0 then
+		for i,s in pairs(self.sprites) do
+			s:draw()
+		end
 	end
 end
 
@@ -25,11 +32,15 @@ function Room:generate()
 	rbResults = rb:build()
 	self.bricks = rbResults.bricks
 	self.freeTiles = rbResults.freeTiles
+	self.midPoint = rbResults.midPoint
+
+	self.generated = true
 end
 
-function Room:get_exit(position)
+function Room:get_exit(search)
 	for i,e in pairs(self.exits) do
-		if e.x == position.x or e.y == position.y then
+		if e.x == search.x or e.y == search.y or
+		   e.roomIndex == search.roomIndex then
 			return e
 		end
 	end
