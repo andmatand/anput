@@ -9,6 +9,6 @@ end
 function Player:draw()
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(playerImg,
-	                   self.x * TILE_W,
-					   self.y * TILE_H)
+	                   self.position.x * TILE_W, self.position.y * TILE_H,
+	                   0, SCALE_X, SCALE_Y)
 end

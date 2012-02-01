@@ -38,32 +38,28 @@ function Game:generate()
 
 	-- Put a player in the first room
 	self.player = Player:new()
-	self.player.x = self.currentRoom.midPoint.x
-	self.player.y = self.currentRoom.midPoint.y
+	self.player:move_to(self.currentRoom.midPoint)
 	table.insert(self.currentRoom.sprites, 1, self.player)
 end
 
 function Game:keypressed(key)
 	if key == 'w' then
-		self.player.y = self.player.y - 1
-		self.player.yVel = -1
+		self.player.velocity.y = -1
 	elseif key == 's' then
-		self.player.y = self.player.y + 1
-		self.player.yVel = 1
+		self.player.velocity.y = 1
 	elseif key == 'a' then
-		self.player.x = self.player.x - 1
-		self.player.xVel = -1
+		self.player.velocity.x = -1
 	elseif key == 'd' then
-		self.player.x = self.player.x + 1
-		self.player.xVel = 1
+		self.player.velocity.x = 1
 	end
-
 end
 
 function Game:update()
+	self.currentRoom:update()
+
 	-- Switch rooms when player is on an exit
 	for i,e in pairs(self.currentRoom.exits) do
-		if tiles_overlap(self.player, e) then
+		if tiles_overlap(self.player.position, e) then
 			self:switch_to_room(e.roomIndex)
 			break
 		end

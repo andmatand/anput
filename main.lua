@@ -9,10 +9,13 @@ end
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
 	playerImg = love.graphics.newImage('res/image/player.png')
+	playerImg:setFilter('nearest', 'nearest')
 	math.randomseed(os.time())
 
-	TILE_W = 8
-	TILE_H = 8
+	TILE_W = 16
+	TILE_H = 16
+	SCALE_X = 2
+	SCALE_Y = 2
 
 	-- Room width and height are in # of tiles (not pixels)
 	ROOM_W = 27
@@ -59,9 +62,7 @@ function love.keypressed(key, unicode)
 end
 
 function love.draw()
-	love.graphics.scale(2, 2)
 	love.graphics.translate(camera.x, camera.y)
-	--love.timer.sleep(25)
 
 	if showDebug then
 		-- DEBUG show map obstacles

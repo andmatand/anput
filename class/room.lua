@@ -46,3 +46,12 @@ function Room:get_exit(search)
 		end
 	end
 end
+
+function Room:update()
+	for i,s in pairs(self.sprites) do
+		s:physics(self.bricks, self.sprites)
+	end
+	for i,s in pairs(self.sprites) do
+		s:post_physics()
+	end
+end

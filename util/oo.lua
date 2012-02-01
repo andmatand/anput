@@ -7,6 +7,10 @@ function class()
 		local o = {}
 		setmetatable(o, self)
 
+		if newClass.init then
+			newClass:init()
+		end
+
 		return o
 	end
 
@@ -24,6 +28,11 @@ function inherit_class(baseClass)
     function newClass:new()
 		local newinst = {}
         setmetatable(newinst, class_mt)
+
+		if newClass.init then
+			newClass:init()
+		end
+
         return newinst
     end
 
