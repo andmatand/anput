@@ -166,7 +166,7 @@ function Map:generate_path()
 	end
 
 	-- Plot path from src to dest through obstacles
-	pf = PathFinder:new(src, dest, self.obstacles, nil, {bounds = false})
+	pf = PathFinder(src, dest, self.obstacles, nil, {bounds = false})
 	path = pf:plot()
 
 	return path
@@ -186,19 +186,20 @@ function Map:generate_rooms()
 		exits = {}
 		for j,n in ipairs(neighbors) do
 			if n.occupied then
-				linkedExit = nil
 				if n.room ~= nil then
 					print('neighbor ' .. j .. ' is a room with ' ..
-					      #n.room.exits .. ' exits:')
+					      #n.room.exits .. ' exits')
 					for k,e in pairs(n.room.exits) do
-						print('  ', e.x, e.y)
+						print('  exit ' .. k .. ': ', e.x, e.y, e.roomIndex)
 					end
+				else
+					print('neighbor ' .. j .. ' is not a room yet')
 				end
+				linkedExit = nil
 
 				x = math.random(2, ROOM_W - 2)
 				y = math.random(2, ROOM_H - 2)
 				if j == 1 then
-					print('north')
 					y = -1 -- North
 
 					-- If this neighbor has already been converted into a room
@@ -208,21 +209,18 @@ function Map:generate_rooms()
 						x = linkedExit.x
 					end
 				elseif j == 2 then
-					print('east')
 					x = ROOM_W -- East
 					if n.room ~= nil then
 						linkedExit = n.room:get_exit({x = -1})
 						y = linkedExit.y
 					end
 				elseif j == 3 then
-					print('south')
 					y = ROOM_H -- South
 					if n.room ~= nil then
 						linkedExit = n.room:get_exit({y = -1})
 						x = linkedExit.x
 					end
 				elseif j == 4 then
-					print('west')
 					x = -1 -- West
 					if n.room ~= nil then
 						linkedExit = n.room:get_exit({x = ROOM_W})
@@ -230,30 +228,21 @@ function Map:generate_rooms()
 					end
 				end
 
-				newExit = Exit:new(x, y)
+				newExit = Exit({x = x, y = y})
 				if linkedExit ~= nil then
 					linkedExit.roomIndex = #rooms + 1
 					newExit.roomIndex = n.room.index
 				end
+				print('new exit:', newExit.x, newExit.y, newExit.roomIndex)
 
 				table.insert(exits, newExit)
 			end
 		end
 
 		-- Add the new room and attach it to this node
-		print('creating room with ' .. #exits .. ' exits')
-		r = Room:new(exits, #rooms + 1)
+		r = Room({exits = exits, index = #rooms + 1})
 		table.insert(rooms, r)
 		node.room = r
-	end
-
-	for i,r in ipairs(rooms) do
-		print('\nroom ' .. i)
-		print('  index:', r.index)
-		print('  ' .. #r.exits .. ' exits:')
-		for j,e in pairs(r.exits) do
-			print('    ', e.x, e.y, e.roomIndex)
-		end
 	end
 
 	return rooms

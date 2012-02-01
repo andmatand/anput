@@ -1,16 +1,10 @@
-Exit = {}
-Exit.__index = Exit
+Exit = class(SimpleClass)
 
-function Exit:new(x, y)
-	local o = {}
-	setmetatable(o, self)
+function Exit:init(args)
+	self.x = args.x
+	self.y = args.y
 
-	-- X and Y coordinates
-	o.x = x
-	o.y = y
-	--print('new exit at ', x, y)
-
-	return o
+	self.roomIndex = nil
 end
 
 function Exit:get_doorframes()

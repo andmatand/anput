@@ -1,15 +1,9 @@
-Brick = {}
-Brick.__index = Brick
+Brick = class()
 
-function Brick:new(x, y)
-	local o = {}
-	setmetatable(o, self)
-
+function Brick:init(coordinates)
 	-- X and Y coordinates
-	o.x = x
-	o.y = y
-
-	return o
+	self.x = coordinates.x
+	self.y = coordinates.y
 end
 
 function Brick:class_name()

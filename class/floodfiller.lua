@@ -1,6 +1,3 @@
-FloodFiller = {}
-FloodFiller.__index = FloodFiller
-
 -- A FloodFiller finds all tiles accessible from x, y which are neither hotLava
 -- nor outside the bounds of the room.
 -- Returns a table consisting of:
@@ -9,19 +6,15 @@ FloodFiller.__index = FloodFiller
 --            parameter, with an extra key on each element denoting whether it
 --            was touched (including by diagonal searching, which freeTiles
 --            does not use) e.g. {x = 17, y = 3, touched = true}
-function FloodFiller:new(source, hotLava)
-	local o = {}
-	setmetatable(o, self)
 
-	o.source = source -- Needs to have and x and y key, e.g. {x = 2, y = 47}
-	o.hotLava = hotLava -- Coordinates which are illegal to traverse
+FloodFiller = class()
 
-	return o
+function FloodFiller:init(source, hotLava)
+	self.source = source -- Needs to have and x and y key, e.g. {x = 2, y = 47}
+	self.hotLava = hotLava -- Coordinates which are illegal to traverse
 end
 
 function FloodFiller:flood()
-	print('starting floodfiller flood()')
-
 	found = {}
 	used = {}
 
@@ -107,7 +100,6 @@ function FloodFiller:flood()
 
 	-- Remove the starting node
 	table.remove(used, 1)
-	print('done')
 	return {freeTiles = used, hotLava = self.hotLava}
 end
 

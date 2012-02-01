@@ -1,18 +1,17 @@
+require 'class/arrow.lua'
 require 'class/roombuilder.lua'
 
-Room = {}
-Room.__index = Room
+Room = class(SimpleClass)
 
-function Room:new(exits, index)
-	local o = {}
-	setmetatable(o, self)
+function Room:init(args)
+	self.exits = args.exits
+	self.index = args.index
 
-	o.exits = exits
-	o.index = index
-	o.generated = false
-	o.sprites = {}
+	self.generated = false
+	self.sprites = {}
 
-	return o
+	print('I am a new Room:')
+	print('')
 end
 
 function Room:draw()
@@ -28,7 +27,7 @@ function Room:draw()
 end
 
 function Room:generate()
-	rb = RoomBuilder:new(self.exits)
+	rb = RoomBuilder(self.exits)
 	rbResults = rb:build()
 	self.bricks = rbResults.bricks
 	self.freeTiles = rbResults.freeTiles
@@ -48,6 +47,16 @@ function Room:get_exit(search)
 end
 
 function Room:update()
+	-- Remove all dead sprites
+	temp = {}
+	for i,s in pairs(self.sprites) do
+		if s.dead ~= true then
+			table.insert(temp, s)
+		end
+	end
+	self.sprites = temp
+
+	-- Run physics on all sprites
 	for i,s in pairs(self.sprites) do
 		s:physics(self.bricks, self.sprites)
 	end

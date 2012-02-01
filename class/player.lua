@@ -1,9 +1,17 @@
 require 'class/sprite.lua'
 
-Player = inherit_class(Sprite)
+Player = class(Sprite)
+
+function Player:init()
+	self.health = 100
+end
 
 function Player:class_name()
 	return 'Player'
+end
+
+function Player:die()
+	print('player is dead')
 end
 
 function Player:draw()
@@ -12,3 +20,22 @@ function Player:draw()
 	                   self.position.x * TILE_W, self.position.y * TILE_H,
 	                   0, SCALE_X, SCALE_Y)
 end
+
+function Player:hit(patient)
+	if patient:class_name() == 'Brick' then
+		self.velocity.x = 0
+		self.velocity.y = 0
+		return true
+	end
+
+	return false
+end
+
+function Player:receive_damage(amount)
+	self.health = self.health - amount
+
+	if self.health <= 0 then
+		 self:die()
+	end
+end
+

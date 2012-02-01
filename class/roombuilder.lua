@@ -2,17 +2,11 @@ require 'class/brick.lua'
 require 'class/navigator.lua'
 require 'class/floodfiller.lua'
 
-RoomBuilder = {}
-RoomBuilder.__index = RoomBuilder
-
 -- A RoomBuilder places bricks inside a room
-function RoomBuilder:new(exits)
-	local o = {}
-	setmetatable(o, self)
+RoomBuilder = class()
 
-	o.exits = exits -- A table of exit positions
-
-	return o
+function RoomBuilder:init(exits)
+	self.exits = exits -- A table of exit positions
 end
 
 function tile_on_border(tile)
@@ -77,7 +71,7 @@ function RoomBuilder:build()
 	self.bricks = {}
 	occupiedTiles = {}
 
-	self:order_exits()
+	--self:order_exits()
 	print('building room with ' .. #self.exits .. ' exits')
 
 	-- Save positions of doorframe tiles at each exit
@@ -94,7 +88,7 @@ function RoomBuilder:build()
 	-- Plot paths from all exits to the midpoint
 	for i,e in ipairs(self.exits) do
 		-- Give doorframeTiles as the only hotLava for this path
-		pf = PathFinder:new(e, midPoint, doorframeTiles)
+		pf = PathFinder(e, midPoint, doorframeTiles)
 		tiles = pf:plot()
 
 		-- Append these coordinates to list of illegal coordinates
@@ -107,7 +101,6 @@ function RoomBuilder:build()
 	-- Make wall from right doorframe of each exit to left doorframe of next
 	-- exit
 	for i,e in ipairs(self.exits) do
-		print('\nexit ' .. i)
 		df = e:get_doorframes()
 		src = {x = df.x2, y = df.y2}
 
@@ -120,11 +113,9 @@ function RoomBuilder:build()
 			destdf = self.exits[1]:get_doorframes()
 		end
 		dest = {x = destdf.x1, y = destdf.y1}
-		print('src:', src.x, src.y)
-		print('dest:', dest.x, dest.y)
 
 		-- Find all vacant tiles accessible from the source doorframe
-		ff = FloodFiller:new(src, occupiedTiles)
+		ff = FloodFiller(src, occupiedTiles)
 		freeTiles = ff:flood().freeTiles
 
 		-- Remove src and dest from freeTiles
@@ -179,17 +170,17 @@ function RoomBuilder:build()
 		table.insert(destinations, dest)
 
 		-- Plot a path along both points
-		nav = Navigator:new(src, destinations, occupiedTiles)
+		nav = Navigator(src, destinations, occupiedTiles)
 		tiles = nav:plot()
 
 		-- Make bricks at these coordinates
 		for j,b in pairs(tiles) do
-			table.insert(self.bricks, Brick:new(b.x, b.y))
+			table.insert(self.bricks, Brick(b))
 		end
 	end
 
 	-- Do a floodfill on the inside of the room
-	ff = FloodFiller:new(midPoint, self.bricks)
+	ff = FloodFiller(midPoint, self.bricks)
 	ffResults = ff:flood()
 
 	-- Save freeTiles and bricks
@@ -200,7 +191,7 @@ function RoomBuilder:build()
 	self.bricks = {}
 	for i,b in pairs(tempBricks) do
 		if b.touched == true then
-			table.insert(self.bricks, Brick:new(b.x, b.y))
+			table.insert(self.bricks, Brick(b))
 		--else
 		--	print('removed an unreachable brick')
 		end
@@ -208,11 +199,6 @@ function RoomBuilder:build()
 
 	print('room built')
 
-	-- DEBUG: Replace bricks with freeTiles
-	--self.bricks = {}
-	--for j,b in pairs(self.freeTiles) do
-	--	table.insert(self.bricks, Brick:new(b.x, b.y))
-	--end
 	return {bricks = self.bricks, freeTiles = self.freeTiles,
 	        midPoint = midPoint}
 end

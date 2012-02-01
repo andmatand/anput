@@ -29,7 +29,7 @@ end
 
 function Game:generate()
 	mapPath = {}
-	self.map = Map:new()
+	self.map = Map()
 	self.rooms = self.map:generate()
 
 	-- Generate the first room
@@ -37,7 +37,7 @@ function Game:generate()
 	self.currentRoom:generate()
 
 	-- Put a player in the first room
-	self.player = Player:new()
+	self.player = Player()
 	self.player:move_to(self.currentRoom.midPoint)
 	table.insert(self.currentRoom.sprites, 1, self.player)
 end
@@ -52,9 +52,18 @@ function Game:keypressed(key)
 	elseif key == 'd' then
 		self.player.velocity.x = 1
 	end
+
+	-- Shoot arrows
+	if key == 'up' then
+		table.insert(self.currentRoom.sprites,
+		             Arrow({x = self.player.position.x,
+		                    y = self.player.position.y - 1},
+		                   1))
+	end
 end
 
 function Game:update()
+	--if love.keyboard.isDown('a') then self.player.velocity.x = -1 end
 	self.currentRoom:update()
 
 	-- Switch rooms when player is on an exit

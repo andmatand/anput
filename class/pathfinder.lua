@@ -1,20 +1,12 @@
 PathFinder = class()
 
-function PathFinder:new(src, dest, hotLava, otherNodes, options)
-	local o = {}
-	setmetatable(o, self)
-
-	o.src = src
-	o.dest = dest
-	o.hotLava = hotLava -- Coordinates which are illegal to traverse
-	o.otherNodes = otherNodes -- Other nodes (used to limit thickness)
-
-	o.options = options -- {smooth = true} smoother path
-	if o.options == nil then
-		o.options = {}
-	end
-
-	return o
+function PathFinder:init(src, dest, hotLava, otherNodes, options)
+	self.src = src
+	self.dest = dest
+	self.hotLava = hotLava -- Coordinates which are illegal to traverse
+	self.otherNodes = otherNodes -- Other nodes (used to limit thickness)
+	self.options = options -- {smooth = true} smoother path
+	if self.options == nil then self.options = {} end
 end
 
 function find_neighbors(node, otherNodes, options)

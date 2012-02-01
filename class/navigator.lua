@@ -1,19 +1,13 @@
 require 'class/pathfinder.lua'
 
-Navigator = {}
-Navigator.__index = Navigator
-
 -- A Navigator plots a path with multiple destinations
-function Navigator:new(source, destinations, hotLava)
-	local o = {}
-	setmetatable(o, self)
+Navigator = class()
 
-	o.source = source
-	o.destinations = destinations
-	o.hotLava = hotLava -- Coordinates which are illegal to traverse
-	if o.hotLava == nil then o.hotLava = {} end
-
-	return o
+function Navigator:init(source, destinations, hotLava)
+	self.source = source
+	self.destinations = destinations
+	self.hotLava = hotLava -- Coordinates which are illegal to traverse
+	if self.hotLava == nil then self.hotLava = {} end
 end
 
 function Navigator:plot()
@@ -29,7 +23,7 @@ function Navigator:plot()
 			src = destinations[i - 1]
 		end
 
-		pf = PathFinder:new(src, d, self.hotLava, self.points, {smooth = true})
+		pf = PathFinder(src, d, self.hotLava, self.points, {smooth = true})
 		points = pf:plot()
 
 		for j,p in ipairs(points) do

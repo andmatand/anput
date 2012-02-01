@@ -10,6 +10,10 @@ function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
 	playerImg = love.graphics.newImage('res/image/player.png')
 	playerImg:setFilter('nearest', 'nearest')
+
+	arrowImg = love.graphics.newImage('res/image/arrow.png')
+	arrowImg:setFilter('nearest', 'nearest')
+
 	math.randomseed(os.time())
 
 	TILE_W = 16
@@ -27,8 +31,10 @@ function love.load()
 
 	showDebug = true
 
-	game = Game:new()
+	game = Game()
 	game:generate()
+
+	love.keyboard.setKeyRepeat(75, 50)
 end
 
 function love.update(dt)
@@ -48,15 +54,15 @@ function love.keypressed(key, unicode)
 	end
 
 	game:keypressed(key)
-	if key == 'up' then
-		camera.y = camera.y + TILE_H
-	elseif key == 'down' then
-		camera.y = camera.y - TILE_H
-	elseif key == 'left' then
-		camera.x = camera.x + TILE_W
-	elseif key == 'right' then
-		camera.x = camera.x - TILE_W
-	end
+	--if key == 'up' then
+	--	camera.y = camera.y + TILE_H
+	--elseif key == 'down' then
+	--	camera.y = camera.y - TILE_H
+	--elseif key == 'left' then
+	--	camera.x = camera.x + TILE_W
+	--elseif key == 'right' then
+	--	camera.x = camera.x - TILE_W
+	--end
 
 	if key == 'escape' then love.event.push('q') end
 end
