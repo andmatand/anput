@@ -151,7 +151,7 @@ function RoomBuilder:build()
 
 		-- Pick a random intermediate point for this wall's path
 		destinations = {}
-		while #destinations == 0 do
+		while #destinations == 0 and #freeTiles > 0 do
 			tile = freeTiles[math.random(1, #freeTiles)] 
 
 			ok = true

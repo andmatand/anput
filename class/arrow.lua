@@ -15,6 +15,8 @@ function Arrow:init(coordinates, dir)
 	elseif self.dir == 4 then
 		self.velocity.x = -1
 	end
+
+	self.new = true -- Arrow was created this frame and will not be drawn
 end
 
 function Arrow:class_name()
@@ -26,6 +28,13 @@ function Arrow:die()
 end
 
 function Arrow:draw()
+	if self.new then
+		if self.moved then
+			self.new = false
+		end
+		return
+	end
+
 	-- Determine the rotation amount
 	if self.dir == 1 then 
 		r = 0
@@ -39,12 +48,28 @@ function Arrow:draw()
 
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(arrowImg,
-	                   self.position.x * TILE_W,
-	                   self.position.y * TILE_H,
-	                   r, SCALE_X, SCALE_Y)
+	                   (self.position.x * TILE_W) + arrowImg:getWidth(),
+	                   (self.position.y * TILE_H) + arrowImg:getHeight(),
+	                   r,
+	                   SCALE_X, SCALE_Y,
+					   arrowImg:getWidth() / 2, arrowImg:getWidth() / 2)
+end
+
+function Arrow:erase()
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.rectangle('fill',
+	                   (self.position.x * TILE_W),
+	                   (self.position.y * TILE_H),
+					   TILE_W, TILE_H)
 end
 
 function Arrow:hit(patient)
+	-- Hit screen edge
+	if patient == nil then
+		self:die()
+		return true
+	end
+
 	-- Die when we hit a brick
 	if patient:class_name() == 'Brick' then
 		self:die()

@@ -4,6 +4,7 @@ Sprite = class()
 function Sprite:init()
 	self.position = {x = nil, y = nil}
 	self.velocity = {x = 0, y = 0}
+	self.moved = false
 end
 
 function Sprite:move_to(coordinates)
@@ -12,6 +13,13 @@ function Sprite:move_to(coordinates)
 end
 
 function Sprite:physics(bricks, sprites)
+	self.moved = false
+
+	-- Do nothing if the sprite is not moving
+	if self.velocity.x == 0 and self.velocity.y == 0 then
+		return
+	end
+
 	-- Test coordinates
 	test = {x = self.position.x, y = self.position.y}
 
@@ -23,6 +31,7 @@ function Sprite:physics(bricks, sprites)
 	test.x = test.x + self.velocity.x
 	test.y = test.y + self.velocity.y
 	
+	-- Check for collision with bricks
 	for i,b in pairs(bricks) do
 		if tiles_overlap(test, b) then
 			if self:hit(b) then
@@ -33,8 +42,17 @@ function Sprite:physics(bricks, sprites)
 		end
 	end
 
+	-- Check for collision with room edge
+	if test.x < 0 or test.x > ROOM_W - 1 or
+	   test.y < 0 or test.y > ROOM_H - 1 then
+	   if self:hit(nil) then
+		   return
+	   end
+	end
+
 	-- If there were no hits, make the move for real
 	self.position = test
+	self.moved = true
 end
 
 -- Default post-physics method

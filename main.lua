@@ -29,21 +29,41 @@ function love.load()
 	camera.x = 0
 	camera.y = 0
 
-	showDebug = true
+	showDebug = false
+	flickerMode = false
 
 	game = Game()
 	game:generate()
 
-	love.keyboard.setKeyRepeat(75, 50)
+	fps = 15
+	fpsTimer = 0
+
+	--love.keyboard.setKeyRepeat(75, 50)
+end
+
+function toggle_flicker_mode()
+	if flickerMode == false then
+		flickerMode = true
+		fps = fps * 2
+	else
+		flickerMode = false
+		fps = fps / 2
+	end
 end
 
 function love.update(dt)
-	game:update()
+	-- Limit FPS
+	fpsTimer = fpsTimer + dt
+
+	if fpsTimer > 1 / fps then
+		game:update()
+		fpsTimer = 0
+	end
 end
 
 function love.keypressed(key, unicode)
 	if key == 'n' then
-		game = Game:new()
+		game = Game()
 		game:generate()
 	elseif key == '1' then
 		if showDebug == true then
@@ -51,6 +71,8 @@ function love.keypressed(key, unicode)
 		else
 			showDebug = true
 		end
+	elseif key == '2' then
+		toggle_flicker_mode()
 	end
 
 	game:keypressed(key)

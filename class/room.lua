@@ -26,6 +26,14 @@ function Room:draw()
 	end
 end
 
+function Room:erase()
+	self:draw()
+
+	for i,s in pairs(self.sprites) do
+		s:erase()
+	end
+end
+
 function Room:generate()
 	rb = RoomBuilder(self.exits)
 	rbResults = rb:build()
@@ -46,7 +54,30 @@ function Room:get_exit(search)
 	end
 end
 
+function Room:character_shoot(character, dir)
+	x = character.position.x
+	y = character.position.y
+
+	for i,b in pairs(self.bricks) do
+		if tiles_overlap({x = x, y = y}, b) then
+			return false
+		end
+	end
+
+	table.insert(self.sprites, Arrow({x = x, y = y}, dir))
+	return true
+end
+
+
 function Room:update()
+	-- Run physics on all sprites
+	for i,s in pairs(self.sprites) do
+		s:physics(self.bricks, self.sprites)
+	end
+	for i,s in pairs(self.sprites) do
+		s:post_physics()
+	end
+
 	-- Remove all dead sprites
 	temp = {}
 	for i,s in pairs(self.sprites) do
@@ -55,12 +86,4 @@ function Room:update()
 		end
 	end
 	self.sprites = temp
-
-	-- Run physics on all sprites
-	for i,s in pairs(self.sprites) do
-		s:physics(self.bricks, self.sprites)
-	end
-	for i,s in pairs(self.sprites) do
-		s:post_physics()
-	end
 end
