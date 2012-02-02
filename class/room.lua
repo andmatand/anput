@@ -14,6 +14,10 @@ function Room:init(args)
 	print('')
 end
 
+function Room:add_sprite(sprite)
+	table.insert(self.sprites, sprite)
+end
+
 function Room:draw()
 	for i,b in pairs(self.bricks) do
 		b:draw()
@@ -54,20 +58,13 @@ function Room:get_exit(search)
 	end
 end
 
-function Room:character_shoot(character, dir)
-	x = character.position.x
-	y = character.position.y
-
-	for i,b in pairs(self.bricks) do
-		if tiles_overlap({x = x, y = y}, b) then
-			return false
+function Room:remove_sprite(sprite)
+	for i,s in pairs(self.sprites) do
+		if s == sprite then
+			table.remove(self.sprites, i)
 		end
 	end
-
-	table.insert(self.sprites, Arrow({x = x, y = y}, dir))
-	return true
 end
-
 
 function Room:update()
 	-- Run physics on all sprites

@@ -19,13 +19,22 @@ function Game:switch_to_room(roomIndex)
 		self.rooms[roomIndex]:generate()
 	end
 
-	table.remove(self.currentRoom.sprites, 1)
+	-- Remove player from previous room
+	if prevRoom ~= nil then
+		prevRoom:remove_sprite(self.player)
+	end
+
+	-- Set the new room as the current room
 	self.currentRoom = self.rooms[roomIndex]
-	table.insert(self.currentRoom.sprites, 1, self.player)
+
+	-- Add player to current room
+	self.currentRoom:add_sprite(self.player)
 
 	-- Move player to corresponding doorway
-	exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
-	self.player:move_to(exit:get_doorway())
+	if prevRoom ~= nil then
+		exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
+		self.player:move_to(exit:get_doorway())
+	end
 end
 
 function Game:draw()
@@ -37,18 +46,26 @@ function Game:draw()
 end
 
 function Game:generate()
+	-- Generate a new map
 	mapPath = {}
 	self.map = Map()
 	self.rooms = self.map:generate()
 
+	-- Create a player
+	self.player = Player()
+
+	-- Switch to the first room and put the player at the midPoint
+	self:switch_to_room(1)
+	self.player:move_to(self.currentRoom.midPoint)
+
 	-- Generate the first room
-	self.currentRoom = self.rooms[1]
-	self.currentRoom:generate()
+	--self.currentRoom = self.rooms[1]
+	--self.currentRoom:generate()
 
 	-- Put a player in the first room
-	self.player = Player()
-	self.player:move_to(self.currentRoom.midPoint)
-	table.insert(self.currentRoom.sprites, 1, self.player)
+	--self.player = Player()
+	--self.player:move_to(self.currentRoom.midPoint)
+	--self.currentRoom:add_sprite(self.player)
 end
 
 function Game:keypressed(key)
@@ -74,7 +91,7 @@ function Game:keypressed(key)
 		shootDir = 4
 	end
 	if shootDir ~= nil then
-		self.currentRoom:character_shoot(self.player, shootDir)
+		self.player:shoot(shootDir, self.currentRoom)
 	end
 end
 
