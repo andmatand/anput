@@ -28,8 +28,9 @@ function Room:draw()
 end
 
 function Room:erase()
-	self:draw()
-
+	for i,b in pairs(self.bricks) do
+		b:draw()
+	end
 	for i,s in pairs(self.sprites) do
 		s:erase()
 	end

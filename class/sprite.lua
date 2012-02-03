@@ -13,6 +13,7 @@ function Sprite:move_to(coordinates)
 end
 
 function Sprite:physics(bricks, sprites)
+	self.oldPosition = {x = self.position.x, y = self.position.y}
 	self.moved = false
 
 	-- Do nothing if the sprite is not moving

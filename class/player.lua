@@ -15,20 +15,16 @@ function Player:die()
 end
 
 function Player:draw()
-	self:erase(true)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(playerImg,
 	                   self.position.x * TILE_W, self.position.y * TILE_H,
 	                   0, SCALE_X, SCALE_Y)
 end
 
-function Player:erase(force)
-	if self.moved or force then
-		love.graphics.setColor(0, 0, 0)
-		love.graphics.rectangle('fill',
-								self.position.x * TILE_W,
-								self.position.y * TILE_H,
-								TILE_W, TILE_H)
+function Player:erase()
+	if self.oldPosition.x == self.position.x and
+	   self.oldPosition.y == self.position.y then
+		self:draw()
 	end
 end
 

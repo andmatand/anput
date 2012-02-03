@@ -4,6 +4,7 @@ Arrow = class(Sprite)
 
 function Arrow:init(coordinates, dir)
 	self.position = coordinates
+	self.oldPosition = coordinates
 	self.dir = dir -- Direction the arrow is facing
 
 	if self.dir == 1 then
@@ -56,11 +57,10 @@ function Arrow:draw()
 end
 
 function Arrow:erase()
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.rectangle('fill',
-	                   (self.position.x * TILE_W),
-	                   (self.position.y * TILE_H),
-					   TILE_W, TILE_H)
+	if self.oldPosition.x == self.position.x and
+	   self.oldPosition.y == self.position.y then
+		self:draw()
+	end
 end
 
 function Arrow:hit(patient)
