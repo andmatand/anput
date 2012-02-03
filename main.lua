@@ -8,10 +8,10 @@ end
 
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
-	playerImg = love.graphics.newImage('res/image/player.png')
+	playerImg = love.graphics.newImage('res/img/player.png')
 	playerImg:setFilter('nearest', 'nearest')
 
-	arrowImg = love.graphics.newImage('res/image/arrow.png')
+	arrowImg = love.graphics.newImage('res/img/arrow.png')
 	arrowImg:setFilter('nearest', 'nearest')
 
 	math.randomseed(os.time())

@@ -9,9 +9,6 @@ function Room:init(args)
 
 	self.generated = false
 	self.sprites = {}
-
-	print('I am a new Room:')
-	print('')
 end
 
 function Room:add_sprite(sprite)
