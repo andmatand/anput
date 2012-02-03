@@ -21,13 +21,6 @@ function Player:draw()
 	                   0, SCALE_X, SCALE_Y)
 end
 
-function Player:erase()
-	if self.oldPosition.x == self.position.x and
-	   self.oldPosition.y == self.position.y then
-		self:draw()
-	end
-end
-
 function Player:hit(patient)
 	-- Hit screen edge
 	if patient == nil then

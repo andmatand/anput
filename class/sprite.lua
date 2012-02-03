@@ -7,6 +7,13 @@ function Sprite:init()
 	self.moved = false
 end
 
+function Sprite:erase()
+	if self.oldPosition.x == self.position.x and
+	   self.oldPosition.y == self.position.y then
+		self:draw()
+	end
+end
+
 function Sprite:move_to(coordinates)
 	self.position.x = coordinates.x
 	self.position.y = coordinates.y

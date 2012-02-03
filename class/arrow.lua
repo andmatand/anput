@@ -56,13 +56,6 @@ function Arrow:draw()
 					   arrowImg:getWidth() / 2, arrowImg:getWidth() / 2)
 end
 
-function Arrow:erase()
-	if self.oldPosition.x == self.position.x and
-	   self.oldPosition.y == self.position.y then
-		self:draw()
-	end
-end
-
 function Arrow:hit(patient)
 	-- Hit screen edge
 	if patient == nil then
