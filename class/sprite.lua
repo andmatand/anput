@@ -58,6 +58,17 @@ function Sprite:physics(bricks, sprites)
 	   end
 	end
 
+	-- Check for collision with other sprites
+	for i,s in pairs(sprites) do
+		if s ~= self and tiles_overlap(test, s.position) then
+			if self:hit(s) then
+				-- Registered as a hit; done with physics
+				return
+			end
+			break
+		end
+	end
+
 	-- If there were no hits, make the move for real
 	self.position = test
 	self.moved = true

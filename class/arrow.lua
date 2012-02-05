@@ -70,8 +70,10 @@ function Arrow:hit(patient)
 	end
 
 	-- Damage players and monsters
-	if patient:class_name() == 'Player' or patient:class() == 'Monster' then
+	if patient:class_name() == 'Player' or
+	   patient:class_name() == 'Monster' then
 		patient:receive_damage(10)
+		self:die()
 	end
 
 	return false

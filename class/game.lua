@@ -14,11 +14,6 @@ function Game:switch_to_room(roomIndex)
 
 	prevRoom = self.currentRoom
 
-	-- Make sure room has been generated
-	if self.rooms[roomIndex].generated == false then
-		self.rooms[roomIndex]:generate()
-	end
-
 	-- Remove player from previous room
 	if prevRoom ~= nil then
 		prevRoom:remove_sprite(self.player)
@@ -34,6 +29,11 @@ function Game:switch_to_room(roomIndex)
 	if prevRoom ~= nil then
 		exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
 		self.player:move_to(exit:get_doorway())
+	end
+
+	-- Make sure room has been generated
+	if self.rooms[roomIndex].generated == false then
+		self.rooms[roomIndex]:generate()
 	end
 end
 

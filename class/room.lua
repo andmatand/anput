@@ -1,7 +1,8 @@
 require 'class/arrow.lua'
 require 'class/roombuilder.lua'
+require 'class/roomfiller.lua'
 
-Room = class(SimpleClass)
+Room = class()
 
 function Room:init(args)
 	self.exits = args.exits
@@ -37,11 +38,16 @@ function Room:erase()
 end
 
 function Room:generate()
+	-- Build the walls of the room
 	rb = RoomBuilder(self.exits)
 	rbResults = rb:build()
 	self.bricks = rbResults.bricks
 	self.freeTiles = rbResults.freeTiles
 	self.midPoint = rbResults.midPoint
+
+	-- Fill the room with monsters and items
+	rf = RoomFiller(self)
+	rf:fill()
 
 	self.generated = true
 end
