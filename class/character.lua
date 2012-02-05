@@ -6,13 +6,14 @@ function Character:init()
 	self.health = 100
 	self.position = {}
 	self.velocity = {x = 0, y = 0}
+	self.aiType = 1 -- DEBUG
 end
 
-function Character:ai(sprites)
+function Character:ai()
 	if self.aiType == 1 then
 		-- Dodge arrows
-		for i,s in pairs(sprites) do
-			if s:getClass() == 'Arrow' then
+		for i,s in pairs(self.room.sprites) do
+			if s:class_name() == 'Arrow' then
 				self:dodge(s)
 			end
 		end
@@ -20,10 +21,38 @@ function Character:ai(sprites)
 end
 
 function Character:dodge(sprite)
-	if s.velocity.y == -1 then
+	vel = {}
+	if sprite.velocity.y == -1 then
 		-- Moving north
-		if s.position.x == self.position.x and
-		   s.position.y > self.position.y then
+		if sprite.position.x == self.position.x and
+		   sprite.position.y > self.position.y then
+			vel[1] = {{x = -1}, {x = 1}} -- First choice: east or west
+			vel[2] = {{y = -1}} -- Second choice: north
+		end
+	end
+	if sprite.velocity.y == 1 then
+		-- Moving south
+		if sprite.position.x == self.position.x and
+		   sprite.position.y < self.position.y then
+			vel[1] = {{x = -1}, {x = 1}} -- First choice: east or west
+			vel[2] = {{y = 1}} -- Second choice: south
+		end
+	end
+
+	-- Set the velocity to the best possible choice
+	for i,choices in ipairs(vel) do
+		while #choices > 0 do
+			index = math.random(1, #choices)
+			v = choices[index]
+			-- If we can't move here
+			if self.room:tile_occupied(self:preview_velocity(self.position, v))
+			then
+				-- Remove this choice from the table
+				table.remove(choices, index)
+			else
+				self.velocity = v
+				return
+			end
 		end
 	end
 end
@@ -36,16 +65,16 @@ function Character:receive_damage(amount)
 	end
 end
 
-function Character:shoot(dir, room)
+function Character:shoot(dir)
 	-- Don't allow shooting directly into a wall
-	for i,b in pairs(room.bricks) do
+	for i,b in pairs(self.room.bricks) do
 		if tiles_overlap(self.position, b) then
 			return false
 		end
 	end
 
 	-- Spawn a new arrow at the character's coordinates
-	room:add_sprite(Arrow(self.position, dir))
+	self.room:add_sprite(Arrow(self.position, dir))
 	return true
 end
 

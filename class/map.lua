@@ -30,17 +30,6 @@ function move_random(node)
 	end
 end
 
-function tile_occupied(tile, otherTilesTable)
-	for i,t in pairs(otherTilesTable) do
-		for j,n in pairs(t) do
-			if tile.x == n.x and tile.y == n.y then
-				return true
-			end
-		end
-	end
-	return false
-end
-
 function concat_tables(tableList)
 	combined = {}
 	for i,t in ipairs(tableList) do

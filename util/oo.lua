@@ -44,20 +44,20 @@ function class(base, init)
 	setmetatable(c, mt)
 
 	-- Return true if the caller is an instance of theClass
-	--function c:isa(theClass )
+	--function c:isa(theClass)
 	--	local b_isa = false
 
-	--	local cur_class = c
+	--	--local cur_class = c
 
-	--	while ( nil ~= cur_class ) and ( false == b_isa ) do
-	--		if cur_class == theClass then
-	--			b_isa = true
-	--		else
-	--			cur_class = base--cur_class:superClass()
-	--		end
-	--	end
+	--	--while ( nil ~= cur_class ) and ( false == b_isa ) do
+	--	--	if cur_class == theClass then
+	--	--		b_isa = true
+	--	--	else
+	--	--		cur_class = base--cur_class:superClass()
+	--	--	end
+	--	--end
 
-	--	return b_isa
+	--	--return b_isa
 	--end
 
 	return c

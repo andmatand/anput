@@ -13,7 +13,20 @@ function Room:init(args)
 end
 
 function Room:add_sprite(sprite)
+	-- Add this sprite to the room's sprite table
 	table.insert(self.sprites, sprite)
+
+	-- Add a reference to this room to the sprite
+	sprite.room = self
+end
+
+function Room:character_input()
+	for i,s in pairs(self.sprites) do
+		--if s:isa(Character) then
+		if s:class_name() == 'Monster' then
+			s:ai()
+		end
+	end
 end
 
 function Room:draw()
@@ -68,6 +81,13 @@ function Room:remove_sprite(sprite)
 			table.remove(self.sprites, i)
 		end
 	end
+end
+
+function Room:tile_occupied(tile)
+	if tile_occupied(tile, {self.bricks, self.sprites}) then
+		return true
+	end
+	return false
 end
 
 function Room:update()

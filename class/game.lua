@@ -5,7 +5,6 @@ require 'class/player.lua'
 Game = class()
 
 function Game:init()
-	self.keyState = 0
 	self.frameState = 1 -- 0: erase, 1: draw
 end
 
@@ -68,18 +67,26 @@ function Game:generate()
 	--self.currentRoom:add_sprite(self.player)
 end
 
-function Game:keypressed(key)
-	--if key == 'w' then
-	--	self.player.velocity.y = -1
-	--elseif key == 's' then
-	--	self.player.velocity.y = 1
-	--elseif key == 'a' then
-	--	self.player.velocity.x = -1
-	--elseif key == 'd' then
-	--	self.player.velocity.x = 1
-	--end
+function Game:input()
+	-- Get player's directional input
+	if love.keyboard.isDown('w') then
+		self.player:step(1)
+	elseif love.keyboard.isDown('d') then
+		self.player:step(2)
+	elseif love.keyboard.isDown('s') then
+		self.player:step(3)
+	elseif love.keyboard.isDown('a') then
+		self.player:step(4)
+	end
 
-	-- Shoot arrows
+	-- Get monsters' directional input
+	if self.currentRoom ~= nil then
+		self.currentRoom:character_input()
+	end
+end
+
+function Game:keypressed(key)
+	-- Get player input for shooting arrows
 	shootDir = nil
 	if key == 'up' then
 		shootDir = 1
@@ -95,25 +102,6 @@ function Game:keypressed(key)
 	end
 end
 
-function Game:keydown()
-	if self.keyState == 0 then
-		self.keyState = 1
-		self.keyTimer = love.timer.getTime()
-	end
-	if self.keyState == 1 and love.timer.getTime() > self.keyTimer + .05 then
-		self.keyState = 2
-	end
-	self.keyState = 2 -- DEBUG
-end
-
-function Game:keyOkay()
-	if self.keyState == 0 or self.keyState == 2 then
-		return true
-	else
-		return false
-	end
-end
-
 function Game:update()
 	if flickerMode and self.frameState == 0 then
 		self.frameState = 1
@@ -122,30 +110,7 @@ function Game:update()
 		self.frameState = 0
 	end
 
-	if love.keyboard.isDown('w') then
-		if self:keyOkay() then
-			self.player:step(1)
-		end
-		self:keydown()
-	elseif love.keyboard.isDown('d') then
-		if self:keyOkay() then
-			self.player:step(2)
-		end
-		self:keydown()
-	elseif love.keyboard.isDown('s') then
-		if self:keyOkay() then
-			self.player:step(3)
-		end
-		self:keydown()
-	elseif love.keyboard.isDown('a') then
-		if self:keyOkay() then
-			self.player:step(4)
-		end
-		self:keydown()
-	else
-		self.keyState = 0
-	end
-
+	self:input()
 	self.currentRoom:update()
 
 	-- Switch rooms when player is on an exit

@@ -7,6 +7,18 @@ function Sprite:init()
 	self.moved = false
 end
 
+-- Preview what position the sprite would be at if a velocity was added
+function Sprite:preview_velocity(position, velocity)
+	-- Only one axis may have velocity at a time
+	if velocity.x ~= nil then
+		return {x = position.x + velocity.x, y = position.y}
+	elseif velocity.y ~= nil then
+		return {x = position.x, y = position.y + velocity.y}
+	else
+		return {x = position.x, y = position.y}
+	end
+end
+
 function Sprite:erase()
 	if self.oldPosition.x == self.position.x and
 	   self.oldPosition.y == self.position.y then
@@ -27,6 +39,10 @@ function Sprite:physics(bricks, sprites)
 	if self.velocity.x == 0 and self.velocity.y == 0 then
 		return
 	end
+
+	-- Make sure velocity does not contain nil values
+	if self.velocity.x == nil then self.velocity.x = 0 end
+	if self.velocity.y == nil then self.velocity.y = 0 end
 
 	-- Test coordinates
 	test = {x = self.position.x, y = self.position.y}
