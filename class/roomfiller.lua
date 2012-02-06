@@ -1,7 +1,7 @@
 require 'class/monster.lua'
 
 -- A RoomFiller fills a room with monsters, items
-RoomFiller = class()
+RoomFiller = class('RoomFiller')
 
 function RoomFiller:init(room)
 	self.room = room

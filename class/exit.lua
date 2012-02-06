@@ -1,4 +1,4 @@
-Exit = class(SimpleClass)
+Exit = class('Exit')
 
 function Exit:init(args)
 	self.x = args.x

@@ -2,7 +2,7 @@ require 'class/map.lua'
 require 'class/player.lua'
 
 -- A Game handles a collection of rooms
-Game = class()
+Game = class('Game')
 
 function Game:init()
 	self.frameState = 1 -- 0: erase, 1: draw

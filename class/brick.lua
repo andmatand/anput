@@ -1,4 +1,4 @@
-Brick = class()
+Brick = class('Brick')
 
 function Brick:init(coordinates)
 	-- X and Y coordinates

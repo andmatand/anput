@@ -1,21 +1,22 @@
 -- A Sprite is a physics object
-Sprite = class()
+Sprite = class('Sprite')
 
 function Sprite:init()
 	self.position = {x = nil, y = nil}
 	self.velocity = {x = 0, y = 0}
+	self.friction = 1
 	self.moved = false
 end
 
 -- Preview what position the sprite would be at if a velocity was added
-function Sprite:preview_velocity(position, velocity)
+function Sprite:preview_velocity(velocity)
 	-- Only one axis may have velocity at a time
 	if velocity.x ~= nil then
-		return {x = position.x + velocity.x, y = position.y}
+		return {x = self.position.x + velocity.x, y = self.position.y}
 	elseif velocity.y ~= nil then
-		return {x = position.x, y = position.y + velocity.y}
-	else
-		return {x = position.x, y = position.y}
+		return {x = self.position.x, y = self.position.y + velocity.y}
+	--else
+	--	return {x = self.position.x, y = self.position.y}
 	end
 end
 
@@ -52,8 +53,21 @@ function Sprite:physics(bricks, sprites)
 		self.velocity.y = 0
 	end
 
+	-- Compute test coordinates for potential new position
 	test.x = test.x + self.velocity.x
 	test.y = test.y + self.velocity.y
+
+	-- Apply friction
+	if self.velocity.x < 0 then
+		self.velocity.x = self.velocity.x + self.friction
+	elseif self.velocity.x > 0 then
+		self.velocity.x = self.velocity.x - self.friction
+	end
+	if self.velocity.y < 0 then
+		self.velocity.y = self.velocity.y + self.friction
+	elseif self.velocity.y > 0 then
+		self.velocity.y = self.velocity.y - self.friction
+	end
 	
 	-- Check for collision with bricks
 	for i,b in pairs(bricks) do
@@ -92,22 +106,50 @@ end
 
 -- Default post-physics method
 function Sprite:post_physics()
-	-- Lose momentum after moving one tile
-	self.velocity.x = 0
-	self.velocity.y = 0
 end
 
 -- Default hit method
 function Sprite:hit(patient)
-	-- Stop when we hit a brick
-	if patient:class_name() == 'Brick' then
-		self.velocity.x = 0
-		self.velocity.y = 0
+	-- Stop when we hit anything
+	self.velocity.x = 0
+	self.velocity.y = 0
 
-		-- Valid hit
-		return true
+	-- Valid hit
+	return true
+end
+
+function Sprite:will_hit(patient)
+	if self.velocity.y == -1 then
+		-- Moving north
+		if self.position.x == patient.position.x and
+		   (self.position.y == patient.position.y + 1 or
+		    (self.friction == 0 and self.position.y > patient.position.y)) then
+			return true
+		end
+	end
+	if self.velocity.y == 1 then
+		-- Moving south
+		if self.position.x == patient.position.x and
+		   (self.position.y == patient.position.y - 1 or
+		    (self.friction == 0 and self.position.y < patient.position.y)) then
+			return true
+		end
+	end
+	if self.velocity.x == -1 then
+		-- Moving west
+		if self.position.y == patient.position.y and
+		   (self.position.x == patient.position.x + 1 or
+		    (self.friction == 0 and self.position.x > patient.position.x)) then
+			return true
+		end
+	end
+	if self.velocity.x == 1 then -- Moving east
+		if self.position.y == patient.position.y and
+		   (self.position.x == patient.position.x - 1 or
+		    (self.friction == 0 and self.position.x < patient.position.x)) then
+			return true
+		end
 	end
 
-	-- Ignore this hit
 	return false
 end

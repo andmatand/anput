@@ -1,13 +1,9 @@
 require 'util/oo.lua'
-require 'util/tile.lua'
 require 'class/game.lua'
-
-function distance(a, b)
-	return math.sqrt( (b.x - a.x)^2 + (b.y - a.y)^2 )
-end
 
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
+	love.mouse.setVisible(false)
 	playerImg = love.graphics.newImage('res/img/player.png')
 	playerImg:setFilter('nearest', 'nearest')
 
@@ -79,18 +75,11 @@ function love.keypressed(key, unicode)
 		end
 	elseif key == '2' then
 		toggle_flicker_mode()
+	elseif key == 'f11' then
+		love.graphics.toggleFullscreen()
 	end
 
 	game:keypressed(key)
-	--if key == 'up' then
-	--	camera.y = camera.y + TILE_H
-	--elseif key == 'down' then
-	--	camera.y = camera.y - TILE_H
-	--elseif key == 'left' then
-	--	camera.x = camera.x + TILE_W
-	--elseif key == 'right' then
-	--	camera.x = camera.x - TILE_W
-	--end
 
 	if key == 'escape' then love.event.push('q') end
 end

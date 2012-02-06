@@ -1,7 +1,7 @@
 require 'class/pathfinder.lua'
 
 -- A Navigator plots a path with multiple destinations
-Navigator = class()
+Navigator = class('Navigator')
 
 function Navigator:init(source, destinations, hotLava)
 	self.source = source

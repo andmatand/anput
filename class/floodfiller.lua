@@ -7,7 +7,7 @@
 --            was touched (including by diagonal searching, which freeTiles
 --            does not use) e.g. {x = 17, y = 3, touched = true}
 
-FloodFiller = class()
+FloodFiller = class('FloodFiller')
 
 function FloodFiller:init(source, hotLava)
 	self.source = source -- Needs to have and x and y key, e.g. {x = 2, y = 47}

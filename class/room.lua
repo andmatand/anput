@@ -2,7 +2,7 @@ require 'class/arrow.lua'
 require 'class/roombuilder.lua'
 require 'class/roomfiller.lua'
 
-Room = class()
+Room = class('Room')
 
 function Room:init(args)
 	self.exits = args.exits
@@ -22,8 +22,7 @@ end
 
 function Room:character_input()
 	for i,s in pairs(self.sprites) do
-		--if s:isa(Character) then
-		if s:class_name() == 'Monster' then
+		if instanceOf(Character, s) and not instanceOf(Player, s) then
 			s:ai()
 		end
 	end
@@ -84,7 +83,8 @@ function Room:remove_sprite(sprite)
 end
 
 function Room:tile_occupied(tile)
-	if tile_occupied(tile, {self.bricks, self.sprites}) then
+	if tile_occupied(tile, {self.bricks, self.sprites}) or
+	   tile_offscreen(tile) then
 		return true
 	end
 	return false

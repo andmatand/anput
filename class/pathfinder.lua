@@ -1,4 +1,6 @@
-PathFinder = class()
+require 'util/tile.lua'
+
+PathFinder = class('PathFinder')
 
 function PathFinder:init(src, dest, hotLava, otherNodes, options)
 	self.src = src
@@ -93,7 +95,7 @@ function PathFinder:legal_position(x, y)
 
 	-- If this tile is outside the bounds of the room
 	if self.options.bounds ~= false then
-		if x < 0 or x > ROOM_W - 1 or y < 0 or y > ROOM_H - 1 then
+		if tile_offscreen({x = x, y = y}) then
 			return false
 		end
 	end
@@ -162,11 +164,6 @@ function PathFinder:too_thick(x, y, currentNode)
 	return false
 end
 
-local function distance(a, b)
-	-- Manhattan distance
-	return math.abs(b.x - a.x) + math.abs(b.y - a.y)
-end
-
 function PathFinder:AStar(src, dest)
 	self.openNodes = {}
 	self.closedNodes = {}
@@ -174,7 +171,7 @@ function PathFinder:AStar(src, dest)
 
 	-- Add source to self.openNodes
 	table.insert(self.openNodes, {x = src.x, y = src.y, g = 0,
-	                         h = distance(src, dest)})
+	                         h = manhattan_distance(src, dest)})
 
 	while reachedDest == false do
 		-- Find best next openNode to use
@@ -299,7 +296,8 @@ function PathFinder:AStar(src, dest)
 					table.insert(self.openNodes,
 					             {x = x, y = y, parent = parent,
 					              g = currentNode.g + 10 + gPenalty,
-					              h = distance({x = x,  y = y}, dest)})
+					              h = manhattan_distance({x = x,  y = y},
+					                                     dest)})
 				end
 
 				if x == dest.x and y == dest.y then

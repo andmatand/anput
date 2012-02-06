@@ -1,8 +1,10 @@
 require 'class/sprite.lua'
 
-Arrow = class(Sprite)
+Arrow = class('Arrow', Sprite)
 
 function Arrow:init(coordinates, dir)
+	Sprite.init(self)
+
 	self.position = coordinates
 	self.oldPosition = coordinates
 	self.dir = dir -- Direction the arrow is facing
@@ -17,11 +19,8 @@ function Arrow:init(coordinates, dir)
 		self.velocity.x = -1
 	end
 
+	self.friction = 0 -- Arrows keep going until they hit something
 	self.new = true -- Arrow was created this frame and will not be drawn
-end
-
-function Arrow:class_name()
-	return 'Arrow'
 end
 
 function Arrow:die()
@@ -57,26 +56,14 @@ function Arrow:draw()
 end
 
 function Arrow:hit(patient)
-	-- Hit screen edge
-	if patient == nil then
-		self:die()
-		return true
-	end
+	self:die()
 
-	-- Die when we hit a brick
-	if patient:class_name() == 'Brick' then
-		self:die()
-		return true
-	end
-
-	-- Damage players and monsters
-	if patient:class_name() == 'Player' or
-	   patient:class_name() == 'Monster' then
+	-- Damage characters
+	if instanceOf(Character, patient) then
 		patient:receive_damage(10)
-		self:die()
 	end
 
-	return false
+	return true
 end
 
 function Arrow:post_physics()

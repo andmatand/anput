@@ -3,7 +3,7 @@ require 'class/navigator.lua'
 require 'class/floodfiller.lua'
 
 -- A RoomBuilder places bricks inside a room
-RoomBuilder = class()
+RoomBuilder = class('RoomBuilder')
 
 function RoomBuilder:init(exits)
 	self.exits = exits -- A table of exit positions

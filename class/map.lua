@@ -3,7 +3,7 @@ require 'class/room.lua'
 require 'class/exit.lua'
 
 -- A Map generates a random contiguous layout of rooms and their exits
-Map = class()
+Map = class('Map')
 
 function Map:generate()
 	self.path = self:generate_path()

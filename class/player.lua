@@ -1,12 +1,15 @@
 require 'class/character.lua'
 
-Player = class(Character)
+Player = class('Player', Character)
 
-function Player:class_name()
-	return 'Player'
+function Player:init()
+	Character.init(self)
+
+	print('player velocity:', self.velocity)
 end
 
 function Player:die()
+	self.dead = true
 	print('player is dead')
 end
 
@@ -23,8 +26,5 @@ function Player:hit(patient)
 		return false
 	end
 
-	-- Hit things by default
-	self.velocity.x = 0
-	self.velocity.y = 0
-	return true
+	return Character.hit(self)
 end
