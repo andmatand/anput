@@ -35,23 +35,24 @@ function Arrow:draw()
 		return
 	end
 
-	-- Determine the rotation amount
-	if self.dir == 1 then 
-		r = 0
-	elseif self.dir == 2 then
+	-- Determine the rotation/flipping
+	r = 0
+	sx = SCALE_X
+	sy = SCALE_Y
+	if self.dir == 2 then
 		r = math.rad(90)
 	elseif self.dir == 3 then
-		r = math.rad(180)
+		sy = -SCALE_Y
 	elseif self.dir == 4 then
-		r = math.rad(270)
+		r = math.rad(90)
+		sy = -SCALE_Y
 	end
 
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(arrowImg,
 	                   (self.position.x * TILE_W) + arrowImg:getWidth(),
 	                   (self.position.y * TILE_H) + arrowImg:getHeight(),
-	                   r,
-	                   SCALE_X, SCALE_Y,
+	                   r, sx, sy,
 					   arrowImg:getWidth() / 2, arrowImg:getWidth() / 2)
 end
 

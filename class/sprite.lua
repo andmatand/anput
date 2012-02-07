@@ -120,8 +120,7 @@ function Sprite:hit(patient)
 end
 
 function Sprite:line_of_sight(patient)
-	return line_of_sight(self.position, patient.position,
-	                     {self.room.bricks, self.room.sprites})
+	return self.room:line_of_sight(self.position, patient.position)
 end
 
 function Sprite:will_hit(patient)

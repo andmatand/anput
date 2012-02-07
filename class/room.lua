@@ -10,6 +10,7 @@ function Room:init(args)
 
 	self.generated = false
 	self.sprites = {}
+	self.turrets = {}
 end
 
 function Room:add_sprite(sprite)
@@ -18,6 +19,14 @@ function Room:add_sprite(sprite)
 
 	-- Add a reference to this room to the sprite
 	sprite.room = self
+end
+
+function Room:add_turret(turret)
+	-- Add this sprite to the room's sprite table
+	table.insert(self.turrets, turret)
+
+	-- Add a reference to this room to the sprite
+	turret.room = self
 end
 
 function Room:character_input()
@@ -74,6 +83,50 @@ function Room:get_exit(search)
 	end
 end
 
+function Room:line_of_sight(a, b)
+	if tiles_overlap(a, b) then
+		return true
+	end
+
+	-- Vertical
+	if a.x == b.x then
+		xDir = 0
+		if a.y < b.y then
+			yDir = 1
+		else
+			yDir = -1
+		end
+	-- Horizontal
+	elseif a.y == b.y then
+		yDir = 0
+		if a.x < b.x then
+			xDir = 1
+		else
+			xDir = -1
+		end
+	end
+
+	-- Find any occupied tiles between a and b
+	x, y = a.x, a.y
+	while true do
+		x = x + xDir
+		y = y + yDir
+
+		if tiles_overlap({x = x, y = y}, b) then
+			-- Reached the destination
+			break
+		end
+
+		if self:tile_occupied({x = x, y = y}) then
+			-- Encountered an occupied tile
+			return false
+		end
+	end
+
+	return true
+end
+
+
 function Room:remove_sprite(sprite)
 	for i,s in pairs(self.sprites) do
 		if s == sprite then
@@ -87,17 +140,32 @@ function Room:tile_occupied(tile)
 	   tile_offscreen(tile) then
 		return true
 	end
-	return false
+
+	-- Also count exterior tiles as occupied
+	occupied = true
+	for i,t in pairs(self.freeTiles) do
+		if tile.x == t.x and tile.y == t.y then
+			occupied = false
+			break
+		end
+	end
+
+	return occupied
 end
 
 function Room:update()
+	-- Update turrets
+	for i,t in pairs(self.turrets) do
+		t:update()
+	end
+
 	-- Run physics on all sprites
 	for i,s in pairs(self.sprites) do
-		s:physics(self.bricks, self.sprites)
+		s:physics()
 	end
-	for i,s in pairs(self.sprites) do
-		s:post_physics()
-	end
+	--for i,s in pairs(self.sprites) do
+	--	s:post_physics()
+	--end
 
 	-- Remove all dead sprites
 	temp = {}
