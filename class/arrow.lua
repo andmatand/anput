@@ -65,6 +65,3 @@ function Arrow:hit(patient)
 
 	return true
 end
-
-function Arrow:post_physics()
-end

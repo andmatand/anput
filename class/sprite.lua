@@ -2,6 +2,7 @@
 Sprite = class('Sprite')
 
 function Sprite:init()
+	self.room = nil
 	self.position = {x = nil, y = nil}
 	self.velocity = {x = 0, y = 0}
 	self.friction = 1
@@ -32,7 +33,7 @@ function Sprite:move_to(coordinates)
 	self.position.y = coordinates.y
 end
 
-function Sprite:physics(bricks, sprites)
+function Sprite:physics()
 	self.oldPosition = {x = self.position.x, y = self.position.y}
 	self.moved = false
 
@@ -70,7 +71,7 @@ function Sprite:physics(bricks, sprites)
 	end
 	
 	-- Check for collision with bricks
-	for i,b in pairs(bricks) do
+	for i,b in pairs(self.room.bricks) do
 		if tiles_overlap(test, b) then
 			if self:hit(b) then
 				-- Registered as a hit; done with physics
@@ -89,7 +90,7 @@ function Sprite:physics(bricks, sprites)
 	end
 
 	-- Check for collision with other sprites
-	for i,s in pairs(sprites) do
+	for i,s in pairs(self.room.sprites) do
 		if s ~= self and tiles_overlap(test, s.position) then
 			if self:hit(s) then
 				-- Registered as a hit; done with physics
@@ -118,13 +119,20 @@ function Sprite:hit(patient)
 	return true
 end
 
+function Sprite:line_of_sight(patient)
+	return line_of_sight(self.position, patient.position,
+	                     {self.room.bricks, self.room.sprites})
+end
+
 function Sprite:will_hit(patient)
+	ok = false
+
 	if self.velocity.y == -1 then
 		-- Moving north
 		if self.position.x == patient.position.x and
 		   (self.position.y == patient.position.y + 1 or
 		    (self.friction == 0 and self.position.y > patient.position.y)) then
-			return true
+			ok = true
 		end
 	end
 	if self.velocity.y == 1 then
@@ -132,7 +140,7 @@ function Sprite:will_hit(patient)
 		if self.position.x == patient.position.x and
 		   (self.position.y == patient.position.y - 1 or
 		    (self.friction == 0 and self.position.y < patient.position.y)) then
-			return true
+			ok = true
 		end
 	end
 	if self.velocity.x == -1 then
@@ -140,16 +148,20 @@ function Sprite:will_hit(patient)
 		if self.position.y == patient.position.y and
 		   (self.position.x == patient.position.x + 1 or
 		    (self.friction == 0 and self.position.x > patient.position.x)) then
-			return true
+			ok = true
 		end
 	end
 	if self.velocity.x == 1 then -- Moving east
 		if self.position.y == patient.position.y and
 		   (self.position.x == patient.position.x - 1 or
 		    (self.friction == 0 and self.position.x < patient.position.x)) then
-			return true
+			ok = true
 		end
 	end
 
-	return false
+	if ok and self:line_of_sight(patient) then
+		return true
+	else
+		return false
+	end
 end

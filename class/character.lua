@@ -24,7 +24,7 @@ function Character:ai()
 end
 
 function Character:dodge(sprite)
-	if manhattan_distance(self.position, sprite.position) > 7 then
+	if manhattan_distance(self.position, sprite.position) > 5 then
 		return
 	end
 
@@ -67,12 +67,12 @@ function Character:dodge(sprite)
 
 	-- Set the velocity to the best possible choice
 	for i,choices in ipairs(vel) do
-		print('dodge: considering choice ' .. i)
+		--print('dodge: considering choice ' .. i)
 		while #choices > 0 do
 			-- DEBUG
-			for j,c in pairs(choices) do
-				print('  ', c.x, c.y)
-			end
+			--for j,c in pairs(choices) do
+			--	print('  ', c.x, c.y)
+			--end
 
 			index = math.random(1, #choices)
 			v = choices[index]
@@ -80,13 +80,29 @@ function Character:dodge(sprite)
 			if self.room:tile_occupied(self:preview_velocity(v)) then
 				-- Remove this choice from the table
 				table.remove(choices, index)
-				print('dodge: removed choice')
+				--print('dodge: removed choice')
 			else
 				self.velocity = v
-				print('dodge: accepted velocity', v.x, v.y)
+				--print('dodge: accepted velocity', v.x, v.y)
 				return
 			end
 		end
+	end
+end
+
+function Character:draw()
+	if self.image == nil then
+		return
+	end
+
+	if self.hurt then
+		-- Flash if hurt
+		self.hurt = false
+	else
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.draw(self.image,
+						   self.position.x * TILE_W, self.position.y * TILE_H,
+						   0, SCALE_X, SCALE_Y)
 	end
 end
 
@@ -96,6 +112,7 @@ end
 
 function Character:receive_damage(amount)
 	self.health = self.health - amount
+	self.hurt = true
 
 	if self.health <= 0 then
 		 self:die()

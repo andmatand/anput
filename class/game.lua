@@ -100,6 +100,18 @@ function Game:keypressed(key)
 	if shootDir ~= nil then
 		self.player:shoot(shootDir, self.currentRoom)
 	end
+
+	-- Get player input for moving when isDown in the input() method didn't see
+	-- it
+	if key == 'w' then
+		self.player:step(1)
+	elseif key == 'd' then
+		self.player:step(2)
+	elseif key == 's' then
+		self.player:step(3)
+	elseif key == 'a' then
+		self.player:step(4)
+	end
 end
 
 function Game:update()
