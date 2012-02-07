@@ -8,7 +8,7 @@ inspired by a fake game shown at the end of Strong Bad Email #4
 <www.homestarrunner.com/sbemail4.html>
 
 ##Controls
-move: wasd
-shoot: arrows
-retro flicker mode: 2
-fullscreen: f11
+* move: wasd
+* shoot: arrows
+* retro flicker mode: 2
+* fullscreen: f11
