@@ -13,3 +13,14 @@ end
 function Monster:die()
 	self.dead = true
 end
+
+function Monster:hit()
+	-- Damage other characters depending on monsterType
+	if instanceOf(Character, patient) then
+		if self.monsterType == 1 then -- Ghost
+			patient:receive_damage(05)
+		end
+	end
+
+	return Character.hit(self, patient)
+end
