@@ -1,5 +1,7 @@
 require 'class/map.lua'
 require 'class/player.lua'
+require 'util/table.lua'
+require 'util/tile.lua'
 
 -- A Game handles a collection of rooms
 Game = class('Game')

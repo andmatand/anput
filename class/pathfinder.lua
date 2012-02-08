@@ -86,7 +86,7 @@ end
 function PathFinder:legal_position(x, y)
 	-- If this is an illegal tile
 	if self.hotLava ~= nil then
-		for i,b in pairs(self.hotLava) do
+		for j,b in pairs(self.hotLava) do
 			if x == b.x and y == b.y then
 				return false
 			end

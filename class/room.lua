@@ -58,6 +58,20 @@ function Room:erase()
 	end
 end
 
+function Room:find_path(src, dest)
+	pf = PathFinder(src, dest, concat_tables{self.bricks, self.sprites})
+	path = pf:plot()
+
+	-- Remove first node from path
+	table.remove(path, 1)
+
+	if #path > 0 then
+		return path
+	else
+		return nil
+	end
+end
+
 function Room:generate()
 	-- Build the walls of the room
 	rb = RoomBuilder(self.exits)

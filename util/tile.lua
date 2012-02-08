@@ -35,3 +35,15 @@ function tiles_overlap(a, b)
 		return false
 	end
 end
+
+-- Returns true if tiles touch (non-diagonally) without overlapping
+function tiles_touching(a, b)
+	if (a.x == b.x and a.y == b.y - 1) or -- North
+	   (a.x == b.x + 1 and a.y == b.y) or -- East
+	   (a.x == b.x and a.y == b.y + 1) or -- South
+	   (a.x == b.x - 1 and a.y == b.y) then  -- West
+		return true
+	else
+		return false
+	end
+end

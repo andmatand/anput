@@ -111,9 +111,13 @@ end
 
 -- Default hit method
 function Sprite:hit(patient)
-	-- Stop when we hit anything
-	self.velocity.x = 0
-	self.velocity.y = 0
+	-- Stop when we hit anything except an arrow
+	if instanceOf(Arrow, patient) then
+		return false
+	else
+		self.velocity.x = 0
+		self.velocity.y = 0
+	end
 
 	-- Valid hit
 	return true

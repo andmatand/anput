@@ -7,10 +7,18 @@ function Character:init()
 	Sprite.init(self)
 
 	self.health = 100
+	self.flashTimer = 0
 	self.aiType = 1 -- DEBUG
+	self.path = nil
 end
 
 function Character:ai()
+	if self.path ~= nil then
+		if self:follow_path() then
+			return
+		end
+	end
+
 	if self.aiType == 1 then
 		-- Dodge arrows
 		for i,s in pairs(self.room.sprites) do
@@ -51,6 +59,7 @@ function Character:dodge(sprite)
 	y = self.position.y
 	destination = nil
 	switchedDir = false
+	firstLoop = true
 	while destination == nil do
 		-- Add the lateral tiles
 		if searchDir == 1 then
@@ -63,33 +72,8 @@ function Character:dodge(sprite)
 			laterals = {{x = x, y = y - 1}, {x = x, y = y + 1}}
 		end
 
-		while #laterals > 0 do
-			index = math.random(1, #laterals)
-			choice = laterals[index]
-
-			-- If this tile choice is occupied
-			if self.room:tile_occupied(choice) then
-				-- Remove this choice from the table
-				table.remove(laterals, index)
-			else
-				destination = choice
-				break
-			end
-		end
-
-		-- Move to forward/back from the sprite we're trying to dodge
-		if searchDir == 1 then
-			y = y - 1
-		elseif searchDir == 2 then
-			x = x + 1
-		elseif searchDir == 3 then
-			y = y + 1
-		elseif searchDir == 4 then
-			x = x + 1
-		end
-
 		-- If the center tile is occupied
-		if self.room:tile_occupied({x = x, y = y}) then
+		if firstLoop == false and self.room:tile_occupied({x = x, y = y}) then
 			if switchedDir == false then
 				-- We can't get to the lateral tiles, start searching in the
 				-- other direction
@@ -106,12 +90,39 @@ function Character:dodge(sprite)
 				-- We already tried the other direction; abort
 				break
 			end
+		else
+			while #laterals > 0 do
+				index = math.random(1, #laterals)
+				choice = laterals[index]
+
+				-- If this tile choice is occupied
+				if self.room:tile_occupied(choice) then
+					-- Remove this choice from the table
+					table.remove(laterals, index)
+				else
+					destination = choice
+					break
+				end
+			end
 		end
+
+		-- Move to forward/back from the sprite we're trying to dodge
+		if searchDir == 1 then
+			y = y - 1
+		elseif searchDir == 2 then
+			x = x + 1
+		elseif searchDir == 3 then
+			y = y + 1
+		elseif searchDir == 4 then
+			x = x - 1
+		end
+
+		firstLoop = false
 	end
 
 	if destination ~= nil then
 		-- Move in direction of destination
-		self:step_toward(destination)
+		self:find_path(destination)
 	end
 end
 
@@ -122,12 +133,46 @@ function Character:draw()
 
 	if self.hurt then
 		-- Flash if hurt
+		self.flashTimer = 3
 		self.hurt = false
-	else
+	end
+
+	if self.flashTimer == 0 then
 		love.graphics.setColor(255, 255, 255)
 		love.graphics.draw(self.image,
 						   self.position.x * TILE_W, self.position.y * TILE_H,
 						   0, SCALE_X, SCALE_Y)
+	else
+		self.flashTimer = self.flashTimer - 1
+	end
+end
+
+function Character:find_path(dest)
+	self.path = self.room:find_path(self.position, dest)
+end
+
+function Character:follow_path()
+	-- DEBUG
+	print('position:', self.position.x, self.position.y)
+	print('path:')
+	for i,p in ipairs(self.path) do
+		print('  ' .. i, p.x, p.y)
+	end
+
+	if tiles_touching(self.position, self.path[1]) then
+		print('stepping')
+		self:step_toward(self.path[1])
+
+		-- Pop the step off the path
+		table.remove(self.path, 1)
+
+		if #self.path == 0 then
+			self.path = nil
+		end
+	else
+		-- We got off the path somehow; abort
+		self.path = nil
+		print('aborted path')
 	end
 end
 
@@ -159,17 +204,33 @@ end
 
 function Character:step(dir)
 	if dir == 1 then
+		self.velocity.x = 0
 		self.velocity.y = -1
 	elseif dir == 2 then
 		self.velocity.x = 1
+		self.velocity.y = 0
 	elseif dir == 3 then
+		self.velocity.x = 0
 		self.velocity.y = 1
 	elseif dir == 4 then
 		self.velocity.x = -1
+		self.velocity.y = 0
 	end
 end
 
 function Character:step_toward(dest)
+	if self.position.x < dest.x then
+		self:step(2)
+	elseif self.position.x > dest.x then
+		self:step(4)
+	elseif self.position.y < dest.y then
+		self:step(3)
+	elseif self.position.y > dest.y then
+		self:step(1)
+	end
+end
+
+function Character:cheap_follow_path(dest)
 	if self.position.x == dest.x and self.position.y == dest.y then
 		return
 	end
@@ -191,5 +252,6 @@ function Character:step_toward(dest)
 			self:step(1)
 		end
 	end
-end
 
+	return true
+end

@@ -5,6 +5,9 @@ function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
 	love.mouse.setVisible(false)
 	love.graphics.setCaption('TEMPLE OF ANPUT')
+	if love.graphics.isCreated() == false then
+		print('failed to create a window')
+	end
 
 	playerImg = love.graphics.newImage('res/img/player.png')
 	playerImg:setFilter('nearest', 'nearest')
