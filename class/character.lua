@@ -121,8 +121,11 @@ function Character:dodge(sprite)
 	end
 
 	if destination ~= nil then
-		-- Move in direction of destination
+		-- Set path to destination
 		self:find_path(destination)
+
+		-- Start following the path
+		self:follow_path()
 	end
 end
 
@@ -176,7 +179,7 @@ function Character:follow_path()
 	end
 end
 
-function Character:hit()
+function Character:hit(patient)
 	return Sprite.hit(self)
 end
 

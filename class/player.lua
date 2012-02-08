@@ -14,10 +14,15 @@ function Player:die()
 end
 
 function Player:hit(patient)
-	-- Hit screen edge
+	-- Ignore screen edge
 	if patient == nil then
 		return false
 	end
 
-	return Character.hit(self)
+	-- Damage other characters with sword
+	if instanceOf(Character, patient) then
+		patient:receive_damage(20)
+	end
+
+	return Character.hit(self, patient)
 end
