@@ -4,6 +4,8 @@ require 'class/game.lua'
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
 	love.mouse.setVisible(false)
+	love.graphics.setCaption('TEMPLE OF ANPUT')
+
 	playerImg = love.graphics.newImage('res/img/player.png')
 	playerImg:setFilter('nearest', 'nearest')
 

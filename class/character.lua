@@ -28,65 +28,90 @@ function Character:dodge(sprite)
 		return
 	end
 
-	vel = {}
+	-- Determine which direction we should search
 	if sprite.velocity.y == -1 then
-		-- Moving north
-		if sprite.position.x == self.position.x and
-		   sprite.position.y > self.position.y then
-			vel[1] = {{x = -1}, {x = 1}} -- First choice: east or west
-			vel[2] = {{y = -1}} -- Second choice: north
-			vel[3] = {{y = 1}} -- Third choice: south
-		end
-	end
-	if sprite.velocity.y == 1 then
-		-- Moving south
-		if sprite.position.x == self.position.x and
-		   sprite.position.y < self.position.y then
-			vel[1] = {{x = -1}, {x = 1}} -- First choice: east or west
-			vel[2] = {{y = 1}} -- Second choice: south
-			vel[3] = {{y = -1}} -- Third choice: north
-		end
-	end
-	if sprite.velocity.x == -1 then
-		-- Moving west
-		if sprite.position.y == self.position.y and
-		   sprite.position.x > self.position.x then
-			vel[1] = {{y = -1}, {y = 1}} -- First choice: north or south
-			vel[2] = {{x = -1}} -- Second choice: west
-			vel[3] = {{x = 1}} -- Third choice: east
-		end
-	end
-	if sprite.velocity.x == 1 then -- Moving east
-		if sprite.position.y == self.position.y and
-		   sprite.position.x < self.position.x then
-			vel[1] = {{y = -1}, {y = 1}} -- First choice: north or south
-			vel[2] = {{x = 1}} -- Second choice: east
-			vel[3] = {{x = -1}} -- Third choice: west
-		end
+		-- Sprite is moving north, so search north
+		searchDir = 1
+	elseif sprite.velocity.x == 1 then
+		-- Sprite is moving east, so search east
+		searchDir = 2
+	elseif sprite.velocity.y == 1 then
+		-- Sprite is moving south, so search south
+		searchDir = 3
+	elseif sprite.velocity.x == -1 then
+		-- Sprite is moving west, so search west
+		searchDir = 4
+	else
+		-- Sprite is not moving; nothing to dodge
+		return
 	end
 
-	-- Set the velocity to the best possible choice
-	for i,choices in ipairs(vel) do
-		--print('dodge: considering choice ' .. i)
-		while #choices > 0 do
-			-- DEBUG
-			--for j,c in pairs(choices) do
-			--	print('  ', c.x, c.y)
-			--end
+	-- Find the nearest tile which is out of the path of the projectile
+	x = self.position.x
+	y = self.position.y
+	destination = nil
+	switchedDir = false
+	while destination == nil do
+		-- Add the lateral tiles
+		if searchDir == 1 then
+			laterals = {{x = x - 1, y = y}, {x = x + 1, y = y}}
+		elseif searchDir == 2 then
+			laterals = {{x = x, y = y - 1}, {x = x, y = y + 1}}
+		elseif searchDir == 3 then
+			laterals = {{x = x - 1, y = y}, {x = x + 1, y = y}}
+		elseif searchDir == 4 then
+			laterals = {{x = x, y = y - 1}, {x = x, y = y + 1}}
+		end
 
-			index = math.random(1, #choices)
-			v = choices[index]
-			-- If we can't move here
-			if self.room:tile_occupied(self:preview_velocity(v)) then
+		while #laterals > 0 do
+			index = math.random(1, #laterals)
+			choice = laterals[index]
+
+			-- If this tile choice is occupied
+			if self.room:tile_occupied(choice) then
 				-- Remove this choice from the table
-				table.remove(choices, index)
-				--print('dodge: removed choice')
+				table.remove(laterals, index)
 			else
-				self.velocity = v
-				--print('dodge: accepted velocity', v.x, v.y)
-				return
+				destination = choice
+				break
 			end
 		end
+
+		-- Move to forward/back from the sprite we're trying to dodge
+		if searchDir == 1 then
+			y = y - 1
+		elseif searchDir == 2 then
+			x = x + 1
+		elseif searchDir == 3 then
+			y = y + 1
+		elseif searchDir == 4 then
+			x = x + 1
+		end
+
+		-- If the center tile is occupied
+		if self.room:tile_occupied({x = x, y = y}) then
+			if switchedDir == false then
+				-- We can't get to the lateral tiles, start searching in the
+				-- other direction
+				for i = 1,2 do -- Increment direction by two, wrapping around
+					searchDir = searchDir + 1
+					if searchDir > 4 then
+						searchDir = 1
+					end
+				end
+				x = self.position.x
+				y = self.position.y
+				switchedDir = true
+			else
+				-- We already tried the other direction; abort
+				break
+			end
+		end
+	end
+
+	if destination ~= nil then
+		-- Move in direction of destination
+		self:step_toward(destination)
 	end
 end
 
@@ -143,3 +168,28 @@ function Character:step(dir)
 		self.velocity.x = -1
 	end
 end
+
+function Character:step_toward(dest)
+	if self.position.x == dest.x and self.position.y == dest.y then
+		return
+	end
+
+	xDist = math.abs(dest.x - self.position.x)
+	yDist = math.abs(dest.y - self.position.y)
+
+	-- Move on the axis farthest away first
+	if xDist > yDist then
+		if self.position.x < dest.x then
+			self:step(2)
+		else
+			self:step(4)
+		end
+	else
+		if self.position.y < dest.y then
+			self:step(3)
+		else
+			self:step(1)
+		end
+	end
+end
+
