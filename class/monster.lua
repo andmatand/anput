@@ -14,7 +14,7 @@ function Monster:die()
 	self.dead = true
 end
 
-function Monster:hit()
+function Monster:hit(patient)
 	-- Damage other characters depending on monsterType
 	if instanceOf(Character, patient) then
 		if self.monsterType == 1 then -- Ghost

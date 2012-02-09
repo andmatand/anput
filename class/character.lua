@@ -180,7 +180,7 @@ function Character:follow_path()
 end
 
 function Character:hit(patient)
-	return Sprite.hit(self)
+	return Sprite.hit(self, patient)
 end
 
 function Character:receive_damage(amount)
