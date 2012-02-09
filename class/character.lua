@@ -8,18 +8,25 @@ function Character:init()
 
 	self.health = 100
 	self.flashTimer = 0
-	self.aiType = 1 -- DEBUG
 	self.path = nil
+
+	self.team = 3
+
+	self.ai = {}
+	self.ai.dodge = 0
+	self.ai.attack = 0
+	self.ai.move = 0
+	self.ai.speed = 0
 end
 
-function Character:ai()
+function Character:do_ai()
 	if self.path ~= nil then
 		if self:follow_path() then
 			return
 		end
 	end
 
-	if self.aiType == 1 then
+	if self.ai.dodge > 0 and math.random(self.ai.dodge, 10) == 10 then
 		-- Dodge arrows
 		for i,s in pairs(self.room.sprites) do
 			if instanceOf(Arrow, s) then
@@ -28,6 +35,52 @@ function Character:ai()
 				end
 			end
 		end
+	end
+
+	if self.ai.attack > 0 and math.random(self.ai.attack, 10) == 10 then
+		closestDist = 100
+		closestSprite = nil
+		-- Find closest character on other team
+		for i,s in pairs(self.room.sprites) do
+			-- If this is a character on the other team
+			if instanceOf(Character, s) and s.team ~= self.team then
+				dist = manhattan_distance(s.position, self.position)
+
+				-- If it's closer than the current closest
+				if dist < closestDist then
+					closestDist = dist
+					closestSprite = s
+				end
+			end
+		end
+
+		if closestSprite ~= nil then
+			self:attack(closestSprite)
+		end
+	end
+end
+
+function Character:attack(sprite)
+	-- If there is a line of sight to the sprite
+	if self:line_of_sight(sprite) then
+		-- Shoot it
+		self:shoot(self:direction_to(sprite))
+	end
+end
+
+function Character:direction_to(sprite)
+	if sprite.position.y < self.position.y then
+		-- North
+		return 1
+	elseif sprite.position.x > self.position.x then
+		-- East
+		return 2
+	elseif sprite.position.y > self.position.y then
+		-- South
+		return 3
+	elseif sprite.position.x < self.position.x then
+		-- South
+		return 4
 	end
 end
 
@@ -136,7 +189,7 @@ function Character:draw()
 
 	if self.hurt then
 		-- Flash if hurt
-		self.flashTimer = 3
+		self.flashTimer = 5
 		self.hurt = false
 	end
 
@@ -155,6 +208,10 @@ function Character:find_path(dest)
 end
 
 function Character:follow_path()
+	if math.random(self.ai.speed, 10) ~= 10 then
+		return
+	end
+
 	-- DEBUG
 	print('position:', self.position.x, self.position.y)
 	print('path:')

@@ -7,7 +7,17 @@ function Monster:init(pos, monsterType)
 
 	self.position = pos
 	self.monsterType = monsterType
+
 	self.image = monsterImg[monsterType]
+	self.team = 2 -- Enemy team
+
+	-- Set monster AI levels
+	if self.monsterType == 1 then
+		self.ai.dodge = 10
+		self.ai.attack = 5
+		self.ai.move = 5
+		self.ai.speed = 5
+	end
 end
 
 function Monster:die()

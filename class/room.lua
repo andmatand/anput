@@ -32,7 +32,7 @@ end
 function Room:character_input()
 	for i,s in pairs(self.sprites) do
 		if instanceOf(Character, s) and not instanceOf(Player, s) then
-			s:ai()
+			s:do_ai()
 		end
 	end
 end

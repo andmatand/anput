@@ -6,6 +6,7 @@ function Player:init()
 	Character.init(self)
 
 	self.image = playerImg
+	self.team = 1 -- Good guys
 end
 
 function Player:die()
