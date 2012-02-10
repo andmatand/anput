@@ -46,12 +46,12 @@ function Room:draw()
 		b:draw()
 	end
 
-	for _,s in pairs(self.sprites) do
-		s:draw()
-	end
-
 	for _,i in pairs(self.items) do
 		i:draw()
+	end
+
+	for _,s in pairs(self.sprites) do
+		s:draw()
 	end
 end
 

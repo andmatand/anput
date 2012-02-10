@@ -16,10 +16,10 @@ function Monster:init(pos, monsterType)
 		self.arrows.ammo = 50
 		self.currentWeapon = self.arrows
 
-		self.ai.dodge = 9
-		self.ai.attack = 4
+		self.ai.dodge = 10
+		self.ai.attack = 1
 		self.ai.move = 5
-		self.ai.speed = 5
+		self.ai.delay = 5
 	end
 end
 

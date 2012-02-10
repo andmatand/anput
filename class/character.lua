@@ -17,6 +17,8 @@ function Character:init()
 	self.ai.attack = 0
 	self.ai.move = 0
 	self.ai.speed = 0
+	self.ai.delay = 5
+	self.aiTimer = 0
 
 	self.magic = {ammo = 0, new = nil}
 	self.arrows = {ammo = 0,
@@ -25,6 +27,13 @@ function Character:init()
 end
 
 function Character:do_ai()
+	self.aiTimer = self.aiTimer + 1
+	if self.aiTimer >= self.ai.delay then
+		self.aiTimer = 0
+	else
+		return
+	end
+
 	if self.path ~= nil then
 		if self:follow_path() then
 			return
@@ -213,9 +222,9 @@ function Character:find_path(dest)
 end
 
 function Character:follow_path()
-	if math.random(self.ai.speed, 10) ~= 10 then
-		return
-	end
+	--if math.random(self.ai.speed, 10) ~= 10 then
+	--	return
+	--end
 
 	-- DEBUG
 	print('position:', self.position.x, self.position.y)

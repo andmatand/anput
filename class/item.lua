@@ -26,10 +26,8 @@ function Item:use_on(patient)
 	if self.used then
 		return false
 	end
-	print('bunny')
 
 	if self.itemType == 1 then
-		print('item 1')
 		-- Arrows
 		patient.arrows.ammo = patient.arrows.ammo + 10
 		self.used = true
