@@ -19,6 +19,6 @@ end
 
 function Turret:shoot()
 	-- Create a new arrow in the right direction
-	self.room:add_sprite(Arrow(self.position, self.dir))
+	self.room:add_sprite(Arrow(self, self.dir))
 	print('turret: pew!')
 end

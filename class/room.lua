@@ -118,6 +118,8 @@ function Room:line_of_sight(a, b)
 		else
 			xDir = -1
 		end
+	else
+		return false
 	end
 
 	-- Find any occupied tiles between a and b

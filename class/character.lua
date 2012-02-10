@@ -17,6 +17,11 @@ function Character:init()
 	self.ai.attack = 0
 	self.ai.move = 0
 	self.ai.speed = 0
+
+	self.magic = {ammo = 0, new = nil}
+	self.arrows = {ammo = 0,
+	               new = function(owner, dir) return Arrow(owner, dir) end}
+	self.currentWeapon = self.arrows
 end
 
 function Character:do_ai()
@@ -250,6 +255,10 @@ function Character:receive_damage(amount)
 end
 
 function Character:shoot(dir)
+	if self.currentWeapon.ammo <= 0 or self.dead then
+		return
+	end
+
 	-- Don't allow shooting directly into a wall
 	for i,b in pairs(self.room.bricks) do
 		if tiles_overlap(self.position, b) then
@@ -257,8 +266,10 @@ function Character:shoot(dir)
 		end
 	end
 
-	-- Spawn a new arrow at the character's coordinates
-	self.room:add_sprite(Arrow(self.position, dir))
+	-- Spawn a new instance of the current weapon at the character's
+	-- coordinates
+	self.room:add_sprite(self.currentWeapon.new(self, dir))
+	self.currentWeapon.ammo = self.currentWeapon.ammo- 1
 	return true
 end
 

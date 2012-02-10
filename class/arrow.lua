@@ -2,12 +2,13 @@ require 'class/sprite.lua'
 
 Arrow = class('Arrow', Sprite)
 
-function Arrow:init(coordinates, dir)
+function Arrow:init(owner, dir)
 	Sprite.init(self)
 
-	self.position = coordinates
-	self.oldPosition = coordinates
+	self.owner = owner -- Who shot this arrow
 	self.dir = dir -- Direction the arrow is facing
+
+	--self.position = {x = self.owner.position.x, y = self.owner.position.y}
 
 	if self.dir == 1 then
 		self.velocity.y = -1
@@ -65,4 +66,14 @@ function Arrow:hit(patient)
 	end
 
 	return true
+end
+
+function Arrow:physics()
+	if self.new and self.owner ~= nil then
+		-- Set position to current position of owner
+		self.position = {x = self.owner.position.x, y = self.owner.position.y}
+	end
+
+	-- Do normal sprite physics
+	Sprite.physics(self)
 end

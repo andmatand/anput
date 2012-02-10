@@ -9,10 +9,13 @@ function Monster:init(pos, monsterType)
 	self.monsterType = monsterType
 
 	self.image = monsterImg[monsterType]
-	self.team = 2 -- Enemy team
+	self.team = 2 -- Bad guys
 
-	-- Set monster AI levels
+	-- Set monster properties
 	if self.monsterType == 1 then
+		self.arrows.ammo = 50
+		self.currentWeapon = self.arrows
+
 		self.ai.dodge = 10
 		self.ai.attack = 5
 		self.ai.move = 5

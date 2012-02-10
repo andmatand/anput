@@ -7,6 +7,9 @@ function Player:init()
 
 	self.image = playerImg
 	self.team = 1 -- Good guys
+
+	self.arrows.ammo = 100
+	self.magic.ammo = 10
 end
 
 function Player:die()

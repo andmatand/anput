@@ -44,6 +44,19 @@ function Game:draw()
 	else
 		self.currentRoom:draw()
 	end
+
+	self:draw_text()
+end
+
+function Game:draw_text()
+	--if self.player == nil then
+	--	return
+	--end
+
+	love.graphics.setColor(255, 255, 255)
+	self:print('HP: ' .. self.player.health, ROOM_W, 0)
+	self:print('ARROWS: ' .. self.player.arrows.ammo, ROOM_W, 1)
+	self:print('MAGIC: ' .. self.player.magic.ammo, ROOM_W, 2)
 end
 
 function Game:generate()
@@ -114,6 +127,10 @@ function Game:keypressed(key)
 	elseif key == 'a' then
 		self.player:step(4)
 	end
+end
+
+function Game:print(text, x, y)
+	love.graphics.print(text, x * TILE_W, y * TILE_H, 0, SCALE_X, SCALE_Y)
 end
 
 function Game:update()

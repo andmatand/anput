@@ -51,7 +51,7 @@ function RoomFiller:fill()
 	end
 
 	-- Add monsters
-	numMonsters = math.random(0, #self.room.freeTiles * .06)
+	numMonsters = math.random(0, #self.room.freeTiles * .04)
 	for i = 1, numMonsters do
 		pos = self.room.freeTiles[math.random(1, #self.room.freeTiles)]
 

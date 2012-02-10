@@ -9,6 +9,12 @@ function love.load()
 		print('failed to create a window')
 	end
 
+	fontImg = love.graphics.newImage('res/font/screen13.png')
+	fontImg:setFilter('nearest', 'nearest')
+	font = love.graphics.newImageFont(fontImg,
+		'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
+	love.graphics.setFont(font)
+
 	playerImg = love.graphics.newImage('res/img/player.png')
 	playerImg:setFilter('nearest', 'nearest')
 
