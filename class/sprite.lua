@@ -100,6 +100,16 @@ function Sprite:physics()
 		end
 	end
 
+	-- If this is a character
+	if instanceOf(Character, self) then
+		-- Check for overlap with items
+		for _,i in pairs(self.room.items) do
+			if tiles_overlap(test, i.position) then
+				i:use_on(self)
+			end
+		end
+	end
+
 	-- If there were no hits, make the move for real
 	self.position = test
 	self.moved = true

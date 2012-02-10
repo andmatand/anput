@@ -11,22 +11,26 @@ function Room:init(args)
 	self.generated = false
 	self.sprites = {}
 	self.turrets = {}
+	self.items = {}
 end
 
-function Room:add_sprite(sprite)
-	-- Add this sprite to the room's sprite table
-	table.insert(self.sprites, sprite)
+function Room:add_object(obj)
+	if instanceOf(Sprite, obj) then
+		-- Add this sprite to the room's sprite table
+		table.insert(self.sprites, obj)
 
-	-- Add a reference to this room to the sprite
-	sprite.room = self
-end
+		-- Add a reference to this room to the sprite
+		obj.room = self
+	elseif instanceOf(Turret, obj) then
+		-- Add this turret to the room's turret table
+		table.insert(self.turrets, obj)
 
-function Room:add_turret(turret)
-	-- Add this sprite to the room's sprite table
-	table.insert(self.turrets, turret)
-
-	-- Add a reference to this room to the sprite
-	turret.room = self
+		-- Add a reference to this room to the turret
+		obj.room = self
+	elseif instanceOf(Item, obj) then
+		-- Add this item to the room's item table
+		table.insert(self.items, obj)
+	end
 end
 
 function Room:character_input()
@@ -38,14 +42,16 @@ function Room:character_input()
 end
 
 function Room:draw()
-	for i,b in pairs(self.bricks) do
+	for _,b in pairs(self.bricks) do
 		b:draw()
 	end
 
-	if #self.sprites > 0 then
-		for i,s in pairs(self.sprites) do
-			s:draw()
-		end
+	for _,s in pairs(self.sprites) do
+		s:draw()
+	end
+
+	for _,i in pairs(self.items) do
+		i:draw()
 	end
 end
 
@@ -191,4 +197,13 @@ function Room:update()
 		end
 	end
 	self.sprites = temp
+
+	-- Remove all used items
+	temp = {}
+	for _,i in pairs(self.items) do
+		if i.used ~= true then
+			table.insert(temp, i)
+		end
+	end
+	self.items = temp
 end

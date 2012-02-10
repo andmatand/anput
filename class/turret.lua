@@ -1,7 +1,7 @@
 Turret = class('Turret')
 
 function Turret:init(position, dir, interval)
-	self.position = position
+	self.position = {x = position.x, y = position.y}
 	self.dir = dir -- Table of directions
 	self.interval = interval
 
@@ -19,6 +19,6 @@ end
 
 function Turret:shoot()
 	-- Create a new arrow in the right direction
-	self.room:add_sprite(Arrow(self, self.dir))
+	self.room:add_object(Arrow(self, self.dir))
 	print('turret: pew!')
 end

@@ -1,3 +1,4 @@
+require 'class/item.lua'
 require 'class/monster.lua'
 require 'class/turret.lua'
 
@@ -8,66 +9,80 @@ function RoomFiller:init(room)
 	self.room = room
 end
 
+function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
+	args = {}
+	for i = 1, num do
+		position = freeTiles[math.random(1, #freeTiles)]
+
+		ok = true
+		if fTest == nil then
+			-- Default test function: Don't place in occupied tile
+			if self.room:tile_occupied(position) then
+				ok = false
+			end
+		else
+			testResult = fTest(self, position)
+			ok = testResult.ok
+			for k,v in pairs(testResult) do
+				if k ~= 'ok' then
+					args[k] = v
+				end
+			end
+		end
+
+		if ok then
+			args.position = position
+			self.room:add_object(fNew(args))
+		end
+	end
+end
+
 function RoomFiller:fill()
 	-- Add turrets
 	numTurrets = math.random(0, #self.room.bricks * .03)
-	for i = 1, numTurrets do
-		pos = self.room.bricks[math.random(1, #self.room.bricks)]
+	fTest =
+		function(roomFiller, pos)
+			-- Find a direction in which we can fire
+			dirs = {1, 2, 3, 4}
+			while #dirs > 0 do
+				index = math.random(1, #dirs)
+				dir = dirs[index]
+				--print('testing turret direction ' .. dir)
+				pos2 = {x = pos.x, y = pos.y}
 
-		-- Find a direction in which we can fire
-		ok = false
-		dirs = {1, 2, 3, 4}
-		while #dirs > 0 do
-			index = math.random(1, #dirs)
-			dir = dirs[index]
-			print('testing turret direction ' .. dir)
-			pos2 = {x = pos.x, y = pos.y}
+				-- Find the coordinates of three spaces ahead
+				if dir == 1 then
+					pos2.y = pos2.y - 2 -- North
+				elseif dir == 2 then
+					pos2.x = pos2.x + 2 -- East
+				elseif dir == 3 then
+					pos2.y = pos2.y + 2 -- South
+				elseif dir == 4 then
+					pos2.x = pos2.x - 2 -- West
+				end
 
-			-- Find the coordinates of three spaces ahead
-			if dir == 1 then
-				pos2.y = pos2.y - 2 -- North
-			elseif dir == 2 then
-				pos2.x = pos2.x + 2 -- East
-			elseif dir == 3 then
-				pos2.y = pos2.y + 2 -- South
-			elseif dir == 4 then
-				pos2.x = pos2.x - 2 -- West
+				-- Check if there is a line of sight between these tiles
+				if roomFiller.room:line_of_sight(pos, pos2) then
+					return {dir = dir, ok = true}
+				else
+					table.remove(dirs, index)
+				end
 			end
-
-			-- Check if there is a line of sight between these tiles
-			if self.room:line_of_sight(pos, pos2) then
-				ok = true
-				break
-			else
-				table.remove(dirs, index)
-			end
+			return {ok = false}
 		end
-
-		if ok then
-			self.room:add_turret(Turret({x = pos.x, y = pos.y},
-			                            dir, math.random(10, 70)))
-			print('added turret')
+	fNew =
+		function(pos)
+			return Turret(args.position, args.dir, math.random(10, 70))
 		end
-	end
+	self:add_objects(numTurrets, fTest, fNew, self.room.bricks)
 
 	-- Add monsters
 	numMonsters = math.random(0, #self.room.freeTiles * .04)
-	for i = 1, numMonsters do
-		pos = self.room.freeTiles[math.random(1, #self.room.freeTiles)]
+	fNew = function(args) return Monster(args.position, 1) end
+	self:add_objects(numMonsters, nil, fNew, self.room.freeTiles)
 
-		-- Don't place monster on top of another sprite
-		ok = true
-		--for i,s in pairs(self.room.sprites) do
-		--	if tiles_overlap(pos, s.position) then
-		--		ok = false
-		--	end
-		--end
-		if self.room:tile_occupied(pos) then
-			ok = false
-		end
-
-		if ok then
-			self.room:add_sprite(Monster(pos, 1))
-		end
-	end
+	-- Add items
+	numItems = math.random(0, #self.room.freeTiles * .02)
+	fNew = function(pos) return Item(args.position, math.random(1, 2)) end
+	self:add_objects(numItems, nil, fNew, self.room.freeTiles)
 end

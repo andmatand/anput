@@ -24,7 +24,7 @@ function Game:switch_to_room(roomIndex)
 	self.currentRoom = self.rooms[roomIndex]
 
 	-- Add player to current room
-	self.currentRoom:add_sprite(self.player)
+	self.currentRoom:add_object(self.player)
 
 	-- Move player to corresponding doorway
 	if prevRoom ~= nil then
@@ -71,15 +71,6 @@ function Game:generate()
 	-- Switch to the first room and put the player at the midPoint
 	self:switch_to_room(1)
 	self.player:move_to(self.currentRoom.midPoint)
-
-	-- Generate the first room
-	--self.currentRoom = self.rooms[1]
-	--self.currentRoom:generate()
-
-	-- Put a player in the first room
-	--self.player = Player()
-	--self.player:move_to(self.currentRoom.midPoint)
-	--self.currentRoom:add_sprite(self.player)
 end
 
 function Game:input()

@@ -268,7 +268,7 @@ function Character:shoot(dir)
 
 	-- Spawn a new instance of the current weapon at the character's
 	-- coordinates
-	self.room:add_sprite(self.currentWeapon.new(self, dir))
+	self.room:add_object(self.currentWeapon.new(self, dir))
 	self.currentWeapon.ammo = self.currentWeapon.ammo- 1
 	return true
 end
