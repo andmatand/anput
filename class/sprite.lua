@@ -7,6 +7,11 @@ function Sprite:init()
 	self.velocity = {x = 0, y = 0}
 	self.friction = 1
 	self.moved = false
+	self.didPhysics = false
+
+	-- Alias x and y for position
+	--self.x = function() return self.position.x end
+	--self.y = function() return self.position.y end
 end
 
 -- Preview what position the sprite would be at if a velocity was added
@@ -34,6 +39,12 @@ function Sprite:move_to(coordinates)
 end
 
 function Sprite:physics()
+	if self.didPhysics then
+		return
+	else
+		self.didPhysics = true
+	end
+
 	self.oldPosition = {x = self.position.x, y = self.position.y}
 	self.moved = false
 
@@ -92,6 +103,12 @@ function Sprite:physics()
 	-- Check for collision with other sprites
 	for i,s in pairs(self.room.sprites) do
 		if s ~= self and tiles_overlap(test, s.position) then
+			-- If the patient has not done its physics yet
+			if s.didPhysics == false then
+				print('hit sprite that has not done physics')
+				s:physics()
+			end
+
 			if self:hit(s) then
 				-- Registered as a hit; done with physics
 				return
@@ -117,6 +134,7 @@ end
 
 -- Default post-physics method
 function Sprite:post_physics()
+	self.didPhysics = false
 end
 
 -- Default hit method

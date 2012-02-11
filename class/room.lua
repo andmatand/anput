@@ -219,9 +219,9 @@ function Room:update()
 	for i,s in pairs(self.sprites) do
 		s:physics()
 	end
-	--for i,s in pairs(self.sprites) do
-	--	s:post_physics()
-	--end
+	for i,s in pairs(self.sprites) do
+		s:post_physics()
+	end
 
 	-- Remove all dead sprites
 	temp = {}

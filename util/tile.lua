@@ -10,7 +10,6 @@ function tile_occupied(tile, occupiedTiles)
 			end
 		else
 			if tile.x == t.position.x and tile.y == t.position.y then
-				print('bunny')
 				return true
 			end
 		end

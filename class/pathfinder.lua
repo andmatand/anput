@@ -84,10 +84,17 @@ function find_neighbors(node, otherNodes, options)
 end
 
 function PathFinder:legal_position(x, y)
+	if x == self.dest.x and y == self.dest.y then
+		return true
+	end
+
 	-- If this is an illegal tile
 	if self.hotLava ~= nil then
 		for j,b in pairs(self.hotLava) do
 			if x == b.x and y == b.y then
+				return false
+			elseif b.position ~= nil and
+			       x == b.position.x and y == b.position.y then
 				return false
 			end
 		end

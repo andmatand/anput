@@ -30,3 +30,11 @@ function Player:hit(patient)
 
 	return Character.hit(self, patient)
 end
+
+function Player:receive_damage(amount)
+	Character.receive_damage(self, amount)
+
+	if not self.dead then
+		playerCrySound:play()
+	end
+end

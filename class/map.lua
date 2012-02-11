@@ -212,7 +212,7 @@ function Map:generate_rooms()
 					linkedExit.roomIndex = #rooms + 1
 					newExit.roomIndex = n.room.index
 				end
-				print('new exit:', newExit.x, newExit.y, newExit.roomIndex)
+				--print('new exit:', newExit.x, newExit.y, newExit.roomIndex)
 
 				table.insert(exits, newExit)
 			end

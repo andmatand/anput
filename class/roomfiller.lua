@@ -48,8 +48,6 @@ function RoomFiller:fill()
 			while #dirs > 0 do
 				index = math.random(1, #dirs)
 				dir = dirs[index]
-				print('testing direction ' .. dir)
-				--print('testing turret direction ' .. dir)
 				pos2 = {x = pos.x, y = pos.y}
 
 				-- Find the coordinates of three spaces ahead
@@ -65,7 +63,6 @@ function RoomFiller:fill()
 
 				-- Check if there is a line of sight between these tiles
 				if roomFiller.room:line_of_sight(pos, pos2) then
-					print('direction okay')
 					return {dir = dir, ok = true}
 				else
 					table.remove(dirs, index)
@@ -81,7 +78,7 @@ function RoomFiller:fill()
 
 	-- Add monsters
 	numMonsters = math.random(0, #self.room.freeTiles * .04)
-	fNew = function(args) return Monster(args.position, 1) end
+	fNew = function(args) return Monster(args.position, math.random(1, 2)) end
 	self:add_objects(numMonsters, nil, fNew, self.room.freeTiles)
 
 	-- Add items

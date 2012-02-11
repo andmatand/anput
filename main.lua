@@ -1,5 +1,6 @@
 require 'util/oo.lua'
 require 'class/game.lua'
+require 'class/sound.lua'
 
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
@@ -19,7 +20,9 @@ function love.load()
 	playerImg:setFilter('nearest', 'nearest')
 
 	monsterImg = {}
-	monsterImg[1] = love.graphics.newImage('res/img/scarab1.png')
+	monsterImg[1] = love.graphics.newImage('res/img/scarab.png')
+	monsterImg[2] = love.graphics.newImage('res/img/bird.png')
+	monsterImg[3] = love.graphics.newImage('res/img/dog.png')
 	for i,m in pairs(monsterImg) do
 		m:setFilter('nearest', 'nearest')
 	end
@@ -29,6 +32,12 @@ function love.load()
 
 	potionImg = love.graphics.newImage('res/img/potion.png')
 	potionImg:setFilter('nearest', 'nearest')
+
+	playerCrySound = Sound('res/sfx/player-cry.wav')
+	playerGetArrowsSound = Sound('res/sfx/player-get-arrows.wav')
+	playerGetHPSound = Sound('res/sfx/player-get-hp.wav')
+	monsterCrySound = Sound('res/sfx/monster-cry.wav')
+	monsterDieSound = Sound('res/sfx/monster-die.wav')
 
 	math.randomseed(os.time())
 

@@ -42,6 +42,7 @@ function Item:use_on(patient)
 		-- Arrows
 		patient.arrows.ammo = patient.arrows.ammo + 10
 		self.used = true
+		playerGetArrowsSound:play()
 	elseif self.itemType == 2 then
 		-- Health potion
 		if patient.health >= 100 then
@@ -49,6 +50,7 @@ function Item:use_on(patient)
 		else
 			patient.health = patient.health + 10
 			self.used = true
+			playerGetHPSound:play()
 		end
 	end
 end

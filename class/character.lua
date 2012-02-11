@@ -15,15 +15,20 @@ function Character:init()
 	self.ai = {}
 	self.ai.dodge = 0
 	self.ai.attack = 0
-	self.ai.move = 0
+	self.ai.chase = 0
 	self.ai.speed = 0
 	self.ai.delay = 5
+	self.ai.followPath = 0
 	self.aiTimer = 0
 
 	self.magic = {ammo = 0, new = nil}
 	self.arrows = {ammo = 0,
 	               new = function(owner, dir) return Arrow(owner, dir) end}
 	self.currentWeapon = self.arrows
+end
+
+function Character:die()
+	self.dead = true
 end
 
 function Character:do_ai()
@@ -40,6 +45,22 @@ function Character:do_ai()
 		end
 	end
 
+	closestDist = 100
+	closestSprite = nil
+	-- Find closest character on other team
+	for _,s in pairs(self.room.sprites) do
+		-- If this is a character on the other team
+		if instanceOf(Character, s) and s.team ~= self.team then
+			dist = manhattan_distance(s.position, self.position)
+
+			-- If it's closer than the current closest
+			if dist < closestDist then
+				closestDist = dist
+				closestSprite = s
+			end
+		end
+	end
+
 	if self.ai.dodge > 0 and math.random(self.ai.dodge, 10) == 10 then
 		-- Dodge arrows
 		for i,s in pairs(self.room.sprites) do
@@ -49,25 +70,13 @@ function Character:do_ai()
 				end
 			end
 		end
+	elseif self.ai.chase > 0 and math.random(self.ai.chase, 10) == 10 then
+		if closestSprite ~= nil then
+			self:chase(closestSprite)
+		end
 	end
 
 	if self.ai.attack > 0 and math.random(self.ai.attack, 10) == 10 then
-		closestDist = 100
-		closestSprite = nil
-		-- Find closest character on other team
-		for _,s in pairs(self.room.sprites) do
-			-- If this is a character on the other team
-			if instanceOf(Character, s) and s.team ~= self.team then
-				dist = manhattan_distance(s.position, self.position)
-
-				-- If it's closer than the current closest
-				if dist < closestDist then
-					closestDist = dist
-					closestSprite = s
-				end
-			end
-		end
-
 		if closestSprite ~= nil then
 			self:attack(closestSprite)
 		end
@@ -80,6 +89,14 @@ function Character:attack(sprite)
 		-- Shoot it
 		self:shoot(self:direction_to(sprite))
 	end
+end
+
+function Character:chase(sprite)
+		-- Set path to destination
+		self:find_path(sprite.position)
+
+		-- Start following the path
+		self:follow_path()
 end
 
 function Character:direction_to(sprite)
@@ -222,19 +239,19 @@ function Character:find_path(dest)
 end
 
 function Character:follow_path()
-	--if math.random(self.ai.speed, 10) ~= 10 then
-	--	return
-	--end
-
-	-- DEBUG
-	print('position:', self.position.x, self.position.y)
-	print('path:')
-	for i,p in ipairs(self.path) do
-		print('  ' .. i, p.x, p.y)
+	if math.random(self.ai.followPath, 10) ~= 10 then
+		return
 	end
 
+	-- DEBUG
+	--print('position:', self.position.x, self.position.y)
+	--print('path:')
+	--for i,p in ipairs(self.path) do
+	--	print('  ' .. i, p.x, p.y)
+	--end
+
 	if tiles_touching(self.position, self.path[1]) then
-		print('stepping')
+		--print('stepping')
 		self:step_toward(self.path[1])
 
 		-- Pop the step off the path
@@ -259,7 +276,7 @@ function Character:receive_damage(amount)
 	self.hurt = true
 
 	if self.health <= 0 then
-		 self:die()
+		self:die()
 	end
 end
 
