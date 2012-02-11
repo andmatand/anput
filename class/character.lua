@@ -267,7 +267,7 @@ function Character:draw()
 		self.animateTimer = 0
 
 		if #self.images > 1 then
-			if self.frame == 1 then
+			if self.frame == 1 and math.random(0, 10) == 0 then
 				self.frame = 2
 			else
 				self.frame = 1

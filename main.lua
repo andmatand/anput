@@ -16,7 +16,7 @@ function love.load()
 		'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
 	love.graphics.setFont(font)
 
-	playerImg = {love.graphics.newImage('res/img/player1.png')}
+	playerImg = {love.graphics.newImage('res/img/player_bow.png')}
 	for i,f in pairs(playerImg) do
 		f:setFilter('nearest', 'nearest')
 	end
