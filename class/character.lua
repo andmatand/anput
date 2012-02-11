@@ -14,11 +14,14 @@ function Character:init()
 
 	self.ai = {}
 	self.ai.dodge = 0
-	self.ai.attack = 0
 	self.ai.chase = 0
-	self.ai.speed = 0
+	self.ai.flee = 0
+
+	self.ai.attack = 0
+
 	self.ai.delay = 5
 	self.ai.followPath = 0
+
 	self.aiTimer = 0
 
 	self.magic = {ammo = 0, new = nil}
@@ -46,7 +49,7 @@ function Character:do_ai()
 	end
 
 	closestDist = 100
-	closestSprite = nil
+	closestEnemy = nil
 	-- Find closest character on other team
 	for _,s in pairs(self.room.sprites) do
 		-- If this is a character on the other team
@@ -56,11 +59,12 @@ function Character:do_ai()
 			-- If it's closer than the current closest
 			if dist < closestDist then
 				closestDist = dist
-				closestSprite = s
+				closestEnemy = s
 			end
 		end
 	end
 
+	-- Movement
 	if self.ai.dodge > 0 and math.random(self.ai.dodge, 10) == 10 then
 		-- Dodge arrows
 		for i,s in pairs(self.room.sprites) do
@@ -70,15 +74,22 @@ function Character:do_ai()
 				end
 			end
 		end
-	elseif self.ai.chase > 0 and math.random(self.ai.chase, 10) == 10 then
-		if closestSprite ~= nil then
-			self:chase(closestSprite)
+	end
+	if self.ai.chase > 0 and math.random(self.ai.chase, 10) == 10 then
+		if closestEnemy ~= nil then
+			self:chase(closestEnemy)
+		end
+	end
+	if self.ai.flee > 0 and math.random(self.ai.flee, 10) == 10 then
+		if closestEnemy ~= nil then
+			self:flee_from(closestEnemy)
 		end
 	end
 
+	-- Shooting
 	if self.ai.attack > 0 and math.random(self.ai.attack, 10) == 10 then
-		if closestSprite ~= nil then
-			self:attack(closestSprite)
+		if closestEnemy ~= nil then
+			self:attack(closestEnemy)
 		end
 	end
 end
@@ -92,11 +103,35 @@ function Character:attack(sprite)
 end
 
 function Character:chase(sprite)
-		-- Set path to destination
-		self:find_path(sprite.position)
+	-- Set path to destination
+	self:find_path(sprite.position)
 
-		-- Start following the path
-		self:follow_path()
+	-- Start following the path
+	self:follow_path()
+end
+
+function Character:flee_from(sprite)
+	if math.random(0, 1) == 0 then
+		if sprite.position.x < self.position.x then
+			self:step(2) -- East
+		elseif sprite.position.x > self.position.x then
+			self:step(4) -- West
+		else
+			if math.random(0, 1) == 0 then
+				self:step(2) else self:step(4)
+			end
+		end
+	else
+		if self.position.y > sprite.position.y then
+			self:step(3) -- South
+		elseif self.position.y < sprite.position.y then
+			self:step(1) -- North
+		else
+			if math.random(0, 1) == 0 then
+				self:step(3) else self:step(1)
+			end
+		end
+	end
 end
 
 function Character:direction_to(sprite)
@@ -300,6 +335,7 @@ function Character:shoot(dir)
 end
 
 function Character:step(dir)
+	self.stepped = true
 	if dir == 1 then
 		self.velocity.x = 0
 		self.velocity.y = -1

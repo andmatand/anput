@@ -19,9 +19,9 @@ function Monster:init(pos, monsterType)
 		self.arrows.ammo = 50
 		self.currentWeapon = self.arrows
 
-		self.ai.dodge = 10
+		self.ai.dodge = 3
 		self.ai.attack = 1
-		self.ai.move = 5
+		self.ai.flee = 9
 		self.ai.followPath = 8
 		self.ai.delay = 5
 	elseif self.monsterType == 2 then
