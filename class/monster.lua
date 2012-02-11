@@ -8,12 +8,11 @@ function Monster:init(pos, monsterType)
 	self.position = pos
 	self.monsterType = monsterType
 
-	self.image = monsterImg[monsterType]
 	self.team = 2 -- Bad guys
 
 	-- Set monster properties
 	if self.monsterType == 1 then
-		-- Scarab
+		self.images = monsterImg.scarab
 		self.health = 10
 
 		self.arrows.ammo = 50
@@ -25,7 +24,7 @@ function Monster:init(pos, monsterType)
 		self.ai.followPath = 8
 		self.ai.delay = 5
 	elseif self.monsterType == 2 then
-		-- Bird
+		self.images = monsterImg.bird
 		self.health = 20
 
 		self.arrows.ammo = 50

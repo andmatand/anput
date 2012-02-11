@@ -16,15 +16,22 @@ function love.load()
 		'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
 	love.graphics.setFont(font)
 
-	playerImg = love.graphics.newImage('res/img/player.png')
-	playerImg:setFilter('nearest', 'nearest')
+	playerImg = {love.graphics.newImage('res/img/player1.png')}
+	for i,f in pairs(playerImg) do
+		f:setFilter('nearest', 'nearest')
+	end
 
 	monsterImg = {}
-	monsterImg[1] = love.graphics.newImage('res/img/scarab.png')
-	monsterImg[2] = love.graphics.newImage('res/img/bird.png')
-	monsterImg[3] = love.graphics.newImage('res/img/dog.png')
-	for i,m in pairs(monsterImg) do
-		m:setFilter('nearest', 'nearest')
+	monsterImg.scarab = {love.graphics.newImage('res/img/scarab1.png'),
+	                     love.graphics.newImage('res/img/scarab2.png')}
+
+	monsterImg.bird = {love.graphics.newImage('res/img/bird1.png'),
+	                   love.graphics.newImage('res/img/bird2.png')}
+	monsterImg.dog = {love.graphics.newImage('res/img/dog.png')}
+	for _,m in pairs(monsterImg) do
+		for _,i in pairs(m) do
+			i:setFilter('nearest', 'nearest')
+		end
 	end
 
 	arrowImg = love.graphics.newImage('res/img/arrow.png')

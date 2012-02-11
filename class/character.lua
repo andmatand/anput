@@ -6,8 +6,11 @@ Character = class('Character', Sprite)
 function Character:init()
 	Sprite.init(self)
 
+	self.frame = 1
+
 	self.health = 100
 	self.flashTimer = 0
+	self.animateTimer = 0
 	self.path = nil
 
 	self.team = 3
@@ -249,7 +252,7 @@ function Character:dodge(sprite)
 end
 
 function Character:draw()
-	if self.image == nil then
+	if self.images == nil then
 		return
 	end
 
@@ -259,9 +262,22 @@ function Character:draw()
 		self.hurt = false
 	end
 
+	self.animateTimer = self.animateTimer + 1
+	if self.animateTimer == 30 then
+		self.animateTimer = 0
+
+		if #self.images > 1 then
+			if self.frame == 1 then
+				self.frame = 2
+			else
+				self.frame = 1
+			end
+		end
+	end
+
 	if self.flashTimer == 0 then
 		love.graphics.setColor(255, 255, 255)
-		love.graphics.draw(self.image,
+		love.graphics.draw(self.images[self.frame],
 						   self.position.x * TILE_W, self.position.y * TILE_H,
 						   0, SCALE_X, SCALE_Y)
 	else

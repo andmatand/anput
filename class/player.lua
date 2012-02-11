@@ -5,7 +5,7 @@ Player = class('Player', Character)
 function Player:init()
 	Character.init(self)
 
-	self.image = playerImg
+	self.images = playerImg
 	self.team = 1 -- Good guys
 
 	self.arrows.ammo = 100
