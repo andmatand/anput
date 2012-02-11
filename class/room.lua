@@ -65,7 +65,18 @@ function Room:erase()
 end
 
 function Room:find_path(src, dest)
-	pf = PathFinder(src, dest, concat_tables{self.bricks, self.sprites})
+	-- Create a table of the room's occupied nodes
+	hotLava = {}
+	for i,b in pairs(self.bricks) do
+		table.insert(hotLava, {x = b.x, y = b.y})
+	end
+	for i,s in pairs(self.sprites) do
+		if instanceOf(Character, s) then
+			table.insert(hotLava, {x = s.position.x, y = s.position.y})
+		end
+	end
+
+	pf = PathFinder(src, dest, hotLava)
 	path = pf:plot()
 
 	-- Remove first node from path

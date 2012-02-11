@@ -93,9 +93,6 @@ function PathFinder:legal_position(x, y)
 		for j,b in pairs(self.hotLava) do
 			if x == b.x and y == b.y then
 				return false
-			elseif b.position ~= nil and
-			       x == b.position.x and y == b.position.y then
-				return false
 			end
 		end
 	end
@@ -260,13 +257,12 @@ function PathFinder:AStar(src, dest)
 					              h = manhattan_distance({x = x,  y = y},
 					                                     dest)})
 				end
-
-				if x == dest.x and y == dest.y then
-					table.insert(self.closedNodes,
-					             self.openNodes[#self.openNodes])
-					reachedDest = true
-					break
-				end
+			end
+			if x == dest.x and y == dest.y then
+				table.insert(self.closedNodes,
+							 self.openNodes[#self.openNodes])
+				reachedDest = true
+				break
 			end
 		end
 	end
