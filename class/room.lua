@@ -136,7 +136,7 @@ function Room:line_of_sight(a, b)
 
 		if tiles_overlap({x = x, y = y}, b) then
 			-- Reached the destination
-			break
+			return true
 		end
 
 		if self:tile_occupied({x = x, y = y}) then
@@ -144,8 +144,6 @@ function Room:line_of_sight(a, b)
 			return false
 		end
 	end
-
-	return true
 end
 
 
@@ -157,13 +155,49 @@ function Room:remove_sprite(sprite)
 	end
 end
 
+-- Returns a table of everything within a specified tile
+function Room:tile_contents(tile)
+	contents = {}
+
+	if tile_offscreen(tile) then
+		return nil
+	end
+
+	for _,b in pairs(self.bricks) do
+		if tiles_overlap(tile, b) then
+			-- Nothing can overlap a brick, so return here
+			return {b}
+		end
+	end
+
+	for _,s in pairs(self.sprites) do
+		if tiles_overlap(tile, s.position) then
+			table.insert(contents, s)
+
+			-- Sprites cannot overlap, so break here
+			break
+		end
+	end
+
+	for _,i in pairs(self.items) do
+		if tiles_overlap(tile, i.position) then
+			table.insert(contents, i)
+
+			-- Items cannot overlap, so break here
+			break
+		end
+	end
+
+	return contents
+end
+
 function Room:tile_occupied(tile)
-	if tile_occupied(tile, {self.bricks, self.sprites}) or
-	   tile_offscreen(tile) then
+	if tile_offscreen(tile) or
+	   tile_occupied(tile, concat_tables({self.bricks, self.sprites})) then
 		return true
 	end
 
-	-- Also count exterior tiles as occupied
+	-- Tiles not inside the room count as occupied
 	occupied = true
 	for i,t in pairs(self.freeTiles) do
 		if tile.x == t.x and tile.y == t.y then

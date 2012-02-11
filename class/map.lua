@@ -158,22 +158,22 @@ function Map:generate_rooms()
 	-- Make a new room for each node
 	rooms = {}
 	for i,node in ipairs(allNodes) do
-		print('\nnode ' .. i)
+		--print('\nnode ' .. i)
 		neighbors = find_neighbors(node, allNodes, {diagonals = false})
 
 		-- Add exits to correct walls of room
 		exits = {}
 		for j,n in ipairs(neighbors) do
 			if n.occupied then
-				if n.room ~= nil then
-					print('neighbor ' .. j .. ' is a room with ' ..
-					      #n.room.exits .. ' exits')
-					for k,e in pairs(n.room.exits) do
-						print('  exit ' .. k .. ': ', e.x, e.y, e.roomIndex)
-					end
-				else
-					print('neighbor ' .. j .. ' is not a room yet')
-				end
+				--if n.room ~= nil then
+				--	print('neighbor ' .. j .. ' is a room with ' ..
+				--	      #n.room.exits .. ' exits')
+				--	for k,e in pairs(n.room.exits) do
+				--		print('  exit ' .. k .. ': ', e.x, e.y, e.roomIndex)
+				--	end
+				--else
+				--	print('neighbor ' .. j .. ' is not a room yet')
+				--end
 				linkedExit = nil
 
 				x = math.random(2, ROOM_W - 2)

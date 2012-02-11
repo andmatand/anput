@@ -19,13 +19,16 @@ function love.load()
 	playerImg:setFilter('nearest', 'nearest')
 
 	monsterImg = {}
-	monsterImg[1] = love.graphics.newImage('res/img/monster1.png')
+	monsterImg[1] = love.graphics.newImage('res/img/scarab1.png')
 	for i,m in pairs(monsterImg) do
 		m:setFilter('nearest', 'nearest')
 	end
 
 	arrowImg = love.graphics.newImage('res/img/arrow.png')
 	arrowImg:setFilter('nearest', 'nearest')
+
+	potionImg = love.graphics.newImage('res/img/potion.png')
+	potionImg:setFilter('nearest', 'nearest')
 
 	math.randomseed(os.time())
 

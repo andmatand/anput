@@ -4,6 +4,12 @@ function Item:init(position, itemType)
 	self.position = {x = position.x, y = position.y}
 	self.itemType = itemType
 
+	if itemType == 2 then
+		self.image = potionImg
+	else
+		self.image = nil
+	end
+
 	self.used = false
 end
 
@@ -11,15 +17,20 @@ function Item:draw()
 	if self.itemType == 1 then
 		-- Arrows
 		love.graphics.setColor(255, 255, 255)
-	elseif self.itemType == 2 then
-		-- Health potion
-		love.graphics.setColor(255, 85, 85)
 	end
 
-	love.graphics.rectangle('fill',
-	                        (self.position.x * TILE_W) + (TILE_W / 4),
-							(self.position.y * TILE_H) + (TILE_H / 4),
-	                        TILE_W / 2, TILE_H / 2)
+	x = (self.position.x * TILE_W)
+	y = (self.position.y * TILE_H)
+
+	if self.image ~= nil then
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.draw(self.image, x, y, 0, SCALE_X, SCALE_Y)
+	else
+		love.graphics.rectangle('fill',
+		                        x + (TILE_W / 4),
+		                        y + (TILE_H / 4),
+		                        TILE_W / 2, TILE_H / 2)
+	end
 end
 
 function Item:use_on(patient)

@@ -2,17 +2,16 @@ function manhattan_distance(a, b)
 	return math.abs(b.x - a.x) + math.abs(b.y - a.y)
 end
 
-function tile_occupied(tile, otherTileTables)
-	for i,t in pairs(otherTileTables) do
-		for j,n in pairs(t) do
-			if n.position == nil then
-				if tile.x == n.x and tile.y == n.y then
-					return true
-				end
-			else
-				if tile.x == n.position.x and tile.y == n.position.y then
-					return true
-				end
+function tile_occupied(tile, occupiedTiles)
+	for i,t in pairs(occupiedTiles) do
+		if t.position == nil then
+			if tile.x == t.x and tile.y == t.y then
+				return true
+			end
+		else
+			if tile.x == t.position.x and tile.y == t.position.y then
+				print('bunny')
+				return true
 			end
 		end
 	end

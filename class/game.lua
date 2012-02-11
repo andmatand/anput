@@ -45,6 +45,14 @@ function Game:draw()
 		self.currentRoom:draw()
 	end
 
+	-- DEBUG: show turrets
+	--for _,t in pairs(self.currentRoom.turrets) do
+	--	love.graphics.setColor(255, 0, 0)
+	--	love.graphics.circle('fill',
+	--	                     (t.position.x * TILE_W) + (TILE_W / 2),
+	--						 (t.position.y * TILE_H) + (TILE_H / 2), 8)
+	--end
+
 	self:draw_text()
 end
 

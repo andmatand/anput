@@ -55,7 +55,7 @@ function Character:do_ai()
 		closestDist = 100
 		closestSprite = nil
 		-- Find closest character on other team
-		for i,s in pairs(self.room.sprites) do
+		for _,s in pairs(self.room.sprites) do
 			-- If this is a character on the other team
 			if instanceOf(Character, s) and s.team ~= self.team then
 				dist = manhattan_distance(s.position, self.position)

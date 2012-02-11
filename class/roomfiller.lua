@@ -44,25 +44,28 @@ function RoomFiller:fill()
 		function(roomFiller, pos)
 			-- Find a direction in which we can fire
 			dirs = {1, 2, 3, 4}
+			print()
 			while #dirs > 0 do
 				index = math.random(1, #dirs)
 				dir = dirs[index]
+				print('testing direction ' .. dir)
 				--print('testing turret direction ' .. dir)
 				pos2 = {x = pos.x, y = pos.y}
 
 				-- Find the coordinates of three spaces ahead
 				if dir == 1 then
-					pos2.y = pos2.y - 2 -- North
+					pos2.y = pos2.y - 3 -- North
 				elseif dir == 2 then
-					pos2.x = pos2.x + 2 -- East
+					pos2.x = pos2.x + 3 -- East
 				elseif dir == 3 then
-					pos2.y = pos2.y + 2 -- South
+					pos2.y = pos2.y + 3 -- South
 				elseif dir == 4 then
-					pos2.x = pos2.x - 2 -- West
+					pos2.x = pos2.x - 3 -- West
 				end
 
 				-- Check if there is a line of sight between these tiles
 				if roomFiller.room:line_of_sight(pos, pos2) then
+					print('direction okay')
 					return {dir = dir, ok = true}
 				else
 					table.remove(dirs, index)
@@ -72,7 +75,7 @@ function RoomFiller:fill()
 		end
 	fNew =
 		function(pos)
-			return Turret(args.position, args.dir, math.random(10, 70))
+			return Turret(args.position, args.dir, 5 * math.random(1, 10))
 		end
 	self:add_objects(numTurrets, fTest, fNew, self.room.bricks)
 
