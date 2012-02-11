@@ -14,15 +14,19 @@ function Sprite:init()
 	--self.y = function() return self.position.y end
 end
 
--- Preview what position the sprite would be at if a velocity was added
-function Sprite:preview_velocity(velocity)
+-- Preview what position the sprite will be at when its velocity is added
+function Sprite:preview_position()
+	if self.position.x == nil or self.position.y == nil then
+		return {x = nil, y = nil}
+	end
+
 	-- Only one axis may have velocity at a time
-	if velocity.x ~= nil then
-		return {x = self.position.x + velocity.x, y = self.position.y}
-	elseif velocity.y ~= nil then
-		return {x = self.position.x, y = self.position.y + velocity.y}
-	--else
-	--	return {x = self.position.x, y = self.position.y}
+	if self.velocity.x ~= nil then
+		return {x = self.position.x + self.velocity.x, y = self.position.y}
+	elseif self.velocity.y ~= nil then
+		return {x = self.position.x, y = self.position.y + self.velocity.y}
+	else
+		return {x = self.position.x, y = self.position.y}
 	end
 end
 
@@ -102,18 +106,34 @@ function Sprite:physics()
 
 	-- Check for collision with other sprites
 	for i,s in pairs(self.room.sprites) do
-		if s ~= self and tiles_overlap(test, s.position) then
-			-- If the patient has not done its physics yet
-			if s.didPhysics == false then
-				print('hit sprite that has not done physics')
-				s:physics()
-			end
+		if s ~= self then
+			if tiles_overlap(test, s.position) then
+				-- If the other sprite hasn't done its physics yet
+				if s.didPhysics == false and s.owner ~= self then
+					s:physics()
+				end
 
-			if self:hit(s) then
-				-- Registered as a hit; done with physics
-				return
+				if self:hit(s) then
+					-- Registered as a hit; done with physics
+					return
+				end
+				break
+			-- If the other sprite hasn't done physics yet, and we would have
+			-- hit it if it had already
+			elseif s.didPhysics == false and
+			       tiles_overlap(test, s:preview_position()) then
+				-- Allow us to move
+				self.position = test
+				self.moved = true
+
+				-- Do physics on the other sprite (will hit us)
+				s:physics()
+
+				-- Register a hit for us
+				if self:hit(s) then
+					return
+				end
 			end
-			break
 		end
 	end
 

@@ -128,50 +128,11 @@ local function changed_direction(a, b, c)
 	return true
 end
 
-function PathFinder:too_thick(x, y, currentNode)
-	-- Add each successive parent-node to a map
-	map = {}
-	n = currentNode
-	while true do
-		table.insert(map, n)
-
-		-- Proceed to this node's parent
-		n = self.closedNodes[n.parent]
-
-		-- If this node has no parent
-		if n == nil then break end
-	end
-	-- Also add knowledge of other nodes
-	table.insert(map, self.otherNodes)
-
-	neighbors = find_neighbors({x = x, y = y}, map)
-
-	-- Check for 3 in a row going clockwise
-	numInARow = 0
-	for j = 1,10 do
-		-- Wrap around for last two
-		if j > 8 then
-			index = j - 8
-		else
-			index = j
-		end
-
-		if neighbors[index].occupied then
-			numInARow = numInARow + 1
-		else
-			numInARow = 0
-		end
-
-		if numInARow == 3 then
-			print('\n\ntoo thick')
-			return true
-		end
-	end
-
-	return false
-end
-
 function PathFinder:AStar(src, dest)
+	if src.x == dest.x and src.y == dest.y then
+		return {src}
+	end
+
 	self.openNodes = {}
 	self.closedNodes = {}
 	reachedDest = false
@@ -271,13 +232,6 @@ function PathFinder:AStar(src, dest)
 
 				-- If this node is not already in self.openNodes
 				if not alreadyFound then
-					--if self.options.smooth == true and
-					--   self:too_thick(x, y, currentNode) then
-					--	gPenalty = 4
-					--else
-					--	gPenalty = 0
-					--end
-
 					if self.options.smooth == true and
 					   currentNode.parent ~= nil then
 						if changed_direction(

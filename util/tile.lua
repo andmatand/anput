@@ -27,6 +27,11 @@ function tile_offscreen(tile)
 end
 
 function tiles_overlap(a, b)
+	-- If either of the tiles is not in a real position
+	if a.x == nil or a.y == nil or b.x == nil or b.y == nil then
+		return false
+	end
+
 	if a.x == b.x and a.y == b.y then
 		return true
 	else

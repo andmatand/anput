@@ -8,8 +8,6 @@ function Arrow:init(owner, dir)
 	self.owner = owner -- Who shot this arrow
 	self.dir = dir -- Direction the arrow is facing
 
-	--self.position = {x = self.owner.position.x, y = self.owner.position.y}
-
 	if self.dir == 1 then
 		self.velocity.y = -1
 	elseif self.dir == 2 then
