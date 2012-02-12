@@ -290,7 +290,7 @@ function Character:find_path(dest)
 end
 
 function Character:follow_path()
-	if math.random(self.ai.followPath, 10) ~= 10 then
+	if math.random(self.ai.followPath, 10) ~= 10 or self.path == nil then
 		return
 	end
 
