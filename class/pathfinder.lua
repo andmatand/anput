@@ -151,7 +151,7 @@ function PathFinder:AStar(src, dest)
 		
 		if best == nil then
 			print('A*: no path exists!')
-			love.timer.sleep(1000)
+			--love.timer.sleep(1000)
 			-- No path exists
 			break
 		end

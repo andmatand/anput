@@ -62,7 +62,7 @@ function Sprite:physics()
 	if self.velocity.y == nil then self.velocity.y = 0 end
 
 	-- Test coordinates
-	test = {x = self.position.x, y = self.position.y}
+	self.test = {x = self.position.x, y = self.position.y}
 
 	-- Restrict velocity to only one axis at a time (no diagonal moving)
 	if self.velocity.x ~= 0 and self.velocity.y ~= 0 then
@@ -70,8 +70,8 @@ function Sprite:physics()
 	end
 
 	-- Compute test coordinates for potential new position
-	test.x = test.x + self.velocity.x
-	test.y = test.y + self.velocity.y
+	self.test.x = self.test.x + self.velocity.x
+	self.test.y = self.test.y + self.velocity.y
 
 	-- Apply friction
 	if self.velocity.x < 0 then
@@ -87,7 +87,7 @@ function Sprite:physics()
 	
 	-- Check for collision with bricks
 	for i,b in pairs(self.room.bricks) do
-		if tiles_overlap(test, b) then
+		if tiles_overlap(self.test, b) then
 			if self:hit(b) then
 				-- Registered as a hit; done with physics
 				return
@@ -97,8 +97,8 @@ function Sprite:physics()
 	end
 
 	-- Check for collision with room edge
-	if test.x < 0 or test.x > ROOM_W - 1 or
-	   test.y < 0 or test.y > ROOM_H - 1 then
+	if self.test.x < 0 or self.test.x > ROOM_W - 1 or
+	   self.test.y < 0 or self.test.y > ROOM_H - 1 then
 	   if self:hit(nil) then
 		   return
 	   end
@@ -107,27 +107,26 @@ function Sprite:physics()
 	-- Check for collision with other sprites
 	for i,s in pairs(self.room.sprites) do
 		if s ~= self then
-			if tiles_overlap(test, s.position) then
+			if tiles_overlap(self.test, s.position) then
 				-- If the other sprite hasn't done its physics yet
 				if s.didPhysics == false and s.owner ~= self then
-					s:physics()
+					s.physics(s)
 				end
 
 				if self:hit(s) then
 					-- Registered as a hit; done with physics
 					return
 				end
-				break
 			-- If the other sprite hasn't done physics yet, and we would have
 			-- hit it if it had already
 			elseif s.didPhysics == false and
-			       tiles_overlap(test, s:preview_position()) then
+			       tiles_overlap(self.test, s:preview_position()) then
 				-- Allow us to move
-				self.position = test
+				self.position = {x = self.test.x, y = self.test.y}
 				self.moved = true
 
 				-- Do physics on the other sprite (will hit us)
-				s:physics()
+				s.physics(s)
 
 				-- Register a hit for us
 				if self:hit(s) then
@@ -141,14 +140,14 @@ function Sprite:physics()
 	if instanceOf(Character, self) then
 		-- Check for overlap with items
 		for _,i in pairs(self.room.items) do
-			if tiles_overlap(test, i.position) then
+			if tiles_overlap(self.test, i.position) then
 				i:use_on(self)
 			end
 		end
 	end
 
 	-- If there were no hits, make the move for real
-	self.position = test
+	self.position = {x = self.test.x, y = self.test.y}
 	self.moved = true
 end
 

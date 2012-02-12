@@ -15,7 +15,7 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.scarab
 		self.health = 10
 
-		self.arrows.ammo = 50
+		self.arrows.ammo = 5
 		self.currentWeapon = self.arrows
 
 		self.ai.dodge = 3
@@ -27,7 +27,7 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.bird
 		self.health = 20
 
-		self.arrows.ammo = 50
+		self.arrows.ammo = 10
 		self.currentWeapon = self.arrows
 
 		self.ai.dodge = 5
