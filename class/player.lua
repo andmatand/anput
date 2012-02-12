@@ -25,7 +25,8 @@ function Player:hit(patient)
 
 	-- Damage other characters with sword
 	if instanceOf(Character, patient) then
-		patient:receive_damage(20)
+		patient:receive_damage(15)
+		self.attackedDir = self.dir
 	end
 
 	return Character.hit(self, patient)

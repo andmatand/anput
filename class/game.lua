@@ -128,6 +128,18 @@ function Game:keypressed(key)
 	end
 end
 
+function Game:keyreleased(key)
+	if self.player.attackedDir == 1 and key == 'w' then
+		self.player.attackedDir = nil
+	elseif self.player.attackedDir == 2 and key == 'd' then
+		self.player.attackedDir = nil
+	elseif self.player.attackedDir == 3 and key == 's' then
+		self.player.attackedDir = nil
+	elseif self.player.attackedDir == 4 and key == 'a' then
+		self.player.attackedDir = nil
+	end
+end
+
 function Game:print(text, x, y)
 	love.graphics.print(text, x * TILE_W, y * TILE_H, 0, SCALE_X, SCALE_Y)
 end

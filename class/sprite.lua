@@ -54,6 +54,8 @@ function Sprite:physics()
 
 	-- Do nothing if the sprite is not moving
 	if self.velocity.x == 0 and self.velocity.y == 0 then
+		-- Clear attackedDir
+		--self.attackedDir = nil
 		return
 	end
 

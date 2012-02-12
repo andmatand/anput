@@ -318,10 +318,6 @@ function Character:follow_path()
 	end
 end
 
-function Character:hit(patient)
-	return Sprite.hit(self, patient)
-end
-
 function Character:receive_damage(amount)
 	self.health = self.health - amount
 	self.hurt = true
@@ -351,6 +347,14 @@ function Character:shoot(dir)
 end
 
 function Character:step(dir)
+	-- If we just attacked in this direction
+	if self.attackedDir == dir then
+		return
+	else
+		-- Clear attackedDir
+		self.attackedDir = nil
+	end
+
 	self.stepped = true
 	if dir == 1 then
 		self.velocity.x = 0
@@ -365,6 +369,9 @@ function Character:step(dir)
 		self.velocity.x = -1
 		self.velocity.y = 0
 	end
+
+	-- Store this direction for directional attacking
+	self.dir = dir
 end
 
 function Character:step_toward(dest)

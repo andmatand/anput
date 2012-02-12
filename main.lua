@@ -114,6 +114,10 @@ function love.keypressed(key, unicode)
 	if key == 'escape' then love.event.push('q') end
 end
 
+function love.keyreleased(key, unicode)
+	game:keyreleased(key)
+end
+
 function love.draw()
 	love.graphics.translate(camera.x, camera.y)
 
