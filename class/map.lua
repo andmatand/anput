@@ -1,6 +1,8 @@
-require 'class/pathfinder.lua'
-require 'class/room.lua'
-require 'class/exit.lua'
+package.path = './class/?.lua;./util/?.lua;' .. package.path
+require('pathfinder')
+require('exit')
+require('room')
+require('tables')
 
 -- A Map generates a random contiguous layout of rooms and their exits
 Map = class('Map')
@@ -220,6 +222,7 @@ function Map:generate_rooms()
 
 		-- Add the new room and attach it to this node
 		r = Room({exits = exits, index = #rooms + 1})
+		r.distanceFromEnd = manhattan_distance(node, self.path[#self.path])
 		table.insert(rooms, r)
 		node.room = r
 	end

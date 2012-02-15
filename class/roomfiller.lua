@@ -1,6 +1,6 @@
-require 'class/item.lua'
-require 'class/monster.lua'
-require 'class/turret.lua'
+require('item')
+require('monster')
+require('turret')
 
 -- A RoomFiller fills a room with monsters, items
 RoomFiller = class('RoomFiller')
@@ -37,9 +37,7 @@ function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
 	end
 end
 
-function RoomFiller:fill()
-	-- Add turrets
-	numTurrets = math.random(0, #self.room.bricks * .03)
+function RoomFiller:add_turrets(numTurrets)
 	fTest =
 		function(roomFiller, pos)
 			-- Find a direction in which we can fire
@@ -75,9 +73,20 @@ function RoomFiller:fill()
 			return Turret(args.position, args.dir, 5 * math.random(1, 10))
 		end
 	self:add_objects(numTurrets, fTest, fNew, self.room.bricks)
+end
+
+function RoomFiller:fill()
+	-- Add turrets
+	numTurrets = math.random(0, #self.room.bricks * .03)
+	self:add_turrets(numTurrets)
+
+	-- Find difficulty percentage based on distance from the final room
+	easiness = self.room.distanceFromEnd / game.rooms[1].distanceFromEnd
 
 	-- Add monsters
-	numMonsters = math.random(0, #self.room.freeTiles * .04)
+	maxMonsters = #self.room.freeTiles * .04
+	--numMonsters = math.random(0, (maxMonsters - (maxMonsters * easiness)))
+	numMonsters = maxMonsters - ((maxMonsters * easiness) - 1)
 	fNew = function(args) return Monster(args.position, math.random(1, 2)) end
 	self:add_objects(numMonsters, nil, fNew, self.room.freeTiles)
 

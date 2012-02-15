@@ -1,5 +1,5 @@
-require 'class/sprite.lua'
-require 'util/tile.lua'
+require('sprite')
+require('tile')
 
 Character = class('Character', Sprite)
 

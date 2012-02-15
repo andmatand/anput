@@ -1,6 +1,6 @@
-require 'class/brick.lua'
-require 'class/navigator.lua'
-require 'class/floodfiller.lua'
+require('brick')
+require('navigator')
+require('floodfiller')
 
 -- A RoomBuilder places bricks inside a room
 RoomBuilder = class('RoomBuilder')

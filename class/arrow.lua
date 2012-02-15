@@ -1,4 +1,4 @@
-require 'class/sprite.lua'
+require('sprite')
 
 Arrow = class('Arrow', Sprite)
 

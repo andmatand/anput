@@ -1,6 +1,7 @@
-require 'util/oo.lua'
-require 'class/game.lua'
-require 'class/sound.lua'
+package.path = './class/?.lua;./util/?.lua;' .. package.path
+require('oo')
+require('game')
+require('sound')
 
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)

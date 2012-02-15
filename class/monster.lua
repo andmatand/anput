@@ -1,4 +1,4 @@
-require 'class/character.lua'
+require('character')
 
 Monster = class('Monster', Character)
 

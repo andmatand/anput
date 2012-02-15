@@ -1,4 +1,4 @@
-require 'util/tile.lua'
+require('tile')
 
 PathFinder = class('PathFinder')
 

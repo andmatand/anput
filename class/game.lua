@@ -1,7 +1,7 @@
-require 'class/map.lua'
-require 'class/player.lua'
-require 'util/table.lua'
-require 'util/tile.lua'
+require('map')
+require('player')
+require('table')
+require('tile')
 
 -- A Game handles a collection of rooms
 Game = class('Game')
@@ -22,6 +22,7 @@ function Game:switch_to_room(roomIndex)
 
 	-- Set the new room as the current room
 	self.currentRoom = self.rooms[roomIndex]
+	print('room distance from end:', self.currentRoom.distanceFromEnd)
 
 	-- Add player to current room
 	self.currentRoom:add_object(self.player)

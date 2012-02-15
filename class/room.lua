@@ -1,6 +1,6 @@
-require 'class/arrow.lua'
-require 'class/roombuilder.lua'
-require 'class/roomfiller.lua'
+require('arrow')
+require('roombuilder')
+require('roomfiller')
 
 Room = class('Room')
 
