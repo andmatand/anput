@@ -1,4 +1,3 @@
-package.path = './class/?.lua;./util/?.lua;' .. package.path
 require('pathfinder')
 require('exit')
 require('room')
@@ -225,6 +224,11 @@ function Map:generate_rooms()
 		r.distanceFromEnd = manhattan_distance(node, self.path[#self.path])
 		table.insert(rooms, r)
 		node.room = r
+	end
+
+	-- Assign difficulty to each room based on distance from final room
+	-- compared to farthest room
+	for _, r in pairs(rooms) do
 	end
 
 	return rooms

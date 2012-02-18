@@ -12,27 +12,30 @@ end
 function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
 	args = {}
 	for i = 1, num do
-		position = freeTiles[math.random(1, #freeTiles)]
+		for tries = 1, 5 do
+			position = freeTiles[math.random(1, #freeTiles)]
 
-		ok = true
-		if fTest == nil then
-			-- Default test function: Don't place in occupied tile
-			if self.room:tile_occupied(position) then
-				ok = false
-			end
-		else
-			testResult = fTest(self, position)
-			ok = testResult.ok
-			for k,v in pairs(testResult) do
-				if k ~= 'ok' then
-					args[k] = v
+			ok = true
+			if fTest == nil then
+				-- Default test function: Don't place in occupied tile
+				if self.room:tile_occupied(position) then
+					ok = false
+				end
+			else
+				testResult = fTest(self, position)
+				ok = testResult.ok
+				for k,v in pairs(testResult) do
+					if k ~= 'ok' then
+						args[k] = v
+					end
 				end
 			end
-		end
 
-		if ok then
-			args.position = position
-			self.room:add_object(fNew(args))
+			if ok then
+				args.position = position
+				self.room:add_object(fNew(args))
+				break
+			end
 		end
 	end
 end
@@ -87,7 +90,7 @@ function RoomFiller:fill()
 	maxMonsters = #self.room.freeTiles * .04
 	--numMonsters = math.random(0, (maxMonsters - (maxMonsters * easiness)))
 	numMonsters = maxMonsters - ((maxMonsters * easiness) - 1)
-	fNew = function(args) return Monster(args.position, math.random(1, 2)) end
+	fNew = function(args) return Monster(args.position, math.random(1, 4)) end
 	self:add_objects(numMonsters, nil, fNew, self.room.freeTiles)
 
 	-- Add items

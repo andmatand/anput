@@ -6,26 +6,27 @@ Character = class('Character', Sprite)
 function Character:init()
 	Sprite.init(self)
 
+	Character.static.actions = {dodge = 1, flee = 2, chase = 3, shoot = 4}
+
 	self.frame = 1
 
 	self.health = 100
 	self.flashTimer = 0
 	self.animateTimer = 0
-	self.path = nil
-
 	self.team = 3
 
+	self.path = {nodes = nil, character = nil, destination = nil}
+
+	-- Default AI levels
 	self.ai = {}
 	self.ai.dodge = 0
-	self.ai.chase = 0
 	self.ai.flee = 0
-
-	self.ai.attack = 0
-
+	self.ai.chase = 0
+	self.ai.shoot = 0
 	self.ai.delay = 5
-	self.ai.followPath = 0
 
 	self.aiTimer = 0
+	self.ai.score = {}
 
 	self.magic = {ammo = 0, new = nil}
 	self.arrows = {ammo = 0,
@@ -33,26 +34,19 @@ function Character:init()
 	self.currentWeapon = self.arrows
 end
 
-function Character:die()
-	self.dead = true
-end
-
-function Character:do_ai()
-	self.aiTimer = self.aiTimer + 1
-	if self.aiTimer >= self.ai.delay then
-		self.aiTimer = 0
-	else
-		return
-	end
-
-	if self.path ~= nil then
-		if self:follow_path() then
-			return
+function Character:choose_action()
+	-- See if there is a projectile we should dodge
+	self.shouldDodge = nil
+	for i,s in pairs(self.room.sprites) do
+		if instanceOf(Arrow, s) then
+			if s:will_hit(self) then
+				self.shouldDodge = s
+			end
 		end
 	end
 
-	closestDist = 100
-	closestEnemy = nil
+	closestDist = 999
+	self.closestEnemy = nil
 	-- Find closest character on other team
 	for _,s in pairs(self.room.sprites) do
 		-- If this is a character on the other team
@@ -62,52 +56,110 @@ function Character:do_ai()
 			-- If it's closer than the current closest
 			if dist < closestDist then
 				closestDist = dist
-				closestEnemy = s
+				self.closestEnemy = s
 			end
 		end
 	end
 
-	-- Movement
-	if self.ai.dodge > 0 and math.random(self.ai.dodge, 10) == 10 then
-		-- Dodge arrows
-		for i,s in pairs(self.room.sprites) do
-			if instanceOf(Arrow, s) then
-				if s:will_hit(self) then
-					self:dodge(s)
-				end
+	-- Check if there's an enemy in our sights we should shoot
+	self.shouldShoot = nil
+	for _,s in pairs(self.room.sprites) do
+		if instanceOf(Character, s) and s.team ~= self.team then
+			if self:line_of_sight(s) then
+				self.shouldShoot = s
 			end
 		end
 	end
-	if self.ai.chase > 0 and math.random(self.ai.chase, 10) == 10 then
-		if closestEnemy ~= nil then
-			self:chase(closestEnemy)
-		end
+
+	-- Clear all old AI probability scores
+	for k in pairs(self.ai.score) do
+		self.ai.score[k] = 0
 	end
-	if self.ai.flee > 0 and math.random(self.ai.flee, 10) == 10 then
-		if closestEnemy ~= nil then
-			self:flee_from(closestEnemy)
+
+	-- Give random scores to each of the AI actions
+	if self.ai.dodge > 0 and self.shouldDodge ~= nil then
+		self.ai.score.dodge = math.random(self.ai.dodge, 10)
+	else
+		self.ai.score.dodge = -1
+	end
+
+	if self.ai.flee > 0 and self.closestEnemy ~= nil then
+		self.ai.score.flee = math.random(self.ai.flee, 10)
+	else
+		self.ai.score.flee = -1
+	end
+
+	if self.ai.chase > 0 and self.closestEnemy ~= nil and
+	   (self.path.nodes == nil or self:path_obsolete()) then
+		self.ai.score.chase = math.random(self.ai.chase, 10)
+	else
+		self.ai.score.chase = -1
+	end
+
+	if self.ai.shoot > 0 and self.shouldShoot ~= nil then
+		self.ai.score.shoot = math.random(self.ai.shoot, 10)
+	else
+		self.ai.score.shoot = -1
+	end
+
+	-- See which action has the best score
+	bestScore = 0
+	action = nil
+	for k,v in pairs(self.ai.score) do
+		if v > bestScore then
+			bestScore = v
+			action = Character.actions[k]
+			print('best so far:', k)
 		end
 	end
 
-	-- Shooting
-	if self.ai.attack > 0 and math.random(self.ai.attack, 10) == 10 then
-		if closestEnemy ~= nil then
-			self:attack(closestEnemy)
-		end
-	end
+	return action
 end
 
-function Character:attack(sprite)
-	-- If there is a line of sight to the sprite
-	if self:line_of_sight(sprite) then
-		-- Shoot it
-		self:shoot(self:direction_to(sprite))
+function Character:die()
+	self.dead = true
+end
+
+function Character:do_ai()
+	-- Enforce AI delay
+	self.aiTimer = self.aiTimer + 1
+	if self.aiTimer >= self.ai.delay then
+		self.aiTimer = 0
+	else
+		return
+	end
+
+	-- If we are currently following a path, continue to do that
+	if self.path.nodes ~= nil then
+		self:follow_path()
+		--if self:follow_path() then
+		--	return
+		--end
+	end
+
+	action = self:choose_action()
+
+	if action == Character.static.actions.dodge then
+		print('action: dodge')
+		self:dodge(self.shouldDodge)
+	elseif action == Character.static.actions.flee then
+		print('action: flee')
+		self:flee_from(self.closestEnemy)
+	elseif action == Character.static.actions.chase then
+		print('action: chase')
+		self:chase(self.closestEnemy)
+	elseif action == Character.static.actions.shoot then
+		print('action: shoot')
+		self:shoot(self:direction_to(self.shouldShoot.position))
 	end
 end
 
 function Character:chase(sprite)
 	-- Set path to destination
 	self:find_path(sprite.position)
+	if instanceOf(Character, sprite) then
+		self.path.character = sprite
+	end
 
 	-- Start following the path
 	self:follow_path()
@@ -137,17 +189,17 @@ function Character:flee_from(sprite)
 	end
 end
 
-function Character:direction_to(sprite)
-	if sprite.position.y < self.position.y then
+function Character:direction_to(position)
+	if position.y < self.position.y then
 		-- North
 		return 1
-	elseif sprite.position.x > self.position.x then
+	elseif position.x > self.position.x then
 		-- East
 		return 2
-	elseif sprite.position.y > self.position.y then
+	elseif position.y > self.position.y then
 		-- South
 		return 3
-	elseif sprite.position.x < self.position.x then
+	elseif position.x < self.position.x then
 		-- South
 		return 4
 	end
@@ -286,39 +338,52 @@ function Character:draw()
 end
 
 function Character:find_path(dest)
-	self.path = self.room:find_path(self.position, dest)
+	self.path.nodes = self.room:find_path(self.position, dest)
+	self.path.destination = dest
 end
 
 function Character:follow_path()
-	if math.random(self.ai.followPath, 10) ~= 10 or self.path == nil then
-		return
+	if self.path.nodes == nil then
+		return false
 	end
 
-	-- DEBUG
-	--print('position:', self.position.x, self.position.y)
-	--print('path:')
-	--for i,p in ipairs(self.path) do
-	--	print('  ' .. i, p.x, p.y)
-	--end
-
-	if tiles_touching(self.position, self.path[1]) then
-		--print('stepping')
-		self:step_toward(self.path[1])
+	if tiles_touching(self.position, self.path.nodes[1]) then
+		self:step(self:direction_to(self.path.nodes[1]))
 
 		-- Pop the step off the path
-		table.remove(self.path, 1)
+		table.remove(self.path.nodes, 1)
 
-		if #self.path == 0 then
-			self.path = nil
+		if #self.path.nodes == 0 then
+			self.path.nodes = nil
 		end
 	else
 		-- We got off the path somehow; abort
-		self.path = nil
+		self.path.nodes = nil
 		print('aborted path')
+		return false
 	end
+
+	return true
+end
+
+function Character:path_obsolete()
+	-- If we're chasing a character
+	if self.path.destination ~= nil and self.path.character ~= nil then
+		-- If the destination of our path is too far away from where the
+		-- character now is
+		if manhattan_distance(self.path.destination,
+		                      self.path.character.position) > 5 then
+			return true
+		end
+	end
+	return false
 end
 
 function Character:receive_damage(amount)
+	if self.dead then
+		return
+	end
+
 	self.health = self.health - amount
 	self.hurt = true
 

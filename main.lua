@@ -26,9 +26,9 @@ function love.load()
 	monsterImg.scarab = {love.graphics.newImage('res/img/scarab1.png'),
 	                     love.graphics.newImage('res/img/scarab2.png')}
 
-	monsterImg.bird = {love.graphics.newImage('res/img/bird1.png'),
-	                   love.graphics.newImage('res/img/bird2.png')}
-	monsterImg.dog = {love.graphics.newImage('res/img/dog.png')}
+	monsterImg.bird = {love.graphics.newImage('res/img/bird1.png')}
+	monsterImg.mummy = {love.graphics.newImage('res/img/mummy1.png')}
+	monsterImg.ghost = {love.graphics.newImage('res/img/ghost.png')}
 	for _,m in pairs(monsterImg) do
 		for _,i in pairs(m) do
 			i:setFilter('nearest', 'nearest')

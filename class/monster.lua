@@ -18,11 +18,11 @@ function Monster:init(pos, monsterType)
 		self.arrows.ammo = 5
 		self.currentWeapon = self.arrows
 
-		self.ai.dodge = 3
-		self.ai.attack = 1
+		self.ai.dodge = 2
 		self.ai.flee = 9
-		self.ai.followPath = 8
-		self.ai.delay = 5
+		self.ai.shoot = 1
+
+		self.ai.delay = 3
 	elseif self.monsterType == 2 then
 		self.images = monsterImg.bird
 		self.health = 20
@@ -31,9 +31,33 @@ function Monster:init(pos, monsterType)
 		self.currentWeapon = self.arrows
 
 		self.ai.dodge = 5
-		self.ai.attack = 1
 		self.ai.chase = 5
-		self.ai.followPath = 9
+		self.ai.shoot = 1
+
+		self.ai.delay = 5
+	elseif self.monsterType == 3 then
+		self.images = monsterImg.mummy
+		self.health = 40
+
+		self.arrows.ammo = 20
+		self.currentWeapon = self.arrows
+
+		self.ai.dodge = 7
+		self.ai.chase = 7
+		self.ai.shoot = 7
+
+		self.ai.delay = 10
+	elseif self.monsterType == 4 then
+		self.images = monsterImg.ghost
+		self.health = 80
+
+		self.arrows.ammo = 40
+		self.currentWeapon = self.arrows
+
+		self.ai.dodge = 9
+		self.ai.chase = 1
+		self.ai.shoot = 7
+
 		self.ai.delay = 5
 	end
 end
@@ -45,10 +69,11 @@ function Monster:die()
 end
 
 function Monster:hit(patient)
-	-- Damage other characters depending on monsterType
+	-- Damage other characters
 	if instanceOf(Character, patient) then
-		if self.monsterType == 1 then -- Ghost
-			patient:receive_damage(05)
+		if self.team ~= patient.team and -- Not on the same team
+		   self.monsterType ~= 4 then -- Not a ghost
+			patient:receive_damage(5)
 		end
 	end
 
