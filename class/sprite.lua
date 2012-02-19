@@ -14,6 +14,10 @@ function Sprite:init()
 	--self.y = function() return self.position.y end
 end
 
+function Sprite:die()
+	self.dead = true
+end
+
 -- Preview what position the sprite will be at when its velocity is added
 function Sprite:preview_position()
 	if self.position.x == nil or self.position.y == nil then
@@ -160,8 +164,8 @@ end
 
 -- Default hit method
 function Sprite:hit(patient)
-	-- Stop when we hit anything except an arrow
-	if instanceOf(Arrow, patient) then
+	-- Stop when we hit anything except a projectile
+	if instanceOf(Projectile, patient) then
 		return false
 	else
 		self.velocity.x = 0

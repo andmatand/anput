@@ -1,4 +1,3 @@
-require('arrow')
 require('roombuilder')
 require('roomfiller')
 

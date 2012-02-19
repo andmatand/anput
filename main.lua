@@ -28,6 +28,8 @@ function love.load()
 
 	monsterImg.bird = {love.graphics.newImage('res/img/bird1.png')}
 	monsterImg.mummy = {love.graphics.newImage('res/img/mummy1.png')}
+	monsterImg.cat = {love.graphics.newImage('res/img/cat1.png'),
+	                  love.graphics.newImage('res/img/cat2.png')}
 	monsterImg.ghost = {love.graphics.newImage('res/img/ghost.png')}
 	for _,m in pairs(monsterImg) do
 		for _,i in pairs(m) do
@@ -108,6 +110,8 @@ function love.keypressed(key, unicode)
 		toggle_flicker_mode()
 	elseif key == 'f11' then
 		love.graphics.toggleFullscreen()
+	elseif key == 'f5' then
+		playerGetHPSound:play()
 	end
 
 	game:keypressed(key)

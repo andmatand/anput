@@ -1,3 +1,4 @@
+require('arrow')
 require('sprite')
 require('tile')
 
@@ -19,14 +20,13 @@ function Character:init()
 
 	-- Default AI levels
 	self.ai = {}
-	self.ai.dodge = 0
-	self.ai.flee = 0
-	self.ai.chase = 0
-	self.ai.shoot = 0
-	self.ai.delay = 5
+	self.ai.dodge = {dist = 0, prob = 0, target = nil}
+	self.ai.flee = {dist = 0, prob = 0, target = nil}
+	self.ai.chase = {dist = 0, prob = 0, target = nil}
+	self.ai.shoot = {dist = 0, prob = 0, target = nil}
+	self.aiDelay = 5
 
 	self.aiTimer = 0
-	self.ai.score = {}
 
 	self.magic = {ammo = 0, new = nil}
 	self.arrows = {ammo = 0,
@@ -36,11 +36,13 @@ end
 
 function Character:choose_action()
 	-- See if there is a projectile we should dodge
-	self.shouldDodge = nil
+	self.ai.dodge.target = nil
 	for i,s in pairs(self.room.sprites) do
-		if instanceOf(Arrow, s) then
-			if s:will_hit(self) then
-				self.shouldDodge = s
+		if instanceOf(Projectile, s) then
+			-- If this is a projectile type that we want to dodge, and if it is
+			-- heading toward us
+			if self:afraid_of(s) and s:will_hit(self) then
+				self.ai.dodge.target = s
 			end
 		end
 	end
@@ -71,43 +73,37 @@ function Character:choose_action()
 		end
 	end
 
+	-- If we are not already following a path
+	if (self.path.nodes == nil or self:path_obsolete()) then
+		-- Set the chase target
+		self.ai.chase.target = self.closestEnemy
+	end
+
+	-- Set the flee target
+	self.ai.flee.target = self.closestEnemy
+
+
 	-- Clear all old AI probability scores
-	for k in pairs(self.ai.score) do
-		self.ai.score[k] = 0
+	for k in pairs(self.ai) do
+		self.ai[k].score = 0
 	end
 
 	-- Give random scores to each of the AI actions
-	if self.ai.dodge > 0 and self.shouldDodge ~= nil then
-		self.ai.score.dodge = math.random(self.ai.dodge, 10)
-	else
-		self.ai.score.dodge = -1
-	end
-
-	if self.ai.flee > 0 and self.closestEnemy ~= nil then
-		self.ai.score.flee = math.random(self.ai.flee, 10)
-	else
-		self.ai.score.flee = -1
-	end
-
-	if self.ai.chase > 0 and self.closestEnemy ~= nil and
-	   (self.path.nodes == nil or self:path_obsolete()) then
-		self.ai.score.chase = math.random(self.ai.chase, 10)
-	else
-		self.ai.score.chase = -1
-	end
-
-	if self.ai.shoot > 0 and self.shouldShoot ~= nil then
-		self.ai.score.shoot = math.random(self.ai.shoot, 10)
-	else
-		self.ai.score.shoot = -1
+	for k, a in pairs(self.ai) do
+		if a.prob > 0 and a.target ~= nil and
+		   manhattan_distance(self.position, a.target.position) <= a.dist then
+			a.score = math.random(a.prob, 10)
+		else
+			a.score = -1
+		end
 	end
 
 	-- See which action has the best score
 	bestScore = 0
 	action = nil
-	for k,v in pairs(self.ai.score) do
-		if v > bestScore then
-			bestScore = v
+	for k,v in pairs(self.ai) do
+		if v.score > bestScore then
+			bestScore = v.score
 			action = Character.actions[k]
 			print('best so far:', k)
 		end
@@ -116,14 +112,10 @@ function Character:choose_action()
 	return action
 end
 
-function Character:die()
-	self.dead = true
-end
-
 function Character:do_ai()
 	-- Enforce AI delay
 	self.aiTimer = self.aiTimer + 1
-	if self.aiTimer >= self.ai.delay then
+	if self.aiTimer >= self.aiDelay then
 		self.aiTimer = 0
 	else
 		return
@@ -141,16 +133,16 @@ function Character:do_ai()
 
 	if action == Character.static.actions.dodge then
 		print('action: dodge')
-		self:dodge(self.shouldDodge)
+		self:dodge(self.ai.dodge.target)
 	elseif action == Character.static.actions.flee then
 		print('action: flee')
-		self:flee_from(self.closestEnemy)
+		self:flee_from(self.ai.flee.target)
 	elseif action == Character.static.actions.chase then
 		print('action: chase')
-		self:chase(self.closestEnemy)
+		self:chase(self.ai.chase.target)
 	elseif action == Character.static.actions.shoot then
 		print('action: shoot')
-		self:shoot(self:direction_to(self.shouldShoot.position))
+		self:shoot(self:direction_to(self.ai.shoot.target.position))
 	end
 end
 
@@ -206,10 +198,6 @@ function Character:direction_to(position)
 end
 
 function Character:dodge(sprite)
-	if manhattan_distance(self.position, sprite.position) > 5 then
-		return
-	end
-
 	-- Determine which direction we should search
 	if sprite.velocity.y == -1 then
 		-- Sprite is moving north, so search north
@@ -390,6 +378,11 @@ function Character:receive_damage(amount)
 	if self.health <= 0 then
 		self:die()
 	end
+end
+
+function Character:receive_hit(agent)
+	-- Register as a hit
+	return true
 end
 
 function Character:shoot(dir)

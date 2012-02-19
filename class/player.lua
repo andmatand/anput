@@ -13,7 +13,7 @@ function Player:init()
 end
 
 function Player:die()
-	self.dead = true
+	Character.die(self)
 	print('player is dead')
 end
 
@@ -25,8 +25,12 @@ function Player:hit(patient)
 
 	-- Damage other characters with sword
 	if instanceOf(Character, patient) then
-		patient:receive_damage(15)
-		self.attackedDir = self.dir
+		if patient:receive_hit(self) then
+			patient:receive_damage(15)
+			self.attackedDir = self.dir
+		else
+			return false
+		end
 	end
 
 	return Character.hit(self, patient)
