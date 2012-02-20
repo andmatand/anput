@@ -22,7 +22,7 @@ function MapDisplay:draw(currentRoom)
 	                        self.y1 + self.mapOffset.y)
 
 	for _, n in pairs(self.nodes) do
-		if n.room.visited or 1 then
+		if n.room.visited then
 			if n.room == currentRoom then
 				love.graphics.setColor(255, 0, 255)
 			elseif n.finalRoom then
