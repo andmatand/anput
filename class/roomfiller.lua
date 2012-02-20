@@ -90,7 +90,7 @@ function RoomFiller:fill()
 	maxMonsters = #self.room.freeTiles * .04
 	--numMonsters = math.random(0, (maxMonsters - (maxMonsters * easiness)))
 	numMonsters = maxMonsters - ((maxMonsters * easiness) - 1)
-	fNew = function(args) return Monster(args.position, math.random(1, 4)) end
+	fNew = function(args) return Monster(args.position, math.random(1, 5)) end
 	self:add_objects(numMonsters, nil, fNew, self.room.freeTiles)
 
 	-- Add items

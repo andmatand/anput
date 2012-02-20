@@ -59,10 +59,8 @@ function love.load()
 	-- Room width and height are in # of tiles (not pixels)
 	ROOM_W = 27
 	ROOM_H = 25
-
-	camera = {}
-	camera.x = 0
-	camera.y = 0
+	SCREEN_W = (love.graphics.getWidth() / TILE_W)
+	SCREEN_H = (love.graphics.getHeight() / TILE_H)
 
 	showDebug = false
 	flickerMode = false
@@ -124,8 +122,6 @@ function love.keyreleased(key, unicode)
 end
 
 function love.draw()
-	love.graphics.translate(camera.x, camera.y)
-
 	if showDebug then
 		-- DEBUG show map obstacles
 		for i,o in pairs(game.map.obstacles) do

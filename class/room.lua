@@ -8,6 +8,7 @@ function Room:init(args)
 	self.index = args.index
 
 	self.generated = false
+	self.visited = false
 	self.sprites = {}
 	self.turrets = {}
 	self.items = {}

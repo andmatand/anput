@@ -15,3 +15,8 @@ function Brick:draw()
 	love.graphics.rectangle('fill', self.x * TILE_W, self.y * TILE_H,
 	                        TILE_W, TILE_H)
 end
+
+function Brick:receive_hit(agent)
+	-- Register as a hit
+	return true
+end

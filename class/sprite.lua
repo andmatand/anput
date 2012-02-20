@@ -41,6 +41,24 @@ function Sprite:erase()
 	end
 end
 
+-- Default hit method
+function Sprite:hit(patient)
+	if patient ~= nil and instanceOf(Projectile, patient) then
+		-- Don't stop when hitting a projectile
+		return false
+	elseif patient ~= nil and patient:receive_hit(self) == false then
+		-- Don't stop if the patient did not receive the hit
+		return false
+	else
+		-- Stop
+		self.velocity.x = 0
+		self.velocity.y = 0
+	end
+
+	-- Valid hit
+	return true
+end
+
 function Sprite:move_to(coordinates)
 	self.position.x = coordinates.x
 	self.position.y = coordinates.y
@@ -162,17 +180,8 @@ function Sprite:post_physics()
 	self.didPhysics = false
 end
 
--- Default hit method
-function Sprite:hit(patient)
-	-- Stop when we hit anything except a projectile
-	if instanceOf(Projectile, patient) then
-		return false
-	else
-		self.velocity.x = 0
-		self.velocity.y = 0
-	end
-
-	-- Valid hit
+function Sprite:receive_hit(agent)
+	-- Register as a hit
 	return true
 end
 

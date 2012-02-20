@@ -8,6 +8,7 @@ Game = class('Game')
 
 function Game:init()
 	self.frameState = 1 -- 0: erase, 1: draw
+	self.showMap = true
 end
 
 function Game:switch_to_room(roomIndex)
@@ -22,6 +23,7 @@ function Game:switch_to_room(roomIndex)
 
 	-- Set the new room as the current room
 	self.currentRoom = self.rooms[roomIndex]
+	self.currentRoom.visited = true
 	print('room distance from end:', self.currentRoom.distanceFromEnd)
 
 	-- Add player to current room
@@ -53,6 +55,10 @@ function Game:draw()
 	--	                     (t.position.x * TILE_W) + (TILE_W / 2),
 	--						 (t.position.y * TILE_H) + (TILE_H / 2), 8)
 	--end
+
+	if self.showMap then
+		self.map:draw(self.currentRoom)
+	end
 
 	self:draw_text()
 end
@@ -126,6 +132,15 @@ function Game:keypressed(key)
 		self.player:step(3)
 	elseif key == 'a' then
 		self.player:step(4)
+	end
+
+	-- DEBUG: toggle map with m
+	if key == 'm' then
+		if self.showMap == true then
+			self.showMap = false
+		else
+			self.showMap = true
+		end
 	end
 end
 

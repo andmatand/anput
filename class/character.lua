@@ -2,6 +2,7 @@ require('arrow')
 require('sprite')
 require('tile')
 
+-- A Character is a Sprite with AI
 Character = class('Character', Sprite)
 
 function Character:init()
@@ -64,11 +65,11 @@ function Character:choose_action()
 	end
 
 	-- Check if there's an enemy in our sights we should shoot
-	self.shouldShoot = nil
+	self.ai.shoot.target = nil
 	for _,s in pairs(self.room.sprites) do
 		if instanceOf(Character, s) and s.team ~= self.team then
 			if self:line_of_sight(s) then
-				self.shouldShoot = s
+				self.ai.shoot.target = s
 			end
 		end
 	end
@@ -105,7 +106,7 @@ function Character:choose_action()
 		if v.score > bestScore then
 			bestScore = v.score
 			action = Character.actions[k]
-			print('best so far:', k)
+			--print('best so far:', k)
 		end
 	end
 
@@ -378,11 +379,6 @@ function Character:receive_damage(amount)
 	if self.health <= 0 then
 		self:die()
 	end
-end
-
-function Character:receive_hit(agent)
-	-- Register as a hit
-	return true
 end
 
 function Character:shoot(dir)
