@@ -154,6 +154,7 @@ function Map:generate_path()
 	-- Plot path from src to dest through obstacles
 	pf = PathFinder(src, dest, self.obstacles, nil, {bounds = false})
 	path = pf:plot()
+	path[#path].finalRoom = true
 
 	return path
 end

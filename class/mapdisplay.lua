@@ -5,11 +5,11 @@ function MapDisplay:init(nodes)
 	self.nodes = nodes
 
 	-- Place the display on the side of the screen
-	self.nodeSize = 4
+	self.nodeSize = 8
 	self.x1 = (ROOM_W * TILE_W) + self.nodeSize
-	self.y1 = (TILE_H * 15) + self.nodeSize
-	self.x2 = (SCREEN_W * TILE_W) - self.nodeSize
-	self.y2 = (SCREEN_H * TILE_H) - self.nodeSize
+	self.y1 = (TILE_H * 12) + self.nodeSize
+	self.x2 = (SCREEN_W * TILE_W) - 1 - self.nodeSize
+	self.y2 = (SCREEN_H * TILE_H) - 1 - self.nodeSize
 end
 
 function MapDisplay:draw(currentRoom)
@@ -22,9 +22,11 @@ function MapDisplay:draw(currentRoom)
 	                        self.y1 + self.mapOffset.y)
 
 	for _, n in pairs(self.nodes) do
-		if n.room.visited then
+		if n.room.visited or 1 then
 			if n.room == currentRoom then
 				love.graphics.setColor(255, 0, 255)
+			elseif n.finalRoom then
+				love.graphics.setColor(0, 255, 128)
 			else
 				love.graphics.setColor(255, 255, 255)
 			end
