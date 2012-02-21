@@ -5,6 +5,8 @@ Monster = class('Monster', Character)
 function Monster:init(pos, monsterType)
 	Character.init(self)
 
+	Monster.static.numMonsterTypes = 5
+
 	self.position = pos
 	self.monsterType = monsterType
 
@@ -15,7 +17,6 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.scarab
 		self.health = 10
 
-		self.arrows.ammo = 1
 		self.currentWeapon = self.arrows
 
 		self.aiDelay = 3
@@ -75,14 +76,14 @@ function Monster:init(pos, monsterType)
 end
 
 function Monster:afraid_of(sprite)
-	if instanceOf(Projectile, sprite) then
+	if instanceOf(Arrow, sprite) then
 		-- Ghost
 		if self.monsterType == 5 then
 			return false
-		else
-			return true
 		end
 	end
+
+	return true
 end
 
 function Monster:die()
@@ -113,7 +114,12 @@ end
 
 function Monster:receive_hit(agent)
 	if self.monsterType == 5 then -- A ghost
-		return false
+		-- Only magic hits ghosts
+		if instanceOf(Fireball, agent) then
+			return true
+		else
+			return false
+		end
 	end
 
 	return Character.receive_hit(self, agent)

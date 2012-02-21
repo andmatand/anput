@@ -9,6 +9,7 @@ Game = class('Game')
 function Game:init()
 	self.frameState = 1 -- 0: erase, 1: draw
 	self.showMap = true
+	self.paused = false
 end
 
 function Game:switch_to_room(roomIndex)
@@ -64,14 +65,13 @@ function Game:draw()
 end
 
 function Game:draw_text()
-	--if self.player == nil then
-	--	return
-	--end
-
 	love.graphics.setColor(255, 255, 255)
 	self:print('HP: ' .. self.player.health, ROOM_W, 0)
 	self:print('ARROWS: ' .. self.player.arrows.ammo, ROOM_W, 1)
 	self:print('MAGIC: ' .. self.player.magic.ammo, ROOM_W, 2)
+	if self.paused then
+		self:print('PAUSED', ROOM_W, 3)
+	end
 end
 
 function Game:generate()
@@ -134,13 +134,14 @@ function Game:keypressed(key)
 		self.player:step(4)
 	end
 
+	-- Toggle pause
+	if key == ' ' then
+		self.paused = not self.paused
+	end
+
 	-- DEBUG: toggle map with m
 	if key == 'm' then
-		if self.showMap == true then
-			self.showMap = false
-		else
-			self.showMap = true
-		end
+		self.showMap = not self.showMap
 	end
 end
 
@@ -161,6 +162,10 @@ function Game:print(text, x, y)
 end
 
 function Game:update()
+	if self.paused then
+		return
+	end
+
 	if flickerMode and self.frameState == 0 then
 		self.frameState = 1
 		return

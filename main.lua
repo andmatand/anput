@@ -37,8 +37,15 @@ function love.load()
 		end
 	end
 
-	arrowImg = love.graphics.newImage('res/img/arrow.png')
-	arrowImg:setFilter('nearest', 'nearest')
+	projectileImg = {}
+	projectileImg.arrow = {love.graphics.newImage('res/img/arrow.png')}
+	projectileImg.fireball = {love.graphics.newImage('res/img/fireball1.png'),
+	                          love.graphics.newImage('res/img/fireball2.png')}
+	for _,p in pairs(projectileImg) do
+		for _,i in pairs(p) do
+			i:setFilter('nearest', 'nearest')
+		end
+	end
 
 	potionImg = love.graphics.newImage('res/img/potion.png')
 	potionImg:setFilter('nearest', 'nearest')
@@ -98,18 +105,10 @@ function love.keypressed(key, unicode)
 	if key == 'n' then
 		game = Game()
 		game:generate()
-	elseif key == '1' then
-		if showDebug == true then
-			showDebug = false
-		else
-			showDebug = true
-		end
-	elseif key == '2' then
+	elseif key == 'f' then
 		toggle_flicker_mode()
 	elseif key == 'f11' then
 		love.graphics.toggleFullscreen()
-	elseif key == 'f5' then
-		playerGetHPSound:play()
 	end
 
 	game:keypressed(key)

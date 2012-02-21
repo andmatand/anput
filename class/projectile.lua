@@ -20,9 +20,16 @@ function Projectile:init(owner, dir)
 
 	self.friction = 0 -- Projectiles keep going until they hit something
 	self.new = true -- Projectile was created this frame and will not be drawn
+
+	self.frame = 1
+	self.animateTimer = 0
 end
 
 function Projectile:draw()
+	if self.images == nil then
+		return
+	end
+
 	if self.new then
 		if self.moved then
 			self.new = false
@@ -30,8 +37,14 @@ function Projectile:draw()
 		return
 	end
 
-	if self.image == nil then
-		return
+	self.animateTimer = self.animateTimer + 1
+	if self.animateTimer == 5 then
+		self.animateTimer = 0
+
+		self.frame = self.frame + 1
+		if self.frame > #self.images  then
+			self.frame = 1
+		end
 	end
 
 	-- Determine the rotation/flipping
@@ -48,11 +61,13 @@ function Projectile:draw()
 	end
 
 	love.graphics.setColor(255, 255, 255)
-	love.graphics.draw(self.image,
-	                   (self.position.x * TILE_W) + self.image:getWidth(),
-	                   (self.position.y * TILE_H) + self.image:getHeight(),
-	                   r, sx, sy,
-					   self.image:getWidth() / 2, self.image:getWidth() / 2)
+	love.graphics.draw(
+		self.images[self.frame],
+		(self.position.x * TILE_W) + self.images[self.frame]:getWidth(),
+		(self.position.y * TILE_H) + self.images[self.frame]:getHeight(),
+		r, sx, sy,
+		self.images[self.frame]:getWidth() / 2,
+		self.images[self.frame]:getWidth() / 2)
 end
 
 function Projectile:physics()

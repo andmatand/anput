@@ -4,6 +4,7 @@ Sprite = class('Sprite')
 function Sprite:init()
 	self.room = nil
 	self.position = {x = nil, y = nil}
+	self.oldPosition = self.position
 	self.velocity = {x = 0, y = 0}
 	self.friction = 1
 	self.moved = false

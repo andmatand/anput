@@ -1,4 +1,5 @@
 require('arrow')
+require('fireball')
 require('sprite')
 require('tile')
 
@@ -31,7 +32,7 @@ function Character:init()
 
 	self.magic = {ammo = 0, new = nil}
 	self.arrows = {ammo = 0,
-	               new = function(owner, dir) return Arrow(owner, dir) end}
+	               new = function(owner, dir) return Fireball(owner, dir) end}
 	self.currentWeapon = self.arrows
 end
 

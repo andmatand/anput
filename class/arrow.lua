@@ -5,7 +5,7 @@ Arrow = class('Arrow', Projectile)
 function Arrow:init(owner, dir)
 	Projectile.init(self, owner, dir)
 
-	self.image = arrowImg
+	self.images = projectileImg.arrow
 end
 
 function Arrow:hit(patient)
