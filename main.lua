@@ -3,6 +3,12 @@ require('oo')
 require('game')
 require('sound')
 
+function newImg(filename)
+	img = love.graphics.newImage('res/img/' .. filename)
+	img:setFilter('nearest', 'nearest')
+	return img
+end
+
 function love.load()
 	love.graphics.setMode(640, 400, false, false, 0)
 	love.mouse.setVisible(false)
@@ -17,25 +23,26 @@ function love.load()
 		'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
 	love.graphics.setFont(font)
 
-	playerImg = {love.graphics.newImage('res/img/player1.png')}
+	playerImg = {default = newImg('player1.png')}
 	for i,f in pairs(playerImg) do
 		f:setFilter('nearest', 'nearest')
 	end
 
 	monsterImg = {}
-	monsterImg.scarab = {love.graphics.newImage('res/img/scarab1.png'),
-	                     love.graphics.newImage('res/img/scarab2.png')}
+	monsterImg.scarab = {default = newImg('scarab.png'),
+	                     moving = newImg('scarab-moving.png')}
 
-	monsterImg.bird = {love.graphics.newImage('res/img/bird1.png')}
-	monsterImg.mummy = {love.graphics.newImage('res/img/mummy1.png')}
-	monsterImg.cat = {love.graphics.newImage('res/img/cat1.png'),
-	                  love.graphics.newImage('res/img/cat2.png')}
-	monsterImg.ghost = {love.graphics.newImage('res/img/ghost.png')}
-	for _,m in pairs(monsterImg) do
-		for _,i in pairs(m) do
-			i:setFilter('nearest', 'nearest')
-		end
-	end
+	monsterImg.bird = {default = newImg('bird.png'),
+	                   dodge = newImg('bird-dodge.png')}
+	monsterImg.mummy = {default = newImg('mummy.png')}
+	monsterImg.cat = {default = newImg('cat.png'),
+	                  moving = newImg('cat-moving.png')}
+	monsterImg.ghost = {default = newImg('ghost.png')}
+	--for _,m in pairs(monsterImg) do
+	--	for _,i in pairs(m) do
+	--		i:setFilter('nearest', 'nearest')
+	--	end
+	--end
 
 	projectileImg = {}
 	projectileImg.arrow = {love.graphics.newImage('res/img/arrow.png')}
@@ -105,6 +112,12 @@ function love.keypressed(key, unicode)
 	if key == 'n' then
 		game = Game()
 		game:generate()
+	elseif key == 'f1' then
+		if showDebug == true then
+			showDebug = false
+		else
+			showDebug = true
+		end
 	elseif key == 'f' then
 		toggle_flicker_mode()
 	elseif key == 'f11' then

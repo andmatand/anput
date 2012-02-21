@@ -17,25 +17,18 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.scarab
 		self.health = 10
 
-		self.currentWeapon = self.arrows
-
 		self.aiDelay = 3
 
 		self.ai.dodge = {dist = 5, prob = 2}
 		self.ai.flee = {dist = 15, prob = 9}
-		self.ai.shoot = {dist = 10, prob = 1}
 	elseif self.monsterType == 2 then
 		self.images = monsterImg.bird
 		self.health = 20
-
-		self.arrows.ammo = 0
-		self.currentWeapon = self.arrows
 
 		self.aiDelay = 5
 
 		self.ai.dodge = {dist = 5, prob = 5}
 		self.ai.chase = {dist = 10, prob = 5}
-		self.ai.shoot = {dist = 10, prob = 1}
 	elseif self.monsterType == 3 then
 		self.images = monsterImg.mummy
 		self.health = 40

@@ -49,6 +49,10 @@ function Item:use_on(patient)
 			return false
 		else
 			patient.health = patient.health + 10
+			if patient.health > 100 then
+				patient.health = 100
+			end
+
 			self.used = true
 			playerGetHPSound:play()
 		end

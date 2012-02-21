@@ -131,18 +131,18 @@ function Character:do_ai()
 		--end
 	end
 
-	action = self:choose_action()
+	self.action = self:choose_action()
 
-	if action == Character.static.actions.dodge then
+	if self.action == Character.static.actions.dodge then
 		print('action: dodge')
 		self:dodge(self.ai.dodge.target)
-	elseif action == Character.static.actions.flee then
+	elseif self.action == Character.static.actions.flee then
 		print('action: flee')
 		self:flee_from(self.ai.flee.target)
-	elseif action == Character.static.actions.chase then
+	elseif self.action == Character.static.actions.chase then
 		print('action: chase')
 		self:chase(self.ai.chase.target)
-	elseif action == Character.static.actions.shoot then
+	elseif self.action == Character.static.actions.shoot then
 		print('action: shoot')
 		self:shoot(self:direction_to(self.ai.shoot.target.position))
 	end
@@ -304,22 +304,31 @@ function Character:draw()
 		self.hurt = false
 	end
 
-	self.animateTimer = self.animateTimer + 1
-	if self.animateTimer == 30 then
-		self.animateTimer = 0
+	--self.animateTimer = self.animateTimer + 1
+	--if self.animateTimer == 30 then
+	--	self.animateTimer = 0
 
-		if #self.images > 1 then
-			if self.frame == 1 and math.random(0, 10) == 0 then
-				self.frame = 2
-			else
-				self.frame = 1
-			end
-		end
+	--	if #self.images > 1 then
+	--		if self.frame == 1 and math.random(0, 10) == 0 then
+	--			self.frame = 2
+	--		else
+	--			self.frame = 1
+	--		end
+	--	end
+	--end
+
+	-- Determine which image of this character to draw
+	if self.images.moving ~= nil and
+	   (self.path.nodes ~= nil or self.moved or
+	    self.action == Character.static.actions.flee) then
+		img = self.images.moving
+	else
+		img = self.images.default
 	end
 
 	if self.flashTimer == 0 then
 		love.graphics.setColor(255, 255, 255)
-		love.graphics.draw(self.images[self.frame],
+		love.graphics.draw(img,
 						   self.position.x * TILE_W, self.position.y * TILE_H,
 						   0, SCALE_X, SCALE_Y)
 	else
