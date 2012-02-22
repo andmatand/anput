@@ -26,9 +26,9 @@ function Sprite:preview_position()
 	end
 
 	-- Only one axis may have velocity at a time
-	if self.velocity.x ~= nil then
+	if self.velocity.x ~= nil and self.velocity.x ~= 0 then
 		return {x = self.position.x + self.velocity.x, y = self.position.y}
-	elseif self.velocity.y ~= nil then
+	elseif self.velocity.y ~= nil and self.velocity.y ~= 0 then
 		return {x = self.position.x, y = self.position.y + self.velocity.y}
 	else
 		return {x = self.position.x, y = self.position.y}

@@ -392,21 +392,19 @@ function Character:receive_damage(amount)
 end
 
 function Character:shoot(dir)
+	print('\nshooting...')
 	if self.currentWeapon.ammo <= 0 or self.dead then
-		return
+		return false
 	end
 
-	-- Don't allow shooting directly into a wall
-	for i,b in pairs(self.room.bricks) do
-		if tiles_overlap(self.position, b) then
-			return false
-		end
+	-- If a new projectile was added to the room successfully (did not overlap
+	-- with a brick)
+	if self.room:add_object(self.currentWeapon.new(self, dir)) ~= false then
+		self.currentWeapon.ammo = self.currentWeapon.ammo - 1
+	else
+		-- The projectile was not added to the room
+		return false
 	end
-
-	-- Spawn a new instance of the current weapon at the character's
-	-- coordinates
-	self.room:add_object(self.currentWeapon.new(self, dir))
-	self.currentWeapon.ammo = self.currentWeapon.ammo- 1
 	return true
 end
 
