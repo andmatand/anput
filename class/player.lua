@@ -8,8 +8,8 @@ function Player:init()
 	self.images = playerImg
 	self.team = 1 -- Good guys
 
-	self.arrows.ammo = 100
-	self.magic.ammo = 10
+	self:add_weapon('bow')
+	self.weapons.bow:add_ammo(100)
 end
 
 function Player:die()

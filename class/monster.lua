@@ -33,8 +33,8 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.mummy
 		self.health = 40
 
-		self.arrows.ammo = 20
-		self.currentWeapon = self.arrows
+		self:add_weapon('bow')
+		self.currentWeapon:add_ammo(20)
 
 		self.aiDelay = 10
 
@@ -45,8 +45,8 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.cat
 		self.health = 40
 
-		self.arrows.ammo = 20
-		self.currentWeapon = self.arrows
+		self:add_weapon('bow')
+		self.currentWeapon:add_ammo(20)
 
 		self.aiDelay = 4
 
@@ -57,8 +57,9 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.ghost
 		self.health = 80
 
-		self.arrows.ammo = 40
-		self.currentWeapon = self.arrows
+		self:add_weapon('staff')
+		self.currentWeapon:set_projectile_class(Fireball)
+		self.currentWeapon:add_ammo(20)
 
 		self.aiDelay = 2
 

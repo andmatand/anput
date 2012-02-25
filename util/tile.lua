@@ -1,3 +1,19 @@
+function add_direction(tile, dir)
+	if dir == 1 then
+		-- North
+		return {x = tile.x, y = tile.y - 1}
+	elseif dir == 2 then
+		-- East
+		return {x = tile.x + 1, y = tile.y}
+	elseif dir == 3 then
+		-- East
+		return {x = tile.x, y = tile.y + 1}
+	elseif dir == 4 then
+		-- West
+		return {x = tile.x - 1, y = tile.y}
+	end
+end
+
 function manhattan_distance(a, b)
 	return math.abs(b.x - a.x) + math.abs(b.y - a.y)
 end

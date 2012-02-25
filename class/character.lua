@@ -1,7 +1,6 @@
-require('arrow')
-require('fireball')
 require('sprite')
 require('tile')
+require('weapon')
 
 -- A Character is a Sprite with AI
 Character = class('Character', Sprite)
@@ -30,10 +29,23 @@ function Character:init()
 
 	self.aiTimer = 0
 
-	self.magic = {ammo = 0, new = nil}
-	self.arrows = {ammo = 0,
-	               new = function(owner, dir) return Fireball(owner, dir) end}
-	self.currentWeapon = self.arrows
+	self.weapons = {}
+	self.currentWeapon = nil
+end
+
+function Character:add_weapon(weaponType)
+	-- If we currently have no weapons
+	if next(self.weapons) == nil then
+		firstWeapon = true
+	end
+
+	-- Create a new weapon and add it to our weapons table
+	self.weapons[weaponType] = Weapon(self, weaponType)
+
+	if firstWeapon then
+		-- Set this new weapon as the current weapon
+		self.currentWeapon = self.weapons[weaponType]
+	end
 end
 
 function Character:choose_action()
@@ -196,6 +208,9 @@ function Character:direction_to(position)
 	elseif position.x < self.position.x then
 		-- South
 		return 4
+	else
+		-- The target position is the same as our position
+		return math.random(1, 4)
 	end
 end
 
@@ -329,8 +344,8 @@ function Character:draw()
 	if self.flashTimer == 0 then
 		love.graphics.setColor(255, 255, 255)
 		love.graphics.draw(img,
-						   self.position.x * TILE_W, self.position.y * TILE_H,
-						   0, SCALE_X, SCALE_Y)
+		                   self.position.x * TILE_W, self.position.y * TILE_H,
+		                   0, SCALE_X, SCALE_Y)
 	else
 		self.flashTimer = self.flashTimer - 1
 	end
@@ -392,20 +407,32 @@ function Character:receive_damage(amount)
 end
 
 function Character:shoot(dir)
-	print('\nshooting...')
 	if self.currentWeapon.ammo <= 0 or self.dead then
 		return false
 	end
 
-	-- If a new projectile was added to the room successfully (did not overlap
-	-- with a brick)
-	if self.room:add_object(self.currentWeapon.new(self, dir)) ~= false then
-		self.currentWeapon.ammo = self.currentWeapon.ammo - 1
-	else
-		-- The projectile was not added to the room
-		return false
+	print('shooting...')
+	print('self.position:', self.position.x, self.position.y)
+	print('dir:', dir)
+
+	-- Check if we are trying to shoot into a brick
+	for _,b in pairs(self.room.bricks) do
+		if tiles_overlap(add_direction(self.position, dir), b) then
+			-- Save ourself the ammo
+			return false
+		end
 	end
-	return true
+
+	-- Try to create a new projectile
+	newProjectile = self.currentWeapon:shoot(dir)
+
+	-- If this weapon can't shoot
+	if newProjectile == false then
+		return false
+	else
+		self.room:add_object(newProjectile)
+		return true
+	end
 end
 
 function Character:step(dir)

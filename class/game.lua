@@ -67,8 +67,8 @@ end
 function Game:draw_text()
 	love.graphics.setColor(255, 255, 255)
 	self:print('HP: ' .. self.player.health, ROOM_W, 0)
-	self:print('ARROWS: ' .. self.player.arrows.ammo, ROOM_W, 1)
-	self:print('MAGIC: ' .. self.player.magic.ammo, ROOM_W, 2)
+	self:print('ARROWS: ' .. self.player.weapons.bow.ammo, ROOM_W, 1)
+	--self:print('MAGIC: ' .. self.player.magic.ammo, ROOM_W, 2)
 	if self.paused then
 		self:print('PAUSED', ROOM_W, 3)
 	end
@@ -89,6 +89,10 @@ function Game:generate()
 end
 
 function Game:input()
+	if self.paused then
+		return
+	end
+
 	-- Get player's directional input
 	if love.keyboard.isDown('w') then
 		self.player:step(1)
@@ -107,6 +111,15 @@ function Game:input()
 end
 
 function Game:keypressed(key)
+	-- Toggle pause
+	if key == ' ' then
+		self.paused = not self.paused
+	end
+
+	if self.paused then
+		return
+	end
+
 	-- Get player input for shooting arrows
 	shootDir = nil
 	if key == 'up' then
@@ -132,11 +145,6 @@ function Game:keypressed(key)
 		self.player:step(3)
 	elseif key == 'a' then
 		self.player:step(4)
-	end
-
-	-- Toggle pause
-	if key == ' ' then
-		self.paused = not self.paused
 	end
 
 	-- DEBUG: toggle map with m
