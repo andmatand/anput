@@ -61,16 +61,34 @@ function Game:draw()
 		self.map:draw(self.currentRoom)
 	end
 
-	self:draw_text()
+	self:draw_sidepane()
 end
 
-function Game:draw_text()
+function Game:draw_sidepane()
 	love.graphics.setColor(255, 255, 255)
 	self:print('HP: ' .. self.player.health, ROOM_W, 0)
-	self:print('ARROWS: ' .. self.player.weapons.bow.ammo, ROOM_W, 1)
+
+	for _,w in pairs(self.player.weapons) do
+		if self.player.currentWeapon == w then
+			love.graphics.setColor(255, 0, 255)
+		else
+			love.graphics.setColor(255, 255, 255)
+		end
+
+		w:draw({x = ROOM_W, y = 1 + w.order})
+
+		-- If this weapon has ammo
+		if w.ammo ~= nil then
+			-- Display the ammount of ammo
+			self:print(w.ammo, ROOM_W + 2, 1 + w.order)
+		end
+	end
+
+	--self:print('ARROWS: ' .. self.player.weapons.bow.ammo, ROOM_W, 1)
 	--self:print('MAGIC: ' .. self.player.magic.ammo, ROOM_W, 2)
 	if self.paused then
-		self:print('PAUSED', ROOM_W, 3)
+		love.graphics.setColor(255, 255, 255)
+		self:print('PAUSED', ROOM_W, 6)
 	end
 end
 
@@ -116,7 +134,31 @@ function Game:keypressed(key)
 		self.paused = not self.paused
 	end
 
+	-- Get player input for switching weapons
+	if key == '1' or key == '2' or key == '3' then
+		-- Switch to weapon by specific number
+		self.player:set_current_weapon(tonumber(key))
+	elseif key == 'tab' then
+		-- Cycle through weapons
+		changedWeapon = false
+		for _,w in pairs(self.player.weapons)  do
+			-- If this weapons order is 1 more than that of the current weapon
+			if w.order == self.player.currentWeapon.order + 1 then
+				self.player.currentWeapon = w
+				changedWeapon = true
+				break
+			end
+		end
+		-- If we haven't changed weapons yet
+		if changedWeapon == false then
+			-- Change to the first weapon
+			self.player:set_current_weapon(1)
+		end
+	end
+
+	-- If the game is paused
 	if self.paused then
+		-- Don't allow keys below here
 		return
 	end
 

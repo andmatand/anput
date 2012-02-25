@@ -23,39 +23,32 @@ function love.load()
 		'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
 	love.graphics.setFont(font)
 
-	playerImg = {default = newImg('player1.png')}
-	for i,f in pairs(playerImg) do
-		f:setFilter('nearest', 'nearest')
-	end
+	playerImg = {default = newImg('player.png'),
+	             sword = newImg('player-sword.png'),
+	             bow = newImg('player-bow.png'),
+	             staff = newImg('player-staff.png')}
 
 	monsterImg = {}
 	monsterImg.scarab = {default = newImg('scarab.png'),
 	                     moving = newImg('scarab-moving.png')}
-
 	monsterImg.bird = {default = newImg('bird.png'),
 	                   dodge = newImg('bird-dodge.png')}
-	monsterImg.mummy = {default = newImg('mummy.png')}
+	monsterImg.mummy = {default = newImg('mummy.png'),
+	                    moving = newImg('mummy-moving.png')}
 	monsterImg.cat = {default = newImg('cat.png'),
 	                  moving = newImg('cat-moving.png')}
 	monsterImg.ghost = {default = newImg('ghost.png')}
-	--for _,m in pairs(monsterImg) do
-	--	for _,i in pairs(m) do
-	--		i:setFilter('nearest', 'nearest')
-	--	end
-	--end
 
 	projectileImg = {}
-	projectileImg.arrow = {love.graphics.newImage('res/img/arrow.png')}
-	projectileImg.fireball = {love.graphics.newImage('res/img/fireball1.png'),
-	                          love.graphics.newImage('res/img/fireball2.png')}
-	for _,p in pairs(projectileImg) do
-		for _,i in pairs(p) do
-			i:setFilter('nearest', 'nearest')
-		end
-	end
+	projectileImg.arrow = {newImg('arrow.png')}
+	projectileImg.fireball = {newImg('fireball1.png'),
+	                          newImg('fireball2.png')}
 
-	potionImg = love.graphics.newImage('res/img/potion.png')
-	potionImg:setFilter('nearest', 'nearest')
+	-- Items
+	potionImg = newImg('potion.png')
+	swordImg = newImg('sword.png')
+	bowImg = newImg('bow.png')
+	staffImg = newImg('staff.png')
 
 	playerCrySound = Sound('res/sfx/player-cry.wav')
 	playerGetArrowsSound = Sound('res/sfx/player-get-arrows.wav')

@@ -87,14 +87,6 @@ function Monster:die()
 end
 
 function Monster:hit(patient)
-	-- Damage other characters
-	if instanceOf(Character, patient) then
-		if self.team ~= patient.team and -- Not on the same team
-		   self.monsterType ~= 5 then -- Not a ghost
-			patient:receive_damage(5)
-		end
-	end
-
 	return Character.hit(self, patient)
 end
 

@@ -37,6 +37,8 @@ function Character:add_weapon(weaponType)
 	-- If we currently have no weapons
 	if next(self.weapons) == nil then
 		firstWeapon = true
+	else
+		firstWeapon = false
 	end
 
 	-- Create a new weapon and add it to our weapons table
@@ -337,6 +339,15 @@ function Character:draw()
 	   (self.path.nodes ~= nil or self.moved or
 	    self.action == Character.static.actions.flee) then
 		img = self.images.moving
+	elseif self.images.sword ~= nil and self.weapons.sword ~= nil and
+	       self.currentWeapon == self.weapons.sword then
+		img = self.images.sword
+	elseif self.images.bow ~= nil and self.weapons.bow ~= nil and
+	       self.currentWeapon == self.weapons.bow then
+		img = self.images.bow
+	elseif self.images.staff ~= nil and self.weapons.staff ~= nil and
+	       self.currentWeapon == self.weapons.staff then
+		img = self.images.staff
 	else
 		img = self.images.default
 	end
@@ -380,6 +391,25 @@ function Character:follow_path()
 	return true
 end
 
+function Character:hit(patient)
+	-- Damage other characters with sword
+	if (instanceOf(Character, patient) and -- We hit a character
+		self.currentWeapon ~= nil and -- We have a weapon
+	    self.currentWeapon.name == 'sword' and -- Current weapon is sword
+		self.team ~= patient.team) then -- Not on the same team
+		-- If the patient receives our hit
+		if patient:receive_hit(self) then
+			patient:receive_damage(self.currentWeapon.damage)
+			self.attackedDir = self.dir
+		else
+			return false
+		end
+	end
+
+	return Sprite.hit(self, patient)
+end
+
+
 function Character:path_obsolete()
 	-- If we're chasing a character
 	if self.path.destination ~= nil and self.path.character ~= nil then
@@ -406,8 +436,18 @@ function Character:receive_damage(amount)
 	end
 end
 
+function Character:set_current_weapon(num)
+	for _,w in pairs(self.weapons) do
+		if w.order == num then
+			self.currentWeapon = w
+			break
+		end
+	end
+end
+
 function Character:shoot(dir)
-	if self.currentWeapon.ammo <= 0 or self.dead then
+	if (self.currentWeapon.ammo == nil or self.currentWeapon.ammo <= 0 or
+	    self.dead) then
 		return false
 	end
 
