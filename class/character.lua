@@ -439,10 +439,6 @@ function Character:shoot(dir)
 		return false
 	end
 
-	print('shooting...')
-	print('self.position:', self.position.x, self.position.y)
-	print('dir:', dir)
-
 	-- Check if we are trying to shoot into a brick
 	for _,b in pairs(self.room.bricks) do
 		if tiles_overlap(add_direction(self.position, dir), b) then

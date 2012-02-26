@@ -188,6 +188,9 @@ function Sprite:receive_hit(agent)
 	return true
 end
 
+function Sprite:update()
+end
+
 function Sprite:line_of_sight(patient)
 	return self.room:line_of_sight(self.position, patient.position)
 end

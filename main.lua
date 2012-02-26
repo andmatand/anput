@@ -116,7 +116,7 @@ function love.keypressed(key, unicode)
 		else
 			showDebug = true
 		end
-	elseif key == 'f' then
+	elseif key == 'f2' then
 		toggle_flicker_mode()
 	elseif key == 'f11' then
 		love.graphics.toggleFullscreen()

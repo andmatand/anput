@@ -226,6 +226,11 @@ function Room:update()
 		t:update()
 	end
 
+	-- Update sprites
+	for _,s in pairs(self.sprites) do
+		s:update()
+	end
+
 	-- Run physics on all sprites
 	for i,s in pairs(self.sprites) do
 		s:physics()

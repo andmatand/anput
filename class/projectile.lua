@@ -37,16 +37,6 @@ function Projectile:draw()
 		return
 	end
 
-	self.animateTimer = self.animateTimer + 1
-	if self.animateTimer == 5 then
-		self.animateTimer = 0
-
-		self.frame = self.frame + 1
-		if self.frame > #self.images  then
-			self.frame = 1
-		end
-	end
-
 	-- Determine the rotation/flipping
 	r = 0
 	sx = SCALE_X
@@ -78,4 +68,16 @@ function Projectile:physics()
 
 	-- Do normal sprite physics
 	Sprite.physics(self)
+end
+
+function Projectile:update()
+	self.animateTimer = self.animateTimer + 1
+	if self.animateTimer == 2 then
+		self.animateTimer = 0
+
+		self.frame = self.frame + 1
+		if self.frame > #self.images  then
+			self.frame = 1
+		end
+	end
 end
