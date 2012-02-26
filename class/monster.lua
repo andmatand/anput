@@ -25,6 +25,8 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.bird
 		self.health = 20
 
+		self:add_weapon('sword')
+
 		self.aiDelay = 5
 
 		self.ai.dodge = {dist = 5, prob = 5}

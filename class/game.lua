@@ -64,9 +64,37 @@ function Game:draw()
 	self:draw_sidepane()
 end
 
+function Game:draw_progress_bar(barInfo, x, y, w, h)
+	bar = {}
+	bar.x = x + SCALE_X
+	bar.y = y + SCALE_Y
+	bar.w = w - (SCALE_X * 2)
+	bar.h = TILE_H - (SCALE_Y * 2)
+	
+	-- Draw border
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.rectangle('fill', x, y, w, h)
+
+	-- Draw black bar inside
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
+
+	-- Set width of bar
+	bar.w = (barInfo.num * bar.w) / barInfo.max
+
+	-- Draw progress bar
+	love.graphics.setColor(255, 0, 255)
+	love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
+end
+
 function Game:draw_sidepane()
 	love.graphics.setColor(255, 255, 255)
-	self:print('HP: ' .. self.player.health, ROOM_W, 0)
+
+	-- Display HP
+	self:print('HP', ROOM_W, 0)
+	self:draw_progress_bar({num = self.player.health, max = 100},
+	                       (ROOM_W + 3) * TILE_W, 0,
+						   (SCREEN_W - ROOM_W - 3) * TILE_W, TILE_H)
 
 	for _,w in pairs(self.player.weapons) do
 		if self.player.currentWeapon == w then
