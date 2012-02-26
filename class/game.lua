@@ -83,7 +83,7 @@ function Game:draw_progress_bar(barInfo, x, y, w, h)
 	bar.w = (barInfo.num * bar.w) / barInfo.max
 
 	-- Draw progress bar
-	love.graphics.setColor(255, 0, 255)
+	love.graphics.setColor(barInfo.color)
 	love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
 end
 
@@ -91,10 +91,11 @@ function Game:draw_sidepane()
 	love.graphics.setColor(255, 255, 255)
 
 	-- Display HP
-	self:print('HP', ROOM_W, 0)
-	self:draw_progress_bar({num = self.player.health, max = 100},
-	                       (ROOM_W + 3) * TILE_W, 0,
-						   (SCREEN_W - ROOM_W - 3) * TILE_W, TILE_H)
+	--self:print('HP', ROOM_W, 0)
+	self:draw_progress_bar({num = self.player.health, max = 100,
+	                        color = MAGENTA},
+	                       (ROOM_W + 2) * TILE_W, 0,
+						   (SCREEN_W - ROOM_W - 2) * TILE_W, TILE_H)
 
 	for _,w in pairs(self.player.weapons) do
 		if self.player.currentWeapon == w then
@@ -105,9 +106,17 @@ function Game:draw_sidepane()
 
 		w:draw({x = ROOM_W, y = 1 + w.order})
 
-		-- If this weapon has ammo
-		if w.ammo ~= nil then
-			-- Display the ammount of ammo
+		-- If this weapon has a maximum ammo
+		if w.maxAmmo ~= nil then
+			-- Draw a progress bar
+			self:draw_progress_bar({num = w.ammo, max = w.maxAmmo,
+			                        color = CYAN},
+			                       (ROOM_W + 2) * TILE_W,
+			                       (1 + w.order) * TILE_H,
+			                       (SCREEN_W - ROOM_W - 2) * TILE_W, TILE_H)
+		-- If this weapon has an arbitrary amount of ammo
+		elseif w.ammo ~= nil then
+			-- Display the numeric ammount of ammo
 			self:print(w.ammo, ROOM_W + 2, 1 + w.order)
 		end
 	end
@@ -166,7 +175,7 @@ function Game:keypressed(key)
 	if key == '1' or key == '2' or key == '3' then
 		-- Switch to weapon by specific number
 		self.player:set_current_weapon(tonumber(key))
-	elseif key == 'tab' or key == 'rshift' then
+	elseif key == 'tab' or key == 'lshift' or key == 'rshift' then
 		-- Cycle through weapons
 		changedWeapon = false
 		for _,w in pairs(self.player.weapons)  do
@@ -260,5 +269,10 @@ function Game:update()
 			self:switch_to_room(e.roomIndex)
 			break
 		end
+	end
+
+	-- If player didn't move
+	if self.player.moved == false then
+		self.player.weapons.staff:add_ammo(.25)
 	end
 end

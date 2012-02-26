@@ -173,30 +173,6 @@ function Character:chase(sprite)
 	self:follow_path()
 end
 
-function Character:flee_from(sprite)
-	if math.random(0, 1) == 0 then
-		if sprite.position.x < self.position.x then
-			self:step(2) -- East
-		elseif sprite.position.x > self.position.x then
-			self:step(4) -- West
-		else
-			if math.random(0, 1) == 0 then
-				self:step(2) else self:step(4)
-			end
-		end
-	else
-		if self.position.y > sprite.position.y then
-			self:step(3) -- South
-		elseif self.position.y < sprite.position.y then
-			self:step(1) -- North
-		else
-			if math.random(0, 1) == 0 then
-				self:step(3) else self:step(1)
-			end
-		end
-	end
-end
-
 function Character:direction_to(position)
 	if position.y < self.position.y then
 		-- North
@@ -321,19 +297,6 @@ function Character:draw()
 		self.hurt = false
 	end
 
-	--self.animateTimer = self.animateTimer + 1
-	--if self.animateTimer == 30 then
-	--	self.animateTimer = 0
-
-	--	if #self.images > 1 then
-	--		if self.frame == 1 and math.random(0, 10) == 0 then
-	--			self.frame = 2
-	--		else
-	--			self.frame = 1
-	--		end
-	--	end
-	--end
-
 	-- Determine which image of this character to draw
 	if self.images.moving ~= nil and
 	   (self.path.nodes ~= nil or self.moved or
@@ -365,6 +328,30 @@ end
 function Character:find_path(dest)
 	self.path.nodes = self.room:find_path(self.position, dest)
 	self.path.destination = dest
+end
+
+function Character:flee_from(sprite)
+	if math.random(0, 1) == 0 then
+		if sprite.position.x < self.position.x then
+			self:step(2) -- East
+		elseif sprite.position.x > self.position.x then
+			self:step(4) -- West
+		else
+			if math.random(0, 1) == 0 then
+				self:step(2) else self:step(4)
+			end
+		end
+	else
+		if self.position.y > sprite.position.y then
+			self:step(3) -- South
+		elseif self.position.y < sprite.position.y then
+			self:step(1) -- North
+		else
+			if math.random(0, 1) == 0 then
+				self:step(3) else self:step(1)
+			end
+		end
+	end
 end
 
 function Character:follow_path()
@@ -432,6 +419,7 @@ function Character:receive_damage(amount)
 	self.hurt = true
 
 	if self.health <= 0 then
+		self.health = 0
 		self:die()
 	end
 end

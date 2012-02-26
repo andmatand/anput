@@ -24,11 +24,11 @@ function MapDisplay:draw(currentRoom)
 	for _, n in pairs(self.nodes) do
 		if n.room.visited then
 			if n.room == currentRoom then
-				love.graphics.setColor(255, 0, 255)
+				love.graphics.setColor(MAGENTA)
 			elseif n.finalRoom then
-				love.graphics.setColor(0, 255, 128)
+				love.graphics.setColor(CYAN)
 			else
-				love.graphics.setColor(255, 255, 255)
+				love.graphics.setColor(WHITE)
 			end
 
 			love.graphics.rectangle('fill',
