@@ -166,7 +166,7 @@ function Game:keypressed(key)
 	if key == '1' or key == '2' or key == '3' then
 		-- Switch to weapon by specific number
 		self.player:set_current_weapon(tonumber(key))
-	elseif key == 'tab' then
+	elseif key == 'tab' or key == 'rshift' then
 		-- Cycle through weapons
 		changedWeapon = false
 		for _,w in pairs(self.player.weapons)  do
