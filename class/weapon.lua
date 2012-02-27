@@ -12,9 +12,7 @@ Weapon.static.templates = {
 	         projectileClass = Fireball}
 	}
 
-function Weapon:init(owner, weaponType)
-	self.owner = owner
-
+function Weapon:init(weaponType)
 	-- Copy the weapon template for the specified type to create a new weapon
 	for k,v in pairs(Weapon.static.templates[weaponType]) do
 		self[k] = v

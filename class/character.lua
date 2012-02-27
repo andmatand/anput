@@ -33,7 +33,9 @@ function Character:init()
 	self.currentWeapon = nil
 end
 
-function Character:add_weapon(weaponType)
+function Character:add_weapon(weapon)
+	local firstWeapon
+
 	-- If we currently have no weapons
 	if next(self.weapons) == nil then
 		firstWeapon = true
@@ -42,11 +44,12 @@ function Character:add_weapon(weaponType)
 	end
 
 	-- Create a new weapon and add it to our weapons table
-	self.weapons[weaponType] = Weapon(self, weaponType)
+	self.weapons[weapon.name] = weapon
+	weapon.owner = self
 
 	if firstWeapon then
 		-- Set this new weapon as the current weapon
-		self.currentWeapon = self.weapons[weaponType]
+		self.currentWeapon = weapon
 	end
 end
 
@@ -179,7 +182,7 @@ function Character:die()
 	-- If we are carying an item
 	if self.item ~= nil then
 		-- Drop it
-		self.item.position = {x = self.position.x, y = self.position.y}
+		self.item.position = self.position
 		self.room:add_object(self.item)
 	end
 end
@@ -449,7 +452,8 @@ function Character:set_current_weapon(num)
 end
 
 function Character:shoot(dir)
-	if (self.currentWeapon.ammo == nil or self.dead) then
+	if (self.currentWeapon == nil or self.currentWeapon.ammo == nil or
+	    self.dead) then
 		return false
 	end
 

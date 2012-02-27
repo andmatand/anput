@@ -16,15 +16,18 @@ end
 function Item:draw()
 	if self.itemType == 1 then
 		-- Arrows
-		love.graphics.setColor(255, 255, 255)
+		love.graphics.setColor(WHITE)
 	end
 
 	x = (self.position.x * TILE_W)
 	y = (self.position.y * TILE_H)
 
 	if self.image ~= nil then
-		love.graphics.setColor(255, 255, 255)
+		love.graphics.setColor(WHITE)
 		love.graphics.draw(self.image, x, y, 0, SCALE_X, SCALE_Y)
+	elseif self.weapon ~= nil then
+		love.graphics.setColor(WHITE)
+		self.weapon:draw(self.position)
 	else
 		love.graphics.rectangle('fill',
 		                        x + (TILE_W / 4),
@@ -73,5 +76,11 @@ function Item:use_on(patient)
 				sound.monsterGetHP:play()
 			end
 		end
+	elseif self.itemType == 3 then
+		-- Weapon
+		patient:add_weapon(self.weapon)
+		self.used = true
+
+		sound.playerGetArrows:play()
 	end
 end
