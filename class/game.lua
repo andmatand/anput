@@ -283,8 +283,17 @@ function Game:update()
 		end
 	end
 
-	-- If player didn't move
-	if self.player.moved == false then
-		self.player.weapons.staff:add_ammo(.25)
+	if self.player.weapons.staff ~= nil then
+		-- Recharge the staff
+		
+		-- If player didn't move
+		if self.player.moved == false then
+			-- Recharge faster
+			amount = .5
+		else
+			-- Recharge slowly
+			amount = .25
+		end
+		self.player.weapons.staff:add_ammo(amount)
 	end
 end
