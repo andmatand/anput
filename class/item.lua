@@ -1,7 +1,7 @@
 Item = class('Item')
 
 function Item:init(position, itemType)
-	self.position = {x = position.x, y = position.y}
+	self.position = position
 	self.itemType = itemType
 
 	if itemType == 2 then

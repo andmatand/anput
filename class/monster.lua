@@ -20,6 +20,9 @@ function Monster:init(pos, monsterType)
 
 	self.team = 2 -- Bad guys
 
+	-- Copy monster difficulty level
+	self.difficulty = Monster.static.difficulties[monsterType]
+
 	-- Set monster properties
 	if self.monsterType == 1 then
 		self.images = monsterImg.scarab

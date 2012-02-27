@@ -50,6 +50,17 @@ function Character:add_weapon(weaponType)
 	end
 end
 
+function Character:chase(sprite)
+	-- Set path to destination
+	self:find_path(sprite.position)
+	if instanceOf(Character, sprite) then
+		self.path.character = sprite
+	end
+
+	-- Start following the path
+	self:follow_path()
+end
+
 function Character:choose_action()
 	-- See if there is a projectile we should dodge
 	self.ai.dodge.target = nil
@@ -162,15 +173,15 @@ function Character:do_ai()
 	end
 end
 
-function Character:chase(sprite)
-	-- Set path to destination
-	self:find_path(sprite.position)
-	if instanceOf(Character, sprite) then
-		self.path.character = sprite
-	end
+function Character:die()
+	Sprite.die(self)
 
-	-- Start following the path
-	self:follow_path()
+	-- If we are carying an item
+	if self.item ~= nil then
+		-- Drop it
+		self.item.position = {x = self.position.x, y = self.position.y}
+		self.room:add_object(self.item)
+	end
 end
 
 function Character:direction_to(position)

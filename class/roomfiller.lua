@@ -31,7 +31,15 @@ function RoomFiller:add_monsters(max)
 		table.insert(monsters, Monster({}, monsterType))
 	end
 
+	-- DEBUG
 	print('actual difficulty: ' .. totalDifficulty)
+
+	-- Give items to the monsters
+	for _, m in pairs(monsters) do
+		if math.random(m.difficulty, 100) >= 30 then
+			m.item = Item({}, math.random(1, 2))
+		end
+	end
 
 	self:position_objects(monsters)
 end
@@ -133,7 +141,7 @@ function RoomFiller:fill()
 	self:add_monsters(maxMonsters)
 
 	-- Add items
-	local numItems = math.random(0, #self.room.freeTiles * .02)
-	local fNew = function(pos) return Item(args.position, math.random(1, 2)) end
-	self:add_objects(numItems, nil, fNew, self.room.freeTiles)
+	--local numItems = math.random(0, #self.room.freeTiles * .02)
+	--local fNew = function(pos) return Item(args.position, math.random(1, 2)) end
+	--self:add_objects(numItems, nil, fNew, self.room.freeTiles)
 end
