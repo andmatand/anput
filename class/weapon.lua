@@ -60,6 +60,9 @@ function Weapon:shoot(dir)
 		if self.ammo >= self.cost then
 			self.ammo = self.ammo - self.cost
 			return self.projectileClass(self.owner, dir)
+		else
+			sound.noAmmo:play()
+			return false
 		end
 	end
 end

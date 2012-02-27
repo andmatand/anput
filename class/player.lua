@@ -19,7 +19,8 @@ end
 
 function Player:die()
 	Character.die(self)
-	print('player is dead')
+
+	sound.playerDie:play()
 end
 
 function Player:hit(patient)
@@ -35,6 +36,6 @@ function Player:receive_damage(amount)
 	Character.receive_damage(self, amount)
 
 	if not self.dead then
-		playerCrySound:play()
+		sound.playerCry:play()
 	end
 end

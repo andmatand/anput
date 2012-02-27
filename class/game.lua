@@ -69,7 +69,7 @@ function Game:draw_progress_bar(barInfo, x, y, w, h)
 	bar.x = x + SCALE_X
 	bar.y = y + SCALE_Y
 	bar.w = w - (SCALE_X * 2)
-	bar.h = TILE_H - (SCALE_Y * 2)
+	bar.h = h - (SCALE_Y * 2)
 	
 	-- Draw border
 	love.graphics.setColor(255, 255, 255)
@@ -94,16 +94,26 @@ function Game:draw_sidepane()
 	--self:print('HP', ROOM_W, 0)
 	self:draw_progress_bar({num = self.player.health, max = 100,
 	                        color = MAGENTA},
-	                       (ROOM_W + 2) * TILE_W, 0,
-						   (SCREEN_W - ROOM_W - 2) * TILE_W, TILE_H)
+	                       (ROOM_W + 2) * TILE_W, 2,
+						   (SCREEN_W - ROOM_W - 2) * TILE_W, TILE_H - 4)
 
 	for _,w in pairs(self.player.weapons) do
-		if self.player.currentWeapon == w then
-			love.graphics.setColor(255, 0, 255)
-		else
-			love.graphics.setColor(255, 255, 255)
-		end
+		--if self.player.currentWeapon == w then
+		--	love.graphics.setColor(MAGENTA)
+		--	love.graphics.setLine(2, 'rough')
+		--	love.graphics.rectangle('line',
+		--	                        ROOM_W * TILE_W, 
+		--							((1 + w.order) * TILE_H) + 1,
+		--	                        TILE_W,
+		--	                        TILE_H)
+		--end
 
+		if self.player.currentWeapon == w then
+			love.graphics.setColor(MAGENTA)
+		else
+			love.graphics.setColor(WHITE)
+		end
+		--love.graphics.setColor(WHITE)
 		w:draw({x = ROOM_W, y = 1 + w.order})
 
 		-- If this weapon has a maximum ammo
@@ -112,17 +122,17 @@ function Game:draw_sidepane()
 			self:draw_progress_bar({num = w.ammo, max = w.maxAmmo,
 			                        color = CYAN},
 			                       (ROOM_W + 2) * TILE_W,
-			                       (1 + w.order) * TILE_H,
-			                       (SCREEN_W - ROOM_W - 2) * TILE_W, TILE_H)
+			                       ((1 + w.order) * TILE_H) + 2,
+			                       ((SCREEN_W - ROOM_W - 2) * TILE_W) - 2,
+			                       TILE_H - 4)
 		-- If this weapon has an arbitrary amount of ammo
 		elseif w.ammo ~= nil then
 			-- Display the numeric ammount of ammo
+			love.graphics.setColor(WHITE)
 			self:print(w.ammo, ROOM_W + 2, 1 + w.order)
 		end
 	end
 
-	--self:print('ARROWS: ' .. self.player.weapons.bow.ammo, ROOM_W, 1)
-	--self:print('MAGIC: ' .. self.player.magic.ammo, ROOM_W, 2)
 	if self.paused then
 		love.graphics.setColor(255, 255, 255)
 		self:print('PAUSED', ROOM_W, 6)
@@ -175,13 +185,14 @@ function Game:keypressed(key)
 	if key == '1' or key == '2' or key == '3' then
 		-- Switch to weapon by specific number
 		self.player:set_current_weapon(tonumber(key))
-	elseif key == 'tab' or key == 'lshift' or key == 'rshift' then
+	elseif (key == 'tab' or key == 'lshift' or key == 'rshift' or
+	        key == 'rctrl') then
 		-- Cycle through weapons
 		changedWeapon = false
 		for _,w in pairs(self.player.weapons)  do
 			-- If this weapons order is 1 more than that of the current weapon
 			if w.order == self.player.currentWeapon.order + 1 then
-				self.player.currentWeapon = w
+				self.player:set_current_weapon(w.order)
 				changedWeapon = true
 				break
 			end

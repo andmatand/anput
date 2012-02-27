@@ -55,11 +55,18 @@ function love.load()
 	bowImg = newImg('bow.png')
 	staffImg = newImg('staff.png')
 
-	playerCrySound = Sound('res/sfx/player-cry.wav')
-	playerGetArrowsSound = Sound('res/sfx/player-get-arrows.wav')
-	playerGetHPSound = Sound('res/sfx/player-get-hp.wav')
-	monsterCrySound = Sound('res/sfx/monster-cry.wav')
-	monsterDieSound = Sound('res/sfx/monster-die.wav')
+	-- Sounds
+	sound = {}
+	sound.playerCry = Sound('res/sfx/player-cry.wav')
+	sound.playerGetArrows = Sound('res/sfx/player-get-arrows.wav')
+	sound.playerGetHP = Sound('res/sfx/player-get-hp.wav')
+	sound.switchWeapon = Sound('res/sfx/switch-weapon.wav')
+	sound.noAmmo = Sound('res/sfx/no-ammo.wav')
+	sound.monsterCry = Sound('res/sfx/monster-cry.wav')
+	sound.monsterGetArrows = Sound('res/sfx/monster-get-arrows.wav')
+	sound.monsterGetHP = Sound('res/sfx/monster-get-hp.wav')
+	sound.monsterDie = Sound('res/sfx/monster-die.wav')
+	sound.playerDie = Sound('res/sfx/player-die.wav')
 
 	math.randomseed(os.time())
 

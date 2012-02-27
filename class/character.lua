@@ -428,14 +428,17 @@ function Character:set_current_weapon(num)
 	for _,w in pairs(self.weapons) do
 		if w.order == num then
 			self.currentWeapon = w
+
+			if instanceOf(Player, self) then
+				sound.switchWeapon:play()
+			end
 			break
 		end
 	end
 end
 
 function Character:shoot(dir)
-	if (self.currentWeapon.ammo == nil or self.currentWeapon.ammo <= 0 or
-	    self.dead) then
+	if (self.currentWeapon.ammo == nil or self.dead) then
 		return false
 	end
 
@@ -450,7 +453,7 @@ function Character:shoot(dir)
 	-- Try to create a new projectile
 	newProjectile = self.currentWeapon:shoot(dir)
 
-	-- If this weapon can't shoot
+	-- If this weapon did not (or cannot) shoot
 	if newProjectile == false then
 		return false
 	else

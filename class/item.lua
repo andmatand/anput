@@ -44,7 +44,13 @@ function Item:use_on(patient)
 		if patient.weapons.bow ~= nil then
 			patient.weapons.bow:add_ammo(10)
 			self.used = true
-			playerGetArrowsSound:play()
+
+			-- Play sound depending on who picked it up
+			if instanceOf(Player, patient) then
+				sound.playerGetArrows:play()
+			elseif instanceOf(Monster, patient) then
+				sound.monsterGetArrows:play()
+			end
 		else
 			return false
 		end
@@ -59,7 +65,13 @@ function Item:use_on(patient)
 			end
 
 			self.used = true
-			playerGetHPSound:play()
+
+			-- Play sound depending on who picked it up
+			if instanceOf(Player, patient) then
+				sound.playerGetHP:play()
+			elseif instanceOf(Monster, patient) then
+				sound.monsterGetHP:play()
+			end
 		end
 	end
 end

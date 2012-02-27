@@ -85,7 +85,7 @@ end
 function Monster:die()
 	Character.die(self)
 
-	monsterDieSound:play()
+	sound.monsterDie:play()
 end
 
 function Monster:hit(patient)
@@ -96,7 +96,7 @@ function Monster:receive_damage(amount)
 	Character.receive_damage(self, amount)
 
 	if not self.dead then
-		monsterCrySound:play()
+		sound.monsterCry:play()
 	end
 end
 
