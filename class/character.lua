@@ -148,16 +148,16 @@ function Character:do_ai()
 	self.action = self:choose_action()
 
 	if self.action == Character.static.actions.dodge then
-		print('action: dodge')
+		--print('action: dodge')
 		self:dodge(self.ai.dodge.target)
 	elseif self.action == Character.static.actions.flee then
-		print('action: flee')
+		--print('action: flee')
 		self:flee_from(self.ai.flee.target)
 	elseif self.action == Character.static.actions.chase then
-		print('action: chase')
+		--print('action: chase')
 		self:chase(self.ai.chase.target)
 	elseif self.action == Character.static.actions.shoot then
-		print('action: shoot')
+		--print('action: shoot')
 		self:shoot(self:direction_to(self.ai.shoot.target.position))
 	end
 end

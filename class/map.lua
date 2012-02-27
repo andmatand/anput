@@ -234,9 +234,12 @@ function Map:generate_rooms()
 	end
 
 	-- Assign difficulty to each room based on distance from final room
-	-- compared to farthest room
-	--for _, r in pairs(rooms) do
-	--end
+	-- compared to first room
+	for _, r in pairs(rooms) do
+		r.difficulty = math.floor(100 -
+		                          ((r.distanceFromEnd /
+		                            rooms[1].distanceFromEnd) * 100))
+	end
 
 	-- Create a display of this map
 	self.display = MapDisplay(self.nodes)

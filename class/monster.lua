@@ -2,6 +2,14 @@ require('character')
 
 Monster = class('Monster', Character)
 
+Monster.static.difficulties = {
+	 1, -- 1. Scarab
+	 5, -- 2. Bird
+	10, -- 3. mummy
+	15, -- 4. cat
+	30  -- 5. ghost
+	}
+
 function Monster:init(pos, monsterType)
 	Character.init(self)
 

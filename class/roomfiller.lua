@@ -9,13 +9,58 @@ function RoomFiller:init(room)
 	self.room = room
 end
 
+function RoomFiller:add_monsters(max)
+	-- Create a table of monsters with difficulties as high as possible in
+	-- order to meet room difficulty level, without exceding the room's maximum
+	-- occupancy
+	local monsters = {}
+	local totalDifficulty = 0
+	while totalDifficulty < self.room.difficulty and #monsters < max do
+		-- Find the hardest monster diffculty we still have room for
+		local hardest = 0
+		local monsterType = nil
+		for mt, diff in ipairs(Monster.static.difficulties) do
+			if diff + totalDifficulty > self.room.difficulty then
+				break
+			end
+			hardest = diff
+			monsterType = mt
+		end
+
+		totalDifficulty = totalDifficulty + hardest
+		table.insert(monsters, Monster({}, monsterType))
+	end
+
+	print('actual difficulty: ' .. totalDifficulty)
+
+	self:position_objects(monsters)
+end
+
+function RoomFiller:position_objects(objects)
+	local freeTiles = copy_table(self.room.freeTiles)
+
+	for i, o in pairs(objects) do
+		-- Pick a random free tile
+		local position = freeTiles[math.random(1, #freeTiles)]
+
+		-- Set the object's position to that of our chosen tile
+		o.position = {x = position.x, y = position.y}
+
+		-- Remove this tile from the freeTiles table
+		table.remove(freeTiles, i)
+
+		-- Add this object to the room
+		self.room:add_object(o)
+	end
+end
+
 function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
 	args = {}
 	for i = 1, num do
 		for tries = 1, 5 do
-			position = freeTiles[math.random(1, #freeTiles)]
+			local position = freeTiles[math.random(1, #freeTiles)]
 
-			ok = true
+			local ok = true
 			if fTest == nil then
 				-- Default test function: Don't place in occupied tile
 				if self.room:tile_occupied(position) then
@@ -80,21 +125,15 @@ end
 
 function RoomFiller:fill()
 	-- Add turrets
-	numTurrets = math.random(0, #self.room.bricks * .03)
+	local numTurrets = math.random(0, #self.room.bricks * .03)
 	self:add_turrets(numTurrets)
 
-	-- Find difficulty percentage based on distance from the final room
-	easiness = self.room.distanceFromEnd / game.rooms[1].distanceFromEnd
-
 	-- Add monsters
-	maxMonsters = #self.room.freeTiles * .04
-	--numMonsters = math.random(0, (maxMonsters - (maxMonsters * easiness)))
-	numMonsters = maxMonsters - ((maxMonsters * easiness) - 1)
-	fNew = function(args) return Monster(args.position, math.random(1, 5)) end
-	self:add_objects(numMonsters, nil, fNew, self.room.freeTiles)
+	local maxMonsters = #self.room.freeTiles * .04
+	self:add_monsters(maxMonsters)
 
 	-- Add items
-	numItems = math.random(0, #self.room.freeTiles * .02)
-	fNew = function(pos) return Item(args.position, math.random(1, 2)) end
+	local numItems = math.random(0, #self.room.freeTiles * .02)
+	local fNew = function(pos) return Item(args.position, math.random(1, 2)) end
 	self:add_objects(numItems, nil, fNew, self.room.freeTiles)
 end
