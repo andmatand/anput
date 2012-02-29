@@ -36,8 +36,16 @@ function RoomFiller:add_monsters(max)
 
 	-- Give items to the monsters
 	for _, m in pairs(monsters) do
-		if math.random(m.difficulty, 100) >= 30 then
-			m.item = Item({}, math.random(1, 2))
+		if math.random(m.difficulty, 100) >= 25 then
+			-- Choose a random item type
+			itemType = math.random(1, 2)
+
+			-- Occasionally make it a shiny thing!
+			if math.random(1, 20) == 1 then
+				itemType = 4
+			end
+
+			m:add_to_inventory(Item({}, itemType))
 		end
 	end
 
@@ -45,7 +53,21 @@ function RoomFiller:add_monsters(max)
 end
 
 function RoomFiller:position_objects(objects)
+	-- Make a copy of the room's free tiles for manipulation
 	local freeTiles = copy_table(self.room.freeTiles)
+
+	-- Remove doorways
+	for _, e in pairs(self.room.exits) do
+		dw = e:get_doorway()
+		for i, t in pairs(freeTiles) do
+			-- If this free tile is actually a doorway
+			if tiles_overlap(t, dw) then
+				-- Remove it from consideration
+				table.remove(freeTiles, i)
+				break
+			end
+		end
+	end
 
 	for i, o in pairs(objects) do
 		-- Pick a random free tile
@@ -160,4 +182,7 @@ function RoomFiller:fill()
 			self:position_objects({item})
 		end
 	end
+
+	-- TEMP: put a shiny thing in the room
+	--self:position_objects({Item(nil, 4)})
 end

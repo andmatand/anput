@@ -49,8 +49,14 @@ function love.load()
 	projectileImg.fireball = {newImg('fireball1.png'),
 	                          newImg('fireball2.png')}
 
+	--healthImg = newImg('heart.png')
+
 	-- Items
 	potionImg = newImg('potion.png')
+	arrowsImg = newImg('arrow-item.png')
+	shinyThingImg = {newImg('shiny1.png'),
+	                 newImg('shiny2.png'),
+	                 newImg('shiny3.png')}
 	swordImg = newImg('sword.png')
 	bowImg = newImg('bow.png')
 	staffImg = newImg('staff.png')

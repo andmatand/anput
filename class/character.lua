@@ -14,7 +14,6 @@ function Character:init()
 
 	self.health = 100
 	self.flashTimer = 0
-	self.animateTimer = 0
 	self.team = 3
 
 	self.path = {nodes = nil, character = nil, destination = nil}
@@ -31,6 +30,12 @@ function Character:init()
 
 	self.weapons = {}
 	self.currentWeapon = nil
+
+	self.inventory = {}
+end
+
+function Character:add_to_inventory(item)
+	table.insert(self.inventory, item)
 end
 
 function Character:add_weapon(weapon)
@@ -179,11 +184,14 @@ end
 function Character:die()
 	Sprite.die(self)
 
-	-- If we are carying an item
-	if self.item ~= nil then
-		-- Drop it
-		self.item.position = self.position
-		self.room:add_object(self.item)
+	-- If we are have any items in our inventory
+	if #self.inventory > 0 then
+		-- Drop them
+		for _, i in pairs(self.inventory) do
+			i.position = self.position
+			i.used = false
+			self.room:add_object(i)
+		end
 	end
 end
 

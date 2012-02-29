@@ -93,12 +93,16 @@ function Game:draw_sidepane()
 
 	-- Display HP
 	--self:print('HP', ROOM_W, 0)
+	--love.graphics.draw(healthImg,
+	--				   ROOM_W * TILE_W, 0 * TILE_H, 0, SCALE_X, SCALE_Y)
 	self:draw_progress_bar({num = self.player.health, max = 100,
 	                        color = MAGENTA},
 	                       (ROOM_W + 2) * TILE_W, 2,
 						   (SCREEN_W - ROOM_W - 2) * TILE_W, TILE_H - 4)
 
+	-- Display weapons
 	for _,w in pairs(self.player.weapons) do
+		-- Draw box around current weapon
 		--if self.player.currentWeapon == w then
 		--	love.graphics.setColor(MAGENTA)
 		--	love.graphics.setLine(2, 'rough')
@@ -109,6 +113,7 @@ function Game:draw_sidepane()
 		--	                        TILE_H)
 		--end
 
+		-- Highlight current weapon
 		if self.player.currentWeapon == w then
 			love.graphics.setColor(MAGENTA)
 		else
@@ -131,6 +136,43 @@ function Game:draw_sidepane()
 			-- Display the numeric ammount of ammo
 			love.graphics.setColor(WHITE)
 			self:print(w.ammo, ROOM_W + 2, 1 + w.order)
+		end
+	end
+
+	-- Display inventory
+	if self.player.inventory ~= nil then
+		-- Get totals for each item type
+		local invTotals = {}
+		for _, i in pairs(self.player.inventory) do
+			-- If there is no total for this type yet
+			if invTotals[i.itemType] == nil then
+				-- Initialize it to 0
+				invTotals[i.itemType] = 0
+			end
+
+			-- Add 1 to the total for this tyep
+			invTotals[i.itemType] = invTotals[i.itemType] + 1
+		end
+
+		local x = ROOM_W
+		local y = 7
+		for _, i in pairs(self.player.inventory) do
+			-- If we haven't already displayed an item of this type
+			if invTotals[i.itemType] ~= nil then
+				love.graphics.setColor(WHITE)
+
+				-- Draw the item
+				i.position = {x = x, y = y}
+				i:draw(true)
+
+				-- Print the total number of this type of item
+				self:print(invTotals[i.itemType], x + 2, y)
+
+				y = y + 1
+
+				-- Mark this inventory type as already displayed
+				invTotals[i.itemType] = nil
+			end
 		end
 	end
 

@@ -4,27 +4,67 @@ function Item:init(position, itemType)
 	self.position = position
 	self.itemType = itemType
 
-	if itemType == 2 then
-		self.image = potionImg
+	if itemType == 1 then
+		self.frames = {{image = arrowsImg}}
+	elseif itemType == 2 then
+		self.frames = {{image = potionImg}}
+	elseif itemType == 4 then
+		self.frames = {
+			{image = shinyThingImg[1], delay = 30},
+			{image = shinyThingImg[2], delay = 8},
+			{image = shinyThingImg[3], delay = 8},
+			{image = shinyThingImg[2], delay = 8},
+			{image = shinyThingImg[3], delay = 8}}
 	else
-		self.image = nil
+		self.frames = nil
 	end
+
+	self.currentFrame = 1
+	self.animateTimer = 0
 
 	self.used = false
 end
 
-function Item:draw()
+function Item:animate()
+	-- If there's nothing to animate
+	if self.frames == nil or #self.frames < 2 then
+		-- Go away
+		return
+	end
+
+	self.animateTimer = self.animateTimer + 1
+
+	if self.animateTimer >= self.frames[self.currentFrame].delay then
+		self.animateTimer = 0
+		self.currentFrame = self.currentFrame + 1
+
+		-- Loop back around to the first frame
+		if self.currentFrame > #self.frames then
+			self.currentFrame = 1
+		end
+	end
+end
+
+function Item:draw(disableAnimation)
 	if self.itemType == 1 then
 		-- Arrows
 		love.graphics.setColor(WHITE)
 	end
 
+	local x, y
 	x = (self.position.x * TILE_W)
 	y = (self.position.y * TILE_H)
 
-	if self.image ~= nil then
+	if disableAnimation then
+		self.currentFrame = 1
+	else
+		self:animate()
+	end
+
+	if self.frames ~= nil then
 		love.graphics.setColor(WHITE)
-		love.graphics.draw(self.image, x, y, 0, SCALE_X, SCALE_Y)
+		love.graphics.draw(self.frames[self.currentFrame].image,
+		                   x, y, 0, SCALE_X, SCALE_Y)
 	elseif self.weapon ~= nil then
 		love.graphics.setColor(WHITE)
 		self.weapon:draw(self.position)
@@ -82,5 +122,9 @@ function Item:use_on(patient)
 		self.used = true
 
 		sound.playerGetArrows:play()
+	elseif self.itemType == 4 then
+		-- Shiny thing
+		patient:add_to_inventory(self)
+		self.used = true
 	end
 end
