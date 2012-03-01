@@ -1,7 +1,7 @@
-require('map')
-require('player')
-require('table')
-require('tile')
+require('class/map')
+require('class/player')
+require('util/tables')
+require('util/tile')
 
 -- A Game handles a collection of rooms
 Game = class('Game')

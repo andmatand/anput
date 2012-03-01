@@ -1,4 +1,4 @@
-require('projectile')
+require('class/projectile')
 
 Fireball = class('Fireball', Projectile)
 

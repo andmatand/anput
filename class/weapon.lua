@@ -1,5 +1,5 @@
-require('arrow')
-require('fireball')
+require('class/arrow')
+require('class/fireball')
 
 Weapon = class('Weapon')
 

@@ -1,6 +1,6 @@
-require('sprite')
-require('tile')
-require('weapon')
+require('class/sprite')
+require('util/tile')
+require('class/weapon')
 
 -- A Character is a Sprite with AI
 Character = class('Character', Sprite)

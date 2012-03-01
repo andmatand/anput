@@ -1,4 +1,4 @@
-require('tile')
+require('util/tile')
 
 PathFinder = class('PathFinder')
 

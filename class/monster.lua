@@ -1,4 +1,4 @@
-require('character')
+require('class/character')
 
 Monster = class('Monster', Character)
 

@@ -1,4 +1,4 @@
-require('character')
+require('class/character')
 
 Player = class('Player', Character)
 

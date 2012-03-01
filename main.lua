@@ -1,7 +1,6 @@
-package.path = './class/?.lua;./util/?.lua;' .. package.path
-require('oo')
-require('game')
-require('sound')
+require('util/oo')
+require('class/game')
+require('class/sound')
 
 function newImg(filename)
 	img = love.graphics.newImage('res/img/' .. filename)

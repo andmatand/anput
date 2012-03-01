@@ -1,8 +1,8 @@
-require('exit')
-require('mapdisplay')
-require('pathfinder')
-require('room')
-require('tables')
+require('class/exit')
+require('class/mapdisplay')
+require('class/pathfinder')
+require('class/room')
+require('util/tables')
 
 -- A Map generates a random contiguous layout of rooms and their exits
 Map = class('Map')

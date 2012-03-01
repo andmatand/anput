@@ -1,5 +1,5 @@
-require('roombuilder')
-require('roomfiller')
+require('class/roombuilder')
+require('class/roomfiller')
 
 Room = class('Room')
 

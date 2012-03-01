@@ -1,6 +1,6 @@
-require('brick')
-require('navigator')
-require('floodfiller')
+require('class/brick')
+require('class/navigator')
+require('class/floodfiller')
 
 -- A RoomBuilder places bricks inside a room
 RoomBuilder = class('RoomBuilder')
