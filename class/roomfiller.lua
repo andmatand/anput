@@ -183,5 +183,5 @@ function RoomFiller:fill()
 	end
 
 	-- TEMP: put a shiny thing in the room
-	self:position_objects({Item(nil, 4)})
+	--self:position_objects({Item(nil, 4)})
 end
