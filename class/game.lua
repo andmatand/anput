@@ -154,21 +154,45 @@ function Game:draw_sidepane()
 			invTotals[i.itemType] = invTotals[i.itemType] + 1
 		end
 
+		-- Create oldInvTotals table
+		if oldInvTotals == nil then
+			oldInvTotals = {}
+		end
+
 		local x = ROOM_W
 		local y = 7
 		for _, i in pairs(self.player.inventory) do
 			-- If we haven't already displayed an item of this type
 			if invTotals[i.itemType] ~= nil then
+				-- If this type isn't in oldInvTotals yet
+				if oldInvTotals[i.itemType] == nil then
+					-- Set it to zero so we can compare it numerically
+					oldInvTotals[i.itemType] = 0
+				end
+
+				-- If the count increased since last time
+				if (oldInvTotals[i.itemType] < invTotals[i.itemType]) then
+					-- Run the item's animation once through
+					i.animationEnabled = true
+					i.currentFrame = 2
+				elseif i.currentFrame == 1 then
+					-- Stop the animation at frame 1
+					i.animationEnabled = false
+				end
+
 				love.graphics.setColor(WHITE)
 
 				-- Draw the item
 				i.position = {x = x, y = y}
-				i:draw(true)
+				i:draw()
 
 				-- Print the total number of this type of item
 				self:print(invTotals[i.itemType], x + 2, y)
 
 				y = y + 1
+
+				-- Save the old count
+				oldInvTotals[i.itemType] = invTotals[i.itemType]
 
 				-- Mark this inventory type as already displayed
 				invTotals[i.itemType] = nil

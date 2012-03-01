@@ -21,13 +21,15 @@ function Item:init(position, itemType)
 
 	self.currentFrame = 1
 	self.animateTimer = 0
+	self.animationEnabled = true
 
 	self.used = false
 end
 
 function Item:animate()
 	-- If there's nothing to animate
-	if self.frames == nil or #self.frames < 2 then
+	if (self.frames == nil or #self.frames < 2 or
+	    self.animationEnabled == false) then
 		-- Go away
 		return
 	end
@@ -45,7 +47,7 @@ function Item:animate()
 	end
 end
 
-function Item:draw(disableAnimation)
+function Item:draw()
 	if self.itemType == 1 then
 		-- Arrows
 		love.graphics.setColor(WHITE)
@@ -55,11 +57,7 @@ function Item:draw(disableAnimation)
 	x = (self.position.x * TILE_W)
 	y = (self.position.y * TILE_H)
 
-	if disableAnimation then
-		self.currentFrame = 1
-	else
-		self:animate()
-	end
+	self:animate()
 
 	if self.frames ~= nil then
 		love.graphics.setColor(WHITE)

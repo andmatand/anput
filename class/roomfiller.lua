@@ -120,7 +120,6 @@ function RoomFiller:add_turrets(numTurrets)
 		function(roomFiller, pos)
 			-- Find a direction in which we can fire
 			dirs = {1, 2, 3, 4}
-			print()
 			while #dirs > 0 do
 				index = math.random(1, #dirs)
 				dir = dirs[index]
@@ -184,5 +183,5 @@ function RoomFiller:fill()
 	end
 
 	-- TEMP: put a shiny thing in the room
-	--self:position_objects({Item(nil, 4)})
+	self:position_objects({Item(nil, 4)})
 end
