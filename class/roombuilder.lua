@@ -9,15 +9,6 @@ function RoomBuilder:init(exits)
 	self.exits = exits -- A table of exit positions
 end
 
-function tile_on_border(tile)
-	if (tile.x == 0 or tile.x == TILE_W - 1 or
-	    tile.y == 0 or tile.y == TILE_H - 1) then
-	   return true
-   else
-	   return false
-   end
-end
-
 function num_neighbors(tile, otherTiles)
 	neighbors = find_neighbors(tile, otherTiles, {countBorders = true})
 	num = 0
@@ -60,7 +51,6 @@ function RoomBuilder:build()
 	self.bricks = {}
 	occupiedTiles = {}
 
-	--self:order_exits()
 	print('building room with ' .. #self.exits .. ' exits')
 
 	-- Save positions of doorframe tiles at each exit
@@ -115,50 +105,37 @@ function RoomBuilder:build()
 			end
 		end
 
-		-- Turn some random free tiles into occupied tiles to spice up the
-		-- pathfinding a bit
-		--obstacles = add_obstacles(freeTiles, occupiedTiles)
-
-		---- Remove illegal tiles from occupiedTiles
-		--for j,t in pairs(obstacles) do
-		--	ok = true
-
-		--	if distance(t, src) < 4 or distance(t, dest) < 4 then
-		--		print('removed obstacle:', t.x, t.y)
-		--		ok = false
-		--	end
-		--		
-		--	if ok then
-		--		table.insert(occupiedTiles, t)
-		--		table.insert(globalObstacles, t) -- DEBUG
-		--	end
-		--end
-
-		---- Plot a path from around the occupied tiles
-		--pf = PathFinder:new(src, dest, occupiedTiles, nil, {smooth = true})
-		--tiles = pf:plot()
-
-		-- Pick a random intermediate point for this wall's path
-		destinations = {}
-		while #destinations == 0 and #freeTiles > 0 do
-			tile = freeTiles[math.random(1, #freeTiles)] 
-
-			ok = true
-			-- Don't pick points that overlap with src or dest
-			if (tile.x == src.x and tile.y == src.y) or
-			   (tile.x == dest.x and tile.y == dest.y) then
-				ok = false
-			end
-
-			if ok then
-				table.insert(destinations, tile)
-				--table.insert(interPoints, tile) -- DEBUG
-			end
+		-- If the distance from src to dest is shorter than the distance from
+		-- src to the room's midpoint
+		local intermediatePoint
+		if (manhattan_distance(src, dest) <
+		    manhattan_distance(src, midPoint)) then
+			-- Make a direct path to dest
+			intermediatePoint = false
+		else
+			intermediatePoint = true
 		end
-		-- Add dest to table of destinations
+
+		destinations = {}
+		if intermediatePoint then
+			-- Find the free tile which is closest to the midpoint
+			local closestDist = 999
+			local closestTile = nil
+			for _, t in pairs(freeTiles) do
+				dist = manhattan_distance(t, midPoint)
+				if dist < closestDist then
+					print('closestDist:', closestDist)
+					closestDist = dist
+					closestTile = t
+				end
+			end
+			table.insert(destinations, closestTile)
+		end
+
+		-- Add dest to end of table of destinations
 		table.insert(destinations, dest)
 
-		-- Plot a path along both points
+		-- Plot a path from src along all points in destinations
 		nav = Navigator(src, destinations, occupiedTiles)
 		tiles = nav:plot()
 
@@ -190,73 +167,4 @@ function RoomBuilder:build()
 
 	return {bricks = self.bricks, freeTiles = self.freeTiles,
 	        midPoint = midPoint}
-end
-
-function RoomBuilder:order_exits()
-	-- Index the exits in clockwise order
-	temp = {}
-
-	x = -1
-	y = -1
-	while true do
-		-- Find the next exit on the current edge
-		foundOne = false
-		for i,e in pairs(self.exits) do
-			-- Top
-			if y == -1 and x < ROOM_W then
-				if e.y == y and e.x > x then
-					foundOne = true
-					x = e.x
-					table.insert(temp, e)
-				end
-
-			-- Right
-			elseif x == ROOM_W and y < ROOM_H then
-				if e.x == x and e.y > y then
-					foundOne = true
-					y = e.y
-					table.insert(temp, e)
-				end
-
-			-- Bottom
-			elseif y == ROOM_H and x > -1 then
-				if e.y == y and e.x < x then
-					foundOne = true
-					x = e.x
-					table.insert(temp, e)
-				end
-
-			-- Left
-			elseif x == -1 then
-				if e.x == x and e.y < y then
-					foundOne = true
-					y = e.y
-					table.insert(temp, e)
-				end
-			end
-		end 
-		
-		if foundOne == false then 
-			-- Proceed clockwise to the next edge
-			-- Top goes right
-			if y == -1 and x < ROOM_W then
-				x = ROOM_W
-
-			-- Right goes to bottom
-			elseif x == ROOM_W and y < ROOM_H then
-				y = ROOM_H
-
-			-- Bottom goes to left
-			elseif y == ROOM_H and x > -1 then
-				x = -1
-			
-			-- Left
-			elseif x == -1 then
-				break
-			end
-		end
-	end
-
-	-- Replace old exit table with indexed version
-	self.exits = temp
 end
