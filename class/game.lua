@@ -25,7 +25,7 @@ function Game:switch_to_room(roomIndex)
 	-- Set the new room as the current room
 	self.currentRoom = self.rooms[roomIndex]
 	self.currentRoom.visited = true
-	print('room distance from end:', self.currentRoom.distanceFromEnd)
+	print('room distance from start:', self.currentRoom.distanceFromStart)
 	print('room difficulty:', self.currentRoom.difficulty)
 
 	-- Add player to current room

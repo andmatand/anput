@@ -228,17 +228,26 @@ function Map:generate_rooms()
 
 		-- Add the new room and attach it to this node
 		r = Room({exits = exits, index = #rooms + 1})
-		r.distanceFromEnd = manhattan_distance(node, self.path[#self.path])
+		r.distanceFromStart = manhattan_distance(node, self.path[1])
 		table.insert(rooms, r)
 		node.room = r
 	end
 
-	-- Assign difficulty to each room based on distance from final room
-	-- compared to first room
+	-- Find the room that's farthest away from the first room, and set it as
+	-- the last room
+	farthestDistance = 0
 	for _, r in pairs(rooms) do
-		r.difficulty = math.floor(100 -
-		                          ((r.distanceFromEnd /
-		                            rooms[1].distanceFromEnd) * 100))
+		if r.distanceFromStart > farthestDistance then
+			farthestDistance = r.distanceFromStart
+			self.lastRoom = r
+		end
+	end
+
+	-- Assign difficulty to each room based on distance from first room
+	-- compared to last room
+	for _, r in pairs(rooms) do
+		r.difficulty = math.floor((r.distanceFromStart /
+		                            self.lastRoom.distanceFromStart) * 100)
 	end
 
 	-- Create a display of this map
