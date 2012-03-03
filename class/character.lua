@@ -35,6 +35,7 @@ function Character:init()
 end
 
 function Character:add_to_inventory(item)
+	item.position = nil
 	table.insert(self.inventory, item)
 end
 
@@ -184,15 +185,28 @@ end
 function Character:die()
 	Sprite.die(self)
 
-	-- If we are have any items in our inventory
+	itemsToDrop = {}
+
+	-- If we have any items in our inventory
 	if #self.inventory > 0 then
-		-- Drop them
-		for _, i in pairs(self.inventory) do
-			i.position = self.position
-			i.used = false
-			self.room:add_object(i)
+		itemsToDrop = self.inventory
+	end
+
+	-- If we have any weapons
+	if next(self.weapons) ~= nil then
+		-- Make an item for each weapon and drop it
+		for _, w in pairs(self.weapons) do
+			-- If the player doesn't already have this weapon
+			if self.room.game.player.weapons[w.name] == nil then
+				item = Item({}, 3)
+				item.weapon = w
+				table.insert(itemsToDrop, item)
+			end
 		end
 	end
+
+	-- Drop them
+	self:drop(itemsToDrop)
 end
 
 function Character:direction_to(position)
@@ -344,6 +358,39 @@ function Character:draw()
 		                   0, SCALE_X, SCALE_Y)
 	else
 		self.flashTimer = self.flashTimer - 1
+	end
+end
+
+function Character:drop(items)
+	-- Find all neighboring tiles
+	neighbors = find_neighbor_tiles(self.position)
+
+	for i, item in pairs(items) do
+		if i == 1 and self.dead then
+			-- Position the item where we just died
+			item.position = self.position
+		else
+			-- Find a free neighboring tile in which to position this item
+			for j, n in pairs(neighbors) do
+				if not self.room:tile_occupied(n) then
+					item.position = {x = n.x, y = n.y}
+
+					-- Remove this neighbor from the neighbor table
+					table.remove(neighbors, j)
+					break
+				end
+			end
+
+			-- If the item still doesn't have a position
+			if item.position == nil then
+				-- Find the contents of
+				--contents self.room:tile_contents() then
+			end
+		end
+
+		-- Add the object
+		self.used = false
+		self.room:add_object(item)
 	end
 end
 

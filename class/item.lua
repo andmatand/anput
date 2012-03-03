@@ -119,7 +119,12 @@ function Item:use_on(patient)
 		patient:add_weapon(self.weapon)
 		self.used = true
 
-		sound.playerGetArrows:play()
+		-- Play sound depending on who picked it up
+		if instanceOf(Player, patient) then
+			sound.playerGetArrows:play()
+		elseif instanceOf(Monster, patient) then
+			sound.monsterGetArrows:play()
+		end
 	elseif self.itemType == 4 then
 		-- Shiny thing
 		patient:add_to_inventory(self)

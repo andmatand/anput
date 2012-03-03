@@ -4,6 +4,7 @@ require('class/roomfiller')
 Room = class('Room')
 
 function Room:init(args)
+	self.game = args.game
 	self.exits = args.exits
 	self.index = args.index
 

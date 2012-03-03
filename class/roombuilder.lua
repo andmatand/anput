@@ -9,17 +9,6 @@ function RoomBuilder:init(exits)
 	self.exits = exits -- A table of exit positions
 end
 
-function num_neighbors(tile, otherTiles)
-	neighbors = find_neighbors(tile, otherTiles, {countBorders = true})
-	num = 0
-	for i,n in pairs(neighbors) do
-		if n ~= nil then
-			num = num + 1
-		end
-	end
-	return num
-end
-
 function add_obstacles(freeTiles, occupiedTiles)
 	obstacles = {}
 	for j = 1, math.random(1, 50) do
@@ -29,10 +18,9 @@ function add_obstacles(freeTiles, occupiedTiles)
 
 		-- Don't add the tile if it has more than one occupied neighbor tile
 		numNeighbors =
-			num_neighbors({x = tile.x, y = tile.y}, occupiedTiles) + 
-			num_neighbors({x = tile.x, y = tile.y}, obstacles)
+			num_neighbor_tiles({x = tile.x, y = tile.y}, occupiedTiles) + 
+			num_neighbor_tiles({x = tile.x, y = tile.y}, obstacles)
 
-		--if num_neighbors({x = tile.x, y = tile.y}, occupiedTiles) > 1 then
 		if numNeighbors > 1 then
 			ok = false
 		end

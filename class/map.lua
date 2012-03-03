@@ -3,6 +3,7 @@ require('class/mapdisplay')
 require('class/pathfinder')
 require('class/room')
 require('util/tables')
+require('util/tile')
 
 -- A Map generates a random contiguous layout of rooms and their exits
 Map = class('Map')
@@ -37,7 +38,7 @@ function find_empty_neighbors(node, otherNodesTables)
 	-- Combine all tables in otherNodesTables
 	allOtherNodes = concat_tables(otherNodesTables)
 
-	neighbors = find_neighbors(node, allOtherNodes, {diagonals = false})
+	neighbors = find_neighbor_tiles(node, allOtherNodes, {diagonals = false})
 
 	-- Keep only empty neighbors
 	temp = {}
@@ -167,7 +168,7 @@ function Map:generate_rooms()
 	rooms = {}
 	for i,node in ipairs(self.nodes) do
 		--print('\nnode ' .. i)
-		neighbors = find_neighbors(node, self.nodes, {diagonals = false})
+		neighbors = find_neighbor_tiles(node, self.nodes, {diagonals = false})
 
 		-- Add exits to correct walls of room
 		exits = {}

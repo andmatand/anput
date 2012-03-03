@@ -14,8 +14,93 @@ function add_direction(tile, dir)
 	end
 end
 
+function find_neighbor_tiles(node, otherNodes, options)
+	if options == nil then options = {} end
+
+	-- Initialize all 8 neighbors' positions
+	neighbors = {}
+	for d = 1,8 do
+		n = {occupied = false}
+		if d == 1 then -- N
+			n.x = node.x
+			n.y = node.y - 1
+		elseif d == 2 then -- NE
+			n.x = node.x + 1
+			n.y = node.y - 1
+		elseif d == 3 then -- E
+			n.x = node.x + 1
+			n.y = node.y
+		elseif d == 4 then -- SE
+			n.x = node.x + 1
+			n.y = node.y + 1
+		elseif d == 5 then -- S
+			n.x = node.x
+			n.y = node.y + 1
+		elseif d == 6 then -- SW
+			n.x = node.x - 1
+			n.y = node.y + 1
+		elseif d == 7 then -- W
+			n.x = node.x - 1
+			n.y = node.y
+		elseif d == 8 then -- NW
+			n.x = node.x - 1
+			n.y = node.y - 1
+		end
+
+		neighbors[d] = n
+	end
+
+	-- Check if any of the otherNodes are in the neighbor positions
+	if otherNodes ~= nil then
+		for i,o in pairs(otherNodes) do
+			for j,n in pairs(neighbors) do
+				if o.x == n.x and o.y == n.y then
+					n.room = o.room
+					n.occupied = true
+				end
+			end
+		end
+	end
+
+	if options.countBorders == true then
+		-- Check if any of the neighbor positions touch the room border
+		for i,n in pairs(neighbors) do
+			if n.y == 0 or
+			   n.x == ROOM_W - 1 or
+			   n.y == ROOM_H - 1 or
+			   n.x == 0 then
+				n.occupied = true
+			end
+		end
+	end
+
+	if options.diagonals == false then
+		-- Remove diagonal neighbors
+		temp = {}
+		for i,n in ipairs(neighbors) do
+			if i == 1 or i == 3 or i == 5 or i == 7 then
+				table.insert(temp, n)
+			end
+		end
+		neighbors = temp
+	end
+
+	return neighbors
+end
+
 function manhattan_distance(a, b)
 	return math.abs(b.x - a.x) + math.abs(b.y - a.y)
+end
+
+function num_neighbor_tiles(tile, otherTiles)
+	neighbors = find_neighbor_tiles(tile, otherTiles, {countBorders = true})
+	num = 0
+	for i,n in pairs(neighbors) do
+		if n ~= nil then
+			num = num + 1
+		end
+	end
+	return num
 end
 
 function tile_occupied(tile, occupiedTiles)
