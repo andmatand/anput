@@ -124,7 +124,6 @@ function RoomBuilder:build()
 			for _, t in pairs(freeTiles) do
 				dist = manhattan_distance(t, midPoint)
 				if dist < closestDist then
-					print('closestDist:', closestDist)
 					closestDist = dist
 					closestTile = t
 				end
