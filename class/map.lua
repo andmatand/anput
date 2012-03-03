@@ -274,6 +274,10 @@ function Map:generate_rooms()
 			table.insert(r.itemsToPosition, item)
 
 			weaponNum = weaponNum + 1
+
+			if weaponNum == 4 then
+				break
+			end
 		end
 	end
 
