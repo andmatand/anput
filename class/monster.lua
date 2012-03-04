@@ -82,17 +82,6 @@ function Monster:init(pos, monsterType)
 	end
 end
 
-function Monster:afraid_of(sprite)
-	if instanceOf(Arrow, sprite) then
-		-- Ghost
-		if self.monsterType == 5 then
-			return false
-		end
-	end
-
-	return true
-end
-
 function Monster:die()
 	Character.die(self)
 

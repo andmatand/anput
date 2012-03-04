@@ -14,7 +14,7 @@ function Character:init()
 
 	self.health = 100
 	self.flashTimer = 0
-	self.team = 3
+	self.team = 1 -- Good guys
 
 	self.path = {nodes = nil, character = nil, destination = nil}
 
@@ -57,6 +57,17 @@ function Character:add_weapon(weapon)
 		-- Set this new weapon as the current weapon
 		self.currentWeapon = weapon
 	end
+end
+
+function Character:afraid_of(sprite)
+	if instanceOf(Arrow, sprite) then
+		-- Ghost
+		if self.monsterType == 5 then
+			return false
+		end
+	end
+
+	return true
 end
 
 function Character:chase(sprite)
@@ -352,7 +363,11 @@ function Character:draw()
 	end
 
 	if self.flashTimer == 0 then
-		love.graphics.setColor(255, 255, 255)
+		if self.color ~= nil then
+			love.graphics.setColor(self.color)
+		else
+			love.graphics.setColor(255, 255, 255)
+		end
 		love.graphics.draw(img,
 		                   self.position.x * TILE_W, self.position.y * TILE_H,
 		                   0, SCALE_X, SCALE_Y)
@@ -465,7 +480,6 @@ function Character:hit(patient)
 	return Sprite.hit(self, patient)
 end
 
-
 function Character:path_obsolete()
 	-- If we're chasing a character
 	if self.path.destination ~= nil and self.path.character ~= nil then
@@ -477,6 +491,34 @@ function Character:path_obsolete()
 		end
 	end
 	return false
+end
+
+function Character:pick_up(item)
+	if item.used then
+		return
+	end
+
+	-- If it's a weapon-item
+	if item.weapon ~= nil then
+		-- If we don't already have this type of weapon
+		if self.weapons[item.weapon.name] == nil then
+			self:add_weapon(item.weapon)
+			item.used = true
+		end
+	else
+		-- It's a normal item; add it to our inventory
+		self:add_to_inventory(item)
+		item.used = true
+	end
+
+	if item.used then
+		-- Play sound depending on who picked it up
+		if instanceOf(Player, self) then
+			sound.playerGetItem:play()
+		elseif instanceOf(Monster, self) then
+			sound.monsterGetItem:play()
+		end
+	end
 end
 
 function Character:receive_damage(amount)

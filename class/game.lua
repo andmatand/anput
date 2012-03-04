@@ -64,6 +64,20 @@ function Game:draw()
 	end
 
 	self:draw_sidepane()
+
+	-- Check if a character should needs to speak
+	for _, c in pairs(self.currentRoom.sprites) do
+		if instanceOf(Character, c) and c.speech ~= nil then
+			if manhattan_distance(self.player.position, c.position) <= 2 then
+				love.graphics.setColor(WHITE)
+				love.graphics.push()
+				love.graphics.scale(SCALE_X, SCALE_Y)
+				love.graphics.printf(c.name .. ': ' .. c.speech,
+				                     0, 0, (ROOM_W * TILE_W) / SCALE_X)
+				love.graphics.pop()
+			end
+		end
+	end
 end
 
 function Game:draw_progress_bar(barInfo, x, y, w, h)
@@ -171,8 +185,10 @@ function Game:draw_sidepane()
 					oldInvTotals[i.itemType] = 0
 				end
 
-				-- If the count increased since last time
-				if (oldInvTotals[i.itemType] < invTotals[i.itemType]) then
+				-- If the count increased since last time and the item has more
+				-- than one frame
+				if (oldInvTotals[i.itemType] < invTotals[i.itemType] and
+				    #i.frames > 1) then
 					-- Run the item's animation once through
 					i.animationEnabled = true
 					i.currentFrame = 2

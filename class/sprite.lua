@@ -15,6 +15,22 @@ function Sprite:init()
 	--self.y = function() return self.position.y end
 end
 
+function Sprite:check_for_items()
+	-- If we are a character
+	if instanceOf(Character, self) then
+		for _, i in pairs(self.room.items) do
+			-- If this item has a position
+			if i.position ~= nil then
+				-- If we are standing on this item
+				if tiles_overlap(self.position, i.position) then
+					-- Pick it up
+					self:pick_up(i)
+				end
+			end
+		end
+	end
+end
+
 function Sprite:die()
 	self.dead = true
 end
@@ -159,16 +175,6 @@ function Sprite:physics()
 				if self:hit(s) then
 					return
 				end
-			end
-		end
-	end
-
-	-- If this is a character
-	if instanceOf(Character, self) then
-		-- Check for overlap with items
-		for _,i in pairs(self.room.items) do
-			if tiles_overlap(self.test, i.position) then
-				i:use_on(self)
 			end
 		end
 	end

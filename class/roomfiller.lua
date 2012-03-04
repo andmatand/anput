@@ -161,31 +161,14 @@ function RoomFiller:fill()
 	local maxMonsters = #self.room.freeTiles * .04
 	self:add_monsters(maxMonsters)
 	
-	-- TEMP: if the room is empty except for the player, add the next weapon he
-	-- doesn't have
-	--local weaponType
-	--if #self.room.sprites < 2 then
-	--	if self.room.sprites[1].weapons.sword == nil then
-	--		weaponType = 'sword'
-	--	elseif self.room.sprites[1].weapons.bow == nil then
-	--		weaponType = 'bow'
-	--	elseif self.room.sprites[1].weapons.staff == nil then
-	--		weaponType = 'staff'
-	--	end
-
-	--	if weaponType ~= nil then
-	--		-- Add a weapon item
-	--		item = Item(nil, 3)
-	--		item.weapon = Weapon(weaponType)
-
-	--		self:position_objects({item})
-	--	end
-	--end
-	
-	if self.room.itemsToPosition ~= nil then
-		self:position_objects(self.room.itemsToPosition)
+	if self.room.objectsToPosition ~= nil then
+		self:position_objects(self.room.objectsToPosition)
+		self.room.objectsToPosition = nil
 	end
 
 	-- TEMP: put a shiny thing in the room
 	--self:position_objects({Item(nil, 4)})
+
+	-- TEMP: put a potion in the room
+	self:position_objects({Item(nil, 2)})
 end

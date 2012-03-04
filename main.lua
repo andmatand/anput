@@ -32,6 +32,7 @@ function love.load()
 	             bow = newImg('player-bow.png'),
 	             staff = newImg('player-staff.png')}
 
+	-- Monsters
 	monsterImg = {}
 	monsterImg.scarab = {default = newImg('scarab.png'),
 	                     moving = newImg('scarab-moving.png')}
@@ -48,8 +49,6 @@ function love.load()
 	projectileImg.fireball = {newImg('fireball1.png'),
 	                          newImg('fireball2.png')}
 
-	--healthImg = newImg('heart.png')
-
 	-- Items
 	potionImg = newImg('potion.png')
 	arrowsImg = newImg('arrow-item.png')
@@ -63,12 +62,12 @@ function love.load()
 	-- Sounds
 	sound = {}
 	sound.playerCry = Sound('res/sfx/player-cry.wav')
-	sound.playerGetArrows = Sound('res/sfx/player-get-arrows.wav')
+	sound.playerGetItem = Sound('res/sfx/player-get-arrows.wav')
 	sound.playerGetHP = Sound('res/sfx/player-get-hp.wav')
 	sound.switchWeapon = Sound('res/sfx/switch-weapon.wav')
 	sound.noAmmo = Sound('res/sfx/no-ammo.wav')
 	sound.monsterCry = Sound('res/sfx/monster-cry.wav')
-	sound.monsterGetArrows = Sound('res/sfx/monster-get-arrows.wav')
+	sound.monsterGetItem = Sound('res/sfx/monster-get-arrows.wav')
 	sound.monsterGetHP = Sound('res/sfx/monster-get-hp.wav')
 	sound.monsterDie = Sound('res/sfx/monster-die.wav')
 	sound.playerDie = Sound('res/sfx/player-die.wav')

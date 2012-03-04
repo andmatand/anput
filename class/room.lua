@@ -235,6 +235,9 @@ function Room:update()
 	-- Run physics on all sprites
 	for i,s in pairs(self.sprites) do
 		s:physics()
+
+		-- Check if we the sprite is on an item
+		s:check_for_items()
 	end
 	for i,s in pairs(self.sprites) do
 		s:post_physics()

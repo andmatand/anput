@@ -254,16 +254,42 @@ function Map:generate_rooms()
 	-- Create a display of this map
 	self.display = MapDisplay(self.nodes)
 
-	-- Put a sword in the first room
+	-- Put a sword in the starting room
 	item = Item()
 	item.weapon = Weapon('sword')
-	rooms[1].itemsToPosition = {item}
+	rooms[1].objectsToPosition = {item}
+
+	-- Create a table of rooms close to the starting room
+	earlyRooms = {}
+	for _, r in pairs(rooms) do
+		if r.distanceFromStart <= 3 then
+			table.insert(earlyRooms, r)
+		end
+	end
+
+	-- Put the wizard in one of the early rooms
+	local roomNum = math.random(1, #earlyRooms)
+	local wizard = Character()
+	wizard.images = playerImg
+	wizard.color = CYAN
+	wizard:add_weapon(Weapon('staff'))
+	wizard.ai.dodge = {dist = 5, prob = 10}
+	wizard.ai.chase = {dist = 1, prob = 10}
+	wizard.ai.shoot = {dist = 10, prob = 10}
+	wizard.aiDelay = 1
+	wizard.name = 'WIZARD'
+	--wizard.speech = 'I would give my STAFF for 7 SHINY THINGS.'
+	wizard.speech = 'I WOULD GIVE MY STAFF FOR 7 SHINY THINGS.'
+	earlyRooms[roomNum].objectsToPosition = {}
+	table.insert(earlyRooms[roomNum].objectsToPosition, wizard)
+
+
 
 	-- TEMP: put the weapons in some random rooms toward the beginning
 	--weaponNum = 1
 	--for _, r in pairs(rooms) do
 	--	if r.distanceFromStart <= 3 then
-	--		r.itemsToPosition = {}
+	--		r.objectsToPosition = {}
 
 	--		if weaponNum == 1 then
 	--			weaponType = 'sword'
@@ -277,7 +303,7 @@ function Map:generate_rooms()
 	--		item = Item(nil, 3)
 	--		item.weapon = Weapon(weaponType)
 
-	--		table.insert(r.itemsToPosition, item)
+	--		table.insert(r.objectsToPosition, item)
 
 	--		weaponNum = weaponNum + 1
 
