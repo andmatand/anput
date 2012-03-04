@@ -254,33 +254,38 @@ function Map:generate_rooms()
 	-- Create a display of this map
 	self.display = MapDisplay(self.nodes)
 
+	-- Put a sword in the first room
+	item = Item()
+	item.weapon = Weapon('sword')
+	rooms[1].itemsToPosition = {item}
+
 	-- TEMP: put the weapons in some random rooms toward the beginning
-	weaponNum = 1
-	for _, r in pairs(rooms) do
-		if r.distanceFromStart <= 3 then
-			r.itemsToPosition = {}
+	--weaponNum = 1
+	--for _, r in pairs(rooms) do
+	--	if r.distanceFromStart <= 3 then
+	--		r.itemsToPosition = {}
 
-			if weaponNum == 1 then
-				weaponType = 'sword'
-			elseif weaponNum == 2 then
-				weaponType = 'bow'
-			elseif weaponNum == 3 then
-				weaponType = 'staff'
-			end
+	--		if weaponNum == 1 then
+	--			weaponType = 'sword'
+	--		elseif weaponNum == 2 then
+	--			weaponType = 'bow'
+	--		elseif weaponNum == 3 then
+	--			weaponType = 'staff'
+	--		end
 
-			-- Add a weapon item
-			item = Item(nil, 3)
-			item.weapon = Weapon(weaponType)
+	--		-- Add a weapon item
+	--		item = Item(nil, 3)
+	--		item.weapon = Weapon(weaponType)
 
-			table.insert(r.itemsToPosition, item)
+	--		table.insert(r.itemsToPosition, item)
 
-			weaponNum = weaponNum + 1
+	--		weaponNum = weaponNum + 1
 
-			if weaponNum == 4 then
-				break
-			end
-		end
-	end
+	--		if weaponNum == 4 then
+	--			break
+	--		end
+	--	end
+	--end
 
 	return rooms
 end

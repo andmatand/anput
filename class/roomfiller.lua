@@ -42,7 +42,7 @@ function RoomFiller:add_monsters(max)
 
 			-- Occasionally make it a shiny thing!
 			if math.random(1, 20) == 1 then
-				itemType = 4
+				itemType = 3
 			end
 
 			m:add_to_inventory(Item({}, itemType))

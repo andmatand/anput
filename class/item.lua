@@ -8,7 +8,7 @@ function Item:init(position, itemType)
 		self.frames = {{image = arrowsImg}}
 	elseif itemType == 2 then
 		self.frames = {{image = potionImg}}
-	elseif itemType == 4 then
+	elseif itemType == 3 then
 		self.frames = {
 			{image = shinyThingImg[1], delay = 30},
 			{image = shinyThingImg[2], delay = 8},
@@ -115,19 +115,22 @@ function Item:use_on(patient)
 			end
 		end
 	elseif self.itemType == 3 then
-		-- Weapon
-		patient:add_weapon(self.weapon)
-		self.used = true
-
-		-- Play sound depending on who picked it up
-		if instanceOf(Player, patient) then
-			sound.playerGetArrows:play()
-		elseif instanceOf(Monster, patient) then
-			sound.monsterGetArrows:play()
-		end
-	elseif self.itemType == 4 then
 		-- Shiny thing
 		patient:add_to_inventory(self)
 		self.used = true
+	elseif self.weapon ~= nil then
+		if (patient.weapons ~= nil and
+		    patient.weapons[self.weapon.name] == nil) then
+			-- Weapon
+			patient:add_weapon(self.weapon)
+			self.used = true
+
+			-- Play sound depending on who picked it up
+			if instanceOf(Player, patient) then
+				sound.playerGetArrows:play()
+			elseif instanceOf(Monster, patient) then
+				sound.monsterGetArrows:play()
+			end
+		end
 	end
 end

@@ -198,7 +198,7 @@ function Character:die()
 		for _, w in pairs(self.weapons) do
 			-- If the player doesn't already have this weapon
 			if self.room.game.player.weapons[w.name] == nil then
-				item = Item({}, 3)
+				item = Item()
 				item.weapon = w
 				table.insert(itemsToDrop, item)
 			end
@@ -388,7 +388,7 @@ function Character:drop(items)
 			end
 		end
 
-		-- Add the object
+		-- Add the item to the room
 		self.used = false
 		self.room:add_object(item)
 	end
