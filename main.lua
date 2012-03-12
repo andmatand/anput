@@ -2,10 +2,20 @@ require('util/oo')
 require('class/game')
 require('class/sound')
 
-function newImg(filename)
+function new_image(filename)
 	img = love.graphics.newImage('res/img/' .. filename)
 	img:setFilter('nearest', 'nearest')
 	return img
+end
+
+function tile_print(text, x, y)
+	love.graphics.print(text, x * TILE_W, y * TILE_H, 0, SCALE_X, SCALE_Y)
+end
+
+function love.conf(t)
+	t.modules.joystick = false
+	t.modules.mouse = false
+	t.modules.physics = false
 end
 
 function love.load()
@@ -27,37 +37,37 @@ function love.load()
 		'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
 	love.graphics.setFont(font)
 
-	playerImg = {default = newImg('player.png'),
-	             sword = newImg('player-sword.png'),
-	             bow = newImg('player-bow.png'),
-	             staff = newImg('player-staff.png')}
+	playerImg = {default = new_image('player.png'),
+	             sword = new_image('player-sword.png'),
+	             bow = new_image('player-bow.png'),
+	             staff = new_image('player-staff.png')}
 
 	-- Monsters
 	monsterImg = {}
-	monsterImg.scarab = {default = newImg('scarab.png'),
-	                     moving = newImg('scarab-moving.png')}
-	monsterImg.bird = {default = newImg('bird.png'),
-	                   dodge = newImg('bird-dodge.png')}
-	monsterImg.mummy = {default = newImg('mummy.png'),
-	                    moving = newImg('mummy-moving.png')}
-	monsterImg.cat = {default = newImg('cat.png'),
-	                  moving = newImg('cat-moving.png')}
-	monsterImg.ghost = {default = newImg('ghost.png')}
+	monsterImg.scarab = {default = new_image('scarab.png'),
+	                     moving = new_image('scarab-moving.png')}
+	monsterImg.bird = {default = new_image('bird.png'),
+	                   dodge = new_image('bird-dodge.png')}
+	monsterImg.mummy = {default = new_image('mummy.png'),
+	                    moving = new_image('mummy-moving.png')}
+	monsterImg.cat = {default = new_image('cat.png'),
+	                  moving = new_image('cat-moving.png')}
+	monsterImg.ghost = {default = new_image('ghost.png')}
 
 	projectileImg = {}
-	projectileImg.arrow = {newImg('arrow.png')}
-	projectileImg.fireball = {newImg('fireball1.png'),
-	                          newImg('fireball2.png')}
+	projectileImg.arrow = {new_image('arrow.png')}
+	projectileImg.fireball = {new_image('fireball1.png'),
+	                          new_image('fireball2.png')}
 
 	-- Items
-	potionImg = newImg('potion.png')
-	arrowsImg = newImg('arrow-item.png')
-	shinyThingImg = {newImg('shiny1.png'),
-	                 newImg('shiny2.png'),
-	                 newImg('shiny3.png')}
-	swordImg = newImg('sword.png')
-	bowImg = newImg('bow.png')
-	staffImg = newImg('staff.png')
+	potionImg = new_image('potion.png')
+	arrowsImg = new_image('arrow-item.png')
+	shinyThingImg = {new_image('shiny1.png'),
+	                 new_image('shiny2.png'),
+	                 new_image('shiny3.png')}
+	swordImg = new_image('sword.png')
+	bowImg = new_image('bow.png')
+	staffImg = new_image('staff.png')
 
 	-- Sounds
 	sound = {}

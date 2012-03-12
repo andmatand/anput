@@ -46,8 +46,9 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.mummy
 		self.health = 40
 
+		self:add_weapon(Weapon('sword'))
 		self:add_weapon(Weapon('bow'))
-		self.currentWeapon:add_ammo(20)
+		self.weapons.bow:add_ammo(20)
 
 		self.aiDelay = 10
 
@@ -58,8 +59,9 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.cat
 		self.health = 40
 
+		self:add_weapon(Weapon('sword'))
 		self:add_weapon(Weapon('bow'))
-		self.currentWeapon:add_ammo(20)
+		self.weapons.bow:add_ammo(20)
 
 		self.aiDelay = 4
 

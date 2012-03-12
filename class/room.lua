@@ -31,6 +31,12 @@ function Room:add_object(obj)
 	elseif instanceOf(Item, obj) then
 		-- Add this item to the room's item table
 		table.insert(self.items, obj)
+
+		-- Clear ownership
+		obj.owner = nil
+
+		-- Re-enable animation
+		obj.animationEnabled = true
 	end
 end
 
@@ -203,59 +209,73 @@ function Room:tile_contents(tile)
 	return contents
 end
 
-function Room:tile_occupied(tile)
-	if tile_offscreen(tile) or
-	   tile_occupied(tile, concat_tables({self.bricks, self.sprites})) then
-		return true
+function Room:tile_in_room(tile)
+	if tile_offscreen(tile) then
+		return false
 	end
 
-	-- Tiles not inside the room count as occupied
-	occupied = true
+	local inRoom = false
 	for i,t in pairs(self.freeTiles) do
 		if tile.x == t.x and tile.y == t.y then
-			occupied = false
+			inRoom = true
 			break
 		end
 	end
 
-	return occupied
+	return inRoom
+end
+
+function Room:tile_occupied(tile)
+	if (not self:tile_in_room(tile) or
+	    tile_occupied(tile, concat_tables({self.bricks, self.sprites}))) then
+		return true
+	else
+		return false
+	end
 end
 
 function Room:update()
 	-- Update turrets
-	for i,t in pairs(self.turrets) do
+	for _, t in pairs(self.turrets) do
 		t:update()
 	end
 
 	-- Update sprites
-	for _,s in pairs(self.sprites) do
+	for _, s in pairs(self.sprites) do
+		-- If this is a character on the good-guy team
+		if instanceOf(Character, s) and s.team == 1 then
+			s:recharge()
+		end
+
 		s:update()
 	end
 
 	-- Run physics on all sprites
-	for i,s in pairs(self.sprites) do
+	for _, s in pairs(self.sprites) do
 		s:physics()
 
 		-- Check if we the sprite is on an item
 		s:check_for_items()
 	end
-	for i,s in pairs(self.sprites) do
+	for _, s in pairs(self.sprites) do
 		s:post_physics()
 	end
 
 	-- Remove all dead sprites
-	temp = {}
-	for i,s in pairs(self.sprites) do
-		if s.dead ~= true then
+	local temp = {}
+	for _, s in pairs(self.sprites) do
+		if not s.dead then
 			table.insert(temp, s)
+		else
+			deadThing = s
 		end
 	end
 	self.sprites = temp
 
-	-- Remove all used items
-	temp = {}
-	for _,i in pairs(self.items) do
-		if i.used ~= true then
+	-- Keep only items that have no owner and have not been used
+	local temp = {}
+	for _, i in pairs(self.items) do
+		if not i.owner and not i.isUsed then
 			table.insert(temp, i)
 		end
 	end

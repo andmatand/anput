@@ -1,3 +1,4 @@
+require('class/inventorydisplay')
 require('class/map')
 require('class/player')
 require('util/tables')
@@ -69,157 +70,35 @@ function Game:draw()
 	for _, c in pairs(self.currentRoom.sprites) do
 		if instanceOf(Character, c) and c.speech ~= nil then
 			if manhattan_distance(self.player.position, c.position) <= 2 then
-				love.graphics.setColor(WHITE)
+				local text = c.name .. ': ' .. c.speech
+				local numTextLines = love.graphics.getFont():getWrap(text,
+				                                                     ROOM_W)
+
+				-- Draw black background behind text
+				love.graphics.setColor(BLACK)
+				love.graphics.rectangle('fill', 0, 0,
+				                        (ROOM_W * TILE_W),
+				                        numTextLines / SCALE_Y)
+
+				-- Draw text
 				love.graphics.push()
 				love.graphics.scale(SCALE_X, SCALE_Y)
-				love.graphics.printf(c.name .. ': ' .. c.speech,
-				                     0, 0, (ROOM_W * TILE_W) / SCALE_X)
+				love.graphics.setColor(WHITE)
+				love.graphics.printf(text, 0, 0, (ROOM_W * TILE_W) / SCALE_X)
 				love.graphics.pop()
 			end
 		end
 	end
 end
 
-function Game:draw_progress_bar(barInfo, x, y, w, h)
-	bar = {}
-	bar.x = x + SCALE_X
-	bar.y = y + SCALE_Y
-	bar.w = w - (SCALE_X * 2)
-	bar.h = h - (SCALE_Y * 2)
-	
-	-- Draw border
-	love.graphics.setColor(255, 255, 255)
-	love.graphics.rectangle('fill', x, y, w, h)
-
-	-- Draw black bar inside
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
-
-	-- Set width of bar
-	bar.w = (barInfo.num * bar.w) / barInfo.max
-
-	-- Draw progress bar
-	love.graphics.setColor(barInfo.color)
-	love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
-end
-
 function Game:draw_sidepane()
 	love.graphics.setColor(255, 255, 255)
 
-	-- Display HP
-	--self:print('HP', ROOM_W, 0)
-	--love.graphics.draw(healthImg,
-	--				   ROOM_W * TILE_W, 0 * TILE_H, 0, SCALE_X, SCALE_Y)
-	self:draw_progress_bar({num = self.player.health, max = 100,
-	                        color = MAGENTA},
-	                       (ROOM_W + 2) * TILE_W, 2,
-						   (SCREEN_W - ROOM_W - 2) * TILE_W, TILE_H - 4)
-
-	-- Display weapons
-	for _,w in pairs(self.player.weapons) do
-		-- Draw box around current weapon
-		--if self.player.currentWeapon == w then
-		--	love.graphics.setColor(MAGENTA)
-		--	love.graphics.setLine(2, 'rough')
-		--	love.graphics.rectangle('line',
-		--	                        ROOM_W * TILE_W, 
-		--							((1 + w.order) * TILE_H) + 1,
-		--	                        TILE_W,
-		--	                        TILE_H)
-		--end
-
-		-- Highlight current weapon
-		if self.player.currentWeapon == w then
-			love.graphics.setColor(MAGENTA)
-		else
-			love.graphics.setColor(WHITE)
-		end
-		--love.graphics.setColor(WHITE)
-		w:draw({x = ROOM_W, y = 1 + w.order})
-
-		-- If this weapon has a maximum ammo
-		if w.maxAmmo ~= nil then
-			-- Draw a progress bar
-			self:draw_progress_bar({num = w.ammo, max = w.maxAmmo,
-			                        color = CYAN},
-			                       (ROOM_W + 2) * TILE_W,
-			                       ((1 + w.order) * TILE_H) + 2,
-			                       ((SCREEN_W - ROOM_W - 2) * TILE_W) - 2,
-			                       TILE_H - 4)
-		-- If this weapon has an arbitrary amount of ammo
-		elseif w.ammo ~= nil then
-			-- Display the numeric ammount of ammo
-			love.graphics.setColor(WHITE)
-			self:print(w.ammo, ROOM_W + 2, 1 + w.order)
-		end
-	end
-
-	-- Display inventory
-	if self.player.inventory ~= nil then
-		-- Get totals for each item type
-		local invTotals = {}
-		for _, i in pairs(self.player.inventory) do
-			-- If there is no total for this type yet
-			if invTotals[i.itemType] == nil then
-				-- Initialize it to 0
-				invTotals[i.itemType] = 0
-			end
-
-			-- Add 1 to the total for this tyep
-			invTotals[i.itemType] = invTotals[i.itemType] + 1
-		end
-
-		-- Create oldInvTotals table
-		if oldInvTotals == nil then
-			oldInvTotals = {}
-		end
-
-		local x = ROOM_W
-		local y = 7
-		for _, i in pairs(self.player.inventory) do
-			-- If we haven't already displayed an item of this type
-			if invTotals[i.itemType] ~= nil then
-				-- If this type isn't in oldInvTotals yet
-				if oldInvTotals[i.itemType] == nil then
-					-- Set it to zero so we can compare it numerically
-					oldInvTotals[i.itemType] = 0
-				end
-
-				-- If the count increased since last time and the item has more
-				-- than one frame
-				if (oldInvTotals[i.itemType] < invTotals[i.itemType] and
-				    #i.frames > 1) then
-					-- Run the item's animation once through
-					i.animationEnabled = true
-					i.currentFrame = 2
-				elseif i.currentFrame == 1 then
-					-- Stop the animation at frame 1
-					i.animationEnabled = false
-				end
-
-				love.graphics.setColor(WHITE)
-
-				-- Draw the item
-				i.position = {x = x, y = y}
-				i:draw()
-
-				-- Print the total number of this type of item
-				self:print(invTotals[i.itemType], x + 2, y)
-
-				y = y + 1
-
-				-- Save the old count
-				oldInvTotals[i.itemType] = invTotals[i.itemType]
-
-				-- Mark this inventory type as already displayed
-				invTotals[i.itemType] = nil
-			end
-		end
-	end
+	self.inventoryDisplay:draw()
 
 	if self.paused then
 		love.graphics.setColor(255, 255, 255)
-		self:print('PAUSED', ROOM_W, 6)
+		tile_print('PAUSED', ROOM_W, 6)
 	end
 end
 
@@ -235,6 +114,9 @@ function Game:generate()
 	-- Switch to the first room and put the player at the midPoint
 	self:switch_to_room(1)
 	self.player:move_to(self.currentRoom.midPoint)
+
+	-- Create an inventory display
+	self.inventoryDisplay = InventoryDisplay(self.player)
 end
 
 function Game:input()
@@ -290,6 +172,17 @@ function Game:keypressed(key)
 
 	-- If the game is paused
 	if self.paused then
+		-- Allow wasd and arrows for selecting inventory items
+		if key == 'w' or key == 'up' then
+			self.inventoryDisplay:move_cursor('up')
+		elseif key == 'd' or key == 'right' then
+			self.inventoryDisplay:move_cursor('right')
+		elseif key == 's' or key == 'down' then
+			self.inventoryDisplay:move_cursor('down')
+		elseif key == 'a' or key == 'left' then
+			self.inventoryDisplay:move_cursor('left')
+		end
+
 		-- Don't allow keys below here
 		return
 	end
@@ -339,10 +232,6 @@ function Game:keyreleased(key)
 	end
 end
 
-function Game:print(text, x, y)
-	love.graphics.print(text, x * TILE_W, y * TILE_H, 0, SCALE_X, SCALE_Y)
-end
-
 function Game:update()
 	if self.paused then
 		return
@@ -364,19 +253,5 @@ function Game:update()
 			self:switch_to_room(e.roomIndex)
 			break
 		end
-	end
-
-	if self.player.weapons.staff ~= nil then
-		-- Recharge the staff
-		
-		-- If player didn't move
-		if self.player.moved == false then
-			-- Recharge faster
-			amount = .5
-		else
-			-- Recharge slowly
-			amount = .25
-		end
-		self.player.weapons.staff:add_ammo(amount)
 	end
 end

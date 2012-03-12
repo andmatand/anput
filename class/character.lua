@@ -34,16 +34,51 @@ function Character:init()
 	self.inventory = {}
 end
 
+function Character:add_health(amount)
+	if self.dead then
+		return
+	end
+
+	if self.health < 100 then
+		self.health = self.health + amount
+
+		if self.health > 100 then
+			self.health = 100
+		end
+
+		-- Play sound depending on who gained health
+		if instanceOf(Player, patient) then
+			sound.playerGetHP:play()
+		elseif instanceOf(Monster, patient) then
+			sound.monsterGetHP:play()
+		end
+
+		return true
+	end
+
+	return false
+end
+
 function Character:add_to_inventory(item)
 	item.position = nil
+	item.owner = self
 	table.insert(self.inventory, item)
+end
+
+function Character:remove_from_inventory(item)
+	for i, v in pairs(self.inventory) do
+		if v == item then
+			table.remove(self.inventory, i)
+			return
+		end
+	end
 end
 
 function Character:add_weapon(weapon)
 	local firstWeapon
 
 	-- If we currently have no weapons
-	if next(self.weapons) == nil then
+	if not next(self.weapons) then
 		firstWeapon = true
 	else
 		firstWeapon = false
@@ -121,7 +156,7 @@ function Character:choose_action()
 	end
 
 	-- If we are not already following a path
-	if (self.path.nodes == nil or self:path_obsolete()) then
+	if not self.path.nodes or self:path_obsolete() then
 		-- Set the chase target
 		self.ai.chase.target = self.closestEnemy
 	end
@@ -137,7 +172,7 @@ function Character:choose_action()
 
 	-- Give random scores to each of the AI actions
 	for k, a in pairs(self.ai) do
-		if a.prob > 0 and a.target ~= nil and
+		if a.prob > 0 and a.target and
 		   manhattan_distance(self.position, a.target.position) <= a.dist then
 			a.score = math.random(a.prob, 10)
 		else
@@ -169,7 +204,7 @@ function Character:do_ai()
 	end
 
 	-- If we are currently following a path, continue to do that
-	if self.path.nodes ~= nil then
+	if self.path.nodes then
 		self:follow_path()
 		--if self:follow_path() then
 		--	return
@@ -196,24 +231,31 @@ end
 function Character:die()
 	Sprite.die(self)
 
-	itemsToDrop = {}
+	local itemsToDrop = {}
 
 	-- If we have any items in our inventory
-	if #self.inventory > 0 then
-		itemsToDrop = self.inventory
+	if self.inventory then
+		for _, i in pairs(self.inventory) do
+			table.insert(itemsToDrop, i)
+		end
+		self.inventory = {}
+		print('Dropping ' .. #itemsToDrop .. ' items...')
 	end
 
 	-- If we have any weapons
-	if next(self.weapons) ~= nil then
-		-- Make an item for each weapon and drop it
+	if self.weapons then
 		for _, w in pairs(self.weapons) do
-			-- If the player doesn't already have this weapon
-			if self.room.game.player.weapons[w.name] == nil then
-				item = Item()
-				item.weapon = w
-				table.insert(itemsToDrop, item)
+			-- If the player doesn't already have this weapon, or we are the
+			-- player
+			if (not self.room.game.player.weapons[w.name] or
+			    instanceOf(Player, self)) then
+				-- Make an item version of this weapon
+				local newItem = Item()
+				newItem.weapon = w
+				table.insert(itemsToDrop, newItem)
 			end
 		end
+		self.weapons = {}
 	end
 
 	-- Drop them
@@ -264,7 +306,7 @@ function Character:dodge(sprite)
 	destination = nil
 	switchedDir = false
 	firstLoop = true
-	while destination == nil do
+	while not destination do
 		-- Add the lateral tiles
 		if searchDir == 1 then
 			laterals = {{x = x - 1, y = y}, {x = x + 1, y = y}}
@@ -334,7 +376,7 @@ function Character:dodge(sprite)
 end
 
 function Character:draw()
-	if self.images == nil then
+	if not self.images then
 		return
 	end
 
@@ -345,25 +387,25 @@ function Character:draw()
 	end
 
 	-- Determine which image of this character to draw
-	if self.images.moving ~= nil and
-	   (self.path.nodes ~= nil or self.moved or
-	    self.action == Character.static.actions.flee) then
+	if (self.images.moving and
+	    (self.path.nodes or self.moved or
+	     self.action == Character.static.actions.flee)) then
 		img = self.images.moving
-	elseif self.images.sword ~= nil and self.weapons.sword ~= nil and
-	       self.currentWeapon == self.weapons.sword then
+	elseif (self.images.sword and self.weapons.sword and
+	        self.currentWeapon == self.weapons.sword) then
 		img = self.images.sword
-	elseif self.images.bow ~= nil and self.weapons.bow ~= nil and
-	       self.currentWeapon == self.weapons.bow then
+	elseif (self.images.bow and self.weapons.bow and
+	        self.currentWeapon == self.weapons.bow) then
 		img = self.images.bow
-	elseif self.images.staff ~= nil and self.weapons.staff ~= nil and
-	       self.currentWeapon == self.weapons.staff then
+	elseif (self.images.staff and self.weapons.staff and
+	        self.currentWeapon == self.weapons.staff) then
 		img = self.images.staff
 	else
 		img = self.images.default
 	end
 
 	if self.flashTimer == 0 then
-		if self.color ~= nil then
+		if self.color then
 			love.graphics.setColor(self.color)
 		else
 			love.graphics.setColor(255, 255, 255)
@@ -378,33 +420,46 @@ end
 
 function Character:drop(items)
 	-- Find all neighboring tiles
-	neighbors = find_neighbor_tiles(self.position)
+	local neighbors = find_neighbor_tiles(self.position)
 
-	for i, item in pairs(items) do
+	-- Assign positions to the items and add them to the room
+	local i = 0
+	for _, item in pairs(items) do
+		i = i + 1
+
 		if i == 1 and self.dead then
 			-- Position the item where we just died
 			item.position = self.position
 		else
-			-- Find a free neighboring tile in which to position this item
-			for j, n in pairs(neighbors) do
-				if not self.room:tile_occupied(n) then
-					item.position = {x = n.x, y = n.y}
+			-- Make a working copy of neighbors
+			local tempNeighbors = copy_table(neighbors)
 
-					-- Remove this neighbor from the neighbor table
-					table.remove(neighbors, j)
+			-- Try to find a free neighboring itle
+			while not item.position and #tempNeighbors > 0 do
+				-- Choose a random neighboring tile
+				local n = tempNeighbors[math.random(1, #tempNeighbors)]
+
+				-- if the spot is occupied
+				if self.room:tile_occupied(n) then
+
+					-- Remove it from the working copy of neighbors
+					table.remove(tempNeighbors, j)
+				else
+					-- Use this position
+					item.position = {x = n.x, y = n.y}
 					break
 				end
 			end
 
 			-- If the item still doesn't have a position
-			if item.position == nil then
-				-- Find the contents of
-				--contents self.room:tile_contents() then
+			if not item.position then
+				-- Choose a random neighboring tile
+				local n = neighbors[math.random(1, #neighbors)]
+				item.position = {x = n.x, y = n.y}
 			end
 		end
 
 		-- Add the item to the room
-		self.used = false
 		self.room:add_object(item)
 	end
 end
@@ -439,7 +494,7 @@ function Character:flee_from(sprite)
 end
 
 function Character:follow_path()
-	if self.path.nodes == nil then
+	if not self.path.nodes then
 		return false
 	end
 
@@ -465,7 +520,7 @@ end
 function Character:hit(patient)
 	-- Damage other characters with sword
 	if (instanceOf(Character, patient) and -- We hit a character
-		self.currentWeapon ~= nil and -- We have a weapon
+		self.currentWeapon and -- We have a weapon
 	    self.currentWeapon.name == 'sword' and -- Current weapon is sword
 		self.team ~= patient.team) then -- Not on the same team
 		-- If the patient receives our hit
@@ -482,7 +537,7 @@ end
 
 function Character:path_obsolete()
 	-- If we're chasing a character
-	if self.path.destination ~= nil and self.path.character ~= nil then
+	if self.path.destination and self.path.character then
 		-- If the destination of our path is too far away from where the
 		-- character now is
 		if manhattan_distance(self.path.destination,
@@ -494,24 +549,34 @@ function Character:path_obsolete()
 end
 
 function Character:pick_up(item)
-	if item.used then
+	-- If the item is already being held by someone, or is already used up
+	if item.owner or item.isUsed then
 		return
 	end
 
 	-- If it's a weapon-item
-	if item.weapon ~= nil then
+	if item.weapon then
 		-- If we don't already have this type of weapon
-		if self.weapons[item.weapon.name] == nil then
+		if not self.weapons[item.weapon.name] then
 			self:add_weapon(item.weapon)
-			item.used = true
+			item.owner = self
 		end
+
+		-- Apply any arrow packs we have
+		for _, i in pairs(self.inventory) do
+			if i.itemType == 1 then
+				i:use()
+			end
+		end
+	elseif self.weapons.bow and item.itemType == 1 then
+		-- Apply arrows to bow instead of putting them in inventory
+		item:use_on(self)
 	else
 		-- It's a normal item; add it to our inventory
 		self:add_to_inventory(item)
-		item.used = true
 	end
 
-	if item.used then
+	if item.owner or item.isUsed then
 		-- Play sound depending on who picked it up
 		if instanceOf(Player, self) then
 			sound.playerGetItem:play()
@@ -535,6 +600,47 @@ function Character:receive_damage(amount)
 	end
 end
 
+function Character:receive_hit(agent)
+	-- If the agent is a projectile
+	if instanceOf(Projectile, agent) then
+		-- If it has an owner
+		if agent.owner then
+			-- If the owner is on our team
+			if agent.owner.team == self.team then
+				-- Turn against him
+				self.speech = "THAT WAS NOT VERY NICE"
+				self.team = 3
+			end
+		end
+	end
+
+	return Sprite.receive_hit(self)
+end
+
+function Character:recharge()
+	local slow = .25
+	local fast = .5
+	local amount
+
+	-- If we didn't move
+	if not self.moved then
+		-- Recharge faster
+		amount = fast
+	else
+		-- Recharge slowly
+		amount = slow
+	end
+
+	-- If we have a staff
+	if self.weapons.staff then
+		-- Recharge it
+		self.weapons.staff:add_ammo(amount)
+	end
+
+	-- Recharge health
+	self:add_health(slow)
+end
+
 function Character:set_current_weapon(num)
 	for _,w in pairs(self.weapons) do
 		if w.order == num then
@@ -549,7 +655,7 @@ function Character:set_current_weapon(num)
 end
 
 function Character:shoot(dir)
-	if (self.currentWeapon == nil or self.currentWeapon.ammo == nil or
+	if (not self.currentWeapon or not self.currentWeapon.ammo or
 	    self.dead) then
 		return false
 	end

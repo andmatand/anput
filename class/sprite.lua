@@ -16,11 +16,11 @@ function Sprite:init()
 end
 
 function Sprite:check_for_items()
-	-- If we are a character
-	if instanceOf(Character, self) then
+	-- If we are a character who is alive
+	if instanceOf(Character, self) and not self.dead then
 		for _, i in pairs(self.room.items) do
 			-- If this item has a position
-			if i.position ~= nil then
+			if i.position then
 				-- If we are standing on this item
 				if tiles_overlap(self.position, i.position) then
 					-- Pick it up
@@ -37,14 +37,14 @@ end
 
 -- Preview what position the sprite will be at when its velocity is added
 function Sprite:preview_position()
-	if self.position.x == nil or self.position.y == nil then
+	if not self.position.x or not self.position.y then
 		return {x = nil, y = nil}
 	end
 
 	-- Only one axis may have velocity at a time
-	if self.velocity.x ~= nil and self.velocity.x ~= 0 then
+	if self.velocity.x and self.velocity.x ~= 0 then
 		return {x = self.position.x + self.velocity.x, y = self.position.y}
-	elseif self.velocity.y ~= nil and self.velocity.y ~= 0 then
+	elseif self.velocity.y and self.velocity.y ~= 0 then
 		return {x = self.position.x, y = self.position.y + self.velocity.y}
 	else
 		return {x = self.position.x, y = self.position.y}
@@ -60,10 +60,10 @@ end
 
 -- Default hit method
 function Sprite:hit(patient)
-	if patient ~= nil and instanceOf(Projectile, patient) then
+	if patient and instanceOf(Projectile, patient) then
 		-- Don't stop when hitting a projectile
 		return false
-	elseif patient ~= nil and patient:receive_hit(self) == false then
+	elseif patient and patient:receive_hit(self) == false then
 		-- Don't stop if the patient did not receive the hit
 		return false
 	else
@@ -101,8 +101,8 @@ function Sprite:physics()
 	end
 
 	-- Make sure velocity does not contain nil values
-	if self.velocity.x == nil then self.velocity.x = 0 end
-	if self.velocity.y == nil then self.velocity.y = 0 end
+	if not self.velocity.x then self.velocity.x = 0 end
+	if not self.velocity.y then self.velocity.y = 0 end
 
 	-- Test coordinates
 	self.test = {x = self.position.x, y = self.position.y}

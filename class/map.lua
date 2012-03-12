@@ -274,44 +274,15 @@ function Map:generate_rooms()
 	wizard.color = CYAN
 	wizard:add_weapon(Weapon('staff'))
 	wizard.ai.dodge = {dist = 5, prob = 10}
-	wizard.ai.chase = {dist = 1, prob = 10}
+	wizard.ai.chase = {dist = 2, prob = 10}
 	wizard.ai.shoot = {dist = 10, prob = 10}
 	wizard.aiDelay = 1
 	wizard.name = 'WIZARD'
-	--wizard.speech = 'I would give my STAFF for 7 SHINY THINGS.'
-	wizard.speech = 'I WOULD GIVE MY STAFF FOR 7 SHINY THINGS.'
-	earlyRooms[roomNum].objectsToPosition = {}
+	wizard.speech = 'I WOULD GIVE MY STAFF FOR 7 SHINY THINGS'
+	if not earlyRooms[roomNum].objectsToPosition then
+		earlyRooms[roomNum].objectsToPosition = {}
+	end
 	table.insert(earlyRooms[roomNum].objectsToPosition, wizard)
-
-
-
-	-- TEMP: put the weapons in some random rooms toward the beginning
-	--weaponNum = 1
-	--for _, r in pairs(rooms) do
-	--	if r.distanceFromStart <= 3 then
-	--		r.objectsToPosition = {}
-
-	--		if weaponNum == 1 then
-	--			weaponType = 'sword'
-	--		elseif weaponNum == 2 then
-	--			weaponType = 'bow'
-	--		elseif weaponNum == 3 then
-	--			weaponType = 'staff'
-	--		end
-
-	--		-- Add a weapon item
-	--		item = Item(nil, 3)
-	--		item.weapon = Weapon(weaponType)
-
-	--		table.insert(r.objectsToPosition, item)
-
-	--		weaponNum = weaponNum + 1
-
-	--		if weaponNum == 4 then
-	--			break
-	--		end
-	--	end
-	--end
 
 	return rooms
 end

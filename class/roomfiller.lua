@@ -45,7 +45,10 @@ function RoomFiller:add_monsters(max)
 				itemType = 3
 			end
 
-			m:add_to_inventory(Item({}, itemType))
+			local newItem = Item({}, itemType)
+
+			-- Pretend the monster picked it up
+			m:add_to_inventory(newItem)
 		end
 	end
 
@@ -170,5 +173,5 @@ function RoomFiller:fill()
 	--self:position_objects({Item(nil, 4)})
 
 	-- TEMP: put a potion in the room
-	self:position_objects({Item(nil, 2)})
+	--self:position_objects({Item(nil, 2)})
 end

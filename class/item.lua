@@ -2,6 +2,8 @@ Item = class('Item')
 
 function Item:init(position, itemType)
 	self.position = position
+	--self.position = {position.x, position.y}
+	--print('item position table:', self.position)
 	self.itemType = itemType
 
 	if itemType == 1 then
@@ -23,7 +25,7 @@ function Item:init(position, itemType)
 	self.animateTimer = 0
 	self.animationEnabled = true
 
-	self.used = false
+	self.owner = nil
 end
 
 function Item:animate()
@@ -74,63 +76,29 @@ function Item:draw()
 	end
 end
 
-function Item:use_on(patient)
-	if self.used then
-		return false
+function Item:use()
+	if self.owner then
+		self:use_on(self.owner)
+		self.owner:remove_from_inventory(self)
 	end
+end
 
+function Item:use_on(patient)
 	if self.itemType == 1 then
 		-- Arrows
 		-- If the patient has a bow
-		if patient.weapons.bow ~= nil then
+		if patient.weapons.bow then
 			patient.weapons.bow:add_ammo(10)
-			self.used = true
-
-			-- Play sound depending on who picked it up
-			if instanceOf(Player, patient) then
-				sound.playerGetArrows:play()
-			elseif instanceOf(Monster, patient) then
-				sound.monsterGetArrows:play()
-			end
-		else
-			return false
+			self.isUsed = true
+			return true
 		end
 	elseif self.itemType == 2 then
 		-- Health potion
-		if patient.health >= 100 then
-			return false
-		else
-			patient.health = patient.health + 10
-			if patient.health > 100 then
-				patient.health = 100
-			end
-
-			self.used = true
-
-			-- Play sound depending on who picked it up
-			if instanceOf(Player, patient) then
-				sound.playerGetHP:play()
-			elseif instanceOf(Monster, patient) then
-				sound.monsterGetHP:play()
-			end
-		end
-	elseif self.itemType == 3 then
-		-- Shiny thing
-		patient:add_to_inventory(self)
-		self.used = true
-	elseif self.weapon ~= nil then
-		if (patient.weapons ~= nil and
-		    patient.weapons[self.weapon.name] == nil) then
-			-- Weapon
-			patient:add_weapon(self.weapon)
-			self.used = true
-
-			-- Play sound depending on who picked it up
-			if instanceOf(Player, patient) then
-				sound.playerGetArrows:play()
-			elseif instanceOf(Monster, patient) then
-				sound.monsterGetArrows:play()
-			end
+		if paitent:add_health(10) then
+			self.isUsed = true
+			return true
 		end
 	end
+
+	return false
 end
