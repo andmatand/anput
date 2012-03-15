@@ -36,8 +36,9 @@ end
 
 -- Returns a table of bricks
 function RoomBuilder:build()
-	self.bricks = {}
-	occupiedTiles = {}
+	local bricks = {}
+	local freeTiles = {}
+	local occupiedTiles = {}
 
 	print('building room with ' .. #self.exits .. ' exits')
 
@@ -50,7 +51,8 @@ function RoomBuilder:build()
 	end
 
 	-- Pick a random point in the middle of the room
-	midPoint = {x = math.random(1, ROOM_W - 2), y = math.random(1, ROOM_H - 2)}
+	local midPoint = {x = math.random(1, ROOM_W - 2),
+	                  y = math.random(1, ROOM_H - 2)}
 
 	-- Plot paths from all exits to the midpoint
 	for i,e in ipairs(self.exits) do
@@ -123,35 +125,32 @@ function RoomBuilder:build()
 		table.insert(destinations, dest)
 
 		-- Plot a path from src along all points in destinations
-		nav = Navigator(src, destinations, occupiedTiles)
-		tiles = nav:plot()
+		local nav = Navigator(src, destinations, occupiedTiles)
+		local tiles = nav:plot()
 
 		-- Make bricks at these coordinates
-		for j,b in pairs(tiles) do
-			table.insert(self.bricks, Brick(b))
+		for j, b in pairs(tiles) do
+			table.insert(bricks, Brick(b))
 		end
 	end
 
 	-- Do a floodfill on the inside of the room
-	ff = FloodFiller(midPoint, self.bricks)
-	ffResults = ff:flood()
+	local ff = FloodFiller(midPoint, bricks)
+	local ffResults = ff:flood()
 
-	-- Save freeTiles and bricks
-	self.freeTiles = ffResults.freeTiles
-	tempBricks = ffResults.hotLava
+	-- Save freeTiles
+	freeTiles = ffResults.freeTiles
 
 	-- Remove any bricks that could not be touched from inside the room
-	self.bricks = {}
-	for i,b in pairs(tempBricks) do
+	bricks = {}
+	for i, b in pairs(ffResults.hotLava) do
 		if b.touched == true then
-			table.insert(self.bricks, Brick(b))
-		--else
-		--	print('removed an unreachable brick')
+			table.insert(bricks, Brick(b))
 		end
 	end
 
 	print('room built')
 
-	return {bricks = self.bricks, freeTiles = self.freeTiles,
+	return {bricks = bricks, freeTiles = freeTiles,
 	        midPoint = midPoint}
 end

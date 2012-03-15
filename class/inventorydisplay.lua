@@ -13,6 +13,12 @@ function InventoryDisplay:draw()
 	local x = self.position.x
 	local y = self.position.y
 
+	-- DEBUG
+	--print('InventoryDisplay says this is inventory:')
+	--for k, v in pairs(self.owner.inventory) do
+	--	print(k, v)
+	--end
+
 	-- Display HP
 	--love.graphics.draw(healthImg,
 	--				   x * TILE_W, 0 * TILE_H, 0, SCALE_X, SCALE_Y)
@@ -21,7 +27,6 @@ function InventoryDisplay:draw()
 	                        color = MAGENTA},
 	                       x * TILE_W, 2,
 						   (SCREEN_W - x) * TILE_W, TILE_H - 4)
-
 
 	if self.owner.weapons then
 		local numWeapons = 0

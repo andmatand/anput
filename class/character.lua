@@ -319,7 +319,8 @@ function Character:dodge(sprite)
 		end
 
 		-- If the center tile is occupied
-		if firstLoop == false and self.room:tile_occupied({x = x, y = y}) then
+		if (firstLoop == false and
+		    not self.room:tile_walkable({x = x, y = y})) then
 			if switchedDir == false then
 				-- We can't get to the lateral tiles, start searching in the
 				-- other direction
@@ -342,7 +343,7 @@ function Character:dodge(sprite)
 				choice = laterals[index]
 
 				-- If this tile choice is occupied
-				if self.room:tile_occupied(choice) then
+				if not self.room:tile_walkable(choice) then
 					-- Remove this choice from the table
 					table.remove(laterals, index)
 				else
@@ -437,13 +438,13 @@ function Character:drop(items)
 			-- Try to find a free neighboring itle
 			while not item.position and #tempNeighbors > 0 do
 				-- Choose a random neighboring tile
-				local n = tempNeighbors[math.random(1, #tempNeighbors)]
+				local neighborIndex = math.random(1, #tempNeighbors)
+				local n = tempNeighbors[neighborIndex]
 
 				-- if the spot is occupied
-				if self.room:tile_occupied(n) then
-
+				if self.room:tile_is_droppoint(n) then
 					-- Remove it from the working copy of neighbors
-					table.remove(tempNeighbors, j)
+					table.remove(tempNeighbors, neighborIndex)
 				else
 					-- Use this position
 					item.position = {x = n.x, y = n.y}
@@ -453,14 +454,30 @@ function Character:drop(items)
 
 			-- If the item still doesn't have a position
 			if not item.position then
-				-- Choose a random neighboring tile
-				local n = neighbors[math.random(1, #neighbors)]
-				item.position = {x = n.x, y = n.y}
+				-- Make a working copy of neighbors
+				local tempNeighbors = copy_table(neighbors)
+
+				-- Find a neighboring tile which is inside the room
+				while not item.position and #tempNeighbors > 0 do
+					local neighborIndex = math.random(1, #tempNeighbors)
+					local n = tempNeighbors[neighborIndex]
+
+					if self.room:tile_in_room(n) then
+						-- Use this position
+						item.position = {x = n.x, y = n.y}
+						break
+					else
+						-- Remove it from the working copy of neighbors
+						table.remove(tempNeighbors, neighborIndex)
+					end
+				end
 			end
 		end
 
 		-- Add the item to the room
 		self.room:add_object(item)
+
+		print('dropped item ' .. i)
 	end
 end
 

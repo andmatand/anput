@@ -41,45 +41,54 @@ function Room:add_object(obj)
 end
 
 function Room:character_input()
-	for i,s in pairs(self.sprites) do
-		if instanceOf(Character, s) and not instanceOf(Player, s) then
-			s:do_ai()
+	for _, c in pairs(self:get_characters()) do
+		if not instanceOf(Player, c) then
+			c:do_ai()
 		end
 	end
 end
 
 function Room:draw()
-	for _,b in pairs(self.bricks) do
+	for _, b in pairs(self.bricks) do
 		b:draw()
 	end
 
-	for _,i in pairs(self.items) do
+	for _, i in pairs(self.items) do
 		i:draw()
 	end
 
-	for _,s in pairs(self.sprites) do
+	for _, s in pairs(self.sprites) do
 		s:draw()
 	end
 end
 
 function Room:erase()
-	for i,b in pairs(self.bricks) do
+	for _, b in pairs(self.bricks) do
 		b:draw()
 	end
-	for i,s in pairs(self.sprites) do
-		s:erase()
+
+	for _, i in pairs(self.items) do
+		i:erase()
+	end
+
+	for _, c in pairs(self:get_characters()) do
+		c:erase()
+	end
+
+	for _, p in pairs(self.projectiles) do
+		p:erase()
 	end
 end
 
 function Room:find_path(src, dest)
 	-- Create a table of the room's occupied nodes
 	hotLava = {}
-	for i,b in pairs(self.bricks) do
+	for _, b in pairs(self.bricks) do
 		table.insert(hotLava, {x = b.x, y = b.y})
 	end
-	for i,s in pairs(self.sprites) do
-		if instanceOf(Character, s) then
-			table.insert(hotLava, {x = s.position.x, y = s.position.y})
+	for _, c in pairs(self:get_characters()) do
+		if instanceOf(Character, c) then
+			table.insert(hotLava, {x = c.position.x, y = c.position.y})
 		end
 	end
 
@@ -109,6 +118,19 @@ function Room:generate()
 	rf:fill()
 
 	self.generated = true
+end
+
+-- Returns a table of all characters in the room
+function Room:get_characters()
+	local characters = {}
+
+	for _, s in pairs(self.sprites) do
+		if instanceOf(Character, s) then
+			table.insert(characters, s)
+		end
+	end
+
+	return characters
 end
 
 function Room:get_exit(search)
@@ -157,18 +179,18 @@ function Room:line_of_sight(a, b)
 			return true
 		end
 
-		if self:tile_occupied({x = x, y = y}) then
+		if not self:tile_walkable({x = x, y = y}) then
 			-- Encountered an occupied tile
 			return false
 		end
 	end
 end
 
-
 function Room:remove_sprite(sprite)
-	for i,s in pairs(self.sprites) do
+	for i, s in pairs(self.sprites) do
 		if s == sprite then
 			table.remove(self.sprites, i)
+			break
 		end
 	end
 end
@@ -181,23 +203,20 @@ function Room:tile_contents(tile)
 		return nil
 	end
 
-	for _,b in pairs(self.bricks) do
+	for _, b in pairs(self.bricks) do
 		if tiles_overlap(tile, b) then
 			-- Nothing can overlap a brick, so return here
 			return {b}
 		end
 	end
 
-	for _,s in pairs(self.sprites) do
+	for _, s in pairs(self.sprites) do
 		if tiles_overlap(tile, s.position) then
 			table.insert(contents, s)
-
-			-- Sprites cannot overlap, so break here
-			break
 		end
 	end
 
-	for _,i in pairs(self.items) do
+	for _, i in pairs(self.items) do
 		if tiles_overlap(tile, i.position) then
 			table.insert(contents, i)
 
@@ -207,6 +226,18 @@ function Room:tile_contents(tile)
 	end
 
 	return contents
+end
+
+-- Returns true if an item can be safely dropped here
+function Room:tile_is_droppoint(tile)
+	if (self:tile_in_room(tile) and
+	    not tile_occupied(tile, concat_tables({self.bricks,
+		                                       self:get_characters(),
+		                                       self.items}))) then
+		return true
+	else
+		return false
+	end
 end
 
 function Room:tile_in_room(tile)
@@ -225,13 +256,29 @@ function Room:tile_in_room(tile)
 	return inRoom
 end
 
-function Room:tile_occupied(tile)
-	if (not self:tile_in_room(tile) or
-	    tile_occupied(tile, concat_tables({self.bricks, self.sprites}))) then
-		return true
-	else
+-- Return true if tile can be walked on right now (contains no collidable
+-- objects)
+function Room:tile_walkable(tile)
+	-- If the tile is not inside the room, or the tile is occupied by a brick
+	if not self:tile_in_room(tile) or tile_occupied(tile, self.bricks) then
 		return false
 	end
+
+	-- Create a table of collidable characters
+	local collidables = {}
+	for _, c in pairs(self:get_characters()) do
+		-- If this character is not a ghost
+		if not c.isCorporeal then
+			table.insert(collidables, c)
+		end
+	end
+
+	-- If the tile's position is occupied by that of a collidable sprite
+	if tile_occupied(tile, collidables) then
+		return false
+	end
+
+	return true
 end
 
 function Room:update()

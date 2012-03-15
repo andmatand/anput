@@ -73,17 +73,23 @@ function RoomFiller:position_objects(objects)
 	end
 
 	for i, o in pairs(objects) do
-		-- Pick a random free tile
-		local position = freeTiles[math.random(1, #freeTiles)]
+		while #freeTiles > 0 do
+			-- Pick a random free tile
+			local position = freeTiles[math.random(1, #freeTiles)]
 
-		-- Set the object's position to that of our chosen tile
-		o.position = {x = position.x, y = position.y}
+			-- Remove this tile from the freeTiles table
+			table.remove(freeTiles, i)
 
-		-- Remove this tile from the freeTiles table
-		table.remove(freeTiles, i)
+			-- If this position is available for a 
+			if self.room:tile_walkable(position) then
+				-- Set the object's position to that of our chosen tile
+				o.position = {x = position.x, y = position.y}
 
-		-- Add this object to the room
-		self.room:add_object(o)
+				-- Add this object to the room
+				self.room:add_object(o)
+				break
+			end
+		end
 	end
 end
 
@@ -96,7 +102,7 @@ function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
 			local ok = true
 			if fTest == nil then
 				-- Default test function: Don't place in occupied tile
-				if self.room:tile_occupied(position) then
+				if not self.room:tile_walkable(position) then
 					ok = false
 				end
 			else
@@ -164,6 +170,7 @@ function RoomFiller:fill()
 	local maxMonsters = #self.room.freeTiles * .04
 	self:add_monsters(maxMonsters)
 	
+	-- Give positions to pre-added objects
 	if self.room.objectsToPosition ~= nil then
 		self:position_objects(self.room.objectsToPosition)
 		self.room.objectsToPosition = nil

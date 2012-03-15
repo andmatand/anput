@@ -18,6 +18,7 @@ function Monster:init(pos, monsterType)
 	self.position = pos
 	self.monsterType = monsterType
 
+	self.isCorporeal = true
 	self.team = 2 -- Bad guys
 
 	-- Copy monster difficulty level
@@ -71,6 +72,7 @@ function Monster:init(pos, monsterType)
 	elseif self.monsterType == 5 then
 		self.images = monsterImg.ghost
 		self.health = 80
+		self.isCorporeal = false
 
 		self:add_weapon(Weapon('staff'))
 		self.currentWeapon:set_projectile_class(Fireball)
