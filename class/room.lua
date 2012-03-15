@@ -245,15 +245,9 @@ function Room:tile_in_room(tile)
 		return false
 	end
 
-	local inRoom = false
-	for i,t in pairs(self.freeTiles) do
-		if tile.x == t.x and tile.y == t.y then
-			inRoom = true
-			break
-		end
+	if tile_occupied(tile, self.freeTiles) then
+		return true
 	end
-
-	return inRoom
 end
 
 -- Return true if tile can be walked on right now (contains no collidable

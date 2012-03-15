@@ -435,14 +435,14 @@ function Character:drop(items)
 			-- Make a working copy of neighbors
 			local tempNeighbors = copy_table(neighbors)
 
-			-- Try to find a free neighboring itle
+			-- Try to find a free neighboring tile
 			while not item.position and #tempNeighbors > 0 do
 				-- Choose a random neighboring tile
 				local neighborIndex = math.random(1, #tempNeighbors)
 				local n = tempNeighbors[neighborIndex]
 
-				-- if the spot is occupied
-				if self.room:tile_is_droppoint(n) then
+				-- If the spot is occupied
+				if not self.room:tile_is_droppoint(n) then
 					-- Remove it from the working copy of neighbors
 					table.remove(tempNeighbors, neighborIndex)
 				else
