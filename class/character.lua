@@ -441,14 +441,14 @@ function Character:drop(items)
 				local neighborIndex = math.random(1, #tempNeighbors)
 				local n = tempNeighbors[neighborIndex]
 
-				-- If the spot is occupied
-				if not self.room:tile_is_droppoint(n) then
-					-- Remove it from the working copy of neighbors
-					table.remove(tempNeighbors, neighborIndex)
-				else
+				-- If the spot is free
+				if self.room:tile_is_droppoint(n) then
 					-- Use this position
 					item.position = {x = n.x, y = n.y}
 					break
+				else
+					-- Remove it from the working copy of neighbors
+					table.remove(tempNeighbors, neighborIndex)
 				end
 			end
 
