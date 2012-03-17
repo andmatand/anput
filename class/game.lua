@@ -89,6 +89,12 @@ function Game:draw()
 			end
 		end
 	end
+
+	-- DEBUG: show FOV info
+	fov = FOVFinder({origin = self.player.position, 
+	                 radius = 10,
+	                 obstacles = self.currentRoom:get_fov_obstacles()})
+	fov:find()
 end
 
 function Game:draw_sidepane()

@@ -1,3 +1,4 @@
+require('class/fovfinder')
 require('class/roombuilder')
 require('class/roomfiller')
 
@@ -141,6 +142,10 @@ function Room:get_exit(search)
 			return e
 		end
 	end
+end
+
+function Room:get_fov_obstacles()
+	return self.bricks
 end
 
 function Room:line_of_sight(a, b)
