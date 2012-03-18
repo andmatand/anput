@@ -3,20 +3,6 @@ local function distance(a, b)
 	return math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
 end
 
--- Convert degrees to radians
-local function to_rad(deg)
-	return deg / 180 * math.pi
-end 
- 
--- Rotate point around an origin
-local function rotate_point(point, origin, degrees)
-	local x = origin.x + (math.cos(to_rad(degrees)) * (point.x - origin.x) -
-	                      math.sin(to_rad(degrees)) * (point.y - origin.y))
-	local y = origin.y + (math.sin(to_rad(degrees)) * (point.x - origin.x) +
-	                      math.cos(to_rad(degrees)) * (point.y - origin.y))
-	return {x = x, y = y}
-end
-
 local function round(num)
 	--return math.floor(num + .5)
 	return math.floor(num)
@@ -39,43 +25,46 @@ function Cone:get_line(lineNum)
 
 	-- Find the x, start y, and end y, based on line (column) number away from
 	-- origin
-	x = self.origin.x + (lineNum - 1)
-	y1 = ((x - self.origin.x) * self.slope1) + self.origin.y
-	y2 = ((x - self.origin.x) * self.slope2) + self.origin.y
+	x = (lineNum - 1)
+	y1 = (x * self.slope1)
+	y2 = (x * self.slope2)
 
-	-- Determine rotation amount based on distance from octant 3, which has no
-	-- rotation
-	if self.octant == 1 then
-		rotation = -90
-	elseif self.octant == 2 then
-		rotation = -45
-	elseif self.octant == 3 then
-		rotation = 0
-	elseif self.octant == 4 then
-		rotation = 45
-	elseif self.octant == 5 then
-		rotation = 90
-	elseif self.octant == 6 then
-		rotation = 135
-	elseif self.octant == 7 then
-		rotation = 180
-	elseif self.octant == 8 then
-		rotation = 225
-	end
+	-- Round to nearest tile
+	--y1 = round(y1)
+	--y2 = round(y2)
 
 	-- Create a table of tiles in a line
 	for y = y1, y2 do
-		-- Rotate the x, y coordinates
-		tile = rotate_point({x = x, y = y}, self.origin, rotation)
-
-		-- Round to nearest tile
-		tile.x = round(tile.x)
-		tile.y = round(tile.y)
-
+		-- Translate the x, y coordinates to the correct octant
+		tile = self:translate_octant({x = x, y = y})
 		table.insert(tiles, tile)
 	end
 
 	return tiles
+end
+
+function Cone:translate_origin(tile)
+	return {x = self.origin.x + tile.x, y = self.origin.y + tile.y}
+end
+
+function Cone:translate_octant(tile)
+	if self.octant == 1 then
+        return self:translate_origin({x = tile.y, y = -tile.x})
+	elseif self.octant == 2 then
+        return self:translate_origin({x = -tile.y, y = -tile.x})
+	elseif self.octant == 3 then
+		return self:translate_origin(tile)
+	elseif self.octant == 4 then
+        return self:translate_origin({x = tile.x, y = -tile.y})
+	elseif self.octant == 5 then
+        return self:translate_origin({x = -tile.y, y = tile.x})
+	elseif self.octant == 6 then
+        return self:translate_origin({x = tile.y, y = tile.x})
+	elseif self.octant == 7 then
+        return self:translate_origin({x = -tile.x, y = -tile.y})
+	elseif self.octant == 8 then
+        return self:translate_origin({x = -tile.x, y = tile.y})
+	end
 end
 
 
@@ -178,31 +167,15 @@ function FOVFinder:scan(src, octant)
 end
 
 function FOVFinder:within_radius(tile)
-	-- Zoom the points x2 and use the corner of tile that is closest to the
-	-- origin
-	t = {}
-	if tile.x >= self.origin.x then
-		t.x = tile.x * 2
-	else
-		t.x = (tile.x * 2) + 1
-	end
-	if tile.y >= self.origin.y then
-		t.y = tile.y * 2
-	else
-		t.y = (tile.y * 2) + 1
-	end
-
-	if distance({x = t.x, y = t.y},
-	            {x = self.origin.x * 2,
-	             y = self.origin.y * 2}) < self.radius * 2 then
+	-- If the distance from the center of the origin to the bottom left corner
+	-- of the tile is less than the radius (zoom in 3x in calculation in order
+	-- to pick in-between points)
+	if distance({x = (self.origin.x * 3) + 1,
+	             y = (self.origin.y * 3) + 1},
+	            {x = (tile.x * 3),
+	             y = (tile.y * 3) + 1}) < self.radius * 3 then
 		return true
 	else
 		return false
 	end
-
-	--if distance(tile, self.origin) < self.radius then
-	--	return true
-	--else
-	--	return false
-	--end
 end
