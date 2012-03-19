@@ -92,6 +92,7 @@ function Game:draw()
 
 	-- DEBUG: show FOV info
 	fov = FOVFinder({origin = self.player.position, 
+	                 room = self.currentRoom,
 	                 radius = 10,
 	                 obstacles = self.currentRoom:get_fov_obstacles()})
 	fov:find()

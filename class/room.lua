@@ -245,13 +245,19 @@ function Room:tile_is_droppoint(tile)
 	end
 end
 
-function Room:tile_in_room(tile)
+function Room:tile_in_room(tile, options)
 	if tile_offscreen(tile) then
 		return false
 	end
 
 	if tile_occupied(tile, self.freeTiles) then
 		return true
+	end
+
+	if options and options.includeBricks then
+		if tile_occupied(tile, self.bricks) then
+			return true
+		end
 	end
 end
 

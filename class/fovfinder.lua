@@ -1,3 +1,5 @@
+require('util/tile')
+
 -- Returns distance between to points
 local function distance(a, b)
 	return math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
@@ -6,6 +8,14 @@ end
 local function round(num)
 	--return math.floor(num + .5)
 	return math.floor(num)
+end
+
+local function slope(a, b)
+	if (b.x - a.x) == 0 then
+		return 0
+	else
+		return (b.y - a.y) / (b.x - a.x)
+	end
 end
 
 
@@ -19,24 +29,44 @@ function Cone:init(args)
 	self.slope2 = args.slope2
 end
 
--- lineNum starts at 1
-function Cone:get_line(lineNum)
-	local tiles = {}, x, y, x1, x2, y1, y2
+-- Returns a column of tiles, rotated/translated to our octant.
+-- colNums are:
+--      #
+--     ##
+--    ###
+--   ####
+--   1234 etc.
+function Cone:get_column(colNum)
+	local tiles = {}
+	local x, y, x1, x2, y1, y2
 
-	-- Find the x, start y, and end y, based on line (column) number away from
-	-- origin
-	x = (lineNum - 1)
-	y1 = (x * self.slope1)
-	y2 = (x * self.slope2)
+	-- Find the x, start y, and end y, based on (column number away from origin
+	x = colNum - 1
+	y1 = x * self.slope1
+	y2 = x * self.slope2
+	
+	--print()
+	--print('in get_column()')
+	--print('slope1:', self.slope1)
+	--print('x:', x)
+	--print('y1:', y1)
+	--print()
 
 	-- Round to nearest tile
-	--y1 = round(y1)
-	--y2 = round(y2)
+	y1 = round(y1)
+	y2 = round(y2)
 
-	-- Create a table of tiles in a line
+	-- Create a table of tiles in a column, top to bottom
 	for y = y1, y2 do
-		-- Translate the x, y coordinates to the correct octant
-		tile = self:translate_octant({x = x, y = y})
+		-- Translate the coordinates so that they are relative to the origin
+		tile = self:translate_origin({x = x, y = y})
+
+		-- If this is the last tile in the column
+		if y == y2 then
+			-- Mark it as such
+			tile.last = true
+		end
+
 		table.insert(tiles, tile)
 	end
 
@@ -49,21 +79,21 @@ end
 
 function Cone:translate_octant(tile)
 	if self.octant == 1 then
-        return self:translate_origin({x = tile.y, y = -tile.x})
+        return {x = tile.y, y = -tile.x}
 	elseif self.octant == 2 then
-        return self:translate_origin({x = -tile.y, y = -tile.x})
+        return {x = -tile.y, y = -tile.x}
 	elseif self.octant == 3 then
-		return self:translate_origin(tile)
+		return tile
 	elseif self.octant == 4 then
-        return self:translate_origin({x = tile.x, y = -tile.y})
+        return {x = tile.x, y = -tile.y}
 	elseif self.octant == 5 then
-        return self:translate_origin({x = -tile.y, y = tile.x})
+        return {x = -tile.y, y = tile.x}
 	elseif self.octant == 6 then
-        return self:translate_origin({x = tile.y, y = tile.x})
+        return {x = tile.y, y = tile.x}
 	elseif self.octant == 7 then
-        return self:translate_origin({x = -tile.x, y = -tile.y})
+        return {x = -tile.x, y = -tile.y}
 	elseif self.octant == 8 then
-        return self:translate_origin({x = -tile.x, y = tile.y})
+        return {x = -tile.x, y = tile.y}
 	end
 end
 
@@ -76,9 +106,21 @@ function FOVFinder:init(args)
 	self.origin = args.origin
 	self.radius = args.radius
 	self.obstacles = args.obstacles
+	self.room = args.room
 end
 
 function FOVFinder:find()
+	self.visibleTiles = {}
+
+	self:shadow_cast()
+
+	-- DEBUG: show all visible tiles
+	self:draw_visible_tiles(cone)
+
+	return self.visibleTiles
+end
+
+function FOVFinder:shadow_cast()
 	-- Octants
 	-- \  |  /
 	--  \1|2/
@@ -88,8 +130,11 @@ function FOVFinder:find()
 	--  /6|5\
 	-- /  |  \
 
-	local origin, slope1, slope2
-	for octant = 1, 8 do
+	local origin
+	local slope1
+	local slope2
+	--for octant = 1, 8 do
+	for octant = 3, 3 do
 		slope1 = -1
 		slope2 = 0
 		if octant == 1 then
@@ -109,60 +154,116 @@ function FOVFinder:find()
 		elseif octant == 8 then
 			origin = {x = self.origin.x - 1, y = self.origin.y}
 		end
-		local cone = Cone({origin = origin,
-		                   octant = octant,
-		                   slope1 = slope1,
-		                   slope2 = slope2})
 
-		for lineNum = 1, self.radius do
-			local line = cone:get_line(lineNum)
+		local queue = {}
 
-			for _, tile in ipairs(line) do
-				-- If this tile is within the radius
+		-- If the origin for this octant is within the viewing radius
+		if self.room:tile_in_room(origin, {includeBricks = true}) then
+			-- Create the first cone
+			local cone = Cone({origin = origin,
+							   octant = octant,
+							   slope1 = slope1,
+							   slope2 = slope2})
+
+			-- Place the first cone on the scan-queue
+			table.insert(queue, {cone = cone, colNum = 1})
+		end
+
+		-- DEBUG
+		print()
+		print('octant:', octant)
+		print('origin:', origin.x, origin.y)
+
+		while #queue > 0 do
+			local job = table.remove(queue)
+
+			print('colNum:', job.colNum)
+			print('slope1:', job.cone.slope1)
+			print('slope2:', job.cone.slope2)
+
+			local sawAnyObstacles = false
+			local previousTileWasOccupied = nil
+			local newSlope1 = job.cone.slope1
+			local newSlope2 = job.cone.slope2
+			for _, tile in ipairs(job.cone:get_column(job.colNum)) do
+				-- DEBUG
+				print('tile:', tile.x, tile.y)
+
+				local transTile = job.cone:translate_octant(tile)
+				local occupied = tile_occupied(transTile, self.obstacles)
+
+				-- If this tile is within the viewing radius
 				if self:within_radius(tile) then
-					-- DEBUG: show line tiles
-					love.graphics.push()
-					love.graphics.scale(TILE_W, TILE_H)
-					if octant % 2 == 0 then
-						love.graphics.setColor(0, 200, 0)
-					else
-						love.graphics.setColor(0, 0, 200)
+					-- Consider this tile visible
+					table.insert(self.visibleTiles, transTile)
+				else
+					occupied = true
+				end
+
+				if occupied then
+					print('occupied')
+					sawAnyObstacles = true
+
+					if previousTileWasOccupied == false then
+						-- Find the slope above this tile
+						newSlope2 = slope(origin, {x = tile.x,
+						                           y = tile.y - 1})
+
+						local newCone = Cone({origin = origin,
+						                      octant = octant,
+						                      slope1 = newSlope1,
+						                      slope2 = newSlope2})
+
+						-- Add another cone to the work queue with a slope2
+						-- of right above this tile
+						table.insert(queue, {cone = newCone,
+						                     colNum = job.colNum + 1})
+						print('queue add:')
+						print('  newSlope1:', newSlope1)
+						print('  newSlope2:', newSlope2)
 					end
-					love.graphics.setLine(1, 'rough')
-					love.graphics.rectangle('line',
-											tile.x, tile.y, 2, 2)
-					love.graphics.pop()
+
+					previousTileWasOccupied = true
+				else
+					if previousTileWasOccupied then
+						-- Find the slope to this tile
+						newSlope1 = slope(origin, {x = tile.x,
+						                           y = tile.y})
+						
+						-- Reset slope2
+						newSlope2 = slope2
+
+						-- DEBUG
+						print('set newSlope1 to ' .. newSlope1)
+					end
+
+					previousTileWasOccupied = false
+				end
+
+				-- If this is the last tile in the column
+				if tile.last and not occupied then
+					print('last:')
+					print('  adding cone with slope1 of ' .. newSlope1)
+					local newCone = Cone({origin = job.cone.origin,
+					                      octant = job.cone.octant,
+					                      slope1 = newSlope1,
+					                      slope2 = newSlope2})
+
+					table.insert(queue, {cone = newCone,
+					                     colNum = job.colNum + 1})
 				end
 			end
 		end
 	end
 end
 
-function FOVFinder:scan(src, octant)
-	local pos = {x = src.x, y = src.y}
-	local line = 0
-
-	while true do
-		-- Move to next line
-		if octant == 1 then
-			line = line + 1
-			pos.x = src.x - line
-			pos.y = pos.y - 1
-		end
-
-		while true do
-			-- Move to next position on line
-			if octant == 1 then
-				pos.x = pos.x + 1
-			end
-
-			-- If this tile contains an obstacle
-			if tile_occupied(pos, self.obstacles) then
-				self:scan()
-			else
-				table.insert(self.visibleTiles, pos)
-			end
-		end
+function FOVFinder:draw_visible_tiles()
+	for _, tile in ipairs(self.visibleTiles) do
+		love.graphics.setColor(0, 255, 0)
+		love.graphics.setLine(1, 'rough')
+		love.graphics.rectangle('line',
+		                        tile.x * TILE_W, tile.y * TILE_H,
+		                        TILE_W, TILE_H)
 	end
 end
 
