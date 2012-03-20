@@ -141,6 +141,10 @@ function RoomBuilder:build()
 	-- Save freeTiles
 	freeTiles = ffResults.freeTiles
 
+	-- Add the midpoint to freeTiles, since it is not included by the
+	-- floodfiller
+	table.insert(freeTiles, midPoint)
+
 	-- Remove any bricks that could not be touched from inside the room
 	bricks = {}
 	for i, b in pairs(ffResults.hotLava) do
