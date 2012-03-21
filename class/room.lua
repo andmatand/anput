@@ -41,7 +41,6 @@ function Room:add_object(obj)
 		obj.animationEnabled = true
 	elseif instanceOf(Brick, obj) then
 		table.insert(self.bricks, obj)
-		print('added brick')
 	end
 end
 

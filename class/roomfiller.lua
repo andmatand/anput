@@ -77,10 +77,11 @@ function RoomFiller:position_objects(objects)
 	for _, o in pairs(objects) do
 		while #self.freeTiles > 0 do
 			-- Pick a random free tile
-			local position = self.freeTiles[math.random(1, #self.freeTiles)]
+			local tileIndex = math.random(1, #self.freeTiles)
+			local position = self.freeTiles[tileIndex]
 
 			-- Remove this tile from future consideration
-			table.remove(self.freeTiles, i)
+			table.remove(self.freeTiles, tileIndex)
 
 			-- If this object cannot overlap with other objects
 			if o.isCorporeal then
@@ -90,8 +91,8 @@ function RoomFiller:position_objects(objects)
 				local neighbors = find_neighbor_tiles(position,
 				                                      self.room.bricks)
 
-				-- Make sure there are at least 5 unoccupied neighbor tiles in
-				-- a row
+				-- Make sure there are at least 5 unoccupied
+				-- clockwise-consecuitive neighbor tiles in a row
 				local numInARow = 0
 				for _, n in ipairs(neighbors) do
 					if n.occupied then
@@ -118,6 +119,10 @@ function RoomFiller:position_objects(objects)
 				self.room:add_object(o)
 				break
 			end
+		end
+
+		if #self.freeTiles == 0 then
+			print('no more places to position object:', o)
 		end
 	end
 end
@@ -191,9 +196,15 @@ function RoomFiller:add_turrets(numTurrets)
 end
 
 function RoomFiller:fill()
-	-- DEBUG: add some internal bricks
+	-- Give positions to pre-added objects
+	if self.room.objectsToPosition ~= nil then
+		self:position_objects(self.room.objectsToPosition)
+		self.room.objectsToPosition = nil
+	end
+
+	-- Add internal bricks
 	local someBricks = {}
-	for _ = 1, 4 do
+	for _ = 1, math.random(0, #self.room.freeTiles * .02) do
 		table.insert(someBricks, Brick({}))
 	end
 	self:position_objects(someBricks)
@@ -205,12 +216,6 @@ function RoomFiller:fill()
 	-- Add monsters
 	local maxMonsters = #self.room.freeTiles * .04
 	self:add_monsters(maxMonsters)
-	
-	-- Give positions to pre-added objects
-	if self.room.objectsToPosition ~= nil then
-		self:position_objects(self.room.objectsToPosition)
-		self.room.objectsToPosition = nil
-	end
 
 	-- TEMP: put a shiny thing in the room
 	--self:position_objects({Item(nil, 4)})
