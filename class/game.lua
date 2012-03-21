@@ -46,10 +46,17 @@ function Game:switch_to_room(roomIndex)
 end
 
 function Game:draw()
+	-- Find player's Field Of View
+	fovFinder = FOVFinder({origin = self.player.position, 
+	                 room = self.currentRoom,
+	                 radius = 10,
+	                 obstacles = self.currentRoom:get_fov_obstacles()})
+	self.fov = fovFinder:find()
+
 	if flickerMode and self.frameState == 0 then
 		self.currentRoom:erase()
 	else
-		self.currentRoom:draw()
+		self.currentRoom:draw(self.fov)
 	end
 
 	-- DEBUG: show turrets
@@ -75,10 +82,10 @@ function Game:draw()
 				                                                     ROOM_W)
 
 				-- Draw black background behind text
-				love.graphics.setColor(BLACK)
-				love.graphics.rectangle('fill', 0, 0,
-				                        (ROOM_W * TILE_W),
-				                        numTextLines / SCALE_Y)
+				--love.graphics.setColor(BLACK)
+				--love.graphics.rectangle('fill', 0, 0,
+				--                        (ROOM_W * TILE_W),
+				--                        numTextLines / SCALE_Y)
 
 				-- Draw text
 				love.graphics.push()
@@ -89,13 +96,6 @@ function Game:draw()
 			end
 		end
 	end
-
-	-- DEBUG: show FOV info
-	fov = FOVFinder({origin = self.player.position, 
-	                 room = self.currentRoom,
-	                 radius = 10,
-	                 obstacles = self.currentRoom:get_fov_obstacles()})
-	fov:find()
 end
 
 function Game:draw_sidepane()
@@ -110,6 +110,9 @@ function Game:draw_sidepane()
 end
 
 function Game:generate()
+	-- DEBUG choose specific seed
+	--math.randomseed(46)
+
 	-- Generate a new map
 	mapPath = {}
 	self.map = Map()

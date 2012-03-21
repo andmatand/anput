@@ -49,12 +49,7 @@ function Item:animate()
 	end
 end
 
-function Item:draw()
-	if self.itemType == 1 then
-		-- Arrows
-		love.graphics.setColor(WHITE)
-	end
-
+function Item:draw(alpha)
 	local x, y
 	x = (self.position.x * TILE_W)
 	y = (self.position.y * TILE_H)
@@ -62,17 +57,12 @@ function Item:draw()
 	self:animate()
 
 	if self.frames ~= nil then
-		love.graphics.setColor(WHITE)
+		love.graphics.setColor(255, 255, 255, alpha)
 		love.graphics.draw(self.frames[self.currentFrame].image,
 		                   x, y, 0, SCALE_X, SCALE_Y)
 	elseif self.weapon ~= nil then
-		love.graphics.setColor(WHITE)
+		love.graphics.setColor(255, 255, 255, alpha)
 		self.weapon:draw(self.position)
-	else
-		love.graphics.rectangle('fill',
-		                        x + (TILE_W / 4),
-		                        y + (TILE_H / 4),
-		                        TILE_W / 2, TILE_H / 2)
 	end
 end
 

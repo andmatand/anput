@@ -117,7 +117,7 @@ function FOVFinder:find()
 	self:shadow_cast()
 
 	-- DEBUG: show all visible tiles
-	self:draw_visible_tiles(cone)
+	--self:draw_visible_tiles(cone)
 
 	return self.visibleTiles
 end
@@ -283,8 +283,7 @@ function FOVFinder:shadow_cast()
 
 				-- If this is the last tile in the column
 				if tile.last then
-					if job.colNum == 1 or
-					   (not occupied and sawAnyUnoccupied) then
+					if not occupied and sawAnyUnoccupied then
 						if DEBUG then
 							print('    last:')
 							print('      adding cone:')

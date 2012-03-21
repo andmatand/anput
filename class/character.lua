@@ -376,7 +376,7 @@ function Character:dodge(sprite)
 	end
 end
 
-function Character:draw()
+function Character:draw(alpha)
 	if not self.images then
 		return
 	end
@@ -407,9 +407,12 @@ function Character:draw()
 
 	if self.flashTimer == 0 then
 		if self.color then
+			-- Add the alpha value to the end
+			table.insert(self.color, alpha)
+
 			love.graphics.setColor(self.color)
 		else
-			love.graphics.setColor(255, 255, 255)
+			love.graphics.setColor(255, 255, 255, alpha)
 		end
 		love.graphics.draw(img,
 		                   self.position.x * TILE_W, self.position.y * TILE_H,

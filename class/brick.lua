@@ -10,8 +10,8 @@ function Brick:class_name()
 	return 'Brick'
 end
 
-function Brick:draw()
-	love.graphics.setColor(255, 0, 255)
+function Brick:draw(alpha)
+	love.graphics.setColor(255, 0, 255, alpha)
 	love.graphics.rectangle('fill', self.x * TILE_W, self.y * TILE_H,
 	                        TILE_W, TILE_H)
 end

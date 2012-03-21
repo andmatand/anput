@@ -49,17 +49,35 @@ function Room:character_input()
 	end
 end
 
-function Room:draw()
+function Room:draw(fov)
 	for _, b in pairs(self.bricks) do
-		b:draw()
+		if tile_occupied(b, fov) then
+			alpha = 255
+		else
+			alpha = 5
+		end
+
+		b:draw(alpha)
 	end
 
 	for _, i in pairs(self.items) do
-		i:draw()
+		if tile_occupied(i.position, fov) then
+			alpha = 255
+		else
+			alpha = 5
+		end
+
+		i:draw(alpha)
 	end
 
 	for _, s in pairs(self.sprites) do
-		s:draw()
+		if tile_occupied(s.position, fov) then
+			alpha = 255
+		else
+			alpha = 5
+		end
+
+		s:draw(alpha)
 	end
 end
 
