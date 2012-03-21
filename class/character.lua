@@ -407,8 +407,8 @@ function Character:draw(alpha)
 
 	if self.flashTimer == 0 then
 		if self.color then
-			-- Add the alpha value to the end
-			table.insert(self.color, alpha)
+			-- Set the alpha value
+			self.color[4] = alpha
 
 			love.graphics.setColor(self.color)
 		else
