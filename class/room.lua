@@ -38,6 +38,9 @@ function Room:add_object(obj)
 
 		-- Re-enable animation
 		obj.animationEnabled = true
+	elseif instanceOf(Brick, obj) then
+		table.insert(self.bricks, obj)
+		print('added brick')
 	end
 end
 
@@ -50,16 +53,21 @@ function Room:character_input()
 end
 
 function Room:draw(fov)
-	for _, b in pairs(self.bricks) do
-		if tile_occupied(b, fov) then
-			alpha = 255
-		else
-			alpha = 5
-		end
+	-- Set timer
+	local drawTimer = love.timer.getTime()
 
-		b:draw(alpha)
-	end
+	--for _, t in pairs(self.freeTiles) do
+	--	if tile_occupied(t, fov) then
+	--		alpha = 255
+	--	else
+	--		alpha = 5
+	--	end
 
+	--	self:draw_ground(t, alpha)
+	--end
+	
+	self:draw_bricks(fov)
+	
 	for _, i in pairs(self.items) do
 		if tile_occupied(i.position, fov) then
 			alpha = 255
@@ -78,6 +86,51 @@ function Room:draw(fov)
 		end
 
 		s:draw(alpha)
+	end
+
+	io.write('drew room in ' .. (love.timer.getTime() - drawTimer) ..
+	         ' seconds\r')
+end
+
+function Room:draw_bricks(fov)
+	if self.game.player.moved or not drewBricks then
+		drewBricks = true
+
+		-- Uncomment for love 0.8.0
+		--self.lightBrickBatch:bind()
+		--self.darkBrickBatch:bind()
+
+		-- Clear old bricks
+		self.lightBrickBatch:clear()
+		self.darkBrickBatch:clear()
+
+		for _, b in pairs(self.bricks) do
+			if tile_occupied(b, fov) then
+				self.lightBrickBatch:add(b.x * TILE_W, b.y * TILE_H)
+			else
+				self.darkBrickBatch:add(b.x * TILE_W, b.y * TILE_H)
+			end
+		end
+
+		-- Uncomment for love 0.8.0
+		--self.lightBrickBatch:unbind()
+		--self.darkBrickBatch:unbind()
+	end
+
+	love.graphics.setColor(255, 255, 255, 10)
+	love.graphics.draw(self.darkBrickBatch, 0, 0)
+
+	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.draw(self.lightBrickBatch, 0, 0)
+end
+
+function Room:draw_ground(tile, alpha)
+	love.graphics.setColor(255, 0, 255, alpha)
+
+	for y = tile.y * TILE_H, (tile.y + 1) * TILE_H - 1, SCALE_Y * 4 do
+		for x = tile.x * TILE_W, (tile.x + 1) * TILE_W - 1, SCALE_X * 4 do
+			love.graphics.rectangle('fill', x, y, SCALE_X, SCALE_Y)
+		end
 	end
 end
 
@@ -126,15 +179,21 @@ end
 
 function Room:generate()
 	-- Build the walls of the room
-	rb = RoomBuilder(self.exits)
-	rbResults = rb:build()
+	local rb = RoomBuilder(self.exits)
+	local rbResults = rb:build()
 	self.bricks = rbResults.bricks
 	self.freeTiles = rbResults.freeTiles
 	self.midPoint = rbResults.midPoint
 
 	-- Fill the room with monsters and items
-	rf = RoomFiller(self)
+	local rf = RoomFiller(self)
 	rf:fill()
+
+	-- Make a spriteBatch for bricks within the player's FOV
+	self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
+
+	-- Make a spriteBatch for bricks outside the player's FOV
+	self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
 
 	self.generated = true
 end

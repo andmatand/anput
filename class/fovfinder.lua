@@ -142,23 +142,25 @@ function FOVFinder:shadow_cast()
 	--for octant = 3, 3 do
 		slope1 = -1
 		slope2 = 0
-		if octant == 1 then
-			origin = {x = self.origin.x - 1, y = self.origin.y - 1}
-		elseif octant == 2 then
-			origin = {x = self.origin.x, y = self.origin.y - 1}
-		elseif octant == 3 then
-			origin = {x = self.origin.x + 1, y = self.origin.y - 1}
-		elseif octant == 4 then
-			origin = {x = self.origin.x + 1, y = self.origin.y}
-		elseif octant == 5 then
-			origin = {x = self.origin.x + 1, y = self.origin.y + 1}
-		elseif octant == 6 then
-			origin = {x = self.origin.x, y = self.origin.y + 1}
-		elseif octant == 7 then
-			origin = {x = self.origin.x - 1, y = self.origin.y + 1}
-		elseif octant == 8 then
-			origin = {x = self.origin.x - 1, y = self.origin.y}
-		end
+		--if octant == 1 then
+		--	origin = {x = self.origin.x - 1, y = self.origin.y - 1}
+		--elseif octant == 2 then
+		--	origin = {x = self.origin.x, y = self.origin.y - 1}
+		--elseif octant == 3 then
+		--	origin = {x = self.origin.x + 1, y = self.origin.y - 1}
+		--elseif octant == 4 then
+		--	origin = {x = self.origin.x + 1, y = self.origin.y}
+		--elseif octant == 5 then
+		--	origin = {x = self.origin.x + 1, y = self.origin.y + 1}
+		--elseif octant == 6 then
+		--	origin = {x = self.origin.x, y = self.origin.y + 1}
+		--elseif octant == 7 then
+		--	origin = {x = self.origin.x - 1, y = self.origin.y + 1}
+		--elseif octant == 8 then
+		--	origin = {x = self.origin.x - 1, y = self.origin.y}
+		--end
+
+		origin = self.origin
 
 		local queue = {}
 
@@ -212,6 +214,7 @@ function FOVFinder:shadow_cast()
 			for i, tile in ipairs(job.cone:get_column(job.colNum)) do
 				local transTile = job.cone:translate_octant(tile)
 				local occupied = tile_occupied(transTile, self.obstacles)
+				--local visible = false
 
 				if DEBUG then
 					print('  tile: ' .. tile.x .. ', ' .. tile.y)
@@ -224,6 +227,7 @@ function FOVFinder:shadow_cast()
 					                       {includeBricks = true})) then
 					-- Consider this tile visible
 					table.insert(self.visibleTiles, transTile)
+					visible = true
 				else
 					occupied = true
 				end
@@ -283,6 +287,19 @@ function FOVFinder:shadow_cast()
 
 				-- If this is the last tile in the column
 				if tile.last then
+					--if visible and not sawAnyUnoccupied and tile.y == 0 then
+					--	transTileBelow = job.cone:translate_octant(
+					--		{x = tile.x, y = tile.y + 1})
+
+					--	if not tile_occupied(transTileBelow,
+					--	                     self.obstacles) then
+					--		--print('column ' .. job.colNum ..' special')
+					--		newSlope1 = 0
+					--		occupied = false
+					--		sawAnyUnoccupied = true
+					--	end
+					--end
+
 					if not occupied and sawAnyUnoccupied then
 						if DEBUG then
 							print('    last:')
@@ -314,18 +331,6 @@ function FOVFinder:draw_visible_tiles()
 		                        tile.x * TILE_W, tile.y * TILE_H,
 		                        TILE_W, TILE_H)
 	end
-
-	-- DEBUG: black out everything not visible
-	--for y = 0, ROOM_H - 1 do
-	--	for x = 0, ROOM_W - 1 do
-	--		if not tile_occupied({x = x, y = y}, self.visibleTiles) then
-	--			love.graphics.setColor(0, 0, 0)
-	--			love.graphics.rectangle('fill',
-	--									x * TILE_W, y * TILE_H,
-	--									TILE_W, TILE_H)
-	--		end
-	--	end
-	--end
 end
 
 function FOVFinder:within_radius(tile)

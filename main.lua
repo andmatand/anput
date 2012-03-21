@@ -19,6 +19,17 @@ function love.conf(t)
 end
 
 function love.load()
+	TILE_W = 16
+	TILE_H = 16
+	SCALE_X = 2
+	SCALE_Y = 2
+
+	-- Room width and height are in # of tiles (not pixels)
+	ROOM_W = 27
+	ROOM_H = 25
+	SCREEN_W = (love.graphics.getWidth() / TILE_W)
+	SCREEN_H = (love.graphics.getHeight() / TILE_H)
+
 	love.graphics.setMode(640, 400, false, false, 0)
 	love.mouse.setVisible(false)
 	love.graphics.setCaption('TEMPLE OF ANPUT')
@@ -69,6 +80,18 @@ function love.load()
 	bowImg = new_image('bow.png')
 	staffImg = new_image('staff.png')
 
+	-- Create image data for a brick (a magenta rectangle)
+	local brickImgData = love.image.newImageData(TILE_W, TILE_H)
+	for y = 0, brickImgData:getHeight() - 1 do
+		for x = 0, brickImgData:getWidth() - 1 do
+			brickImgData:setPixel(x, y,
+			                      MAGENTA[1], MAGENTA[2], MAGENTA[3], 255)
+		end
+	end
+	-- Store the brick image
+	brickImg = love.graphics.newImage(brickImgData)
+
+
 	-- Sounds
 	sound = {}
 	sound.playerCry = Sound('res/sfx/player-cry.wav')
@@ -83,17 +106,6 @@ function love.load()
 	sound.playerDie = Sound('res/sfx/player-die.wav')
 
 	math.randomseed(os.time())
-
-	TILE_W = 16
-	TILE_H = 16
-	SCALE_X = 2
-	SCALE_Y = 2
-
-	-- Room width and height are in # of tiles (not pixels)
-	ROOM_W = 27
-	ROOM_H = 25
-	SCREEN_W = (love.graphics.getWidth() / TILE_W)
-	SCREEN_H = (love.graphics.getHeight() / TILE_H)
 
 	showDebug = false
 	flickerMode = false

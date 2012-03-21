@@ -46,12 +46,14 @@ function Game:switch_to_room(roomIndex)
 end
 
 function Game:draw()
-	-- Find player's Field Of View
-	fovFinder = FOVFinder({origin = self.player.position, 
-	                 room = self.currentRoom,
-	                 radius = 10,
-	                 obstacles = self.currentRoom:get_fov_obstacles()})
-	self.fov = fovFinder:find()
+	if self.player.moved or not self.fov then
+		-- Find player's Field Of View
+		fovFinder = FOVFinder({origin = self.player.position, 
+		                 room = self.currentRoom,
+		                 radius = 10,
+		                 obstacles = self.currentRoom:get_fov_obstacles()})
+		self.fov = fovFinder:find()
+	end
 
 	if flickerMode and self.frameState == 0 then
 		self.currentRoom:erase()
@@ -67,15 +69,11 @@ function Game:draw()
 	--						 (t.position.y * TILE_H) + (TILE_H / 2), 8)
 	--end
 
-	if self.showMap then
-		self.map:draw(self.currentRoom)
-	end
-
 	self:draw_sidepane()
 
 	-- Check if a character should needs to speak
 	for _, c in pairs(self.currentRoom.sprites) do
-		if instanceOf(Character, c) and c.speech ~= nil then
+		if instanceOf(Character, c) and c.speech then
 			if manhattan_distance(self.player.position, c.position) <= 2 then
 				local text = c.name .. ': ' .. c.speech
 				local numTextLines = love.graphics.getFont():getWrap(text,
@@ -102,6 +100,10 @@ function Game:draw_sidepane()
 	love.graphics.setColor(255, 255, 255)
 
 	self.inventoryDisplay:draw()
+
+	if self.showMap then
+		self.map:draw(self.currentRoom)
+	end
 
 	if self.paused then
 		love.graphics.setColor(255, 255, 255)
