@@ -15,7 +15,8 @@ function add_direction(tile, dir)
 end
 
 function find_neighbor_tiles(node, otherNodes, options)
-	if options == nil then options = {} end
+	-- Make sure options is at least an empty table, so we can index it
+	options = options or {}
 
 	-- Initialize all 8 neighbors' positions
 	neighbors = {}

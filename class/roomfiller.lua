@@ -7,6 +7,22 @@ RoomFiller = class('RoomFiller')
 
 function RoomFiller:init(room)
 	self.room = room
+
+	-- Make a copy of the room's free tiles for manipulation
+	self.freeTiles = copy_table(self.room.freeTiles)
+
+	-- Remove doorways from freeTiles
+	for _, e in pairs(self.room.exits) do
+		local dw = e:get_doorway()
+		for i, t in pairs(self.freeTiles) do
+			-- If this free tile is a doorway
+			if tiles_overlap(t, dw) then
+				-- Remove it from consideration
+				table.remove(self.freeTiles, i)
+				break
+			end
+		end
+	end
 end
 
 function RoomFiller:add_monsters(max)
@@ -56,34 +72,47 @@ function RoomFiller:add_monsters(max)
 end
 
 function RoomFiller:position_objects(objects)
-	-- Make a copy of the room's free tiles for manipulation
-	local freeTiles = copy_table(self.room.freeTiles)
+	local ok
 
-	-- Remove doorways
-	for _, e in pairs(self.room.exits) do
-		dw = e:get_doorway()
-		for i, t in pairs(freeTiles) do
-			-- If this free tile is actually a doorway
-			if tiles_overlap(t, dw) then
-				-- Remove it from consideration
-				table.remove(freeTiles, i)
-				break
-			end
-		end
-	end
-
-	for i, o in pairs(objects) do
-		while #freeTiles > 0 do
+	for _, o in pairs(objects) do
+		while #self.freeTiles > 0 do
 			-- Pick a random free tile
-			local position = freeTiles[math.random(1, #freeTiles)]
+			local position = self.freeTiles[math.random(1, #self.freeTiles)]
 
-			-- Remove this tile from the freeTiles table
-			table.remove(freeTiles, i)
+			-- Remove this tile from future consideration
+			table.remove(self.freeTiles, i)
 
-			-- If this position is available for a 
-			if self.room:tile_walkable(position) then
+			-- If this object cannot overlap with other objects
+			if o.isCorporeal then
+				ok = false
+
+				-- Find the neighbor tiles
+				local neighbors = find_neighbor_tiles(position,
+				                                      self.room.bricks)
+
+				-- Make sure there are at least 5 unoccupied neighbor tiles in
+				-- a row
+				local numInARow = 0
+				for _, n in ipairs(neighbors) do
+					if n.occupied then
+						numInARow = 0
+					else
+						numInARow = numInARow + 1
+					end
+
+					if numInARow == 5 then
+						ok = true
+						break
+					end
+				end
+			else
+				ok = true
+			end
+
+			-- If this position is available
+			if ok then
 				-- Set the object's position to that of our chosen tile
-				o.position = {x = position.x, y = position.y}
+				o:set_position(position)
 
 				-- Add this object to the room
 				self.room:add_object(o)
@@ -162,6 +191,13 @@ function RoomFiller:add_turrets(numTurrets)
 end
 
 function RoomFiller:fill()
+	-- DEBUG: add some internal bricks
+	local someBricks = {}
+	for _ = 1, 4 do
+		table.insert(someBricks, Brick({}))
+	end
+	self:position_objects(someBricks)
+
 	-- Add turrets
 	local numTurrets = math.random(0, #self.room.bricks * .03)
 	self:add_turrets(numTurrets)

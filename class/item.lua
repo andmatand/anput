@@ -66,6 +66,10 @@ function Item:draw(alpha)
 	end
 end
 
+function Item:set_position(position)
+	self.position = position
+end
+
 function Item:use()
 	if self.owner then
 		self:use_on(self.owner)

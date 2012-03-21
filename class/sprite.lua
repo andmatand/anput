@@ -194,6 +194,10 @@ function Sprite:receive_hit(agent)
 	return true
 end
 
+function Sprite:set_position(position)
+	self.position = position
+end
+
 function Sprite:update()
 end
 
