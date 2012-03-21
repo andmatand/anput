@@ -92,6 +92,7 @@ function FloodFiller:flood()
 				for i,l in pairs(self.hotLava) do
 					if x == l.x and y == l.y then
 						l.touched = true
+						break
 					end
 				end
 			end

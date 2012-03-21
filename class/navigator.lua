@@ -13,7 +13,7 @@ end
 function Navigator:plot()
 	self.points = {}
 
-	for i,d in ipairs(self.destinations) do
+	for i, d in ipairs(self.destinations) do
 		-- If this is the first destination
 		if i == 1 then
 			-- Source is initial source coordinates
@@ -26,9 +26,13 @@ function Navigator:plot()
 		pf = PathFinder(src, d, self.hotLava, self.points, {smooth = true})
 		points = pf:plot()
 
-		for j,p in ipairs(points) do
-			-- Add this point to the self.points
-			table.insert(self.points, {x = p.x, y = p.y})
+		for j, p in ipairs(points) do
+			-- Exclude the source point (since it is the same as the previous
+			-- destination) unless this is the first path
+			if j > 1 or i == 1 then
+				-- Add this point to the self.points
+				table.insert(self.points, {x = p.x, y = p.y})
+			end
 
 			-- Add this point to hotlava
 			--table.insert(self.hotLava, {x = p.x, y = p.y})
