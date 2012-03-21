@@ -15,6 +15,7 @@ function Character:init()
 	self.health = 100
 	self.flashTimer = 0
 	self.team = 1 -- Good guys
+	self.isCorporeal = true
 
 	self.path = {nodes = nil, character = nil, destination = nil}
 

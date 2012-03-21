@@ -18,7 +18,6 @@ function Monster:init(pos, monsterType)
 	self.position = pos
 	self.monsterType = monsterType
 
-	self.isCorporeal = true
 	self.team = 2 -- Bad guys
 
 	-- Copy monster difficulty level
