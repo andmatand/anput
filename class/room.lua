@@ -14,6 +14,7 @@ function Room:init(args)
 	self.sprites = {}
 	self.turrets = {}
 	self.items = {}
+	self.drawn = false
 end
 
 function Room:add_object(obj)
@@ -58,9 +59,9 @@ function Room:draw(fov)
 
 	--for _, t in pairs(self.freeTiles) do
 	--	if tile_occupied(t, fov) then
-	--		alpha = 255
+	--		alpha = LIGHT
 	--	else
-	--		alpha = 5
+	--		alpha = DARK
 	--	end
 
 	--	self:draw_ground(t, alpha)
@@ -70,9 +71,9 @@ function Room:draw(fov)
 	
 	for _, i in pairs(self.items) do
 		if tile_occupied(i.position, fov) then
-			alpha = 255
+			alpha = LIGHT
 		else
-			alpha = 5
+			alpha = DARK
 		end
 
 		i:draw(alpha)
@@ -80,22 +81,22 @@ function Room:draw(fov)
 
 	for _, s in pairs(self.sprites) do
 		if tile_occupied(s.position, fov) then
-			alpha = 255
+			alpha = LIGHT
 		else
-			alpha = 5
+			alpha = DARK
 		end
 
 		s:draw(alpha)
 	end
+
+	self.drawn = true
 
 	io.write('drew room in ' .. (love.timer.getTime() - drawTimer) ..
 	         ' seconds\r')
 end
 
 function Room:draw_bricks(fov)
-	if self.game.player.moved or not drewBricks then
-		drewBricks = true
-
+	if self.game.player.moved or not self.drawn then
 		-- Uncomment for love 0.8.0
 		--self.lightBrickBatch:bind()
 		--self.darkBrickBatch:bind()
@@ -117,10 +118,10 @@ function Room:draw_bricks(fov)
 		--self.darkBrickBatch:unbind()
 	end
 
-	love.graphics.setColor(255, 255, 255, 10)
+	love.graphics.setColor(255, 255, 255, DARK)
 	love.graphics.draw(self.darkBrickBatch, 0, 0)
 
-	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.setColor(255, 255, 255, LIGHT)
 	love.graphics.draw(self.lightBrickBatch, 0, 0)
 end
 

@@ -37,10 +37,15 @@ function love.load()
 		print('failed to create a window')
 	end
 
+	-- Colors
 	BLACK = {0, 0, 0}
 	WHITE = {255, 255, 255}
 	CYAN = {85, 255, 255}
 	MAGENTA = {255, 0, 255}
+
+	-- Alpha values
+	LIGHT = 255
+	DARK = 10
 
 	fontImg = love.graphics.newImage('res/font/screen13.png')
 	fontImg:setFilter('nearest', 'nearest')
