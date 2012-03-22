@@ -13,6 +13,7 @@ function Character:init()
 	self.frame = 1
 
 	self.health = 100
+	self.hurtTimer = love.timer.getTime()
 	self.flashTimer = 0
 	self.team = 1 -- Good guys
 	self.isCorporeal = true
@@ -614,6 +615,7 @@ function Character:receive_damage(amount)
 
 	self.health = self.health - amount
 	self.hurt = true
+	self.hurtTimer = love.timer.getTime()
 
 	if self.health <= 0 then
 		self.health = 0
@@ -658,8 +660,10 @@ function Character:recharge()
 		self.weapons.staff:add_ammo(amount)
 	end
 
-	-- Recharge health
-	self:add_health(slow)
+	if love.timer.getTime() > self.hurtTimer + 2 then
+		-- Recharge health
+		self:add_health(slow)
+	end
 end
 
 function Character:set_current_weapon(num)
