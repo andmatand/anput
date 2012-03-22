@@ -26,7 +26,7 @@ function InventoryDisplay:draw()
 	self:draw_progress_bar({num = self.owner.health, max = 100,
 	                        color = MAGENTA},
 	                       x * TILE_W, 2,
-						   (SCREEN_W - x) * TILE_W, TILE_H - 4)
+						   (SCREEN_W - x) * TILE_W - 2, TILE_H - 4)
 
 	if self.owner.weapons then
 		local numWeapons = 0

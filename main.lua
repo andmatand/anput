@@ -19,6 +19,13 @@ function love.conf(t)
 end
 
 function love.load()
+	love.graphics.setMode(640, 400, false, false, 0)
+	love.mouse.setVisible(false)
+	love.graphics.setCaption('TEMPLE OF ANPUT')
+	if love.graphics.isCreated() == false then
+		print('failed to create a window')
+	end
+
 	TILE_W = 16
 	TILE_H = 16
 	SCALE_X = 2
@@ -29,13 +36,6 @@ function love.load()
 	ROOM_H = 25
 	SCREEN_W = (love.graphics.getWidth() / TILE_W)
 	SCREEN_H = (love.graphics.getHeight() / TILE_H)
-
-	love.graphics.setMode(640, 400, false, false, 0)
-	love.mouse.setVisible(false)
-	love.graphics.setCaption('TEMPLE OF ANPUT')
-	if love.graphics.isCreated() == false then
-		print('failed to create a window')
-	end
 
 	-- Colors
 	BLACK = {0, 0, 0}
