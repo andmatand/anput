@@ -156,7 +156,9 @@ function love.keypressed(key, unicode)
 		end
 	elseif key == 'f2' then
 		toggle_flicker_mode()
-	elseif key == 'f11' then
+	elseif key == 'f11' or
+	       ((love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))
+	        and key == 'return') then
 		love.graphics.toggleFullscreen()
 	end
 
