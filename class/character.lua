@@ -131,7 +131,7 @@ function Character:choose_action()
 		end
 	end
 
-	closestDist = 999
+	local closestDist = 999
 	self.closestEnemy = nil
 	-- Find closest character on other team
 	for _,s in pairs(self.room.sprites) do
@@ -183,8 +183,8 @@ function Character:choose_action()
 	end
 
 	-- See which action has the best score
-	bestScore = 0
-	action = nil
+	local bestScore = 0
+	local action = nil
 	for k,v in pairs(self.ai) do
 		if v.score > bestScore then
 			bestScore = v.score
@@ -680,6 +680,14 @@ function Character:set_current_weapon(num)
 end
 
 function Character:shoot(dir)
+	-- Switch to a weapon that can shoot
+	for _, w in pairs(self.weapons) do
+		if w.projectileClass then
+			self.currentWeapon = w
+			break
+		end
+	end
+
 	if (not self.currentWeapon or not self.currentWeapon.ammo or
 	    self.dead) then
 		return false

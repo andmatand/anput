@@ -54,7 +54,7 @@ function Monster:init(pos, monsterType)
 
 		self.ai.dodge = {dist = 5, prob = 7}
 		self.ai.chase = {dist = 20, prob = 7}
-		self.ai.shoot = {dist = 10, prob = 7}
+		self.ai.shoot = {dist = 15, prob = 7}
 	elseif self.monsterType == 4 then
 		self.images = monsterImg.cat
 		self.health = 40
