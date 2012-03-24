@@ -107,19 +107,28 @@ FOVFinder = class('Fov')
 function FOVFinder:init(args)
 	self.origin = args.origin
 	self.radius = args.radius
-	self.obstacles = args.obstacles
 	self.room = args.room
+	self.fov = args.fov or {}
 end
 
 function FOVFinder:find()
-	self.visibleTiles = {}
-
 	self:shadow_cast()
 
 	-- DEBUG: show all visible tiles
 	--self:draw_visible_tiles(cone)
 
-	return self.visibleTiles
+	return self.fov
+end
+
+function FOVFinder:add_to_fov(tile)
+	-- Make sure this position is not already in the FOV
+	for _, t in pairs(self.fov) do
+		if tiles_overlap(tile, t) then
+			return
+		end
+	end
+
+	table.insert(self.fov, tile)
 end
 
 function FOVFinder:shadow_cast()
@@ -133,7 +142,7 @@ function FOVFinder:shadow_cast()
 	-- /  |  \
 
 	-- Consider the origin visible
-	table.insert(self.visibleTiles, self.origin)
+	self:add_to_fov(self.origin)
 
 	local origin
 	local slope1
@@ -164,8 +173,8 @@ function FOVFinder:shadow_cast()
 
 		local queue = {}
 
-		-- If the origin for this octant is within the viewing radius
-		if self.room:tile_in_room(origin, {includeBricks = true}) then
+		-- If the origin for this octant is in the room
+		--if self.room:tile_in_room(origin, {includeBricks = true}) then
 			-- Create the first cone
 			local cone = Cone({origin = origin,
 							   octant = octant,
@@ -188,8 +197,7 @@ function FOVFinder:shadow_cast()
 			--		                        TILE_W, TILE_H)
 			--	end
 			--end
-		end
-
+		--end
 
 		if DEBUG then
 			print()
@@ -213,7 +221,8 @@ function FOVFinder:shadow_cast()
 			local newSlope2 = job.cone.slope2
 			for i, tile in ipairs(job.cone:get_column(job.colNum)) do
 				local transTile = job.cone:translate_octant(tile)
-				local occupied = tile_occupied(transTile, self.obstacles)
+				local occupied = tile_occupied(transTile,
+				                               self.room:get_fov_obstacles())
 				--local visible = false
 
 				if DEBUG then
@@ -226,7 +235,7 @@ function FOVFinder:shadow_cast()
 					self.room:tile_in_room(transTile,
 					                       {includeBricks = true})) then
 					-- Consider this tile visible
-					table.insert(self.visibleTiles, transTile)
+					self:add_to_fov(transTile)
 					visible = true
 				else
 					occupied = true

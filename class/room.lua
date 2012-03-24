@@ -15,6 +15,7 @@ function Room:init(args)
 	self.turrets = {}
 	self.items = {}
 	self.drawn = false
+	self.fovCache = {}
 end
 
 function Room:add_object(obj)
@@ -52,9 +53,36 @@ function Room:character_input()
 	end
 end
 
-function Room:draw(fov)
-	-- Set timer
-	local drawTimer = love.timer.getTime()
+function Room:update_fov()
+	-- Check if the player's position is in the FOV cache
+	for _, fov in pairs(self.fovCache) do
+		if tiles_overlap(fov.origin, self.game.player.position) then
+			self.fov = fov.fov
+
+			print('used cached FOV')
+			return
+		end
+	end
+
+	-- Clear the old FOV
+	self.fov = {}
+
+	-- Find player's Field Of View
+	fovFinder = FOVFinder({origin = self.game.player.position,
+	                       room = self,
+	                       radius = 10})
+	self.fov = fovFinder:find()
+
+	-- Add this FOV to the FOV cache
+	table.insert(self.fovCache, {origin = self.game.player.position,
+	                             fov = self.fov})
+end
+
+function Room:draw()
+	-- If we haven't found the FOV yet
+	if not self.fov then
+		self:update_fov()
+	end
 
 	--for _, t in pairs(self.freeTiles) do
 	--	if tile_occupied(t, fov) then
@@ -66,10 +94,10 @@ function Room:draw(fov)
 	--	self:draw_ground(t, alpha)
 	--end
 	
-	self:draw_bricks(fov)
+	self:draw_bricks()
 	
 	for _, i in pairs(self.items) do
-		if tile_occupied(i.position, fov) then
+		if tile_occupied(i.position, self.fov) then
 			alpha = LIGHT
 		else
 			alpha = DARK
@@ -79,7 +107,7 @@ function Room:draw(fov)
 	end
 
 	for _, s in pairs(self.sprites) do
-		if tile_occupied(s.position, fov) then
+		if tile_occupied(s.position, self.fov) then
 			alpha = LIGHT
 		else
 			alpha = DARK
@@ -89,12 +117,9 @@ function Room:draw(fov)
 	end
 
 	self.drawn = true
-
-	io.write('drew room in ' .. (love.timer.getTime() - drawTimer) ..
-	         ' seconds\r')
 end
 
-function Room:draw_bricks(fov)
+function Room:draw_bricks()
 	if self.game.player.moved or not self.drawn then
 		-- Uncomment for love 0.8.0
 		--self.lightBrickBatch:bind()
@@ -105,7 +130,7 @@ function Room:draw_bricks(fov)
 		self.darkBrickBatch:clear()
 
 		for _, b in pairs(self.bricks) do
-			if tile_occupied(b, fov) then
+			if tile_occupied(b, self.fov) then
 				self.lightBrickBatch:add(b.x * TILE_W, b.y * TILE_H)
 			else
 				self.darkBrickBatch:add(b.x * TILE_W, b.y * TILE_H)
@@ -409,4 +434,9 @@ function Room:update()
 		end
 	end
 	self.items = temp
+
+	if (self.game.player.moved and
+	    self:tile_in_room(self.game.player.position)) then
+		self:update_fov()
+	end
 end

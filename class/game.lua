@@ -18,9 +18,13 @@ function Game:switch_to_room(roomIndex)
 
 	prevRoom = self.currentRoom
 
-	-- Remove player from previous room
-	if prevRoom ~= nil then
+	-- If there was a previous room
+	if prevRoom then
+		-- Remove player from previous room
 		prevRoom:remove_sprite(self.player)
+
+		-- Clear previous room's FOV cache to save memory
+		prevRoom.fovCache = {}
 	end
 
 	-- Set the new room as the current room
@@ -46,19 +50,10 @@ function Game:switch_to_room(roomIndex)
 end
 
 function Game:draw()
-	if self.player.moved or not self.fov then
-		-- Find player's Field Of View
-		fovFinder = FOVFinder({origin = self.player.position, 
-		                 room = self.currentRoom,
-		                 radius = 10,
-		                 obstacles = self.currentRoom:get_fov_obstacles()})
-		self.fov = fovFinder:find()
-	end
-
 	if flickerMode and self.frameState == 0 then
 		self.currentRoom:erase()
 	else
-		self.currentRoom:draw(self.fov)
+		self.currentRoom:draw()
 	end
 
 	-- DEBUG: show turrets
@@ -113,7 +108,7 @@ end
 
 function Game:generate()
 	-- DEBUG choose specific seed
-	--math.randomseed(46)
+	--math.randomseed(43)
 
 	-- Generate a new map
 	mapPath = {}
