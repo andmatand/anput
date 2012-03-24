@@ -72,8 +72,9 @@ end
 
 function Item:use()
 	if self.owner then
-		self:use_on(self.owner)
-		self.owner:remove_from_inventory(self)
+		if self:use_on(self.owner) then
+			self.owner:remove_from_inventory(self)
+		end
 	end
 end
 
@@ -88,8 +89,17 @@ function Item:use_on(patient)
 		end
 	elseif self.itemType == 2 then
 		-- Health potion
-		if paitent:add_health(10) then
+		if patient:add_health(20) then
 			self.isUsed = true
+			print('used potion')
+
+			-- Play sound depending on who got health
+			if instanceOf(Player, patient) then
+				sound.playerGetHP:play()
+			elseif instanceOf(Monster, patient) then
+				sound.monsterGetHP:play()
+			end
+			
 			return true
 		end
 	end

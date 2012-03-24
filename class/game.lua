@@ -162,7 +162,7 @@ function Game:keypressed(key)
 	        key == 'rctrl') then
 		-- Cycle through weapons
 		changedWeapon = false
-		for _,w in pairs(self.player.weapons)  do
+		for _, w in pairs(self.player.weapons)  do
 			-- If this weapons order is 1 more than that of the current weapon
 			if w.order == self.player.currentWeapon.order + 1 then
 				self.player:set_current_weapon(w.order)
@@ -174,6 +174,17 @@ function Game:keypressed(key)
 		if changedWeapon == false then
 			-- Change to the first weapon
 			self.player:set_current_weapon(1)
+		end
+	end
+
+	-- Get player input for using items
+	if key == 'p' then
+		-- Take a potion
+		for _, item in pairs(self.player.inventory) do
+			if item.itemType == 2 then
+				item:use()
+				break
+			end
 		end
 	end
 

@@ -10,8 +10,8 @@ inspired by a fake game shown at the end of
 
 ##Controls
 * move: wasd
-* switch weapon: Tab, Right Shift, 1 - 3
+* switch weapon: Tab, Right Shift, or 1 - 3
+* use potion: p
 * shoot: arrows
-* retro flicker mode: f2
-* fullscreen: f11
+* fullscreen: f11, Alt + Enter
 * new game: n

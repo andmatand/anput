@@ -38,7 +38,7 @@ end
 
 function Character:add_health(amount)
 	if self.dead then
-		return
+		return false
 	end
 
 	if self.health < 100 then
