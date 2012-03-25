@@ -84,36 +84,18 @@ function Room:draw()
 		self:update_fov()
 	end
 
-	--for _, t in pairs(self.freeTiles) do
-	--	if tile_occupied(t, fov) then
-	--		alpha = LIGHT
-	--	else
-	--		alpha = DARK
-	--	end
-
-	--	self:draw_ground(t, alpha)
-	--end
-	
 	self:draw_bricks()
 	
 	for _, i in pairs(self.items) do
 		if tile_occupied(i.position, self.fov) then
-			alpha = LIGHT
-		else
-			alpha = DARK
+			i:draw()
 		end
-
-		i:draw(alpha)
 	end
 
 	for _, s in pairs(self.sprites) do
 		if tile_occupied(s.position, self.fov) then
-			alpha = LIGHT
-		else
-			alpha = DARK
+			s:draw()
 		end
-
-		s:draw(alpha)
 	end
 
 	self.drawn = true
@@ -147,16 +129,6 @@ function Room:draw_bricks()
 
 	love.graphics.setColor(255, 255, 255, LIGHT)
 	love.graphics.draw(self.lightBrickBatch, 0, 0)
-end
-
-function Room:draw_ground(tile, alpha)
-	love.graphics.setColor(255, 0, 255, alpha)
-
-	for y = tile.y * TILE_H, (tile.y + 1) * TILE_H - 1, SCALE_Y * 4 do
-		for x = tile.x * TILE_W, (tile.x + 1) * TILE_W - 1, SCALE_X * 4 do
-			love.graphics.rectangle('fill', x, y, SCALE_X, SCALE_Y)
-		end
-	end
 end
 
 function Room:erase()
