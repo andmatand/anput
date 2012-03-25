@@ -366,6 +366,11 @@ function Room:update()
 		t:update()
 	end
 
+	-- Update items
+	for _, i in pairs(self.items) do
+		i:update()
+	end
+
 	-- Update sprites
 	for _, s in pairs(self.sprites) do
 		-- If this is a character on the good-guy team

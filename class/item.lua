@@ -12,11 +12,11 @@ function Item:init(position, itemType)
 		self.frames = {{image = potionImg}}
 	elseif itemType == 3 then
 		self.frames = {
-			{image = shinyThingImg[1], delay = 30},
-			{image = shinyThingImg[2], delay = 8},
-			{image = shinyThingImg[3], delay = 8},
-			{image = shinyThingImg[2], delay = 8},
-			{image = shinyThingImg[3], delay = 8}}
+			{image = shinyThingImg[1], delay = 8},
+			{image = shinyThingImg[2], delay = 2},
+			{image = shinyThingImg[3], delay = 2},
+			{image = shinyThingImg[2], delay = 2},
+			{image = shinyThingImg[3], delay = 2}}
 	else
 		self.frames = nil
 	end
@@ -54,8 +54,6 @@ function Item:draw()
 	x = (self.position.x * TILE_W)
 	y = (self.position.y * TILE_H)
 
-	self:animate()
-
 	if self.frames ~= nil then
 		love.graphics.setColor(255, 255, 255)
 		love.graphics.draw(self.frames[self.currentFrame].image,
@@ -68,6 +66,10 @@ end
 
 function Item:set_position(position)
 	self.position = position
+end
+
+function Item:update()
+	self:animate()
 end
 
 function Item:use()

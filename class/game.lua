@@ -265,6 +265,11 @@ function Game:update()
 	self:input()
 	self.currentRoom:update()
 
+	-- Update the player's inventory items (for animations)
+	for _, i in pairs(self.player.inventory) do
+		i:update()
+	end
+
 	-- Switch rooms when player is on an exit
 	for i,e in pairs(self.currentRoom.exits) do
 		if tiles_overlap(self.player.position, e) then
