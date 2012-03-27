@@ -268,7 +268,7 @@ function Map:generate_rooms()
 	end
 
 	-- Put the wizard in one of the early rooms
-	local roomNum = math.random(1, #earlyRooms)
+	local roomNum = 1--math.random(1, #earlyRooms)
 	local wizard = Character()
 	wizard.images = playerImg
 	wizard.color = CYAN
@@ -278,7 +278,8 @@ function Map:generate_rooms()
 	wizard.ai.shoot = {dist = 10, prob = 10}
 	wizard.aiDelay = 1
 	wizard.name = 'WIZARD'
-	wizard.speech = 'I WOULD GIVE MY STAFF FOR 7 SHINY THINGS'
+	wizard.mouth = Mouth({sprite = wizard})
+	wizard.mouth.speech = 'I WOULD GIVE MY STAFF FOR 7 SHINY THINGS'
 	if not earlyRooms[roomNum].objectsToPosition then
 		earlyRooms[roomNum].objectsToPosition = {}
 	end

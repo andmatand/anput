@@ -47,6 +47,9 @@ function Game:switch_to_room(roomIndex)
 	if self.rooms[roomIndex].generated == false then
 		self.rooms[roomIndex]:generate()
 	end
+
+	-- Update the new current room
+	self.currentRoom:update()
 end
 
 function Game:draw()
@@ -65,30 +68,6 @@ function Game:draw()
 	--end
 
 	self:draw_sidepane()
-
-	-- Check if a character should needs to speak
-	for _, c in pairs(self.currentRoom.sprites) do
-		if instanceOf(Character, c) and c.speech then
-			if manhattan_distance(self.player.position, c.position) <= 2 then
-				local text = c.name .. ': ' .. c.speech
-				local numTextLines = love.graphics.getFont():getWrap(text,
-				                                                     ROOM_W)
-
-				-- Draw black background behind text
-				--love.graphics.setColor(BLACK)
-				--love.graphics.rectangle('fill', 0, 0,
-				--                        (ROOM_W * TILE_W),
-				--                        numTextLines / SCALE_Y)
-
-				-- Draw text
-				love.graphics.push()
-				love.graphics.scale(SCALE_X, SCALE_Y)
-				love.graphics.setColor(WHITE)
-				love.graphics.printf(text, 0, 0, (ROOM_W * TILE_W) / SCALE_X)
-				love.graphics.pop()
-			end
-		end
-	end
 end
 
 function Game:draw_sidepane()
@@ -119,6 +98,7 @@ function Game:generate()
 	self.player = Player()
 
 	-- Switch to the first room and put the player at the midPoint
+	self.player:move_to({x = 0, y = 0})
 	self:switch_to_room(1)
 	self.player:move_to(self.currentRoom.midPoint)
 
@@ -263,18 +243,20 @@ function Game:update()
 	end
 
 	self:input()
+
+	-- Update the current room
 	self.currentRoom:update()
 
-	-- Update the player's inventory items (for animations)
-	for _, i in pairs(self.player.inventory) do
-		i:update()
-	end
-
 	-- Switch rooms when player is on an exit
-	for i,e in pairs(self.currentRoom.exits) do
+	for _, e in pairs(self.currentRoom.exits) do
 		if tiles_overlap(self.player.position, e) then
 			self:switch_to_room(e.roomIndex)
 			break
 		end
+	end
+
+	-- Update the player's inventory items (for animations)
+	for _, i in pairs(self.player.inventory) do
+		i:update()
 	end
 end

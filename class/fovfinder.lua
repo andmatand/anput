@@ -142,7 +142,7 @@ function FOVFinder:shadow_cast()
 	-- /  |  \
 
 	-- Consider the origin visible
-	self:add_to_fov(self.origin)
+	--self:add_to_fov(self.origin)
 
 	local origin
 	local slope1

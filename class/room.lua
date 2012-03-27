@@ -16,6 +16,7 @@ function Room:init(args)
 	self.items = {}
 	self.drawn = false
 	self.fovCache = {}
+	self.messages = {}
 end
 
 function Room:add_object(obj)
@@ -45,6 +46,10 @@ function Room:add_object(obj)
 	end
 end
 
+function Room:add_message(message)
+	table.insert(self.messages, message)
+end
+
 function Room:character_input()
 	for _, c in pairs(self:get_characters()) do
 		if not instanceOf(Player, c) then
@@ -53,49 +58,34 @@ function Room:character_input()
 	end
 end
 
-function Room:update_fov()
-	-- Check if the player's position is in the FOV cache
-	for _, fov in pairs(self.fovCache) do
-		if tiles_overlap(fov.origin, self.game.player.position) then
-			self.fov = fov.fov
-
-			print('used cached FOV')
-			return
-		end
-	end
-
-	-- Clear the old FOV
-	self.fov = {}
-
-	-- Find player's Field Of View
-	fovFinder = FOVFinder({origin = self.game.player.position,
-	                       room = self,
-	                       radius = 10})
-	self.fov = fovFinder:find()
-
-	-- Add this FOV to the FOV cache
-	table.insert(self.fovCache, {origin = self.game.player.position,
-	                             fov = self.fov})
-end
-
 function Room:draw()
 	-- If we haven't found the FOV yet
 	if not self.fov then
+		-- Update the FOV
 		self:update_fov()
 	end
 
+	-- Draw bricks
 	self:draw_bricks()
 	
+	-- Draw items
 	for _, i in pairs(self.items) do
 		if tile_occupied(i.position, self.fov) then
 			i:draw()
 		end
 	end
 
+	-- Draw sprites
 	for _, s in pairs(self.sprites) do
 		if tile_occupied(s.position, self.fov) then
 			s:draw()
 		end
+	end
+
+	-- If there is a message on the queue
+	if self.messages[1] then
+		-- Draw the message
+		self.messages[1]:draw()
 	end
 
 	self.drawn = true
@@ -111,11 +101,14 @@ function Room:draw_bricks()
 		self.lightBrickBatch:clear()
 		self.darkBrickBatch:clear()
 
+		-- Add each brick to the correct spriteBatch
 		for _, b in pairs(self.bricks) do
 			if tile_occupied(b, self.fov) then
-				self.lightBrickBatch:add(b.x * TILE_W, b.y * TILE_H)
+				self.lightBrickBatch:add(b.x * TILE_W * SCALE_X,
+				                         b.y * TILE_H * SCALE_Y)
 			else
-				self.darkBrickBatch:add(b.x * TILE_W, b.y * TILE_H)
+				self.darkBrickBatch:add(b.x * TILE_W * SCALE_X,
+				                         b.y * TILE_H * SCALE_Y)
 			end
 		end
 
@@ -375,6 +368,7 @@ function Room:update()
 	for _, s in pairs(self.sprites) do
 		-- If this is a character on the good-guy team
 		if instanceOf(Character, s) and s.team == 1 then
+			-- Recharge HP/ammo
 			s:recharge()
 		end
 
@@ -412,8 +406,57 @@ function Room:update()
 	end
 	self.items = temp
 
+	-- Iterate through the room objects which can also be speakers
+	for _, o in pairs(self.sprites) do
+		-- If this object has a mouth which should speak
+		if o.mouth and o.mouth:should_speak() then
+			o.mouth:speak()
+		end
+	end
+
+	-- Update messages
+	self:update_messages()
+
 	if (self.game.player.moved and
 	    self:tile_in_room(self.game.player.position)) then
 		self:update_fov()
+	end
+end
+
+function Room:update_fov()
+	-- Check if the player's position is in the FOV cache
+	for _, fov in pairs(self.fovCache) do
+		if tiles_overlap(fov.origin, self.game.player.position) then
+			self.fov = fov.fov
+
+			print('used cached FOV')
+			return
+		end
+	end
+
+	-- Clear the old FOV
+	self.fov = {}
+
+	-- Find player's Field Of View
+	fovFinder = FOVFinder({origin = self.game.player.position,
+	                       room = self,
+	                       radius = 10})
+	self.fov = fovFinder:find()
+
+	-- Add this FOV to the FOV cache
+	table.insert(self.fovCache, {origin = self.game.player.position,
+	                             fov = self.fov})
+end
+
+function Room:update_messages()
+	-- If there is a message on our queue
+	if self.messages[1] then
+		self.messages[1]:update()
+
+		-- If the message is finished displaying
+		if self.messages[1].finished then
+			-- Remove it from the queue
+			table.remove(self.messages, 1)
+		end
 	end
 end

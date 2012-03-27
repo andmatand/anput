@@ -1,3 +1,4 @@
+require('class/mouth')
 require('class/sprite')
 require('util/tile')
 require('class/weapon')
@@ -378,34 +379,12 @@ function Character:dodge(sprite)
 	end
 end
 
-function Character:draw()
+function Character:draw(pos)
 	if not self.images then
 		return
 	end
 
-	if self.hurt then
-		-- Flash if hurt
-		self.flashTimer = 5
-		self.hurt = false
-	end
-
-	-- Determine which image of this character to draw
-	if (self.images.moving and
-	    (self.path.nodes or self.moved or
-	     self.action == Character.static.actions.flee)) then
-		img = self.images.moving
-	elseif (self.images.sword and self.weapons.sword and
-	        self.currentWeapon == self.weapons.sword) then
-		img = self.images.sword
-	elseif (self.images.bow and self.weapons.bow and
-	        self.currentWeapon == self.weapons.bow) then
-		img = self.images.bow
-	elseif (self.images.staff and self.weapons.staff and
-	        self.currentWeapon == self.weapons.staff) then
-		img = self.images.staff
-	else
-		img = self.images.default
-	end
+	pos = pos or self.position
 
 	if self.flashTimer == 0 then
 		if self.color then
@@ -413,8 +392,8 @@ function Character:draw()
 		else
 			love.graphics.setColor(255, 255, 255)
 		end
-		love.graphics.draw(img,
-		                   self.position.x * TILE_W, self.position.y * TILE_H,
+		love.graphics.draw(self.currentImage,
+		                   pos.x * TILE_W * SCALE_X, pos.y * TILE_H * SCALE_Y,
 		                   0, SCALE_X, SCALE_Y)
 	else
 		self.flashTimer = self.flashTimer - 1
@@ -774,4 +753,30 @@ function Character:cheap_follow_path(dest)
 	end
 
 	return true
+end
+
+function Character:update()
+	if self.hurt then
+		-- Flash if hurt
+		self.flashTimer = 5
+		self.hurt = false
+	end
+
+	-- Determine which image of this character to draw
+	if (self.images.moving and
+	    (self.path.nodes or self.moved or
+	     self.action == Character.static.actions.flee)) then
+		self.currentImage = self.images.moving
+	elseif (self.images.sword and self.weapons.sword and
+	        self.currentWeapon == self.weapons.sword) then
+		self.currentImage = self.images.sword
+	elseif (self.images.bow and self.weapons.bow and
+	        self.currentWeapon == self.weapons.bow) then
+		self.currentImage = self.images.bow
+	elseif (self.images.staff and self.weapons.staff and
+	        self.currentWeapon == self.weapons.staff) then
+		self.currentImage = self.images.staff
+	else
+		self.currentImage = self.images.default
+	end
 end

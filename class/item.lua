@@ -50,14 +50,12 @@ function Item:animate()
 end
 
 function Item:draw()
-	local x, y
-	x = (self.position.x * TILE_W)
-	y = (self.position.y * TILE_H)
-
 	if self.frames ~= nil then
 		love.graphics.setColor(255, 255, 255)
 		love.graphics.draw(self.frames[self.currentFrame].image,
-		                   x, y, 0, SCALE_X, SCALE_Y)
+		                   upscale_x(self.position.x),
+		                   upscale_y(self.position.y),
+		                   0, SCALE_X, SCALE_Y)
 	elseif self.weapon ~= nil then
 		love.graphics.setColor(255, 255, 255)
 		self.weapon:draw(self.position)

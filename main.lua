@@ -9,7 +9,15 @@ function new_image(filename)
 end
 
 function tile_print(text, x, y)
-	love.graphics.print(text, x * TILE_W, y * TILE_H, 0, SCALE_X, SCALE_Y)
+	love.graphics.print(text, upscale_x(x), upscale_y(y), 0, SCALE_X, SCALE_Y)
+end
+
+function upscale_x(x)
+	return x * TILE_W * SCALE_X
+end
+
+function upscale_y(y)
+	return y * TILE_H * SCALE_Y
 end
 
 function love.conf(t)
@@ -26,16 +34,18 @@ function love.load()
 		print('failed to create a window')
 	end
 
-	TILE_W = 16
-	TILE_H = 16
 	SCALE_X = 2
 	SCALE_Y = 2
 
-	-- Room width and height are in # of tiles (not pixels)
+	-- These are the tile dimensions after scaling
+	TILE_W = 8
+	TILE_H = 8
+
+	-- These dimensions are in number of tiles (not pixels)
 	ROOM_W = 27
 	ROOM_H = 25
-	SCREEN_W = (love.graphics.getWidth() / TILE_W)
-	SCREEN_H = (love.graphics.getHeight() / TILE_H)
+	SCREEN_W = (love.graphics.getWidth() / upscale_x(1))
+	SCREEN_H = (love.graphics.getHeight() / upscale_y(1))
 
 	-- Colors
 	BLACK = {0, 0, 0}
@@ -47,6 +57,11 @@ function love.load()
 	LIGHT = 255
 	DARK = 10
 
+	-- These are the dimensions of one letter of the font before scaling
+	FONT_W = 8
+	FONT_H = 8
+
+	-- Load the font
 	fontImg = love.graphics.newImage('res/font/screen13.png')
 	fontImg:setFilter('nearest', 'nearest')
 	font = love.graphics.newImageFont(fontImg,
@@ -86,7 +101,8 @@ function love.load()
 	staffImg = new_image('staff.png')
 
 	-- Create image data for a brick (a magenta rectangle)
-	local brickImgData = love.image.newImageData(TILE_W, TILE_H)
+	local brickImgData = love.image.newImageData(TILE_W * SCALE_X,
+	                                             TILE_H * SCALE_Y)
 	for y = 0, brickImgData:getHeight() - 1 do
 		for x = 0, brickImgData:getWidth() - 1 do
 			brickImgData:setPixel(x, y,

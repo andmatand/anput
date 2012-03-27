@@ -25,7 +25,7 @@ function Projectile:init(owner, dir)
 	self.animateTimer = 0
 end
 
-function Projectile:draw(alpha)
+function Projectile:draw()
 	if self.images == nil then
 		return
 	end
@@ -50,11 +50,11 @@ function Projectile:draw(alpha)
 		sy = -SCALE_Y
 	end
 
-	love.graphics.setColor(255, 255, 255, alpha)
+	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(
 		self.images[self.frame],
-		(self.position.x * TILE_W) + self.images[self.frame]:getWidth(),
-		(self.position.y * TILE_H) + self.images[self.frame]:getHeight(),
+		upscale_x(self.position.x) + self.images[self.frame]:getWidth(),
+		upscale_y(self.position.y) + self.images[self.frame]:getHeight(),
 		r, sx, sy,
 		self.images[self.frame]:getWidth() / 2,
 		self.images[self.frame]:getWidth() / 2)

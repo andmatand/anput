@@ -25,8 +25,8 @@ function InventoryDisplay:draw()
 	x = x + 2
 	self:draw_progress_bar({num = self.owner.health, max = 100,
 	                        color = MAGENTA},
-	                       x * TILE_W, 2,
-						   (SCREEN_W - x) * TILE_W - 2, TILE_H - 4)
+	                       upscale_x(x), 2,
+						   upscale_x(SCREEN_W - x) - 2, upscale_y(1) - 4)
 
 	if self.owner.weapons then
 		local numWeapons = 0
@@ -55,8 +55,8 @@ function InventoryDisplay:draw()
 				-- Draw a progress bar
 				self:draw_progress_bar({num = w.ammo, max = w.maxAmmo,
 										color = CYAN},
-									   x * TILE_W,
-									   (y * TILE_H) + 2,
+									   upscale_x(x),
+									   upscale_y(y) + 2,
 									   ((SCREEN_W - x) * TILE_W) - 2,
 									   TILE_H - 4)
 			-- If this weapon has an arbitrary amount of ammo
@@ -126,7 +126,7 @@ function InventoryDisplay:draw()
 				if itemNum == self.selectedItemNum then
 					love.graphics.setColor(MAGENTA)
 					love.graphics.rectangle('fill',
-					                        x * TILE_W, y * TILE_H,
+					                        upscale_x(x), upscale_y(y),
 					                        TILE_W, TILE_H)
 				end
 

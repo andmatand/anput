@@ -6,10 +6,11 @@ function MapDisplay:init(nodes)
 
 	-- Place the display on the side of the screen
 	self.nodeSize = 8
-	self.x1 = (ROOM_W * TILE_W) + self.nodeSize
-	self.y1 = (TILE_H * 12) + self.nodeSize
-	self.x2 = (SCREEN_W * TILE_W) - 1 - self.nodeSize
-	self.y2 = (SCREEN_H * TILE_H) - 1 - self.nodeSize
+
+	self.x1 = upscale_x(ROOM_W) + self.nodeSize
+	self.y1 = upscale_y(12) + self.nodeSize
+	self.x2 = upscale_x(SCREEN_W) - 1 - self.nodeSize
+	self.y2 = upscale_y(SCREEN_H) - 1 - self.nodeSize
 end
 
 function MapDisplay:draw(currentRoom)

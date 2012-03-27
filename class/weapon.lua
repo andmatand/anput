@@ -39,7 +39,7 @@ function Weapon:draw(position)
 	end
 
 	love.graphics.draw(img,
-					   position.x * TILE_W, position.y * TILE_H,
+					   upscale_x(position.x), upscale_y(position.y),
 					   0, SCALE_X, SCALE_Y)
 end
 
