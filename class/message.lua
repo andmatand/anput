@@ -62,6 +62,7 @@ function Message:draw()
 		self.avatar:draw({x = self.position.x, y = self.position.y + yOffset})
 
 		-- Print a colon after the avatar
+		love.graphics.setColor(WHITE)
 		tile_print(':',
 		           self.position.x + 1,
 		           self.position.y + yOffset,
