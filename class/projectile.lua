@@ -31,9 +31,6 @@ function Projectile:draw()
 	end
 
 	if self.new then
-		if self.moved then
-			self.new = false
-		end
 		return
 	end
 
@@ -62,6 +59,7 @@ end
 
 function Projectile:physics()
 	if self.new and self.owner then
+		self.new = false
 		-- Set position to current position of owner
 		self.position = {x = self.owner.position.x, y = self.owner.position.y}
 	end
