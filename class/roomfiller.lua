@@ -48,7 +48,7 @@ function RoomFiller:add_monsters(max)
 	end
 
 	-- DEBUG
-	print('actual difficulty: ' .. totalDifficulty)
+	--print('actual difficulty: ' .. totalDifficulty)
 
 	-- Give items to the monsters
 	for _, m in pairs(monsters) do

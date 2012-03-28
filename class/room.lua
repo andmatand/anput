@@ -167,25 +167,43 @@ function Room:find_path(src, dest)
 	end
 end
 
-function Room:generate()
-	-- Build the walls of the room
-	local rb = RoomBuilder(self.exits)
-	local rbResults = rb:build()
-	self.bricks = rbResults.bricks
-	self.freeTiles = rbResults.freeTiles
-	self.midPoint = rbResults.midPoint
+function Room:generate_all()
+	repeat until self:generate_next_piece()
+end
 
-	-- Fill the room with monsters and items
-	local rf = RoomFiller(self)
-	rf:fill()
+function Room:generate_next_piece()
+	if not self.roomBuilder then
+		self.roomBuilder = RoomBuilder(self)
+	end
 
-	-- Make a spriteBatch for bricks within the player's FOV
-	self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
+	-- Continue building the walls of the room
+	if self.roomBuilder:build_next_piece() then
+		-- Fill the room with monsters and items
+		local rf = RoomFiller(self)
+		rf:fill()
 
-	-- Make a spriteBatch for bricks outside the player's FOV
-	self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
+		-- Make a spriteBatch for bricks within the player's FOV
+		self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg,
+		                                                    #self.bricks)
 
-	self.generated = true
+		-- Make a spriteBatch for bricks outside the player's FOV
+		self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg,
+		                                                   #self.bricks)
+
+		-- Mark the generation process as complete
+		self.generated = true
+
+		-- Free up the memory used by the roomBuilder
+		self.roomBuilder = nil
+
+		print('generated room ' .. self.index)
+
+		-- Flag that room is generated
+		return true
+	end
+
+	-- Flag that room is not finished generating
+	return false
 end
 
 -- Returns a table of all characters in the room
@@ -429,7 +447,7 @@ function Room:update_fov()
 		if tiles_overlap(fov.origin, self.game.player.position) then
 			self.fov = fov.fov
 
-			print('used cached FOV')
+			--print('used cached FOV')
 			return
 		end
 	end

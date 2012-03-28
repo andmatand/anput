@@ -14,13 +14,15 @@ function Navigator:plot()
 	self.points = {}
 
 	for i, d in ipairs(self.destinations) do
+		local src
+
 		-- If this is the first destination
 		if i == 1 then
 			-- Source is initial source coordinates
 			src = self.source
 		else
 			-- Source is previous destination
-			src = destinations[i - 1]
+			src = self.destinations[i - 1]
 		end
 
 		pf = PathFinder(src, d, self.hotLava, self.points, {smooth = true})

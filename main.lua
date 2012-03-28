@@ -27,6 +27,8 @@ function love.conf(t)
 end
 
 function love.load()
+	midPaths = {}
+
 	love.graphics.setMode(640, 400, false, false, 0)
 	love.mouse.setVisible(false)
 	love.graphics.setCaption('TEMPLE OF ANPUT')
@@ -157,6 +159,8 @@ function love.update(dt)
 	if fpsTimer > 1 / fps then
 		game:update()
 		fpsTimer = 0
+	else
+		game:do_background_jobs()
 	end
 end
 
@@ -241,14 +245,16 @@ function love.draw()
 		--						 (p.y * TILE_H) + (TILE_H / 2), 3, 10)
 		--end
 
-		---- DEBUG show midPath
-		--for i,o in pairs(midPath) do
-		--	love.graphics.setColor(255, 255, 255)
-		--	love.graphics.circle('fill',
-		--						 (o.x * TILE_W) + (TILE_W / 2),
-		--						 (o.y * TILE_H) + (TILE_H / 2), 3, 10)
-		--end
 	end
+
+	-- DEBUG show midPaths
+	--for _, t in pairs(midPaths) do
+	--	love.graphics.setColor(255, 255, 255)
+	--	love.graphics.circle('fill',
+	--						 upscale_x(t.x),
+	--						 upscale_y(t.y) + (TILE_H / 2),
+	--						 3, 10)
+	--end
 
 	game:draw()
 end

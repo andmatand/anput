@@ -13,43 +13,18 @@ function Game:init()
 	self.paused = false
 end
 
-function Game:switch_to_room(roomIndex)
-	print('switching to room ' .. roomIndex)
-
-	prevRoom = self.currentRoom
-
-	-- If there was a previous room
-	if prevRoom then
-		-- Remove player from previous room
-		prevRoom:remove_sprite(self.player)
-
-		-- Clear previous room's FOV cache to save memory
-		prevRoom.fovCache = {}
+function Game:do_background_jobs()
+	if not self.currentRoom then
+		return
 	end
 
-	-- Set the new room as the current room
-	self.currentRoom = self.rooms[roomIndex]
-	self.currentRoom.game = self
-	self.currentRoom.visited = true
-	print('room distance from start:', self.currentRoom.distanceFromStart)
-	print('room difficulty:', self.currentRoom.difficulty)
-
-	-- Add player to current room
-	self.currentRoom:add_object(self.player)
-
-	-- Move player to corresponding doorway
-	if prevRoom ~= nil then
-		exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
-		self.player:move_to(exit:get_doorway())
+	for _, e in pairs(self.currentRoom.exits) do
+		-- If the room that this exit leads to is not completely generated
+		if not self.rooms[e.roomIndex].generated then
+			self.rooms[e.roomIndex]:generate_next_piece()
+			break
+		end
 	end
-
-	-- Make sure room has been generated
-	if self.rooms[roomIndex].generated == false then
-		self.rooms[roomIndex]:generate()
-	end
-
-	-- Update the new current room
-	self.currentRoom:update()
 end
 
 function Game:draw()
@@ -90,7 +65,6 @@ function Game:generate()
 	--math.randomseed(43)
 
 	-- Generate a new map
-	mapPath = {}
 	self.map = Map()
 	self.rooms = self.map:generate()
 
@@ -228,6 +202,45 @@ function Game:keyreleased(key)
 	elseif self.player.attackedDir == 4 and key == 'a' then
 		self.player.attackedDir = nil
 	end
+end
+
+function Game:switch_to_room(roomIndex)
+	print('switching to room ' .. roomIndex)
+
+	prevRoom = self.currentRoom
+
+	-- If there was a previous room
+	if prevRoom then
+		-- Remove player from previous room
+		prevRoom:remove_sprite(self.player)
+
+		-- Clear previous room's FOV cache to save memory
+		prevRoom.fovCache = {}
+	end
+
+	-- Set the new room as the current room
+	self.currentRoom = self.rooms[roomIndex]
+	self.currentRoom.game = self
+	self.currentRoom.visited = true
+	print('room distance from start:', self.currentRoom.distanceFromStart)
+	print('room difficulty:', self.currentRoom.difficulty)
+
+	-- Add player to current room
+	self.currentRoom:add_object(self.player)
+
+	-- Move player to corresponding doorway
+	if prevRoom ~= nil then
+		exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
+		self.player:move_to(exit:get_doorway())
+	end
+
+	-- Make sure room has been completely generated
+	if not self.rooms[roomIndex].generated then
+		self.rooms[roomIndex]:generate_all()
+	end
+
+	-- Update the new current room
+	self.currentRoom:update()
 end
 
 function Game:update()
