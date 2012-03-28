@@ -656,16 +656,24 @@ function Character:set_current_weapon(num)
 end
 
 function Character:shoot(dir)
-	-- Switch to a weapon that can shoot
-	for _, w in pairs(self.weapons) do
-		if w.projectileClass then
-			self.currentWeapon = w
-			break
+	-- If we don't have a weapon, or we are dead
+	if not self.currentWeapon or self.dead then
+		return false
+	end
+
+	-- If our current weapon is not of the "shooting" variety
+	if not self.currentWeapon.projectileClass then
+		-- Switch to a weapon that can shoot
+		for _, w in pairs(self.weapons) do
+			if w.projectileClass then
+				self.currentWeapon = w
+				break
+			end
 		end
 	end
 
-	if (not self.currentWeapon or not self.currentWeapon.ammo or
-	    self.dead) then
+	-- If we still don't have a weapon that shoots
+	if not self.currentWeapon.projectileClass then
 		return false
 	end
 
