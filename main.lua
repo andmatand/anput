@@ -159,7 +159,7 @@ function love.update(dt)
 	if fpsTimer > 1 / fps then
 		game:update()
 		fpsTimer = 0
-	else
+	elseif fpsTimer < (1 / fps) / 2 then
 		game:do_background_jobs()
 	end
 end
