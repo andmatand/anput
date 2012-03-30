@@ -178,28 +178,31 @@ function Room:generate_next_piece()
 
 	-- Continue building the walls of the room
 	if self.roomBuilder:build_next_piece() then
-		-- Fill the room with monsters and items
-		local rf = RoomFiller(self)
-		rf:fill()
+		if not self.roomFiller then
+			self.roomFiller = RoomFiller(self)
+		end
 
-		-- Make a spriteBatch for bricks within the player's FOV
-		self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg,
-		                                                    #self.bricks)
+		-- Continue filling the room with monsters, items, etc.
+		if self.roomFiller:fill_next_step() then
+			-- Make a spriteBatch for bricks within the player's FOV
+			self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg,
+																#self.bricks)
 
-		-- Make a spriteBatch for bricks outside the player's FOV
-		self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg,
-		                                                   #self.bricks)
+			-- Make a spriteBatch for bricks outside the player's FOV
+			self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg,
+															   #self.bricks)
 
-		-- Mark the generation process as complete
-		self.generated = true
+			-- Mark the generation process as complete
+			self.generated = true
 
-		-- Free up the memory used by the roomBuilder
-		self.roomBuilder = nil
+			-- Free up the memory used by the roomBuilder
+			self.roomBuilder = nil
 
-		print('generated room ' .. self.index)
+			print('generated room ' .. self.index)
 
-		-- Flag that room is generated
-		return true
+			-- Flag that room is generated
+			return true
+		end
 	end
 
 	-- Flag that room is not finished generating

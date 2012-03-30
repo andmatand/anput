@@ -257,7 +257,7 @@ function Map:generate_rooms()
 	-- Put a sword in the starting room
 	item = Item()
 	item.weapon = Weapon('sword')
-	rooms[1].objectsToPosition = {item}
+	rooms[1].requiredObjects = {item}
 
 	-- Create a table of rooms close to the starting room
 	earlyRooms = {}
@@ -280,10 +280,10 @@ function Map:generate_rooms()
 	wizard.name = 'WIZARD'
 	wizard.mouth = Mouth({sprite = wizard})
 	wizard.mouth.speech = 'I WOULD GIVE MY STAFF FOR 7 SHINY THINGS'
-	if not earlyRooms[roomNum].objectsToPosition then
-		earlyRooms[roomNum].objectsToPosition = {}
+	if not earlyRooms[roomNum].requiredObjects then
+		earlyRooms[roomNum].requiredObjects = {}
 	end
-	table.insert(earlyRooms[roomNum].objectsToPosition, wizard)
+	table.insert(earlyRooms[roomNum].requiredObjects, wizard)
 
 	return rooms
 end

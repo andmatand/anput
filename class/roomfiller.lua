@@ -25,7 +25,33 @@ function RoomFiller:init(room)
 	end
 end
 
-function RoomFiller:add_monsters(max)
+function RoomFiller:fill_next_step()
+	if self:add_required_objects() then
+		if self:add_internal_bricks() then
+			if self:add_turrets() then
+				if self:add_monsters() then
+					-- TEMP: put a shiny thing in the room
+					--self:position_objects({Item(nil, 4)})
+
+					-- Flag that room is done being filled
+					return true
+				end
+			end
+		end
+	end
+
+	-- Flag that room is not yet done being filled
+	return false
+end
+
+function RoomFiller:add_monsters()
+	local max = #self.room.freeTiles * .04
+
+	if self.addedMonsters then
+		-- Flag that this step was already completed
+		return true
+	end
+
 	-- Create a table of monsters with difficulties as high as possible in
 	-- order to meet room difficulty level, without exceding the room's maximum
 	-- occupancy
@@ -69,6 +95,123 @@ function RoomFiller:add_monsters(max)
 	end
 
 	self:position_objects(monsters)
+
+	self.addedMonsters = true
+
+	-- Flag that this step was not already complete; we had to do work
+	return false
+end
+
+
+function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
+	args = {}
+	for i = 1, num do
+		for tries = 1, 5 do
+			local position = freeTiles[math.random(1, #freeTiles)]
+
+			local ok = true
+			if fTest == nil then
+				-- Default test function: Don't place in occupied tile
+				if not self.room:tile_walkable(position) then
+					ok = false
+				end
+			else
+				testResult = fTest(self, position)
+				ok = testResult.ok
+				for k,v in pairs(testResult) do
+					if k ~= 'ok' then
+						args[k] = v
+					end
+				end
+			end
+
+			if ok then
+				args.position = position
+				self.room:add_object(fNew(args))
+				break
+			end
+		end
+	end
+end
+
+function RoomFiller:add_turrets()
+	if self.addedTurrets then
+		-- Flag that this step was already completed
+		return true
+	end
+
+	local numTurrets = math.random(0, #self.room.bricks * .03)
+	fTest =
+		function(roomFiller, pos)
+			-- Find a direction in which we can fire
+			dirs = {1, 2, 3, 4}
+			while #dirs > 0 do
+				index = math.random(1, #dirs)
+				dir = dirs[index]
+				pos2 = {x = pos.x, y = pos.y}
+
+				-- Find the coordinates of three spaces ahead
+				if dir == 1 then
+					pos2.y = pos2.y - 3 -- North
+				elseif dir == 2 then
+					pos2.x = pos2.x + 3 -- East
+				elseif dir == 3 then
+					pos2.y = pos2.y + 3 -- South
+				elseif dir == 4 then
+					pos2.x = pos2.x - 3 -- West
+				end
+
+				-- Check if there is a line of sight between these tiles
+				if roomFiller.room:line_of_sight(pos, pos2) then
+					return {dir = dir, ok = true}
+				else
+					table.remove(dirs, index)
+				end
+			end
+			return {ok = false}
+		end
+	fNew =
+		function(pos)
+			return Turret(args.position, args.dir, 5 * math.random(1, 10))
+		end
+	self:add_objects(numTurrets, fTest, fNew, self.room.bricks)
+
+	self.addedTurrets = true
+
+	return false
+end
+
+function RoomFiller:add_required_objects()
+	if not self.room.requiredObjects then
+		-- Flag that the required objects have already been added (or there
+		-- never were any)
+		return true
+	end
+
+	-- Give positions to objects required to be in this room
+	self:position_objects(self.room.requiredObjects)
+	self.room.requiredObjects = nil
+
+	-- Flag that the required objects were not already added before now
+	return false
+end
+
+function RoomFiller:add_internal_bricks()
+	if self.addedInternalBricks then
+		-- Flag that internal have already already been added
+		return true
+	end
+
+	local someBricks = {}
+	for _ = 1, math.random(0, #self.room.freeTiles * .02) do
+		table.insert(someBricks, Brick({}))
+	end
+	self:position_objects(someBricks)
+
+	self.addedInternalBricks = true
+
+	-- Flag that internal bricks were not already added before now
+	return false
 end
 
 function RoomFiller:position_objects(objects)
@@ -125,101 +268,4 @@ function RoomFiller:position_objects(objects)
 			print('no more places to position object:', o)
 		end
 	end
-end
-
-function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
-	args = {}
-	for i = 1, num do
-		for tries = 1, 5 do
-			local position = freeTiles[math.random(1, #freeTiles)]
-
-			local ok = true
-			if fTest == nil then
-				-- Default test function: Don't place in occupied tile
-				if not self.room:tile_walkable(position) then
-					ok = false
-				end
-			else
-				testResult = fTest(self, position)
-				ok = testResult.ok
-				for k,v in pairs(testResult) do
-					if k ~= 'ok' then
-						args[k] = v
-					end
-				end
-			end
-
-			if ok then
-				args.position = position
-				self.room:add_object(fNew(args))
-				break
-			end
-		end
-	end
-end
-
-function RoomFiller:add_turrets(numTurrets)
-	fTest =
-		function(roomFiller, pos)
-			-- Find a direction in which we can fire
-			dirs = {1, 2, 3, 4}
-			while #dirs > 0 do
-				index = math.random(1, #dirs)
-				dir = dirs[index]
-				pos2 = {x = pos.x, y = pos.y}
-
-				-- Find the coordinates of three spaces ahead
-				if dir == 1 then
-					pos2.y = pos2.y - 3 -- North
-				elseif dir == 2 then
-					pos2.x = pos2.x + 3 -- East
-				elseif dir == 3 then
-					pos2.y = pos2.y + 3 -- South
-				elseif dir == 4 then
-					pos2.x = pos2.x - 3 -- West
-				end
-
-				-- Check if there is a line of sight between these tiles
-				if roomFiller.room:line_of_sight(pos, pos2) then
-					return {dir = dir, ok = true}
-				else
-					table.remove(dirs, index)
-				end
-			end
-			return {ok = false}
-		end
-	fNew =
-		function(pos)
-			return Turret(args.position, args.dir, 5 * math.random(1, 10))
-		end
-	self:add_objects(numTurrets, fTest, fNew, self.room.bricks)
-end
-
-function RoomFiller:fill()
-	-- Give positions to pre-added objects
-	if self.room.objectsToPosition ~= nil then
-		self:position_objects(self.room.objectsToPosition)
-		self.room.objectsToPosition = nil
-	end
-
-	-- Add internal bricks
-	local someBricks = {}
-	for _ = 1, math.random(0, #self.room.freeTiles * .02) do
-		table.insert(someBricks, Brick({}))
-	end
-	self:position_objects(someBricks)
-
-	-- Add turrets
-	local numTurrets = math.random(0, #self.room.bricks * .03)
-	self:add_turrets(numTurrets)
-
-	-- Add monsters
-	local maxMonsters = #self.room.freeTiles * .04
-	self:add_monsters(maxMonsters)
-
-	-- TEMP: put a shiny thing in the room
-	--self:position_objects({Item(nil, 4)})
-
-	-- TEMP: put a potion in the room
-	--self:position_objects({Item(nil, 2)})
 end

@@ -2,7 +2,7 @@ Turret = class('Turret')
 
 function Turret:init(position, dir, delay)
 	self.position = {x = position.x, y = position.y}
-	self.dir = dir -- Table of directions
+	self.dir = dir
 	self.delay = delay
 
 	self.timer = 0
