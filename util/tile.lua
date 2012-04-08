@@ -14,6 +14,22 @@ function add_direction(tile, dir)
 	end
 end
 
+function direction_to(from, to)
+	if to.y < from.y then
+		-- North
+		return 1
+	elseif to.x > from.x then
+		-- East
+		return 2
+	elseif to.y > from.y then
+		-- South
+		return 3
+	elseif to.x < from.x then
+		-- South
+		return 4
+	end
+end
+
 function find_neighbor_tiles(node, otherNodes, options)
 	-- Make sure options is at least an empty table, so we can index it
 	options = options or {}

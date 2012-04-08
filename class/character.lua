@@ -111,13 +111,20 @@ end
 
 function Character:choose_action()
 	-- See if there is a projectile we should dodge
+	local closestDist = 999
 	self.ai.dodge.target = nil
-	for i,s in pairs(self.room.sprites) do
+	for _, s in pairs(self.room.sprites) do
 		if instanceOf(Projectile, s) then
 			-- If this is a projectile type that we want to dodge, and if it is
 			-- heading toward us
 			if self:afraid_of(s) and s:will_hit(self) then
-				self.ai.dodge.target = s
+				local dist = manhattan_distance(s.position, self.position)
+
+				-- If it's closer than the current closest projectile
+				if dist < closestDist then
+					closestDist = dist
+					self.ai.dodge.target = s
+				end
 			end
 		end
 	end
@@ -125,7 +132,7 @@ function Character:choose_action()
 	local closestDist = 999
 	self.closestEnemy = nil
 	-- Find closest character on other team
-	for _,s in pairs(self.room.sprites) do
+	for _, s in pairs(self.room.sprites) do
 		-- If this is a character on the other team
 		if instanceOf(Character, s) and s.team ~= self.team then
 			dist = manhattan_distance(s.position, self.position)
@@ -260,22 +267,13 @@ function Character:die()
 end
 
 function Character:direction_to(position)
-	if position.y < self.position.y then
-		-- North
-		return 1
-	elseif position.x > self.position.x then
-		-- East
-		return 2
-	elseif position.y > self.position.y then
-		-- South
-		return 3
-	elseif position.x < self.position.x then
-		-- South
-		return 4
-	else
-		-- The target position is the same as our position
+	-- If the target position is the same as our position
+	if tiles_overlap(self.position, position) then
+		-- Return a random direction
 		return math.random(1, 4)
 	end
+
+	return direction_to(self.position, position)
 end
 
 function Character:dodge(sprite)
@@ -624,6 +622,10 @@ function Character:receive_damage(amount)
 	if self.health <= 0 then
 		self.health = 0
 		self:die()
+	end
+
+	if not instanceOf(Player, self) and not self.dead then
+		sound.monsterCry:play()
 	end
 end
 

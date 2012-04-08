@@ -18,6 +18,10 @@ function Brick:draw(alpha)
 	                        TILE_W, TILE_H)
 end
 
+function Brick:get_position()
+	return {x = self.x, y = self.y}
+end
+
 function Brick:receive_hit(agent)
 	-- Register as a hit
 	return true

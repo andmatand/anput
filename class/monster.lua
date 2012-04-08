@@ -98,14 +98,6 @@ function Monster:hit(patient)
 	return Character.hit(self, patient)
 end
 
-function Monster:receive_damage(amount)
-	Character.receive_damage(self, amount)
-
-	if not self.dead then
-		sound.monsterCry:play()
-	end
-end
-
 function Monster:receive_hit(agent)
 	if self.monsterType == 5 then -- A ghost
 		-- Only magic hits ghosts

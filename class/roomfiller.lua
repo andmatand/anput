@@ -31,13 +31,13 @@ function RoomFiller:fill_next_step()
 			if self:add_turrets() then
 				if self:add_monsters() then
 					-- DEBUG: put a shiny thing in the room
-					self:position_objects({Item('shinything')})
-					self:position_objects({Item('shinything')})
-					self:position_objects({Item('shinything')})
-					self:position_objects({Item('shinything')})
-					self:position_objects({Item('shinything')})
-					self:position_objects({Item('shinything')})
-					self:position_objects({Item('shinything')})
+					--self:position_objects({Item('shinything')})
+					--self:position_objects({Item('shinything')})
+					--self:position_objects({Item('shinything')})
+					--self:position_objects({Item('shinything')})
+					--self:position_objects({Item('shinything')})
+					--self:position_objects({Item('shinything')})
+					--self:position_objects({Item('shinything')})
 
 					-- Flag that room is done being filled
 					return true
@@ -89,7 +89,7 @@ function RoomFiller:add_monsters()
 			itemType = math.random(1, 2)
 
 			-- Occasionally make it a shiny thing!
-			if math.random(1, 20) == 1 then
+			if math.random(1, 10) == 1 then
 				itemType = ITEM_TYPE.shinything
 			end
 

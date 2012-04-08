@@ -54,6 +54,15 @@ function Player:hit(patient)
 		return false
 	end
 
+	-- DEBUG: put a turret on bricks that the player hits, shooting toward the
+	-- player
+	--if instanceOf(Brick, patient) then
+	--	self.room:add_object(Turret(patient:get_position(),
+	--	                     direction_to(patient:get_position(),
+	--	                                  self.position),
+	--	                     10))
+	--end
+
 	return Character.hit(self, patient)
 end
 
