@@ -4,14 +4,21 @@
 * not finished yet; this is essentially an engine demo
 
 ##History
-This is a remake of an old game I wrote for QBASIC back in 2003.  It was
-inspired by a fake game shown at the end of
-[Strong Bad Email #4](http://www.homestarrunner.com/sbemail4.html)
+One day, when I was 16, I was watching
+[Strong Bad Email #4](http://www.homestarrunner.com/sbemail4.html).  At the
+end, Strong Bad plays a game that is supposed to be
+[Temple of Apshai](http://en.wikipedia.org/wiki/Temple_of_Apshai) but is
+apparently just a mock-up of a generic CGA-era dungeon crawler.  I saw this and
+thought it would be cool to play a real game with that look and feel, so I
+wrote one in QBASIC.  Eight years later, I rediscovered my old unfinished
+program and thought a remake of it would be a fun project for trying out Lua
+and the LÖVE framework.
 
 ##Controls
 * move: wasd
 * switch weapon: Tab, Right Shift, or 1 - 3
 * use potion: p
+* trade with dudes: t
 * shoot: arrows
 * fullscreen: f11, Alt + Enter
 * new game: n
