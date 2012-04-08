@@ -103,9 +103,8 @@ end
 
 function Room:draw_bricks()
 	if self.game.player.moved or not self.drawn then
-		-- Uncomment for love 0.8.0
-		--self.lightBrickBatch:bind()
-		--self.darkBrickBatch:bind()
+		self.lightBrickBatch:bind()
+		self.darkBrickBatch:bind()
 
 		-- Clear old bricks
 		self.lightBrickBatch:clear()
@@ -122,9 +121,8 @@ function Room:draw_bricks()
 			end
 		end
 
-		-- Uncomment for love 0.8.0
-		--self.lightBrickBatch:unbind()
-		--self.darkBrickBatch:unbind()
+		self.lightBrickBatch:unbind()
+		self.darkBrickBatch:unbind()
 	end
 
 	love.graphics.setColor(255, 255, 255, DARK)
