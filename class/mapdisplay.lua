@@ -5,7 +5,7 @@ function MapDisplay:init(nodes)
 	self.nodes = nodes
 
 	-- Place the display on the side of the screen
-	self.nodeSize = 8
+	self.nodeSize = 3 * SCALE_X
 
 	self.x1 = upscale_x(ROOM_W) + self.nodeSize
 	self.y1 = upscale_y(12) + self.nodeSize
@@ -27,6 +27,8 @@ function MapDisplay:draw(currentRoom)
 			if n.room == currentRoom then
 				love.graphics.setColor(MAGENTA)
 			elseif n.finalRoom then
+				love.graphics.setColor(CYAN)
+			elseif n.room:contains_npc() then
 				love.graphics.setColor(CYAN)
 			else
 				love.graphics.setColor(WHITE)

@@ -58,6 +58,16 @@ function Room:character_input()
 	end
 end
 
+function Room:contains_npc()
+	for _, c in pairs(self:get_characters()) do
+		if c.name then
+			return true
+		end
+	end
+
+	return false
+end
+
 function Room:draw()
 	-- If we haven't found the FOV yet
 	if not self.fov then
@@ -312,9 +322,6 @@ function Room:tile_contents(tile)
 	for _, i in pairs(self.items) do
 		if tiles_overlap(tile, i.position) then
 			table.insert(contents, i)
-
-			-- Items cannot overlap, so break here
-			break
 		end
 	end
 
@@ -360,8 +367,8 @@ function Room:tile_walkable(tile)
 	-- Create a table of collidable characters
 	local collidables = {}
 	for _, c in pairs(self:get_characters()) do
-		-- If this character is not a ghost
-		if not c.isCorporeal then
+		-- If this character is corporeal (not a ghost)
+		if c.isCorporeal then
 			table.insert(collidables, c)
 		end
 	end
@@ -427,13 +434,13 @@ function Room:update()
 	end
 	self.items = temp
 
-	-- Iterate through the room objects which can also be speakers
-	for _, o in pairs(self.sprites) do
-		-- If this object has a mouth which should speak
-		if o.mouth and o.mouth:should_speak() then
-			o.mouth:speak()
-		end
-	end
+	-- Iterate through the room objects which can have mouths
+	--for _, o in pairs(self.sprites) do
+	--	-- If this object has a mouth which should speak
+	--	if o.mouth and o:should_speak() then
+	--		o.mouth:speak()
+	--	end
+	--end
 
 	-- Update messages
 	self:update_messages()

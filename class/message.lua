@@ -35,7 +35,7 @@ function Message:choose_position()
 
 	-- If the player is too close to our y position
 	if math.abs(self.room.game.player.position.y -
-	    self.position.y) <= self.numLines + 1 then
+	    self.position.y) <= self.numLines + 5 then
 		-- Move to the other side of the room
 		if self.position.y == 0 then
 			self.position.y = ROOM_H - 1
@@ -63,10 +63,10 @@ function Message:draw()
 
 		-- Print a colon after the avatar
 		love.graphics.setColor(WHITE)
-		tile_print(':',
-		           self.position.x + 1,
-		           self.position.y + yOffset,
-		           self.wrapWidth)
+		cga_print(':',
+		          self.position.x + 1,
+		          self.position.y + yOffset,
+		          upscale_x(ROOM_W))
 
 		xOffset = 2
 	else
@@ -76,9 +76,10 @@ function Message:draw()
 	love.graphics.setColor(WHITE)
 
 	-- Print (the currently unfurled portion of) the text
-	tile_print(self:get_text(),
-	           self.position.x + xOffset,
-	           self.position.y + yOffset)
+	cga_print(self:get_text(),
+	          self.position.x + xOffset,
+	          self.position.y + yOffset,
+		      upscale_x(ROOM_W))
 end
 
 function Message:get_height()

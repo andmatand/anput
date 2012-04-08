@@ -30,8 +30,14 @@ function RoomFiller:fill_next_step()
 		if self:add_internal_bricks() then
 			if self:add_turrets() then
 				if self:add_monsters() then
-					-- TEMP: put a shiny thing in the room
-					--self:position_objects({Item(nil, 4)})
+					-- DEBUG: put a shiny thing in the room
+					self:position_objects({Item('shinything')})
+					self:position_objects({Item('shinything')})
+					self:position_objects({Item('shinything')})
+					self:position_objects({Item('shinything')})
+					self:position_objects({Item('shinything')})
+					self:position_objects({Item('shinything')})
+					self:position_objects({Item('shinything')})
 
 					-- Flag that room is done being filled
 					return true
@@ -84,13 +90,13 @@ function RoomFiller:add_monsters()
 
 			-- Occasionally make it a shiny thing!
 			if math.random(1, 20) == 1 then
-				itemType = 3
+				itemType = ITEM_TYPE.shinything
 			end
 
-			local newItem = Item({}, itemType)
+			local newItem = Item(itemType)
 
 			-- Pretend the monster picked it up
-			m:add_to_inventory(newItem)
+			m.inventory:add(newItem)
 		end
 	end
 

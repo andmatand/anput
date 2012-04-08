@@ -1,16 +1,26 @@
+-- An Item is an object that can exist in either a room (it has no physics) and
+-- a Character's inventory
 Item = class('Item')
 
-function Item:init(position, itemType)
-	self.position = position
-	--self.position = {position.x, position.y}
-	--print('item position table:', self.position)
-	self.itemType = itemType
+ITEM_TYPE = {potion = 1,
+             arrows = 2,
+             shinything = 3,
+             sword = 10,
+             bow = 11,
+             staff = 12}
 
-	if itemType == 1 then
-		self.frames = {{image = arrowsImg}}
-	elseif itemType == 2 then
+function Item:init(itemType)
+	if type(itemType) == 'number' then
+		self.itemType = itemType
+	elseif type(itemType) == 'string' then
+		self.itemType = ITEM_TYPE[itemType]
+	end
+
+	if self.itemType == ITEM_TYPE.potion then
 		self.frames = {{image = potionImg}}
-	elseif itemType == 3 then
+	elseif self.itemType == ITEM_TYPE.arrows then
+		self.frames = {{image = arrowsImg}}
+	elseif self.itemType == ITEM_TYPE.shinything then
 		self.frames = {
 			{image = shinyThingImg[1], delay = 8},
 			{image = shinyThingImg[2], delay = 2},
@@ -26,6 +36,7 @@ function Item:init(position, itemType)
 	self.animationEnabled = true
 
 	self.owner = nil
+	self.position = {}
 end
 
 function Item:animate()
@@ -50,15 +61,12 @@ function Item:animate()
 end
 
 function Item:draw()
-	if self.frames ~= nil then
+	if self.frames then
 		love.graphics.setColor(255, 255, 255)
 		love.graphics.draw(self.frames[self.currentFrame].image,
 		                   upscale_x(self.position.x),
 		                   upscale_y(self.position.y),
 		                   0, SCALE_X, SCALE_Y)
-	elseif self.weapon ~= nil then
-		love.graphics.setColor(255, 255, 255)
-		self.weapon:draw(self.position)
 	end
 end
 
@@ -73,21 +81,13 @@ end
 function Item:use()
 	if self.owner then
 		if self:use_on(self.owner) then
-			self.owner:remove_from_inventory(self)
+			self.owner.inventory:remove(self)
 		end
 	end
 end
 
 function Item:use_on(patient)
-	if self.itemType == 1 then
-		-- Arrows
-		-- If the patient has a bow
-		if patient.weapons.bow then
-			patient.weapons.bow:add_ammo(10)
-			self.isUsed = true
-			return true
-		end
-	elseif self.itemType == 2 then
+	if self.itemType == ITEM_TYPE.potion then
 		-- Health potion
 		if patient:add_health(20) then
 			self.isUsed = true
@@ -100,6 +100,14 @@ function Item:use_on(patient)
 				sound.monsterGetHP:play()
 			end
 			
+			return true
+		end
+	elseif self.itemType == ITEM_TYPE.arrows then
+		-- Arrows
+		-- If the patient has a bow
+		if patient.armory.weapons.bow then
+			patient.armory.weapons.bow:add_ammo(10)
+			self.isUsed = true
 			return true
 		end
 	end

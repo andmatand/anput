@@ -1,7 +1,8 @@
 require('class/arrow')
 require('class/fireball')
 
-Weapon = class('Weapon')
+-- A weapon is an Item that can also hurt other Characters or shoot Projectiles
+Weapon = class('Weapon', Item)
 
 -- Weapon templates
 Weapon.static.templates = {
@@ -13,8 +14,10 @@ Weapon.static.templates = {
 	}
 
 function Weapon:init(weaponType)
+	Weapon.super.init(self, weaponType)
+
 	-- Copy the weapon template for the specified type to create a new weapon
-	for k,v in pairs(Weapon.static.templates[weaponType]) do
+	for k, v in pairs(Weapon.static.templates[weaponType]) do
 		self[k] = v
 	end
 end
@@ -30,6 +33,8 @@ function Weapon:add_ammo(amount)
 end
 
 function Weapon:draw(position)
+	position = position or self.position
+
 	if self.name == 'sword' then
 		img = swordImg
 	elseif self.name == 'bow' then
@@ -39,8 +44,8 @@ function Weapon:draw(position)
 	end
 
 	love.graphics.draw(img,
-					   upscale_x(position.x), upscale_y(position.y),
-					   0, SCALE_X, SCALE_Y)
+	                   upscale_x(position.x), upscale_y(position.y),
+	                   0, SCALE_X, SCALE_Y)
 end
 
 function Weapon:set_projectile_class(c)

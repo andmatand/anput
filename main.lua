@@ -8,8 +8,27 @@ function new_image(filename)
 	return img
 end
 
-function tile_print(text, x, y)
-	love.graphics.print(text, upscale_x(x), upscale_y(y), 0, SCALE_X, SCALE_Y)
+function get_lines()
+end
+
+function cga_print(text, x, y)
+	love.graphics.setColor(BLACK)
+
+	-- Go through each line of the text
+	local i = 0
+	for line in text:gmatch("[^\n]+") do
+		-- Draw a black background behind this line of text
+		love.graphics.rectangle('fill', upscale_x(x), upscale_y(y + i),
+		                        font:getWidth(line),
+		                        font:getHeight())
+
+		-- Keep track of which line number we're on
+		i = i + 1
+	end
+
+	-- Draw the text
+	love.graphics.setColor(WHITE)
+	love.graphics.print(text, upscale_x(x), upscale_y(y) - 1, 0)
 end
 
 function upscale_x(x)
@@ -27,17 +46,15 @@ function love.conf(t)
 end
 
 function love.load()
-	midPaths = {}
+	SCALE_X = 2
+	SCALE_Y = 2
 
-	love.graphics.setMode(640, 400, false, false, 0)
+	love.graphics.setMode(320 * SCALE_X, 200 * SCALE_Y, false, false, 0)
 	love.mouse.setVisible(false)
 	love.graphics.setCaption('TEMPLE OF ANPUT')
 	if love.graphics.isCreated() == false then
 		print('failed to create a window')
 	end
-
-	SCALE_X = 2
-	SCALE_Y = 2
 
 	-- These are the tile dimensions after scaling
 	TILE_W = 8
@@ -64,10 +81,11 @@ function love.load()
 	FONT_H = 8
 
 	-- Load the font
-	fontImg = love.graphics.newImage('res/font/screen13.png')
-	fontImg:setFilter('nearest', 'nearest')
-	font = love.graphics.newImageFont(fontImg,
-		'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
+	--local fontImg = love.graphics.newImage('res/font/cga.png')
+	--fontImg:setFilter('nearest', 'nearest')
+	--local font = love.graphics.newImageFont(fontImg,
+	--             'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
+	font = love.graphics.newFont('res/font/cga.ttf', TILE_W * SCALE_X)
 	love.graphics.setFont(font)
 
 	playerImg = {default = new_image('player.png'),

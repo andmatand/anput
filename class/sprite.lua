@@ -16,6 +16,8 @@ function Sprite:init()
 end
 
 function Sprite:check_for_items()
+	local pickedSomethingUp = false
+
 	-- If we are a character who is alive
 	if instanceOf(Character, self) and not self.dead then
 		for _, i in pairs(self.room.items) do
@@ -25,6 +27,20 @@ function Sprite:check_for_items()
 				if tiles_overlap(self.position, i.position) then
 					-- Pick it up
 					self:pick_up(i)
+
+					-- If we didn't already pick something up, and we are in a
+					-- room, and it is the game's current room
+					if (not pickedSomethingUp and self.room and
+					    self.room == self.room.game.currentRoom) then
+						-- Play a pick-up sound depending on who we are
+						if instanceOf(Player, self) then
+							sound.playerGetItem:play()
+						else
+							sound.monsterGetItem:play()
+						end
+					end
+
+					pickedSomethingUp = true
 				end
 			end
 		end
@@ -115,18 +131,6 @@ function Sprite:physics()
 	-- Compute test coordinates for potential new position
 	self.test.x = self.test.x + self.velocity.x
 	self.test.y = self.test.y + self.velocity.y
-
-	-- Apply friction
-	if self.velocity.x < 0 then
-		self.velocity.x = self.velocity.x + self.friction
-	elseif self.velocity.x > 0 then
-		self.velocity.x = self.velocity.x - self.friction
-	end
-	if self.velocity.y < 0 then
-		self.velocity.y = self.velocity.y + self.friction
-	elseif self.velocity.y > 0 then
-		self.velocity.y = self.velocity.y - self.friction
-	end
 	
 	-- Check for collision with bricks
 	for i,b in pairs(self.room.bricks) do
@@ -177,6 +181,18 @@ function Sprite:physics()
 				end
 			end
 		end
+	end
+
+	-- Apply friction
+	if self.velocity.x < 0 then
+		self.velocity.x = self.velocity.x + self.friction
+	elseif self.velocity.x > 0 then
+		self.velocity.x = self.velocity.x - self.friction
+	end
+	if self.velocity.y < 0 then
+		self.velocity.y = self.velocity.y + self.friction
+	elseif self.velocity.y > 0 then
+		self.velocity.y = self.velocity.y - self.friction
 	end
 
 	-- If there were no hits, make the move for real

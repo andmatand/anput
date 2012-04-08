@@ -39,7 +39,37 @@ function Mouth:should_speak()
 	return false
 end
 
-function Mouth:speak()
+function Mouth:shut()
+	-- If we have a room
+	if self.room then
+		-- Find the message we were saying
+		for i, m in pairs(self.room.messages) do
+			if m.mouth == self then
+				-- Remove the message from the queue
+				table.remove(self.room.messages, i)
+
+				self.isSpeaking = false
+				break
+			end
+		end
+	end
+end
+
+function Mouth:speak(cancelLastSpeech)
+	if self.isSpeaking then
+		if cancelLastSpeech then
+			self:shut()
+		else
+			return
+		end
+	end
+
+	-- If we are attached to a sprite
+	if self.sprite then
+		-- Set our room to that of the sprite
+		self.room = self.sprite.room
+	end
+
 	self.isSpeaking = true
 
 	-- If we have a room

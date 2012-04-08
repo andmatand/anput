@@ -7,7 +7,7 @@ Monster.static.difficulties = {
 	 5, -- 2. Bird
 	10, -- 3. mummy
 	15, -- 4. cat
-	30  -- 5. ghost
+	40  -- 5. ghost
 	}
 
 function Monster:init(pos, monsterType)
@@ -36,7 +36,7 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.bird
 		self.health = 20
 
-		self:add_weapon(Weapon('sword'))
+		self.inventory:add(Weapon('sword'))
 
 		self.aiDelay = 5
 
@@ -46,9 +46,10 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.mummy
 		self.health = 40
 
-		self:add_weapon(Weapon('sword'))
-		self:add_weapon(Weapon('bow'))
-		self.weapons.bow:add_ammo(20)
+		self:pick_up(Weapon('sword'), false)
+		local bow = Weapon('bow')
+		bow:add_ammo(20)
+		self:pick_up(bow, false)
 
 		self.aiDelay = 10
 
@@ -59,9 +60,10 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.cat
 		self.health = 40
 
-		self:add_weapon(Weapon('sword'))
-		self:add_weapon(Weapon('bow'))
-		self.weapons.bow:add_ammo(20)
+		self.inventory:add(Weapon('sword'))
+		local bow = Weapon('bow')
+		bow:add_ammo(20)
+		self:pick_up(bow, false)
 
 		self.aiDelay = 4
 
@@ -73,11 +75,12 @@ function Monster:init(pos, monsterType)
 		self.health = 80
 		self.isCorporeal = false
 
-		self:add_weapon(Weapon('staff'))
-		self.currentWeapon:set_projectile_class(Fireball)
-		self.currentWeapon:add_ammo(20)
+		local staff = Weapon('staff')
+		staff:add_ammo(20)
+		staff:set_projectile_class(Fireball)
+		self:pick_up(staff, false)
 
-		self.aiDelay = 2
+		self.aiDelay = 4
 
 		self.ai.dodge = {dist = 5, prob = 9}
 		self.ai.chase = {dist = 20, prob = 1}

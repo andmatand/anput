@@ -56,13 +56,13 @@ function Game:draw_sidepane()
 
 	if self.paused then
 		love.graphics.setColor(255, 255, 255)
-		tile_print('PAUSED', ROOM_W, 6)
+		cga_print('PAUSED', 11, 12)
 	end
 end
 
 function Game:generate()
 	-- DEBUG choose specific seed
-	--math.randomseed(43)
+	math.randomseed(39)
 
 	-- Generate a new map
 	self.map = Map()
@@ -110,35 +110,19 @@ function Game:keypressed(key)
 
 	-- Get player input for switching weapons
 	if key == '1' or key == '2' or key == '3' then
-		-- Switch to weapon by specific number
-		self.player:set_current_weapon(tonumber(key))
+		-- Switch to specified weapon number, based on display order
+		self.player.armory:switch_to_weapon_number(tonumber(key))
 	elseif (key == 'tab' or key == 'lshift' or key == 'rshift' or
 	        key == 'rctrl') then
-		-- Cycle through weapons
-		changedWeapon = false
-		for _, w in pairs(self.player.weapons)  do
-			-- If this weapons order is 1 more than that of the current weapon
-			if w.order == self.player.currentWeapon.order + 1 then
-				self.player:set_current_weapon(w.order)
-				changedWeapon = true
-				break
-			end
-		end
-		-- If we haven't changed weapons yet
-		if changedWeapon == false then
-			-- Change to the first weapon
-			self.player:set_current_weapon(1)
-		end
+		-- Switch to the next weapon
+		self.player.armory:switch_to_next_weapon()
 	end
 
 	-- Get player input for using items
 	if key == 'p' then
 		-- Take a potion
-		for _, item in pairs(self.player.inventory) do
-			if item.itemType == 2 then
-				item:use()
-				break
-			end
+		if self.player:has_item(ITEM_TYPE.potion) then
+			self.player.inventory:get_item(ITEM_TYPE.potion):use()
 		end
 	end
 
@@ -184,6 +168,11 @@ function Game:keypressed(key)
 		self.player:step(3)
 	elseif key == 'a' then
 		self.player:step(4)
+	end
+
+	-- Get player input for trading
+	if key == 't' then
+		self.player.wantsToTrade = true
 	end
 
 	-- DEBUG: toggle map with m
@@ -269,7 +258,7 @@ function Game:update()
 	end
 
 	-- Update the player's inventory items (for animations)
-	for _, i in pairs(self.player.inventory) do
+	for _, i in pairs(self.player.inventory.items) do
 		i:update()
 	end
 end

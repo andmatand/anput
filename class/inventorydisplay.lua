@@ -28,12 +28,12 @@ function InventoryDisplay:draw()
 	                       upscale_x(x), 2,
 						   upscale_x(SCREEN_W - x) - 2, upscale_y(1) - 4)
 
-	if self.owner.weapons then
+	if self.owner.armory.weapons then
 		local numWeapons = 0
 		x = self.position.x
 
 		-- Display weapons
-		for k, w in pairs(self.owner.weapons) do
+		for k, w in pairs(self.owner.armory.weapons) do
 			y = self.position.y + (w.order - 1)
 
 			love.graphics.setColor(WHITE)
@@ -54,17 +54,16 @@ function InventoryDisplay:draw()
 				x = x + 1
 				-- Draw a progress bar
 				self:draw_progress_bar({num = w.ammo, max = w.maxAmmo,
-										color = CYAN},
-									   upscale_x(x),
-									   upscale_y(y) + 2,
-									   ((SCREEN_W - x) * TILE_W) - 2,
-									   TILE_H - 4)
+				                        color = CYAN},
+				                       upscale_x(x), upscale_y(y) + 2,
+				                       upscale_x(SCREEN_W - x) - 2,
+				                       upscale_y(1) - 4)
 			-- If this weapon has an arbitrary amount of ammo
 			elseif w.ammo then
 				-- Display the numeric ammount of ammo
 				x = x + 1
 				love.graphics.setColor(WHITE)
-				tile_print(w.ammo, x, y)
+				cga_print(tostring(w.ammo), x, y)
 			end
 
 			x = self.position.x
@@ -81,7 +80,7 @@ function InventoryDisplay:draw()
 
 		-- Get totals for each item type
 		local invTotals = {}
-		for _, i in pairs(self.owner.inventory) do
+		for _, i in pairs(self.owner.inventory.items) do
 			-- If there is no total for this type yet
 			if invTotals[i.itemType] == nil then
 				-- Initialize it to 0
@@ -99,7 +98,7 @@ function InventoryDisplay:draw()
 
 		-- Display each item type and its total
 		local itemNum = 0
-		for _, i in pairs(self.owner.inventory) do
+		for _, i in pairs(self.owner.inventory:get_non_weapons()) do
 			-- If we haven't already displayed an item of this type
 			if invTotals[i.itemType] ~= nil then
 				itemNum = itemNum + 1
@@ -138,8 +137,8 @@ function InventoryDisplay:draw()
 				-- If there is more than one of this type of item
 				if invTotals[i.itemType] > 1 then
 					-- Print the total number of this type of item
-					tile_print(invTotals[i.itemType], x + 1, y)
-					x = x + 1
+					cga_print(tostring(invTotals[i.itemType]), x + 1, y)
+					x = x + tostring(invTotals[i.itemType]):len() + 1
 				end
 
 				-- Save the old count

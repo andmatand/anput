@@ -50,8 +50,10 @@ function Projectile:draw()
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(
 		self.images[self.frame],
-		upscale_x(self.position.x) + self.images[self.frame]:getWidth(),
-		upscale_y(self.position.y) + self.images[self.frame]:getHeight(),
+		upscale_x(self.position.x) + (self.images[self.frame]:getWidth() *
+		                              SCALE_X) / 2,
+		upscale_y(self.position.y) + (self.images[self.frame]:getHeight() *
+		                              SCALE_Y) / 2,
 		r, sx, sy,
 		self.images[self.frame]:getWidth() / 2,
 		self.images[self.frame]:getWidth() / 2)

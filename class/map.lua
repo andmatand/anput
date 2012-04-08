@@ -2,6 +2,9 @@ require('class/exit')
 require('class/mapdisplay')
 require('class/pathfinder')
 require('class/room')
+require('class/trader')
+require('class/trader')
+require('class/weapon')
 require('util/tables')
 require('util/tile')
 
@@ -255,9 +258,8 @@ function Map:generate_rooms()
 	self.display = MapDisplay(self.nodes)
 
 	-- Put a sword in the starting room
-	item = Item()
-	item.weapon = Weapon('sword')
-	rooms[1].requiredObjects = {item}
+	local sword = Weapon('sword')
+	rooms[1].requiredObjects = {sword}
 
 	-- Create a table of rooms close to the starting room
 	earlyRooms = {}
@@ -269,17 +271,7 @@ function Map:generate_rooms()
 
 	-- Put the wizard in one of the early rooms
 	local roomNum = 1--math.random(1, #earlyRooms)
-	local wizard = Character()
-	wizard.images = playerImg
-	wizard.color = CYAN
-	wizard:add_weapon(Weapon('staff'))
-	wizard.ai.dodge = {dist = 5, prob = 10}
-	wizard.ai.chase = {dist = 2, prob = 10}
-	wizard.ai.shoot = {dist = 10, prob = 10}
-	wizard.aiDelay = 1
-	wizard.name = 'WIZARD'
-	wizard.mouth = Mouth({sprite = wizard})
-	wizard.mouth.speech = 'I WOULD GIVE MY STAFF FOR 7 SHINY THINGS'
+	local wizard = dofile('script/wizard.lua')
 	if not earlyRooms[roomNum].requiredObjects then
 		earlyRooms[roomNum].requiredObjects = {}
 	end

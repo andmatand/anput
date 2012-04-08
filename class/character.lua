@@ -1,7 +1,8 @@
+require('class/armory')
+require('class/inventory')
 require('class/mouth')
 require('class/sprite')
 require('util/tile')
-require('class/weapon')
 
 -- A Character is a Sprite with AI
 Character = class('Character', Sprite)
@@ -31,10 +32,8 @@ function Character:init()
 
 	self.aiTimer = 0
 
-	self.weapons = {}
-	self.currentWeapon = nil
-
-	self.inventory = {}
+	self.inventory = Inventory(self)
+	self.armory = Armory(self)
 end
 
 function Character:add_health(amount)
@@ -62,41 +61,6 @@ function Character:add_health(amount)
 	return false
 end
 
-function Character:add_to_inventory(item)
-	item.position = nil
-	item.owner = self
-	table.insert(self.inventory, item)
-end
-
-function Character:remove_from_inventory(item)
-	for i, v in pairs(self.inventory) do
-		if v == item then
-			table.remove(self.inventory, i)
-			return
-		end
-	end
-end
-
-function Character:add_weapon(weapon)
-	local firstWeapon
-
-	-- If we currently have no weapons
-	if not next(self.weapons) then
-		firstWeapon = true
-	else
-		firstWeapon = false
-	end
-
-	-- Create a new weapon and add it to our weapons table
-	self.weapons[weapon.name] = weapon
-	weapon.owner = self
-
-	if firstWeapon then
-		-- Set this new weapon as the current weapon
-		self.currentWeapon = weapon
-	end
-end
-
 function Character:afraid_of(sprite)
 	if instanceOf(Arrow, sprite) then
 		-- Ghost
@@ -117,6 +81,32 @@ function Character:chase(sprite)
 
 	-- Start following the path
 	self:follow_path()
+end
+
+function Character:cheap_follow_path(dest)
+	if self.position.x == dest.x and self.position.y == dest.y then
+		return
+	end
+
+	xDist = math.abs(dest.x - self.position.x)
+	yDist = math.abs(dest.y - self.position.y)
+
+	-- Move on the axis farthest away first
+	if xDist > yDist then
+		if self.position.x < dest.x then
+			self:step(2)
+		else
+			self:step(4)
+		end
+	else
+		if self.position.y < dest.y then
+			self:step(3)
+		else
+			self:step(1)
+		end
+	end
+
+	return true
 end
 
 function Character:choose_action()
@@ -214,6 +204,15 @@ function Character:do_ai()
 		--end
 	end
 
+	-- Check if we should dodge a Player
+	for _, s in pairs(self.room.sprites) do
+		if instanceOf(Player, s) and s.team == self.team then
+			if s:will_hit(self) then
+				self:dodge(s)
+			end
+		end
+	end
+
 	self.action = self:choose_action()
 
 	if self.action == Character.static.actions.dodge then
@@ -236,32 +235,27 @@ function Character:die()
 
 	local itemsToDrop = {}
 
-	-- If we have any items in our inventory
-	if self.inventory then
-		for _, i in pairs(self.inventory) do
-			table.insert(itemsToDrop, i)
-		end
-		self.inventory = {}
-		print('Dropping ' .. #itemsToDrop .. ' items...')
-	end
+	for _, item in pairs(self.inventory.items) do
+		local ok = true
 
-	-- If we have any weapons
-	if self.weapons then
-		for _, w in pairs(self.weapons) do
-			-- If the player doesn't already have this weapon, or we are the
-			-- player
-			if (not self.room.game.player.weapons[w.name] or
-			    instanceOf(Player, self)) then
-				-- Make an item version of this weapon
-				local newItem = Item()
-				newItem.weapon = w
-				table.insert(itemsToDrop, newItem)
+		-- If this item is a weapon
+		if instanceOf(Weapon, item) then
+			-- We are a not the game's player
+			if self ~= self.room.game.player then
+				-- If the game's player already has this type of weapon
+				if self.room.game.player:has_item(item.itemType) then
+					-- Do not drop it
+					ok = false
+				end
 			end
 		end
-		self.weapons = {}
+
+		if ok then
+			table.insert(itemsToDrop, item)
+		end
 	end
 
-	-- Drop them
+	-- Drop all items in our inventory
 	self:drop(itemsToDrop)
 end
 
@@ -400,6 +394,7 @@ function Character:draw(pos)
 	end
 end
 
+-- Drops a table of items, choosing good positions for them
 function Character:drop(items)
 	-- Find all neighboring tiles
 	local neighbors = find_neighbor_tiles(self.position)
@@ -455,11 +450,25 @@ function Character:drop(items)
 			end
 		end
 
-		-- Add the item to the room
-		self.room:add_object(item)
+		self:drop_item(item)
 
 		print('dropped item ' .. i)
 	end
+end
+
+-- Drops a single item into the room (the item must have a position)
+function Character:drop_item(item)
+	-- Remove the item from our inventory
+	self.inventory:remove(item)
+
+	-- If the item is a Weapon
+	if instanceOf(Weapon, item) then
+		-- Remove it from our armory
+		self.armory:remove(item)
+	end
+
+	-- Add the item to the room
+	self.room:add_object(item)
 end
 
 function Character:find_path(dest)
@@ -515,15 +524,18 @@ function Character:follow_path()
 	return true
 end
 
+function Character:has_item(itemType, quantity)
+	return self.inventory:has_item(itemType, quantity)
+end
+
 function Character:hit(patient)
 	-- Damage other characters with sword
 	if (instanceOf(Character, patient) and -- We hit a character
-		self.currentWeapon and -- We have a weapon
-	    self.currentWeapon.name == 'sword' and -- Current weapon is sword
-		self.team ~= patient.team) then -- Not on the same team
+	    self.armory:get_current_weapon_name() == 'sword' and
+	    self.team ~= patient.team) then -- Patient is on a different team
 		-- If the patient receives our hit
 		if patient:receive_hit(self) then
-			patient:receive_damage(self.currentWeapon.damage)
+			patient:receive_damage(self.armory.currentWeapon.damage)
 			self.attackedDir = self.dir
 		else
 			return false
@@ -549,38 +561,54 @@ end
 function Character:pick_up(item)
 	-- If the item is already being held by someone, or is already used up
 	if item.owner or item.isUsed then
-		return
+		-- Don't pick it up
+		return false
 	end
 
-	-- If it's a weapon-item
-	if item.weapon then
-		-- If we don't already have this type of weapon
-		if not self.weapons[item.weapon.name] then
-			self:add_weapon(item.weapon)
-			item.owner = self
+	-- If the item is a weapon
+	if instanceOf(Weapon, item) then
+		-- If we already have this type of weapon
+		if self:has_item(item.itemType) then
+			-- Don't pick it up
+			return false
 		end
 
-		-- Apply any arrow packs we have
-		for _, i in pairs(self.inventory) do
-			if i.itemType == 1 then
-				i:use()
-			end
+		-- Add it to our armory
+		self.armory:add(item)
+
+		-- If it's a bow
+		if item.itemType == ITEM_TYPE.bow then
+			-- Apply any arrow packs we have
+			local foundArrowPack
+			repeat
+				foundArrowPack = false
+				for _, i in pairs(self.inventory.items) do
+					if i.itemType == ITEM_TYPE.arrows then
+						i:use()
+						foundArrowPack = true
+
+						-- Break here because Item:use() alters the inventory's
+						-- items table
+						break
+					end
+				end
+			until not foundArrowPack
 		end
-	elseif self.weapons.bow and item.itemType == 1 then
+
+	-- If it's arrows and we have a bow
+	elseif (item.itemType == ITEM_TYPE.arrows and
+	        self:has_item(ITEM_TYPE.bow)) then
 		-- Apply arrows to bow instead of putting them in inventory
 		item:use_on(self)
-	else
-		-- It's a normal item; add it to our inventory
-		self:add_to_inventory(item)
+		return true
 	end
 
+	-- Add the item to our inventory
+	self.inventory:add(item)
+
+	-- If the item was picked up
 	if item.owner or item.isUsed then
-		-- Play sound depending on who picked it up
-		if instanceOf(Player, self) then
-			sound.playerGetItem:play()
-		elseif instanceOf(Monster, self) then
-			sound.monsterGetItem:play()
-		end
+		return true
 	end
 end
 
@@ -613,7 +641,7 @@ function Character:receive_hit(agent)
 		end
 	end
 
-	return Sprite.receive_hit(self)
+	return Character.super.receive_hit(self)
 end
 
 function Character:recharge()
@@ -631,9 +659,9 @@ function Character:recharge()
 	end
 
 	-- If we have a staff
-	if self.weapons.staff then
+	if self.armory.weapons.staff then
 		-- Recharge it
-		self.weapons.staff:add_ammo(amount)
+		self.armory.weapons.staff:add_ammo(amount)
 	end
 
 	if love.timer.getTime() > self.hurtTimer + 2 then
@@ -642,38 +670,27 @@ function Character:recharge()
 	end
 end
 
-function Character:set_current_weapon(num)
-	for _,w in pairs(self.weapons) do
-		if w.order == num then
-			self.currentWeapon = w
-
-			if instanceOf(Player, self) then
-				sound.switchWeapon:play()
-			end
-			break
-		end
-	end
-end
-
 function Character:shoot(dir)
 	-- If we don't have a weapon, or we are dead
-	if not self.currentWeapon or self.dead then
+	if not self.armory.currentWeapon or self.dead then
 		return false
 	end
 
-	-- If our current weapon is not of the "shooting" variety
-	if not self.currentWeapon.projectileClass then
+	-- If we are not a Player, and our current weapon is not of the "shooting"
+	-- variety
+	if (not instanceOf(Player, self) and
+	    not self.armory.currentWeapon.projectileClass) then
 		-- Switch to a weapon that can shoot
-		for _, w in pairs(self.weapons) do
+		for _, w in pairs(self.armory.weapons) do
 			if w.projectileClass then
-				self.currentWeapon = w
+				self.armory:set_current_weapon(w)
 				break
 			end
 		end
 	end
 
 	-- If we still don't have a weapon that shoots
-	if not self.currentWeapon.projectileClass then
+	if not self.armory.currentWeapon.projectileClass then
 		return false
 	end
 
@@ -686,7 +703,7 @@ function Character:shoot(dir)
 	end
 
 	-- Try to create a new projectile
-	newProjectile = self.currentWeapon:shoot(dir)
+	local newProjectile = self.armory.currentWeapon:shoot(dir)
 
 	-- If this weapon did not (or cannot) shoot
 	if newProjectile == false then
@@ -721,6 +738,8 @@ function Character:step(dir)
 		self.velocity.y = 0
 	end
 
+	-- Do physics if we haven't already
+
 	-- Store this direction for directional attacking
 	self.dir = dir
 end
@@ -737,32 +756,6 @@ function Character:step_toward(dest)
 	end
 end
 
-function Character:cheap_follow_path(dest)
-	if self.position.x == dest.x and self.position.y == dest.y then
-		return
-	end
-
-	xDist = math.abs(dest.x - self.position.x)
-	yDist = math.abs(dest.y - self.position.y)
-
-	-- Move on the axis farthest away first
-	if xDist > yDist then
-		if self.position.x < dest.x then
-			self:step(2)
-		else
-			self:step(4)
-		end
-	else
-		if self.position.y < dest.y then
-			self:step(3)
-		else
-			self:step(1)
-		end
-	end
-
-	return true
-end
-
 function Character:update()
 	if self.hurt then
 		-- Flash if hurt
@@ -775,14 +768,14 @@ function Character:update()
 	    (self.path.nodes or self.moved or
 	     self.action == Character.static.actions.flee)) then
 		self.currentImage = self.images.moving
-	elseif (self.images.sword and self.weapons.sword and
-	        self.currentWeapon == self.weapons.sword) then
+	elseif (self.images.sword and
+	        self.armory:get_current_weapon_name() == 'sword') then
 		self.currentImage = self.images.sword
-	elseif (self.images.bow and self.weapons.bow and
-	        self.currentWeapon == self.weapons.bow) then
+	elseif (self.images.bow and
+	        self.armory:get_current_weapon_name() == 'bow') then
 		self.currentImage = self.images.bow
-	elseif (self.images.staff and self.weapons.staff and
-	        self.currentWeapon == self.weapons.staff) then
+	elseif (self.images.staff and
+	        self.armory:get_current_weapon_name() == 'staff') then
 		self.currentImage = self.images.staff
 	else
 		self.currentImage = self.images.default

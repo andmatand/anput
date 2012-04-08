@@ -52,18 +52,19 @@ function find_neighbor_tiles(node, otherNodes, options)
 	end
 
 	-- Check if any of the otherNodes are in the neighbor positions
-	if otherNodes ~= nil then
-		for i,o in pairs(otherNodes) do
-			for j,n in pairs(neighbors) do
-				if o.x == n.x and o.y == n.y then
-					n.room = o.room
+	if otherNodes then
+		for _, o in pairs(otherNodes) do
+			for _, n in pairs(neighbors) do
+				if tiles_overlap(o, n) then
+					-- Mark this neighbor-tile as occupied
 					n.occupied = true
+					n.room = o.room
 				end
 			end
 		end
 	end
 
-	if options.countBorders == true then
+	if options.countBorders then
 		-- Check if any of the neighbor positions touch the room border
 		for i,n in pairs(neighbors) do
 			if n.y == 0 or
@@ -75,6 +76,7 @@ function find_neighbor_tiles(node, otherNodes, options)
 		end
 	end
 
+	-- If diagonals are explicitly disabled
 	if options.diagonals == false then
 		-- Remove diagonal neighbors
 		temp = {}
