@@ -26,21 +26,21 @@ function Sprite:check_for_items()
 				-- If we are standing on this item
 				if tiles_overlap(self.position, i.position) then
 					-- Pick it up
-					self:pick_up(i)
-
-					-- If we didn't already pick something up, and we are in a
-					-- room, and it is the game's current room
-					if (not pickedSomethingUp and self.room and
-					    self.room == self.room.game.currentRoom) then
-						-- Play a pick-up sound depending on who we are
-						if instanceOf(Player, self) then
-							sound.playerGetItem:play()
-						else
-							sound.monsterGetItem:play()
+					if self:pick_up(i) then
+						-- If we didn't already pick something up, and we are
+						-- in a room, and it is the game's current room
+						if (not pickedSomethingUp and self.room and
+							self.room == self.room.game.currentRoom) then
+							-- Play a pick-up sound depending on who we are
+							if instanceOf(Player, self) then
+								sound.playerGetItem:play()
+							else
+								sound.monsterGetItem:play()
+							end
 						end
-					end
 
-					pickedSomethingUp = true
+						pickedSomethingUp = true
+					end
 				end
 			end
 		end
