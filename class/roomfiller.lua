@@ -82,21 +82,24 @@ function RoomFiller:add_monsters()
 	-- DEBUG
 	--print('actual difficulty: ' .. totalDifficulty)
 
+	if #monsters > 0 then
+		-- Iterate through the existing items in the room
+		for _, item in pairs(self.room.items) do
+			-- Give the item to a random monster
+			monsters[math.random(1, #monsters)]:pick_up(item)
+		end
+	end
+
 	-- Give items to the monsters
 	for _, m in pairs(monsters) do
 		if math.random(m.difficulty, 100) >= 25 then
 			-- Choose a random item type
-			itemType = math.random(1, 2)
-
-			-- Occasionally make it a shiny thing!
-			if math.random(1, 10) == 1 then
-				itemType = ITEM_TYPE.shinything
-			end
+			local itemType = math.random(1, 2)
 
 			local newItem = Item(itemType)
 
 			-- Pretend the monster picked it up
-			m.inventory:add(newItem)
+			m:pick_up(newItem)
 		end
 	end
 
@@ -188,7 +191,7 @@ function RoomFiller:add_turrets()
 end
 
 function RoomFiller:add_required_objects()
-	if not self.room.requiredObjects then
+	if not self.room.requiredObjects or #self.room.requiredObjects == 0 then
 		-- Flag that the required objects have already been added (or there
 		-- never were any)
 		return true

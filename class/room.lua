@@ -14,6 +14,7 @@ function Room:init(args)
 	self.sprites = {}
 	self.turrets = {}
 	self.items = {}
+	self.requiredObjects = {}
 	self.drawn = false
 	self.fovCache = {}
 	self.messages = {}

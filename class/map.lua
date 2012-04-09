@@ -16,7 +16,11 @@ function Map:generate()
 	self.branches = self:add_branches(self.path)
 	self.display = nil
 
-	return self:generate_rooms()
+	self.rooms = self:generate_rooms()
+
+	self:add_required_objects()
+
+	return self.rooms
 end
 
 function move_random(node)
@@ -257,25 +261,54 @@ function Map:generate_rooms()
 	-- Create a display of this map
 	self.display = MapDisplay(self.nodes)
 
-	-- Put a sword in the starting room
-	local sword = Weapon('sword')
-	rooms[1].requiredObjects = {sword}
+	return rooms
+end
 
-	-- Create a table of rooms close to the starting room
-	earlyRooms = {}
-	for _, r in pairs(rooms) do
-		if r.distanceFromStart <= 3 then
-			table.insert(earlyRooms, r)
+function Map:get_early_rooms(num)
+	local earlyRooms = {}
+
+	for distance = 1, 100 do
+		for _, r in pairs(self.rooms) do
+			if r.distanceFromStart == distance then
+				table.insert(earlyRooms, r)
+
+				if #earlyRooms == num then
+					return earlyRooms
+				end
+			end
 		end
 	end
+end
 
-	-- Put the wizard in one of the early rooms
-	local roomNum = 1--math.random(1, #earlyRooms)
+function Map:add_required_objects()
+	-- Put a sword in the starting room
+	local sword = Weapon('sword')
+	self.rooms[1].requiredObjects = {sword}
+
+	-- Create a table of the 5 earliest rooms
+	local earlyRooms = self:get_early_rooms(5)
+
+	-- Put the wizard in one of the 5 earliest rooms
+	local roomNum = math.random(1, #earlyRooms)
 	local wizard = dofile('script/wizard.lua')
-	if not earlyRooms[roomNum].requiredObjects then
-		earlyRooms[roomNum].requiredObjects = {}
-	end
 	table.insert(earlyRooms[roomNum].requiredObjects, wizard)
 
-	return rooms
+	-- Create a table of the 14 earliest rooms
+	local earlyRooms = self:get_early_rooms(14)
+	local numShinyThings = 0
+	while numShinyThings < 7 do
+		-- Pick a random early room
+		local roomNum = math.random(1, #earlyRooms)
+
+		-- If this room doesn't already have too many reqiured objects
+		if #earlyRooms[roomNum].requiredObjects < 1 then
+			-- Add a shiny thing as a required object
+			numShinyThings = numShinyThings + 1
+			table.insert(earlyRooms[roomNum].requiredObjects,
+			             Item('shinything'))
+		else
+			-- Otherwise remove this room from consideration
+			table.remove(earlyRooms, roomNum)
+		end
+	end
 end
