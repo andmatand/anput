@@ -35,11 +35,20 @@ function Game:draw()
 	end
 
 	-- DEBUG: show turrets
-	--for _,t in pairs(self.currentRoom.turrets) do
+	--for _, t in pairs(self.currentRoom.turrets) do
 	--	love.graphics.setColor(255, 0, 0)
 	--	love.graphics.circle('fill',
 	--	                     (t.position.x * TILE_W) + (TILE_W / 2),
 	--						 (t.position.y * TILE_H) + (TILE_H / 2), 8)
+	--end
+
+	-- DEBUG: show tiles added to make room for required room objects
+	--if self.currentRoom.debugTiles then
+	--	for _, t in pairs(self.currentRoom.debugTiles) do
+	--		love.graphics.setColor(255, 0, 0, 100)
+	--		love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
+	--							    upscale_x(1), upscale_y(1))
+	--	end
 	--end
 
 	self:draw_sidepane()
@@ -62,7 +71,7 @@ end
 
 function Game:generate()
 	-- DEBUG choose specific seed
-	math.randomseed(39)
+	--math.randomseed(89)
 
 	-- Generate a new map
 	self.map = Map()
