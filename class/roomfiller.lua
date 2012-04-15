@@ -30,15 +30,6 @@ function RoomFiller:fill_next_step()
 		if self:add_internal_bricks() then
 			if self:add_turrets() then
 				if self:add_monsters() then
-					-- DEBUG: put a shiny thing in the room
-					--self:position_objects({Item('shinything')})
-					--self:position_objects({Item('shinything')})
-					--self:position_objects({Item('shinything')})
-					--self:position_objects({Item('shinything')})
-					--self:position_objects({Item('shinything')})
-					--self:position_objects({Item('shinything')})
-					--self:position_objects({Item('shinything')})
-
 					-- Flag that room is done being filled
 					return true
 				end
