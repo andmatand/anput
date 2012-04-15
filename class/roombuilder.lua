@@ -112,6 +112,46 @@ function RoomBuilder:plot_midpaths()
 		end
 	end
 
+	if not self.accountedForRequiredObjects then
+		self.accountedForRequiredObjects = true
+		self.room.debugTiles = {}
+
+		-- Iterate through the required objects for this room
+		for _, obj in pairs(self.room.requiredObjects) do
+			-- If this object will be an obstacle for the player
+			if obj.isCorporeal then
+				-- Choose a position for the center of the square that is not
+				-- too close to any room edges
+				local center = self.midPoint
+				if center.x < 2 then
+					center.x = center.x + 1
+				elseif center.x > (ROOM_W - 1) - 2 then
+					center.x = center.x - 1
+				end
+				if center.y < 2 then
+					center.y = center.y + 1
+				elseif center.y > (ROOM_H - 1) - 2 then
+					center.y = center.y - 1
+				end
+
+				-- Mark off a square of tiles to make more room for the object
+				for y = -1, 1 do
+					for x = -1, 1 do
+						--table.insert(self.room.debugTiles,
+						--             {x = center.x + x,
+						--              y = center.y + y})
+						table.insert(self.occupiedTiles,
+						             {x = center.x + x,
+						              y = center.y + y})
+					end
+				end
+
+				-- Only do this once
+				break
+			end
+		end
+	end
+
 	-- Flag that the midpaths are complete
 	return true
 end
