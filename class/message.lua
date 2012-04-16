@@ -1,3 +1,11 @@
+local function is_whitespace(char)
+	if char == ' ' or char == '\n' or char == '\t' then
+		return true
+	else
+		return false
+	end
+end
+
 Message = class('Message')
 
 function Message:init(args)
@@ -94,7 +102,16 @@ end
 function Message:update()
 	-- If we are still unfurling the text
 	if self.cursor < self.text:len() then
-		self.cursor = self.cursor + 2
+		self.cursor = self.cursor + 1
+
+		-- Don't wait for whitespace characters to unfurl
+		while is_whitespace(self.text:sub(self.cursor, self.cursor)) do
+			if self.cursor < self.text:len() then
+				self.cursor = self.cursor + 1
+			else
+				break
+			end
+		end
 	else
 		self.delay = self.delay - 1
 
