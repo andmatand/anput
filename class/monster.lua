@@ -36,7 +36,7 @@ function Monster:init(pos, monsterType)
 		self.images = monsterImg.bird
 		self.health = 20
 
-		self.inventory:add(Weapon('sword'))
+		self:pick_up(Weapon('sword'), false)
 
 		self.aiDelay = 5
 
