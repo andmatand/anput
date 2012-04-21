@@ -151,11 +151,11 @@ function love.load()
 	showDebug = false
 	flickerMode = false
 
-	game = Game()
-	game:generate()
-
 	fps = 15
 	fpsTimer = 0
+
+	game = Game()
+	game:generate()
 
 	--love.keyboard.setKeyRepeat(75, 50)
 end
@@ -264,15 +264,6 @@ function love.draw()
 		--end
 
 	end
-
-	-- DEBUG show midPaths
-	--for _, t in pairs(midPaths) do
-	--	love.graphics.setColor(255, 255, 255)
-	--	love.graphics.circle('fill',
-	--						 upscale_x(t.x),
-	--						 upscale_y(t.y) + (TILE_H / 2),
-	--						 3, 10)
-	--end
 
 	game:draw()
 end
