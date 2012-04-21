@@ -1,11 +1,6 @@
 -- A FloodFiller finds all tiles accessible from x, y which are neither hotLava
--- nor outside the bounds of the room.
--- Returns a table consisting of:
---   freeTiles: a table of coordinates of free tiles
---   hotLava: the same a table of coordinates that was passed in as a
---            parameter, with an extra key on each element denoting whether it
---            was touched (including by diagonal searching, which freeTiles
---            does not use) e.g. {x = 17, y = 3, touched = true}
+-- nor outside the bounds of the room. Calling flood() returns a table of all
+-- tiles reached.
 
 FloodFiller = class('FloodFiller')
 
@@ -14,94 +9,83 @@ function FloodFiller:init(source, hotLava)
 	self.hotLava = hotLava -- Coordinates which are illegal to traverse
 end
 
+-- Implements a scanline flood-fill algorithm
 function FloodFiller:flood()
-	found = {}
-	used = {}
+	local seeds = {}
+	local freeTiles = {}
 
-	-- Add the source position as the first node
-	table.insert(found, self.source)
+	-- Add the source position as the first seed
+	table.insert(seeds, self.source)
 
-	while #found > 0 do
-		-- Pop the last node off the table found nodes
-		currentNode = found[#found]
-		table.insert(used, table.remove(found, #found))
+	while #seeds > 0 do
+		-- Pop the last seed off the table
+		seed = table.remove(seeds, #seeds)
 
-		-- Investigate the non-diagonal surroundings
-		for d = 1,4 do
-			if d == 1 then
-				-- North
-				x = currentNode.x
-				y = currentNode.y - 1
-			elseif d == 2 then
-				-- East
-				x = currentNode.x + 1
-				y = currentNode.y
-			elseif d == 3 then
-				-- South
-				x = currentNode.x
-				y = currentNode.y + 1
-			elseif d == 4 then
-				-- West
-				x = currentNode.x - 1
-				y = currentNode.y
-			end
-
-			if self:legal_position(x, y) then
-				alreadyFound = false
-				for i,n in pairs(found) do
-					if x == n.x and y == n.y then
-						alreadyFound = true
-						break
-					end
-				end
-				for i,n in pairs(used) do
-					if x == n.x and y == n.y then
-						alreadyFound = true
-						break
-					end
-				end
-
-				-- Add these coordinates to the table of found nodes
-				if not alreadyFound then
-					table.insert(found, {x = x, y = y})
-				end
-			end
+		-- Find the top bound of this line
+		local x = seed.x
+		local y = seed.y
+		while self:legal_position(x, y - 1) do
+			y = y - 1
 		end
 
-		-- Search the diagonals only to mark hotLava tiles as touched
-		if math.random(0, 2) == 0 then
-			for d = 1,4 do
-				if d == 1 then
-					-- NE
-					x = currentNode.x + 1
-					y = currentNode.y - 1
-				elseif d == 2 then
-					-- SE
-					x = currentNode.x + 1
-					y = currentNode.y + 1
-				elseif d == 3 then
-					-- SW
-					x = currentNode.x - 1
-					y = currentNode.y + 1
-				elseif d == 4 then
-					-- NW
-					x = currentNode.x - 1
-					y = currentNode.y - 1
-				end
+		-- Start at the top and move down the line
+		local searchLeft = true
+		local searchRight = true
+		while self:legal_position(x, y) do
+			-- If this is not the source position
+			if x ~= self.source.x or y ~= self.source.y then
+				-- Add this tile to the table of found tiles
+				table.insert(freeTiles, {x = x, y = y})
+			end
 
-				for i,l in pairs(self.hotLava) do
-					if x == l.x and y == l.y then
-						l.touched = true
-						break
-					end
+			-- If our parent was not on the left side
+			if not seed.parentOnLeft then
+				-- If we are searching the left side and we find a legal
+				-- position
+				if searchLeft and self:legal_position(x - 1, y) then
+					-- Add a new seed at this position
+					table.insert(seeds, {x = x - 1, y = y,
+					                     parentOnRight = true})
+					
+					-- Stop searching the left side for now
+					searchLeft = false
+
+				-- If we are not searching the left side and we find an illegal
+				-- position
+				elseif (not searchLeft and
+				        not self:legal_position(x - 1, y)) then
+					-- Start searching the left side again, since the old line
+					-- would not reach past here
+					searchLeft = true
 				end
 			end
+
+			-- If our parent was not on the right side
+			if not seed.parentOnRight then
+				-- If we are searching the right side and we find a legal
+				-- position
+				if searchRight and self:legal_position(x + 1, y) then
+					-- Add a new seed at this position
+					table.insert(seeds, {x = x + 1, y = y,
+					                     parentOnLeft = true})
+					
+					-- Stop searching the right side for now
+					searchRight = false
+				-- If we are not searching the right side and we find an illegal
+				-- position
+				elseif (not searchRight and
+				        not self:legal_position(x + 1, y)) then
+					-- Start searching the right side again, since the old line
+					-- would not reach past here
+					searchRight = true
+				end
+			end
+
+			y = y + 1
 		end
 	end
 
-	-- Remove the starting node
-	table.remove(used, 1)
-	return {freeTiles = used, hotLava = self.hotLava}
+	return freeTiles
 end
 
 function FloodFiller:legal_position(x, y)
@@ -111,10 +95,9 @@ function FloodFiller:legal_position(x, y)
 	end
 
 	-- If this is an illegal tile
-	if self.hotLava ~= nil then
-		for i,l in pairs(self.hotLava) do
+	if self.hotLava then
+		for _, l in pairs(self.hotLava) do
 			if x == l.x and y == l.y then
-				l.touched = true
 				return false
 			end
 		end

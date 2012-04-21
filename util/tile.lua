@@ -170,3 +170,15 @@ function tiles_touching(a, b)
 		return false
 	end
 end
+
+-- Returns true if tiles touch diagonally without overlapping
+function tiles_touching_diagonally(a, b)
+	if (a.x == b.x + 1 and a.y == b.y - 1) or -- NE
+	   (a.x == b.x + 1 and a.y == b.y + 1) or -- SE
+	   (a.x == b.x - 1 and a.y == b.y + 1) or -- SW
+	   (a.x == b.x - 1 and a.y == b.y - 1) then   -- NW
+		return true
+	else
+		return false
+	end
+end

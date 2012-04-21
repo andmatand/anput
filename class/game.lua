@@ -43,9 +43,9 @@ function Game:draw()
 	--end
 
 	-- DEBUG: show tiles added to make room for required room objects
-	--if self.currentRoom.debugTiles then
+	--if #self.currentRoom.debugTiles > 0 then
 	--	for _, t in pairs(self.currentRoom.debugTiles) do
-	--		love.graphics.setColor(255, 0, 0, 100)
+	--		love.graphics.setColor(255, 0, 255, 100)
 	--		love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
 	--							    upscale_x(1), upscale_y(1))
 	--	end

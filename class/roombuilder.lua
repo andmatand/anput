@@ -1,8 +1,9 @@
 require('class/brick')
 require('class/navigator')
 require('class/floodfiller')
+require('util/tile')
 
-local DEBUG = false
+local DEBUG = true
 
 -- A RoomBuilder places bricks inside a room
 RoomBuilder = class('RoomBuilder')
@@ -15,10 +16,31 @@ function RoomBuilder:init(room)
 
 	self.bricks = {}
 	self.occupiedTiles = {}
-	self.freeTiles = {}
+
+	if DEBUG then
+		self.room.debugTiles = {}
+	end
+end
+
+function RoomBuilder:add_occupied_tile(tile)
+	-- Make sure this tile is not already in the table of
+	-- occupied tiles
+	for _, ot in pairs(self.occupiedTiles) do
+		if tile.x == ot.x and tile.y == ot.y then
+			return false
+		end
+	end
+	table.insert(self.occupiedTiles, tile)
+
+	return true
 end
 
 function RoomBuilder:build_next_piece()
+	local timer
+	if DEBUG then
+		timer = love.timer.getTime()
+	end
+
 	if self:plot_midpaths() then
 		if self:plot_walls() then
 			if self:cleanup_untouchable_bricks() then
@@ -27,6 +49,13 @@ function RoomBuilder:build_next_piece()
 				-- Flag that all the pieces have been built
 				return true
 			end
+		end
+	end
+
+	if DEBUG then
+		local elapsed = love.timer.getTime() - timer
+		if elapsed > 1 / fps then
+			print('** took too long to build piece: ' .. elapsed)
 		end
 	end
 
@@ -42,26 +71,80 @@ function RoomBuilder:finalize()
 end
 
 function RoomBuilder:cleanup_untouchable_bricks()
-	-- Do a floodfill on the inside of the room, using the bricks as hotLava
-	local ff = FloodFiller(self.midPoint, self.bricks)
-	local ffResults = ff:flood()
+	if self.cleanedUpUntouchableBricks then
+		-- Flag that this step is already done
+		return true
+	end
 
-	-- Save freeTiles
-	self.freeTiles = ffResults.freeTiles
+	if not self.freeTiles then
+		if DEBUG then
+			print('doing floodfill to cleanup untouchable bricks')
+		end
 
-	-- Add the midpoint to freeTiles, since it is not included by the
-	-- floodfiller
-	table.insert(self.freeTiles, self.midPoint)
+		self.freeTiles = {}
 
-	-- Remove any bricks that could not be touched from inside the room
-	self.bricks = {}
-	for _, b in pairs(ffResults.hotLava) do
-		if b.touched == true then
-			table.insert(self.bricks, Brick(b))
+		-- Do a floodfill on the inside of the room, using the bricks as
+		-- hotLava
+		local ff = FloodFiller(self.midPoint, self.bricks)
+		self.freeTiles = ff:flood()
+
+		-- Add the midpoint to freeTiles, since it is not included by the
+		-- floodfiller
+		table.insert(self.freeTiles, self.midPoint)
+
+		if DEBUG then
+			for _, t in pairs(self.freeTiles) do
+				table.insert(self.room.debugTiles, t)
+			end
+		end
+
+		-- Flag that we did work
+		return false
+	end
+
+	-- Remove any bricks that do not touch the inside of the room
+	if DEBUG then
+		print('removing bricks')
+		print('before: ' .. #self.bricks .. ' bricks')
+	end
+	local temp = {}
+	for _, b in pairs(self.bricks) do
+		for _, t in pairs(self.freeTiles) do
+			local ok = false
+
+			if tiles_touching(b, t) then
+				ok = true
+			elseif math.random(0, 1) == 1 then
+				if tiles_touching_diagonally(b, t) then
+					ok = true
+				end
+			end
+
+			if ok then
+				table.insert(temp, Brick(b))
+				break
+			end
+		end
+	end
+	self.bricks = temp
+
+	if DEBUG then
+		print('after: ' .. #self.bricks .. ' bricks')
+	end
+
+	self.cleanedUpUntouchableBricks = true
+
+	-- TEST: check for duplicate bricks
+	for _, a in pairs(self.bricks) do
+		for _, b in pairs(self.bricks) do
+			if a ~= b and tiles_overlap(a, b) then
+				print('* duplicate brick')
+			end
 		end
 	end
 
-	return true
+	-- Flag that we did work
+	return false
 end
 
 function RoomBuilder:plot_midpaths()
@@ -89,6 +172,10 @@ function RoomBuilder:plot_midpaths()
 	-- Plot paths from all exits to the midpoint
 	for _, e in pairs(self.exits) do
 		if not e.hasMidPath then
+			if DEBUG then
+				print('plotting midpath from exit')
+			end
+
 			e.hasMidPath = true
 
 			-- Give doorframeTiles as the only hotLava for this path
@@ -97,14 +184,7 @@ function RoomBuilder:plot_midpaths()
 
 			-- Append these coordinates to list of illegal coordinates
 			for _, b in pairs(tiles) do
-				table.insert(self.occupiedTiles, {x = b.x, y = b.y})
-				--if DEBUG then
-				--	table.insert(midPaths, {x = b.x, y = b.y})
-				--end
-			end
-
-			if DEBUG then
-				print('generated midpath in ' .. love.timer.getTime() - timer)
+				self:add_occupied_tile({x = b.x, y = b.y})
 			end
 
 			-- Flag that the midpaths are not yet complete
@@ -114,7 +194,6 @@ function RoomBuilder:plot_midpaths()
 
 	if not self.accountedForRequiredObjects then
 		self.accountedForRequiredObjects = true
-		self.room.debugTiles = {}
 
 		-- Iterate through the required objects for this room
 		for _, obj in pairs(self.room.requiredObjects) do
@@ -137,12 +216,8 @@ function RoomBuilder:plot_midpaths()
 				-- Mark off a square of tiles to make more room for the object
 				for y = -1, 1 do
 					for x = -1, 1 do
-						--table.insert(self.room.debugTiles,
-						--             {x = center.x + x,
-						--              y = center.y + y})
-						table.insert(self.occupiedTiles,
-						             {x = center.x + x,
-						              y = center.y + y})
+						self:add_occupied_tile({x = center.x + x,
+						                        y = center.y + y})
 					end
 				end
 
@@ -157,6 +232,10 @@ function RoomBuilder:plot_midpaths()
 end
 
 function RoomBuilder:plot_walls()
+	if self.plottedWalls then
+		return true
+	end
+
 	-- Make wall from right doorframe of each exit to left doorframe of next
 	-- exit
 	for i, e in ipairs(self.exits) do
@@ -181,6 +260,10 @@ function RoomBuilder:plot_walls()
 		end
 
 		if not e.hasFloodFill then
+			if DEBUG then
+				print('doing floodfiller for wall')
+			end
+
 			e.hasFloodFill = true
 
 			if DEBUG then
@@ -189,7 +272,15 @@ function RoomBuilder:plot_walls()
 
 			-- Find all vacant tiles accessible from the source doorframe
 			local ff = FloodFiller(e.src, self.occupiedTiles)
-			e.freeTiles = ff:flood().freeTiles
+			e.freeTiles = ff:flood()
+
+			for k, v in pairs(self.occupiedTiles) do
+				for k2, v2 in pairs(self.occupiedTiles) do
+					if k ~= k2 and v.x == v2.x and v.y == v2.y then
+						print('* redundant hotLava: ' .. v.x, v.y)
+					end
+				end
+			end
 
 			-- Remove dest from freeTiles
 			for j, t in pairs(e.freeTiles) do
@@ -197,10 +288,6 @@ function RoomBuilder:plot_walls()
 					table.remove(e.freeTiles, j)
 					break
 				end
-			end
-
-			if DEBUG then
-				print('did floodfill in ' .. love.timer.getTime() - timer)
 			end
 
 			-- The walls are not done yet
@@ -261,6 +348,9 @@ function RoomBuilder:plot_walls()
 		end
 	end
 
-	-- Flag that the walls are all done
-	return true
+	self.plottedWalls = true
+	print('finished plotting walls')
+
+	-- Flag that we did work
+	return false
 end
