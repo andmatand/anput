@@ -39,18 +39,7 @@ function upscale_y(y)
 	return y * TILE_H * SCALE_Y
 end
 
-function love.conf(t)
-	t.modules.joystick = false
-	t.modules.mouse = false
-	t.modules.physics = false
-end
-
 function love.load()
-	SCALE_X = 2
-	SCALE_Y = 2
-
-	love.graphics.setMode(320 * SCALE_X, 200 * SCALE_Y, false, false, 0)
-	love.mouse.setVisible(false)
 	love.graphics.setCaption('TEMPLE OF ANPUT')
 	if love.graphics.isCreated() == false then
 		print('failed to create a window')
