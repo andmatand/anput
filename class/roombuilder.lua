@@ -430,7 +430,10 @@ function RoomBuilder:plot_walls()
 	end
 
 	self.plottedWalls = true
-	print('finished plotting walls')
+
+	if DEBUG then
+		print('finished plotting walls')
+	end
 
 	-- Flag that we did work
 	return false

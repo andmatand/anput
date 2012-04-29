@@ -4,6 +4,8 @@ require('class/mouth')
 require('class/sprite')
 require('util/tile')
 
+--local DEBUG = true
+
 -- A Character is a Sprite with AI
 Character = class('Character', Sprite)
 
@@ -385,7 +387,8 @@ function Character:draw(pos)
 			love.graphics.setColor(255, 255, 255)
 		end
 		love.graphics.draw(self.currentImage,
-		                   pos.x * TILE_W * SCALE_X, pos.y * TILE_H * SCALE_Y,
+		                   pos.x * TILE_W * SCALE_X,
+		                   pos.y * TILE_H * SCALE_Y,
 		                   0, SCALE_X, SCALE_Y)
 	else
 		self.flashTimer = self.flashTimer - 1
@@ -450,7 +453,9 @@ function Character:drop(items)
 
 		self:drop_item(item)
 
-		print('dropped item ' .. i)
+		if DEBUG then
+			print('dropped item ' .. i)
+		end
 	end
 end
 
