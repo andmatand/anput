@@ -15,11 +15,13 @@ end
 function Sound:play()
 	for _, s in pairs(self.sources) do
 		if s:isStopped() then
-			love.audio.play(s)
-			return
+			s:play()
+		else
+			s:rewind()
 		end
 	end
+	return
 
-	self:add_source()
-	love.audio.play(self.sources[#self.sources])
+	--self:add_source()
+	--love.audio.play(self.sources[#self.sources])
 end

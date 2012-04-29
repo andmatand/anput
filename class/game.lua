@@ -4,6 +4,8 @@ require('class/player')
 require('util/tables')
 require('util/tile')
 
+--local DEBUG = true
+
 -- A Game handles a collection of rooms
 Game = class('Game')
 
@@ -42,14 +44,16 @@ function Game:draw()
 	--						 (t.position.y * TILE_H) + (TILE_H / 2), 8)
 	--end
 
-	-- DEBUG: show tiles added to make room for required room objects
-	--if #self.currentRoom.debugTiles > 0 then
-	--	for _, t in pairs(self.currentRoom.debugTiles) do
-	--		love.graphics.setColor(255, 0, 255, 100)
-	--		love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
-	--							    upscale_x(1), upscale_y(1))
-	--	end
-	--end
+	if DEBUG then
+		-- Show tiles added to make room for required room objects
+		if #self.currentRoom.debugTiles > 0 then
+			for _, t in pairs(self.currentRoom.debugTiles) do
+				love.graphics.setColor(0, 255, 0, 100)
+				love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
+									    upscale_x(1), upscale_y(1))
+			end
+		end
+	end
 
 	self:draw_sidepane()
 end
@@ -203,7 +207,9 @@ function Game:keyreleased(key)
 end
 
 function Game:switch_to_room(roomIndex)
-	print('switching to room ' .. roomIndex)
+	if DEBUG then
+		print('switching to room ' .. roomIndex)
+	end
 
 	prevRoom = self.currentRoom
 
@@ -220,8 +226,11 @@ function Game:switch_to_room(roomIndex)
 	self.currentRoom = self.rooms[roomIndex]
 	self.currentRoom.game = self
 	self.currentRoom.visited = true
-	print('room distance from start:', self.currentRoom.distanceFromStart)
-	print('room difficulty:', self.currentRoom.difficulty)
+
+	if DEBUG then
+		print('room distance from start:', self.currentRoom.distanceFromStart)
+		print('room difficulty:', self.currentRoom.difficulty)
+	end
 
 	-- Add player to current room
 	self.currentRoom:add_object(self.player)
@@ -245,6 +254,8 @@ function Game:update()
 	if self.paused then
 		return
 	end
+
+	self.inventoryDisplay:update()
 
 	if flickerMode and self.frameState == 0 then
 		self.frameState = 1

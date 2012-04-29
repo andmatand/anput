@@ -3,7 +3,64 @@ require('class/navigator')
 require('class/floodfiller')
 require('util/tile')
 
-local DEBUG = true
+--local DEBUG = true
+
+local function cheap_line(src, dest)
+	local nodes = {}
+	local pos = {x = src.x, y = src.y}
+
+	if DEBUG then
+		--print('finding cheap line')
+		--print('  src: ' .. src.x .. ', ' .. src.y)
+		--print('  dest: ' .. dest.x .. ', ' .. dest.y)
+		--print()
+	end
+
+	-- Add the src position
+	table.insert(nodes, {x = pos.x, y = pos.y})
+
+	repeat
+		local moveX = false
+		local moveY = false
+
+		if pos.x ~= dest.x and (math.random(0, 1) == 0 or
+		                        pos.y == dest.y) then
+			moveX = true
+		else
+			moveY = true
+		end
+
+		-- If we are on the room border, move in by one tile
+		if pos.x == 0 or pos.x == ROOM_W - 1 then
+			moveX = true
+			moveY = false
+		elseif pos.y == 0 or pos.y == ROOM_H - 1 then
+			moveX = false
+			moveY = true
+		end
+
+		if moveX then
+			if pos.x < dest.x then
+				pos.x = pos.x + 1
+			elseif pos.x > dest.x then
+				pos.x = pos.x - 1
+			end
+		elseif moveY then
+			if pos.y < dest.y then
+				pos.y = pos.y + 1
+			elseif pos.y > dest.y then
+				pos.y = pos.y - 1
+			end
+		end
+
+		--print('  pos:' .. pos.x .. ', ' .. pos.y)
+
+		-- Add the current position
+		table.insert(nodes, {x = pos.x, y = pos.y})
+	until tiles_overlap(pos, dest)
+
+	return nodes
+end
 
 -- A RoomBuilder places bricks inside a room
 RoomBuilder = class('RoomBuilder')
@@ -92,12 +149,6 @@ function RoomBuilder:cleanup_untouchable_bricks()
 		-- floodfiller
 		table.insert(self.freeTiles, self.midPoint)
 
-		if DEBUG then
-			for _, t in pairs(self.freeTiles) do
-				table.insert(self.room.debugTiles, t)
-			end
-		end
-
 		-- Flag that we did work
 		return false
 	end
@@ -120,6 +171,15 @@ function RoomBuilder:cleanup_untouchable_bricks()
 				end
 			end
 
+			-- Make sure this brick isn't in the same position as another brick
+			if ok then
+				for _, b2 in pairs(self.bricks) do
+					if b ~= b2 and tiles_overlap(b, b2) then
+						ok = false
+					end
+				end
+			end
+
 			if ok then
 				table.insert(temp, Brick(b))
 				break
@@ -135,13 +195,13 @@ function RoomBuilder:cleanup_untouchable_bricks()
 	self.cleanedUpUntouchableBricks = true
 
 	-- TEST: check for duplicate bricks
-	for _, a in pairs(self.bricks) do
-		for _, b in pairs(self.bricks) do
-			if a ~= b and tiles_overlap(a, b) then
-				print('* duplicate brick')
-			end
-		end
-	end
+	--for _, a in pairs(self.bricks) do
+	--	for _, b in pairs(self.bricks) do
+	--		if a ~= b and tiles_overlap(a, b) then
+	--			print('* duplicate brick')
+	--		end
+	--	end
+	--end
 
 	-- Flag that we did work
 	return false
@@ -178,13 +238,37 @@ function RoomBuilder:plot_midpaths()
 
 			e.hasMidPath = true
 
+			-- Add the exit position to the list of illegal coordinates
+			self:add_occupied_tile({x = e.x, y = e.y})
+
 			-- Give doorframeTiles as the only hotLava for this path
-			local pf = PathFinder(e, self.midPoint, self.doorframeTiles)
-			local tiles = pf:plot()
+			--local pf = PathFinder(e, self.midPoint, self.doorframeTiles)
+			--local tiles = pf:plot()
+
+			-- Get the position into the room by one tile
+			local src = {x = e.x, y = e.y}
+			if src.y == -1 then
+				src.y = src.y + 1
+			elseif src.x == ROOM_W then
+				src.x = src.x - 1
+			elseif src.y == ROOM_H then
+				src.y = src.y - 1
+			elseif src.x == -1 then
+				src.x = src.x + 1
+			end
+
+			local tiles = cheap_line(src, self.midPoint)
 
 			-- Append these coordinates to list of illegal coordinates
-			for _, b in pairs(tiles) do
-				self:add_occupied_tile({x = b.x, y = b.y})
+			for _, t in pairs(tiles) do
+				self:add_occupied_tile({x = t.x, y = t.y})
+			end
+
+			if DEBUG then
+				table.insert(self.room.debugTiles, {x = e.x, y = e.y})
+				for _, t in pairs(tiles) do
+					table.insert(self.room.debugTiles, t)
+				end
 			end
 
 			-- Flag that the midpaths are not yet complete
@@ -300,27 +384,24 @@ function RoomBuilder:plot_walls()
 			-- If the distance from src to dest is shorter than the distance
 			-- from src to the room's midpoint
 			local intermediatePoint
-			if (manhattan_distance(e.src, e.dest) <
-				manhattan_distance(e.src, self.midPoint)) then
-				-- Make a direct path to dest
-				intermediatePoint = false
-			else
-				intermediatePoint = true
-			end
+			--if (manhattan_distance(e.src, e.dest) <
+			--	manhattan_distance(e.src, self.midPoint)) then
+			--	-- Make a direct path to dest
+			--	intermediatePoint = false
+			--else
+			--	intermediatePoint = true
+			--end
+			intermediatePoint = true
 
 			local destinations = {}
 			if intermediatePoint then
-				-- Find the free tile which is closest to the midpoint
-				local closestDist = 999
-				local closestTile = nil
+				-- Find a free tile which is close to an occupied tile
 				for _, t in pairs(e.freeTiles) do
-					local dist = manhattan_distance(t, self.midPoint)
-					if dist < closestDist then
-						closestDist = dist
-						closestTile = t
+					if manhattan_distance(t, self.midPoint) <= 5 then
+						table.insert(destinations, t)
+						break
 					end
 				end
-				table.insert(destinations, closestTile)
 			end
 
 			-- Add dest to end of table of destinations

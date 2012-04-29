@@ -44,14 +44,15 @@ function love.load()
 	if love.graphics.isCreated() == false then
 		print('failed to create a window')
 	end
+	love.mouse.setVisible(false)
 
 	-- These are the tile dimensions after scaling
 	TILE_W = 8
 	TILE_H = 8
 
 	-- These dimensions are in number of tiles (not pixels)
-	ROOM_W = 27
-	ROOM_H = 25
+	ROOM_W = 40
+	ROOM_H = 24
 	SCREEN_W = (love.graphics.getWidth() / upscale_x(1))
 	SCREEN_H = (love.graphics.getHeight() / upscale_y(1))
 
@@ -166,7 +167,7 @@ function love.update(dt)
 	if fpsTimer > 1 / fps then
 		game:update()
 		fpsTimer = 0
-	elseif fpsTimer < (1 / fps) / 2 then
+	elseif fpsTimer < (1 / fps) / 4 then
 		game:do_background_jobs()
 	end
 end

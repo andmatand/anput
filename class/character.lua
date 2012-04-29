@@ -470,7 +470,7 @@ function Character:drop_item(item)
 end
 
 function Character:find_path(dest)
-	self.path.nodes = self.room:find_path(self.position, dest)
+	self.path.nodes = self.room:find_path(self.position, dest, self.team)
 	self.path.destination = dest
 end
 

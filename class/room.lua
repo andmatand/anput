@@ -151,14 +151,15 @@ function Room:erase()
 	end
 end
 
-function Room:find_path(src, dest)
+function Room:find_path(src, dest, characterTeam)
 	-- Create a table of the room's occupied nodes
 	hotLava = {}
 	for _, b in pairs(self.bricks) do
 		table.insert(hotLava, {x = b.x, y = b.y})
 	end
 	for _, c in pairs(self:get_characters()) do
-		if instanceOf(Character, c) then
+		-- If this character is on the team of the one who called this function
+		if c.team == characterTeam then
 			table.insert(hotLava, {x = c.position.x, y = c.position.y})
 		end
 	end
