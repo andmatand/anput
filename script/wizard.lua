@@ -7,9 +7,9 @@ wizard.color = CYAN
 
 -- AI
 wizard.aiDelay = 1
-wizard.ai.dodge = {dist = 5, prob = 10}
-wizard.ai.chase = {dist = 2, prob = 10}
-wizard.ai.shoot = {dist = 10, prob = 10}
+wizard.ai.dodge = {dist = 5, prob = 10, delay = 0}
+wizard.ai.chase = {dist = 2, prob = 10, delay = 0}
+wizard.ai.shoot = {dist = 10, prob = 10, delay = 0}
 
 -- Trader properties
 wizard.price.quantity = 7

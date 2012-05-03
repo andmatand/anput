@@ -26,11 +26,10 @@ function Character:init()
 
     -- Default AI levels
     self.ai = {}
-    self.ai.dodge = {dist = 0, prob = 0, target = nil}
-    self.ai.flee = {dist = 0, prob = 0, target = nil}
-    self.ai.chase = {dist = 0, prob = 0, target = nil}
-    self.ai.shoot = {dist = 0, prob = 0, target = nil}
-    self.aiDelay = 5
+    self.ai.dodge = {dist = 0, prob = 0, target = nil, delay = 4}
+    self.ai.flee = {dist = 0, prob = 0, target = nil, delay = 4}
+    self.ai.chase = {dist = 0, prob = 0, target = nil, delay = 4}
+    self.ai.shoot = {dist = 0, prob = 0, target = nil, delay = 4}
 
     self.aiTimer = 0
 
@@ -77,6 +76,7 @@ end
 function Character:chase(sprite)
     -- Set path to destination
     self:find_path(sprite.position)
+    self.path.action = Character.static.actions.chase
     if instanceOf(Character, sprite) then
         self.path.character = sprite
     end
@@ -111,48 +111,64 @@ function Character:cheap_follow_path(dest)
     return true
 end
 
-function Character:choose_action()
-    -- See if there is a projectile we should dodge
-    local closestDist = 999
-    self.ai.dodge.target = nil
-    for _, s in pairs(self.room.sprites) do
-        if instanceOf(Projectile, s) then
-            -- If this is a projectile type that we want to dodge, and if it is
-            -- heading toward us
-            if self:afraid_of(s) and s:will_hit(self) then
-                local dist = manhattan_distance(s.position, self.position)
+-- Returns true if we already waited the required delay # of frames
+function Character:waited_to(action)
+    if (self.aiTimer % self.ai[action].delay == 0 or
+        self.ai[action].delay == 0) then
+        return true
+    else
+        return false
+    end
+end
 
-                -- If it's closer than the current closest projectile
-                if dist < closestDist then
-                    closestDist = dist
-                    self.ai.dodge.target = s
+function Character:choose_action()
+    self.ai.dodge.target = nil
+    if self:waited_to('dodge') then
+        -- See if there is a projectile we should dodge
+        local closestDist = 999
+        for _, s in pairs(self.room.sprites) do
+            if instanceOf(Projectile, s) then
+                -- If this is a projectile type that we want to dodge, and if
+                -- it is heading toward us
+                if self:afraid_of(s) and s:will_hit(self) then
+                    local dist = manhattan_distance(s.position, self.position)
+
+                    -- If it's closer than the current closest projectile
+                    if dist < closestDist then
+                        closestDist = dist
+                        self.ai.dodge.target = s
+                    end
                 end
             end
         end
     end
 
-    local closestDist = 999
     self.closestEnemy = nil
-    -- Find closest character on other team
-    for _, s in pairs(self.room.sprites) do
-        -- If this is a character on the other team
-        if instanceOf(Character, s) and s.team ~= self.team then
-            dist = manhattan_distance(s.position, self.position)
+    if (self:waited_to('chase') or self:waited_to('shoot')) then
+        -- Find the closest character on other team
+        local closestDist = 999
+        for _, s in pairs(self.room.sprites) do
+            -- If this is a character on the other team
+            if instanceOf(Character, s) and s.team ~= self.team then
+                dist = manhattan_distance(s.position, self.position)
 
-            -- If it's closer than the current closest
-            if dist < closestDist then
-                closestDist = dist
-                self.closestEnemy = s
+                -- If it's closer than the current closest
+                if dist < closestDist then
+                    closestDist = dist
+                    self.closestEnemy = s
+                end
             end
         end
     end
 
-    -- Check if there's an enemy in our sights we should shoot
     self.ai.shoot.target = nil
-    for _,s in pairs(self.room.sprites) do
-        if instanceOf(Character, s) and s.team ~= self.team then
-            if self:line_of_sight(s) then
-                self.ai.shoot.target = s
+    if self:waited_to('shoot') then
+        -- Check if there's an enemy in our sights we should shoot
+        for _,s in pairs(self.room.sprites) do
+            if instanceOf(Character, s) and s.team ~= self.team then
+                if self:line_of_sight(s) then
+                    self.ai.shoot.target = s
+                end
             end
         end
     end
@@ -165,7 +181,6 @@ function Character:choose_action()
 
     -- Set the flee target
     self.ai.flee.target = self.closestEnemy
-
 
     -- Clear all old AI probability scores
     for k in pairs(self.ai) do
@@ -197,12 +212,10 @@ function Character:choose_action()
 end
 
 function Character:do_ai()
-    -- Enforce AI delay
+    -- Increment timer for AI delay
     self.aiTimer = self.aiTimer + 1
-    if self.aiTimer >= self.aiDelay then
+    if self.aiTimer > 99 then
         self.aiTimer = 0
-    else
-        return
     end
 
     -- If we are currently following a path, continue to do that
@@ -367,6 +380,7 @@ function Character:dodge(sprite)
     if destination ~= nil then
         -- Set path to destination
         self:find_path(destination)
+        self.path.action = Character.static.actions.dodge
 
         -- Start following the path
         self:follow_path()
@@ -480,6 +494,10 @@ function Character:find_path(dest)
 end
 
 function Character:flee_from(sprite)
+    if self:waited_to('flee') then
+        return
+    end
+
     if math.random(0, 1) == 0 then
         if sprite.position.x < self.position.x then
             self:step(2) -- East
@@ -504,6 +522,16 @@ function Character:flee_from(sprite)
 end
 
 function Character:follow_path()
+    if self.path.action == Character.static.actions.chase then
+        if not self:waited_to('chase') then
+            return
+        end
+    elseif self.path.action == Character.static.actions.dodge then
+        if not self:waited_to('dodge') then
+            return
+        end
+    end
+
     if not self.path.nodes then
         return false
     end

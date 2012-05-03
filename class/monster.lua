@@ -28,20 +28,17 @@ function Monster:init(pos, monsterType)
         self.images = monsterImg.scarab
         self.health = 10
 
-        self.aiDelay = 3
-
-        self.ai.dodge = {dist = 5, prob = 2}
-        self.ai.flee = {dist = 15, prob = 9}
+        self.ai.dodge = {dist = 5, prob = 2, delay = 4}
+        self.ai.flee = {dist = 15, prob = 9, delay = 3}
+        self.ai.chase = {dist = 2, prob = 5, delay = 5}
     elseif self.monsterType == 2 then
         self.images = monsterImg.bird
         self.health = 20
 
         self:pick_up(Weapon('sword'), false)
 
-        self.aiDelay = 5
-
-        self.ai.dodge = {dist = 5, prob = 5}
-        self.ai.chase = {dist = 10, prob = 5}
+        self.ai.dodge = {dist = 5, prob = 5, delay = 5}
+        self.ai.chase = {dist = 10, prob = 5, delay = 5}
     elseif self.monsterType == 3 then
         self.images = monsterImg.mummy
         self.health = 40
@@ -51,11 +48,9 @@ function Monster:init(pos, monsterType)
         bow:add_ammo(20)
         self:pick_up(bow, false)
 
-        self.aiDelay = 10
-
-        self.ai.dodge = {dist = 5, prob = 7}
-        self.ai.chase = {dist = 20, prob = 7}
-        self.ai.shoot = {dist = 15, prob = 7}
+        self.ai.dodge = {dist = 5, prob = 7, delay = 4}
+        self.ai.chase = {dist = 20, prob = 7, delay = 10}
+        self.ai.shoot = {dist = 15, prob = 7, delay = 4}
     elseif self.monsterType == 4 then
         self.images = monsterImg.cat
         self.health = 40
@@ -65,11 +60,9 @@ function Monster:init(pos, monsterType)
         bow:add_ammo(20)
         self:pick_up(bow, false)
 
-        self.aiDelay = 4
-
-        self.ai.dodge = {dist = 7, prob = 9}
-        self.ai.chase = {dist = 10, prob = 9}
-        self.ai.shoot = {dist = 15, prob = 5}
+        self.ai.dodge = {dist = 7, prob = 9, delay = 3}
+        self.ai.chase = {dist = 10, prob = 9, delay = 3}
+        self.ai.shoot = {dist = 15, prob = 5, delay = 3}
     elseif self.monsterType == 5 then
         self.images = monsterImg.ghost
         self.health = 80
@@ -80,11 +73,9 @@ function Monster:init(pos, monsterType)
         staff:set_projectile_class(Fireball)
         self:pick_up(staff, false)
 
-        self.aiDelay = 4
-
-        self.ai.dodge = {dist = 5, prob = 9}
-        self.ai.chase = {dist = 20, prob = 1}
-        self.ai.shoot = {dist = 10, prob = 7}
+        self.ai.dodge = {dist = 5, prob = 9, delay = 3}
+        self.ai.chase = {dist = 20, prob = 1, delay = 3}
+        self.ai.shoot = {dist = 10, prob = 7, delay = 4}
     end
 end
 
