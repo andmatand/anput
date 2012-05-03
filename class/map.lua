@@ -292,8 +292,8 @@ function Map:add_required_objects()
 	local roomNum = math.random(1, #earlyRooms)
 	local chunk = love.filesystem.load('script/wizard.lua')
 	local wizard = chunk()
-	--table.insert(earlyRooms[roomNum].requiredObjects, wizard)
-	table.insert(self.rooms[1].requiredObjects, wizard)
+	table.insert(earlyRooms[roomNum].requiredObjects, wizard)
+	--table.insert(self.rooms[1].requiredObjects, wizard)
 
 	-- Create a table of the 14 earliest rooms
 	local earlyRooms = self:get_early_rooms(14)
