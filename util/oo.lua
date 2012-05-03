@@ -18,71 +18,71 @@
 local _classes = setmetatable({}, {__mode = "k"})
 
 local function _setClassDictionariesMetatables(klass)
-	local dict = klass.__instanceDict
-	dict.__index = dict
+    local dict = klass.__instanceDict
+    dict.__index = dict
 
-	local super = klass.super
-	if super then
-		local superStatic = super.static
-		setmetatable(dict, super.__instanceDict)
-		setmetatable(klass.static, { __index = function(_,k) return dict[k] or superStatic[k] end })
-	else
-		setmetatable(klass.static, { __index = function(_,k) return dict[k] end })
-	end
+    local super = klass.super
+    if super then
+        local superStatic = super.static
+        setmetatable(dict, super.__instanceDict)
+        setmetatable(klass.static, { __index = function(_,k) return dict[k] or superStatic[k] end })
+    else
+        setmetatable(klass.static, { __index = function(_,k) return dict[k] end })
+    end
 end
 
 local function _setClassMetatable(klass)
-	setmetatable(klass, {
-		__tostring = function() return "class " .. klass.name end,
-		__index    = klass.static,
-		__newindex = klass.__instanceDict,
-		__call     = function(self, ...) return self:new(...) end
-	})
+    setmetatable(klass, {
+        __tostring = function() return "class " .. klass.name end,
+        __index    = klass.static,
+        __newindex = klass.__instanceDict,
+        __call     = function(self, ...) return self:new(...) end
+    })
 end
 
 local function _createClass(name, super)
-	local klass = { name = name, super = super, static = {}, __mixins = {}, __instanceDict={} }
-	klass.subclasses = setmetatable({}, {__mode = "k"})
+    local klass = { name = name, super = super, static = {}, __mixins = {}, __instanceDict={} }
+    klass.subclasses = setmetatable({}, {__mode = "k"})
 
-	_setClassDictionariesMetatables(klass)
-	_setClassMetatable(klass)
-	_classes[klass] = true
+    _setClassDictionariesMetatables(klass)
+    _setClassMetatable(klass)
+    _classes[klass] = true
 
-	return klass
+    return klass
 end
 
 local function _createLookupMetamethod(klass, name)
-	return function(...)
-		local method = klass.super[name]
-		assert( type(method)=='function', tostring(klass) .. " doesn't implement metamethod '" .. name .. "'" )
-		return method(...)
-	end
+    return function(...)
+        local method = klass.super[name]
+        assert( type(method)=='function', tostring(klass) .. " doesn't implement metamethod '" .. name .. "'" )
+        return method(...)
+    end
 end
 
 local function _setClassMetamethods(klass)
-	for _,m in ipairs(klass.__metamethods) do
-		klass[m]= _createLookupMetamethod(klass, m)
-	end
+    for _,m in ipairs(klass.__metamethods) do
+        klass[m]= _createLookupMetamethod(klass, m)
+    end
 end
 
 local function _setDefaultInitializeMethod(klass, super)
-	klass.init = function(instance, ...)
-		return super.init(instance, ...)
-	end
+    klass.init = function(instance, ...)
+        return super.init(instance, ...)
+    end
 end
 
 local function _includeMixin(klass, mixin)
-	assert(type(mixin)=='table', "mixin must be a table")
-	for name,method in pairs(mixin) do
-		if name ~= "included" and name ~= "static" then klass[name] = method end
-	end
-	if mixin.static then
-		for name,method in pairs(mixin.static) do
-			klass.static[name] = method
-		end
-	end
-	if type(mixin.included)=="function" then mixin:included(klass) end
-	klass.__mixins[mixin] = true
+    assert(type(mixin)=='table', "mixin must be a table")
+    for name,method in pairs(mixin) do
+        if name ~= "included" and name ~= "static" then klass[name] = method end
+    end
+    if mixin.static then
+        for name,method in pairs(mixin.static) do
+            klass.static[name] = method
+        end
+    end
+    if type(mixin.included)=="function" then mixin:included(klass) end
+    klass.__mixins[mixin] = true
 end
 
 Object = _createClass("Object", nil)
@@ -91,35 +91,35 @@ Object.static.__metamethods = { '__add', '__call', '__concat', '__div', '__le', 
 '__mod', '__mul', '__pow', '__sub', '__tostring', '__unm' }
 
 function Object.static:allocate()
-	assert(_classes[self], "Make sure that you are using 'Class:allocate' instead of 'Class.allocate'")
-	return setmetatable({ class = self }, self.__instanceDict)
+    assert(_classes[self], "Make sure that you are using 'Class:allocate' instead of 'Class.allocate'")
+    return setmetatable({ class = self }, self.__instanceDict)
 end
 
 function Object.static:new(...)
-	local instance = self:allocate()
-	instance:init(...)
-	return instance
+    local instance = self:allocate()
+    instance:init(...)
+    return instance
 end
 
 function Object.static:subclass(name)
-	assert(_classes[self], "Make sure that you are using 'Class:subclass' instead of 'Class.subclass'")
-	assert(type(name) == "string", "You must provide a name(string) for your class")
+    assert(_classes[self], "Make sure that you are using 'Class:subclass' instead of 'Class.subclass'")
+    assert(type(name) == "string", "You must provide a name(string) for your class")
 
-	local subclass = _createClass(name, self)
-	_setClassMetamethods(subclass)
-	_setDefaultInitializeMethod(subclass, self)
-	self.subclasses[subclass] = true
-	self:subclassed(subclass)
+    local subclass = _createClass(name, self)
+    _setClassMetamethods(subclass)
+    _setDefaultInitializeMethod(subclass, self)
+    self.subclasses[subclass] = true
+    self:subclassed(subclass)
 
-	return subclass
+    return subclass
 end
 
 function Object.static:subclassed(other) end
 
 function Object.static:include( ... )
-	assert(_classes[self], "Make sure you that you are using 'Class:include' instead of 'Class.include'")
-	for _,mixin in ipairs({...}) do _includeMixin(self, mixin) end
-	return self
+    assert(_classes[self], "Make sure you that you are using 'Class:include' instead of 'Class.include'")
+    for _,mixin in ipairs({...}) do _includeMixin(self, mixin) end
+    return self
 end
 
 function Object:init() end
@@ -127,23 +127,23 @@ function Object:init() end
 function Object:__tostring() return "instance of " .. tostring(self.class) end
 
 function class(name, super, ...)
-	super = super or Object
-	return super:subclass(name, ...)
+    super = super or Object
+    return super:subclass(name, ...)
 end
 
 function instanceOf(aClass, obj)
-	if not _classes[aClass] or type(obj) ~= 'table' or not _classes[obj.class] then return false end
-	if obj.class == aClass then return true end
-	return subclassOf(aClass, obj.class)
+    if not _classes[aClass] or type(obj) ~= 'table' or not _classes[obj.class] then return false end
+    if obj.class == aClass then return true end
+    return subclassOf(aClass, obj.class)
 end
 
 function subclassOf(other, aClass)
-	if not _classes[aClass] or not _classes[other] or aClass.super == nil then return false end
-	return aClass.super == other or subclassOf(other, aClass.super)
+    if not _classes[aClass] or not _classes[other] or aClass.super == nil then return false end
+    return aClass.super == other or subclassOf(other, aClass.super)
 end
 
 function includes(mixin, aClass)
-	if not _classes[aClass] then return false end
-	if aClass.__mixins[mixin] then return true end
-	return includes(mixin, aClass.super)
+    if not _classes[aClass] then return false end
+    if aClass.__mixins[mixin] then return true end
+    return includes(mixin, aClass.super)
 end
