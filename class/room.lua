@@ -114,11 +114,9 @@ function Room:draw_bricks()
 		-- Add each brick to the correct spriteBatch
 		for _, b in pairs(self.bricks) do
 			if tile_occupied(b, self.fov) then
-				self.lightBrickBatch:add(b.x * TILE_W * SCALE_X,
-				                         b.y * TILE_H * SCALE_Y)
+				self.lightBrickBatch:add(upscale_x(b.x), upscale_y(b.y))
 			else
-				self.darkBrickBatch:add(b.x * TILE_W * SCALE_X,
-				                         b.y * TILE_H * SCALE_Y)
+				self.darkBrickBatch:add(upscale_x(b.x), upscale_y(b.y))
 			end
 		end
 
