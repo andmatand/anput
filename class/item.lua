@@ -10,107 +10,107 @@ ITEM_TYPE = {potion = 1,
              staff = 12}
 
 function Item:init(itemType)
-	if type(itemType) == 'number' then
-		self.itemType = itemType
-	elseif type(itemType) == 'string' then
-		self.itemType = ITEM_TYPE[itemType]
-	end
+    if type(itemType) == 'number' then
+        self.itemType = itemType
+    elseif type(itemType) == 'string' then
+        self.itemType = ITEM_TYPE[itemType]
+    end
 
-	if self.itemType == ITEM_TYPE.potion then
-		self.frames = {{image = potionImg}}
-	elseif self.itemType == ITEM_TYPE.arrows then
-		self.frames = {{image = arrowsImg}}
-	elseif self.itemType == ITEM_TYPE.shinything then
-		self.frames = {
-			{image = shinyThingImg[1], delay = 8},
-			{image = shinyThingImg[2], delay = 2},
-			{image = shinyThingImg[3], delay = 2},
-			{image = shinyThingImg[2], delay = 2},
-			{image = shinyThingImg[3], delay = 2}}
-	else
-		self.frames = nil
-	end
+    if self.itemType == ITEM_TYPE.potion then
+        self.frames = {{image = potionImg}}
+    elseif self.itemType == ITEM_TYPE.arrows then
+        self.frames = {{image = arrowsImg}}
+    elseif self.itemType == ITEM_TYPE.shinything then
+        self.frames = {
+            {image = shinyThingImg[1], delay = 8},
+            {image = shinyThingImg[2], delay = 2},
+            {image = shinyThingImg[3], delay = 2},
+            {image = shinyThingImg[2], delay = 2},
+            {image = shinyThingImg[3], delay = 2}}
+    else
+        self.frames = nil
+    end
 
-	self.currentFrame = 1
-	self.animateTimer = 0
-	self.animationEnabled = true
+    self.currentFrame = 1
+    self.animateTimer = 0
+    self.animationEnabled = true
 
-	self.owner = nil
-	self.position = {}
+    self.owner = nil
+    self.position = {}
 end
 
 function Item:animate()
-	-- If there's nothing to animate
-	if (self.frames == nil or #self.frames < 2 or
-	    self.animationEnabled == false) then
-		-- Go away
-		return
-	end
+    -- If there's nothing to animate
+    if (self.frames == nil or #self.frames < 2 or
+        self.animationEnabled == false) then
+        -- Go away
+        return
+    end
 
-	self.animateTimer = self.animateTimer + 1
+    self.animateTimer = self.animateTimer + 1
 
-	if self.animateTimer >= self.frames[self.currentFrame].delay then
-		self.animateTimer = 0
-		self.currentFrame = self.currentFrame + 1
+    if self.animateTimer >= self.frames[self.currentFrame].delay then
+        self.animateTimer = 0
+        self.currentFrame = self.currentFrame + 1
 
-		-- Loop back around to the first frame
-		if self.currentFrame > #self.frames then
-			self.currentFrame = 1
-		end
-	end
+        -- Loop back around to the first frame
+        if self.currentFrame > #self.frames then
+            self.currentFrame = 1
+        end
+    end
 end
 
 function Item:draw()
-	if self.frames then
-		love.graphics.setColor(255, 255, 255)
-		love.graphics.draw(self.frames[self.currentFrame].image,
-		                   upscale_x(self.position.x),
-		                   upscale_y(self.position.y),
-		                   0, SCALE_X, SCALE_Y)
-	end
+    if self.frames then
+        love.graphics.setColor(255, 255, 255)
+        love.graphics.draw(self.frames[self.currentFrame].image,
+                           upscale_x(self.position.x),
+                           upscale_y(self.position.y),
+                           0, SCALE_X, SCALE_Y)
+    end
 end
 
 function Item:set_position(position)
-	self.position = position
+    self.position = position
 end
 
 function Item:update()
-	self:animate()
+    self:animate()
 end
 
 function Item:use()
-	if self.owner then
-		if self:use_on(self.owner) then
-			self.owner.inventory:remove(self)
-		end
-	end
+    if self.owner then
+        if self:use_on(self.owner) then
+            self.owner.inventory:remove(self)
+        end
+    end
 end
 
 function Item:use_on(patient)
-	if self.itemType == ITEM_TYPE.potion then
-		-- Health potion
-		if patient:add_health(20) then
-			self.isUsed = true
-			print('used potion')
+    if self.itemType == ITEM_TYPE.potion then
+        -- Health potion
+        if patient:add_health(20) then
+            self.isUsed = true
+            print('used potion')
 
-			-- Play sound depending on who got health
-			if instanceOf(Player, patient) then
-				sound.playerGetHP:play()
-			elseif instanceOf(Monster, patient) then
-				sound.monsterGetHP:play()
-			end
-			
-			return true
-		end
-	elseif self.itemType == ITEM_TYPE.arrows then
-		-- Arrows
-		-- If the patient has a bow
-		if patient.armory.weapons.bow then
-			patient.armory.weapons.bow:add_ammo(10)
-			self.isUsed = true
-			return true
-		end
-	end
+            -- Play sound depending on who got health
+            if instanceOf(Player, patient) then
+                sound.playerGetHP:play()
+            elseif instanceOf(Monster, patient) then
+                sound.monsterGetHP:play()
+            end
+            
+            return true
+        end
+    elseif self.itemType == ITEM_TYPE.arrows then
+        -- Arrows
+        -- If the patient has a bow
+        if patient.armory.weapons.bow then
+            patient.armory.weapons.bow:add_ammo(10)
+            self.isUsed = true
+            return true
+        end
+    end
 
-	return false
+    return false
 end

@@ -26,11 +26,10 @@ function Character:init()
 
     -- Default AI levels
     self.ai = {}
-    self.ai.dodge = {dist = 0, prob = 0, target = nil}
-    self.ai.flee = {dist = 0, prob = 0, target = nil}
-    self.ai.chase = {dist = 0, prob = 0, target = nil}
-    self.ai.shoot = {dist = 0, prob = 0, target = nil}
-    self.aiDelay = 5
+    self.ai.dodge = {dist = 0, prob = 0, target = nil, delay = 4}
+    self.ai.flee = {dist = 0, prob = 0, target = nil, delay = 4}
+    self.ai.chase = {dist = 0, prob = 0, target = nil, delay = 4}
+    self.ai.shoot = {dist = 0, prob = 0, target = nil, delay = 4}
 
     self.aiTimer = 0
 
@@ -112,41 +111,47 @@ function Character:cheap_follow_path(dest)
 end
 
 function Character:choose_action()
-    -- See if there is a projectile we should dodge
-    local closestDist = 999
-    self.ai.dodge.target = nil
-    for _, s in pairs(self.room.sprites) do
-        if instanceOf(Projectile, s) then
-            -- If this is a projectile type that we want to dodge, and if it is
-            -- heading toward us
-            if self:afraid_of(s) and s:will_hit(self) then
-                local dist = manhattan_distance(s.position, self.position)
+    if self.aiTimer % self.ai.dodge.delay == 0 then
+        -- See if there is a projectile we should dodge
+        local closestDist = 999
+        self.ai.dodge.target = nil
+        for _, s in pairs(self.room.sprites) do
+            if instanceOf(Projectile, s) then
+                -- If this is a projectile type that we want to dodge, and if
+                -- it is heading toward us
+                if self:afraid_of(s) and s:will_hit(self) then
+                    local dist = manhattan_distance(s.position, self.position)
 
-                -- If it's closer than the current closest projectile
-                if dist < closestDist then
-                    closestDist = dist
-                    self.ai.dodge.target = s
+                    -- If it's closer than the current closest projectile
+                    if dist < closestDist then
+                        closestDist = dist
+                        self.ai.dodge.target = s
+                    end
                 end
             end
         end
     end
 
-    local closestDist = 999
-    self.closestEnemy = nil
-    -- Find closest character on other team
-    for _, s in pairs(self.room.sprites) do
-        -- If this is a character on the other team
-        if instanceOf(Character, s) and s.team ~= self.team then
-            dist = manhattan_distance(s.position, self.position)
+    if (self.aiTimer % self.ai.dodge.chase == 0 or
+        self.aiTimer % self.ai.shoot == 0) then
+        -- Find the closest character on other team
+        local closestDist = 999
+        self.closestEnemy = nil
+        for _, s in pairs(self.room.sprites) do
+            -- If this is a character on the other team
+            if instanceOf(Character, s) and s.team ~= self.team then
+                dist = manhattan_distance(s.position, self.position)
 
-            -- If it's closer than the current closest
-            if dist < closestDist then
-                closestDist = dist
-                self.closestEnemy = s
+                -- If it's closer than the current closest
+                if dist < closestDist then
+                    closestDist = dist
+                    self.closestEnemy = s
+                end
             end
         end
     end
 
+    if self.aiTimer % self.ai.shoot == 0) then
     -- Check if there's an enemy in our sights we should shoot
     self.ai.shoot.target = nil
     for _,s in pairs(self.room.sprites) do
@@ -197,12 +202,10 @@ function Character:choose_action()
 end
 
 function Character:do_ai()
-    -- Enforce AI delay
+    -- Increment timer for AI delay
     self.aiTimer = self.aiTimer + 1
-    if self.aiTimer >= self.aiDelay then
+    if self.aiTimer > 99 then
         self.aiTimer = 0
-    else
-        return
     end
 
     -- If we are currently following a path, continue to do that

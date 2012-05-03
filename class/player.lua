@@ -3,77 +3,77 @@ require('class/character')
 Player = class('Player', Character)
 
 function Player:init()
-	Player.super.init(self)
+    Player.super.init(self)
 
-	self.images = playerImg
-	self.team = 1 -- Good guys
+    self.images = playerImg
+    self.team = 1 -- Good guys
 
-	self.wantsToTrade = false
+    self.wantsToTrade = false
 end
 
 function Player:can_trade(price)
-	if self:has_item(price.currency, price.quantity) then
-		return true
-	else
-		return false
-	end
+    if self:has_item(price.currency, price.quantity) then
+        return true
+    else
+        return false
+    end
 end
 
 function Player:die()
-	Character.die(self)
+    Character.die(self)
 
-	sound.playerDie:play()
+    sound.playerDie:play()
 end
 
 -- Drops the payment when paying a Trader
 function Player:drop_payment(price, position)
-	-- Create a table of items that are acting as payment
-	local munnies = {}
-	for _, item in pairs(self.inventory.items) do
-		if item.itemType == price.currency then
-			table.insert(munnies, item)
-			if #munnies == price.quantity then
-				break
-			end
-		end
-	end
+    -- Create a table of items that are acting as payment
+    local munnies = {}
+    for _, item in pairs(self.inventory.items) do
+        if item.itemType == price.currency then
+            table.insert(munnies, item)
+            if #munnies == price.quantity then
+                break
+            end
+        end
+    end
 
-	-- Drop each item (must be done in a separate loop because drop_item alters
-	-- the inventory table)
-	for _, m in pairs(munnies) do
-		m.position = position
-		self:drop_item(m)
-	end
+    -- Drop each item (must be done in a separate loop because drop_item alters
+    -- the inventory table)
+    for _, m in pairs(munnies) do
+        m.position = position
+        self:drop_item(m)
+    end
 
-	self.wantsToTrade = false
+    self.wantsToTrade = false
 end
 
 function Player:hit(patient)
-	-- Ignore screen edge
-	if patient == nil then
-		return false
-	end
+    -- Ignore screen edge
+    if patient == nil then
+        return false
+    end
 
-	-- DEBUG: put a turret on bricks that the player hits, shooting toward the
-	-- player
-	--if instanceOf(Brick, patient) then
-	--	self.room:add_object(Turret(patient:get_position(),
-	--	                     direction_to(patient:get_position(),
-	--	                                  self.position),
-	--	                     10))
-	--end
+    -- DEBUG: put a turret on bricks that the player hits, shooting toward the
+    -- player
+    --if instanceOf(Brick, patient) then
+    --  self.room:add_object(Turret(patient:get_position(),
+    --                       direction_to(patient:get_position(),
+    --                                    self.position),
+    --                       10))
+    --end
 
-	return Character.hit(self, patient)
+    return Character.hit(self, patient)
 end
 
 function Player:receive_damage(amount)
-	Character.receive_damage(self, amount)
+    Character.receive_damage(self, amount)
 
-	if not self.dead then
-		sound.playerCry:play()
-	end
+    if not self.dead then
+        sound.playerCry:play()
+    end
 end
 
 function Player:wants_to_trade()
-	return self.wantsToTrade
+    return self.wantsToTrade
 end
