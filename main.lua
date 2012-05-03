@@ -8,9 +8,6 @@ function new_image(filename)
 	return img
 end
 
-function get_lines()
-end
-
 function cga_print(text, x, y)
 	love.graphics.setColor(BLACK)
 
@@ -46,7 +43,11 @@ function love.load()
 	end
 	love.mouse.setVisible(false)
 
-	-- These are the tile dimensions after scaling
+	randomSeed = os.time()
+	math.randomseed(randomSeed)
+	print('random seed: ' .. randomSeed)
+
+	-- These are the tile dimensions in pixels
 	TILE_W = 8
 	TILE_H = 8
 
@@ -111,8 +112,8 @@ function love.load()
 	staffImg = new_image('staff.png')
 
 	-- Create image data for a brick (a magenta rectangle)
-	local brickImgData = love.image.newImageData(TILE_W * SCALE_X,
-	                                             TILE_H * SCALE_Y)
+	local brickImgData = love.image.newImageData(upscale_x(1),
+	                                             upscale_y(1))
 	for y = 0, brickImgData:getHeight() - 1 do
 		for x = 0, brickImgData:getWidth() - 1 do
 			brickImgData:setPixel(x, y,
