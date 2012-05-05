@@ -138,8 +138,6 @@ function RoomBuilder:cleanup_untouchable_bricks()
             print('doing floodfill to cleanup untouchable bricks')
         end
 
-        self.freeTiles = {}
-
         -- Do a floodfill on the inside of the room, using the bricks as
         -- hotLava
         local ff = FloodFiller(self.midPoint, self.bricks)
@@ -159,7 +157,7 @@ function RoomBuilder:cleanup_untouchable_bricks()
         print('before: ' .. #self.bricks .. ' bricks')
     end
     local temp = {}
-    for _, b in pairs(self.bricks) do
+    for i, b in pairs(self.bricks) do
         for _, t in pairs(self.freeTiles) do
             local ok = false
 
@@ -171,10 +169,12 @@ function RoomBuilder:cleanup_untouchable_bricks()
                 end
             end
 
-            -- Make sure this brick isn't in the same position as another brick
+            -- Make sure this brick isn't in the same position as another
+            -- earlier brick
             if ok then
-                for _, b2 in pairs(self.bricks) do
-                    if b ~= b2 and tiles_overlap(b, b2) then
+                for j, b2 in pairs(self.bricks) do
+                    if j < i and tiles_overlap(b, b2) then
+                        print('removed duplicate brick')
                         ok = false
                     end
                 end
