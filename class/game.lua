@@ -247,6 +247,8 @@ function Game:switch_to_room(roomIndex)
     end
 
     -- Update the new current room
+    self.currentRoom.fov = nil
+    self.currentRoom.drawn = false
     self.currentRoom:update()
 end
 
