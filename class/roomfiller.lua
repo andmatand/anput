@@ -206,7 +206,19 @@ function RoomFiller:add_internal_bricks()
     for _ = 1, math.random(0, #self.room.freeTiles * .02) do
         table.insert(someBricks, Brick({}))
     end
+
+    -- Place bricks in room
     self:position_objects(someBricks)
+
+    -- Remove the bricks' positions from the room's freeTiles
+    for _, b in pairs(someBricks) do
+        for i, ft in pairs(self.room.freeTiles) do
+            if tiles_overlap(b, ft) then
+                table.remove(self.room.freeTiles, i)
+                break
+            end
+        end
+    end
 
     self.addedInternalBricks = true
 
