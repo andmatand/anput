@@ -66,6 +66,21 @@ function Armory:set_current_weapon(weapon)
             -- Play a cool sound
             sound.switchWeapon:play()
         end
+
+        -- Swap the new weapon and old currentWeapon in the inventory (so they
+        -- don't jump around in the inventory menu)
+        for i1, item1 in pairs(self.owner.inventory.items) do
+            if item1 == self.currentWeapon then
+                for i2, item2 in pairs(self.owner.inventory.items) do
+                    if item2 == weapon then
+                        self.owner.inventory.items[i1] = weapon
+                        self.owner.inventory.items[i2] = self.currentWeapon
+                        break
+                    end
+                end
+                break
+            end
+        end
     end
 
     -- Set the current weapon to the one given
