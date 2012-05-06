@@ -23,6 +23,14 @@ function RoomFiller:init(room)
             end
         end
     end
+
+    -- Remove midPoint from freeTiles
+    for i, t in pairs(self.freeTiles) do
+        if tiles_overlap(t, self.room.midPoint) then
+            table.remove(self.freeTiles, i)
+            break
+        end
+    end
 end
 
 function RoomFiller:fill_next_step()
