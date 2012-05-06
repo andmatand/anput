@@ -1,4 +1,4 @@
-require('class/inventorydisplay')
+require('class/statusbar')
 require('class/map')
 require('class/player')
 require('util/tables')
@@ -40,8 +40,9 @@ function Game:draw()
     --for _, t in pairs(self.currentRoom.turrets) do
     --  love.graphics.setColor(255, 0, 0)
     --  love.graphics.circle('fill',
-    --                       (t.position.x * TILE_W) + (TILE_W / 2),
-    --                       (t.position.y * TILE_H) + (TILE_H / 2), 8)
+    --                       upscale_x(t.position.x) + (upscale_x(1) / 2),
+    --                       upscale_y(t.position.y) * (upscale_y(1) / 2),
+    --                       upscale_x(1) / 2)
     --end
 
     if DEBUG then
@@ -55,13 +56,13 @@ function Game:draw()
         end
     end
 
-    self:draw_sidepane()
+    self:draw_metadata()
 end
 
-function Game:draw_sidepane()
+function Game:draw_metadata()
     love.graphics.setColor(255, 255, 255)
 
-    self.inventoryDisplay:draw()
+    self.statusBar:draw()
 
     if self.showMap then
         self.map:draw(self.currentRoom)
@@ -86,8 +87,8 @@ function Game:generate()
     self:switch_to_room(1)
     self.player:move_to(self.currentRoom.midPoint)
 
-    -- Create an inventory display
-    self.inventoryDisplay = InventoryDisplay(self.player)
+    -- Create a status bar
+    self.statusBar = StatusBar(self.player)
 end
 
 function Game:input()
@@ -139,13 +140,13 @@ function Game:keypressed(key)
     if self.paused then
         -- Allow wasd and arrows for selecting inventory items
         if key == 'w' or key == 'up' then
-            self.inventoryDisplay:move_cursor('up')
+            self.statusBar:move_cursor('up')
         elseif key == 'd' or key == 'right' then
-            self.inventoryDisplay:move_cursor('right')
+            self.statusBar:move_cursor('right')
         elseif key == 's' or key == 'down' then
-            self.inventoryDisplay:move_cursor('down')
+            self.statusBar:move_cursor('down')
         elseif key == 'a' or key == 'left' then
-            self.inventoryDisplay:move_cursor('left')
+            self.statusBar:move_cursor('left')
         end
 
         -- Don't allow keys below here
@@ -253,7 +254,7 @@ function Game:update()
         return
     end
 
-    self.inventoryDisplay:update()
+    self.statusBar:update()
 
     if flickerMode and self.frameState == 0 then
         self.frameState = 1
