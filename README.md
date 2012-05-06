@@ -16,7 +16,7 @@ and the LÖVE framework.
 
 ##Controls
 * move: wasd
-* switch weapon: Tab, Right Shift, or 1 - 3
+* switch weapon: 1 - 3, or Shift
 * use potion: p
 * trade with dudes: t
 * shoot: arrows

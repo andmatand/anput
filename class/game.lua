@@ -74,9 +74,6 @@ function Game:draw_sidepane()
 end
 
 function Game:generate()
-    -- DEBUG choose specific seed
-    --math.randomseed(89)
-
     -- Generate a new map
     self.map = Map()
     self.rooms = self.map:generate()
@@ -125,8 +122,7 @@ function Game:keypressed(key)
     if key == '1' or key == '2' or key == '3' then
         -- Switch to specified weapon number, based on display order
         self.player.armory:switch_to_weapon_number(tonumber(key))
-    elseif (key == 'tab' or key == 'lshift' or key == 'rshift' or
-            key == 'rctrl') then
+    elseif key == 'lshift' or key == 'rshift' then
         -- Switch to the next weapon
         self.player.armory:switch_to_next_weapon()
     end
