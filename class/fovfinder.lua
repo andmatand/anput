@@ -114,9 +114,6 @@ end
 function FOVFinder:find()
     self:shadow_cast()
 
-    -- DEBUG: show all visible tiles
-    --self:draw_visible_tiles(cone)
-
     return self.fov
 end
 
@@ -227,7 +224,14 @@ function FOVFinder:shadow_cast()
 
                 if DEBUG then
                     print('  tile: ' .. tile.x .. ', ' .. tile.y)
-                    --print('  transTile:', transTile.x, transTile.y)
+                    print('  transTile: ' .. transTile.x .. ', ' ..
+                          transTile.y)
+
+                    print('  within radius: ' ..
+                          tostring(self:within_radius(transTile)))
+                    print('  tile in room: ' .. tostring(
+                          self.room:tile_in_room(transTile,
+                                                 {includeBricks = true})))
                 end
 
                 -- If this tile is within the viewing radius and in the room
@@ -329,16 +333,6 @@ function FOVFinder:shadow_cast()
                 end
             end
         end
-    end
-end
-
-function FOVFinder:draw_visible_tiles()
-    for _, tile in ipairs(self.visibleTiles) do
-        love.graphics.setColor(0, 255, 0)
-        love.graphics.setLine(1, 'rough')
-        love.graphics.rectangle('line',
-                                tile.x * TILE_W, tile.y * TILE_H,
-                                TILE_W, TILE_H)
     end
 end
 

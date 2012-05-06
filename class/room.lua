@@ -99,6 +99,25 @@ function Room:draw()
         self.messages[1]:draw()
     end
 
+    -- DEBUG: show freeTiles
+    --for _, t in pairs(self.freeTiles) do
+    --    love.graphics.setColor(0, 255, 0, 100)
+    --    if tiles_overlap(t, self.midPoint) then
+    --        love.graphics.setColor(255, 0, 0, 100)
+    --    end
+    --    love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
+    --                            upscale_x(1), upscale_y(1))
+    --end
+
+    -- DEBUG: show tiles in FOV
+    --for _, tile in ipairs(self.fov) do
+    --    love.graphics.setColor(0, 255, 0)
+    --    love.graphics.setLine(1, 'rough')
+    --    love.graphics.rectangle('line',
+    --                            upscale_x(tile.x), upscale_y(tile.y),
+    --                            upscale_x(1), upscale_y(1))
+    --end
+
     self.drawn = true
 end
 
@@ -352,6 +371,8 @@ function Room:tile_in_room(tile, options)
             return true
         end
     end
+
+    return false
 end
 
 -- Return true if tile can be walked on right now (contains no collidable
