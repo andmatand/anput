@@ -8,7 +8,7 @@ function new_image(filename)
     return img
 end
 
-function cga_print(text, x, y)
+function cga_print(text, x, y, color)
     love.graphics.setColor(BLACK)
 
     -- Go through each line of the text
@@ -24,7 +24,7 @@ function cga_print(text, x, y)
     end
 
     -- Draw the text
-    love.graphics.setColor(WHITE)
+    love.graphics.setColor(color or WHITE)
     love.graphics.print(text, upscale_x(x), upscale_y(y) - 1, 0)
 end
 
@@ -43,7 +43,8 @@ function love.load()
     end
     love.mouse.setVisible(false)
 
-    randomSeed = 1336024584--os.time()
+    randomSeed = os.time()
+    --randomSeed = 1336237086
     math.randomseed(randomSeed)
     print('random seed: ' .. randomSeed)
 
@@ -136,8 +137,6 @@ function love.load()
     sound.monsterGetHP = Sound('res/sfx/monster-get-hp.wav')
     sound.monsterDie = Sound('res/sfx/monster-die.wav')
     sound.playerDie = Sound('res/sfx/player-die.wav')
-
-    math.randomseed(os.time())
 
     showDebug = false
     flickerMode = false

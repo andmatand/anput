@@ -73,8 +73,7 @@ function Message:draw()
         love.graphics.setColor(WHITE)
         cga_print(':',
                   self.position.x + 1,
-                  self.position.y + yOffset,
-                  upscale_x(ROOM_W))
+                  self.position.y + yOffset)
 
         xOffset = 2
     else
@@ -86,8 +85,7 @@ function Message:draw()
     -- Print (the currently unfurled portion of) the text
     cga_print(self:get_text(),
               self.position.x + xOffset,
-              self.position.y + yOffset,
-              upscale_x(ROOM_W))
+              self.position.y + yOffset)
 end
 
 function Message:get_height()

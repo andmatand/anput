@@ -34,6 +34,7 @@ function InventoryDisplay:init(owner)
     self.healthMeterPos = {x = 0, y = ROOM_H}
     self.healthMeterOffset = {x = 0, y = 0}
     self.healthMeterHideTimer = 0
+    self.flash = {timer = 0, state = true}
 end
 
 function InventoryDisplay:draw()
@@ -68,7 +69,17 @@ function InventoryDisplay:draw()
                               upscale_y(1) / 2)
         else
             x = x - string.len(w.ammo)
-            cga_print(tostring(w.ammo), x, y)
+            textColor = WHITE
+
+            -- If the weapon is out of ammo
+            if w.ammo == 0 then
+                -- Flash the number
+                if self.flash.state then
+                    textColor = BLACK
+                end
+            end
+
+            cga_print(tostring(w.ammo), x, y, textColor)
         end
     end
 
@@ -179,6 +190,17 @@ function InventoryDisplay:draw_health_meter()
     else
         borderColor = BLACK
     end
+
+    -- If owner is dead
+    if self.owner.health == 0 then
+        borderColor = MAGENTA
+    -- If owner's health is very low
+    elseif self.owner.health < 25 then
+        -- Make the border flash magenta
+        if self.flash.state then
+            borderColor = MAGENTA
+        end
+    end
     
     local x = self.healthMeterPos.x
     local y = self.healthMeterPos.y
@@ -211,6 +233,17 @@ function InventoryDisplay:update()
             self.healthMeterOffset.y < TILE_H + 1) then
             -- Hide the health meter
             self.healthMeterOffset.y = self.healthMeterOffset.y + SCALE_Y
+        end
+    end
+
+    if self.flash.timer > 0 then
+        self.flash.timer = self.flash.timer - 1
+    else
+        self.flash.timer = 1
+        if self.flash.state then
+            self.flash.state = false
+        else
+            self.flash.state = true
         end
     end
 end
