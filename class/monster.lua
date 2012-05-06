@@ -38,7 +38,7 @@ function Monster:init(pos, monsterType)
         self:pick_up(Weapon('sword'), false)
 
         self.ai.dodge = {dist = 5, prob = 5, delay = 5}
-        self.ai.chase = {dist = 10, prob = 5, delay = 5}
+        self.ai.chase = {dist = 10, prob = 8, delay = 3}
     elseif self.monsterType == 3 then
         self.images = monsterImg.mummy
         self.health = 40

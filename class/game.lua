@@ -1,6 +1,7 @@
-require('class/statusbar')
+require('class/inventorymenu')
 require('class/map')
 require('class/player')
+require('class/statusbar')
 require('util/tables')
 require('util/tile')
 
@@ -57,6 +58,10 @@ function Game:draw()
     end
 
     self:draw_metadata()
+
+    if self.paused then
+        self.inventoryMenu:draw()
+    end
 end
 
 function Game:draw_metadata()
@@ -68,10 +73,10 @@ function Game:draw_metadata()
         self.map:draw(self.currentRoom)
     end
 
-    if self.paused then
-        love.graphics.setColor(255, 255, 255)
-        cga_print('PAUSED', 11, 12)
-    end
+    --if self.paused then
+    --    love.graphics.setColor(255, 255, 255)
+    --    cga_print('PAUSED', 11, 12)
+    --end
 end
 
 function Game:generate()
@@ -82,6 +87,10 @@ function Game:generate()
     -- Create a player
     self.player = Player()
 
+    -- DEBUG: give player a potion
+    --local potion = Item('potion')
+    --self.player:pick_up(potion)
+
     -- Switch to the first room and put the player at the midPoint
     self.player:move_to({x = 0, y = 0})
     self:switch_to_room(1)
@@ -89,6 +98,9 @@ function Game:generate()
 
     -- Create a status bar
     self.statusBar = StatusBar(self.player)
+
+    -- Create an inventory menu
+    self.inventoryMenu = InventoryMenu(self.player)
 end
 
 function Game:input()
@@ -250,11 +262,17 @@ function Game:switch_to_room(roomIndex)
 end
 
 function Game:update()
+    self.statusBar:update()
+
     if self.paused then
+        -- Update the player's inventory items (for animations)
+        for _, i in pairs(self.player.inventory.items) do
+            i:update()
+        end
+
+        self.inventoryMenu:update()
         return
     end
-
-    self.statusBar:update()
 
     if flickerMode and self.frameState == 0 then
         self.frameState = 1
@@ -274,10 +292,5 @@ function Game:update()
             self:switch_to_room(e.roomIndex)
             break
         end
-    end
-
-    -- Update the player's inventory items (for animations)
-    for _, i in pairs(self.player.inventory.items) do
-        i:update()
     end
 end

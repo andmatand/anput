@@ -173,10 +173,14 @@ function Character:choose_action()
         end
     end
 
-    -- If we are not already following a path
-    if not self.path.nodes or self:path_obsolete() then
-        -- Set the chase target
-        self.ai.chase.target = self.closestEnemy
+    self.ai.chase.target = nil
+    if self:waited_to('chase') then
+        -- If we are not already following a path
+        if not self.path.nodes or self:path_obsolete() then
+            print('new chase target')
+            -- Set the chase target
+            self.ai.chase.target = self.closestEnemy
+        end
     end
 
     -- Set the flee target
@@ -201,7 +205,7 @@ function Character:choose_action()
     local bestScore = 0
     local action = nil
     for k,v in pairs(self.ai) do
-        if v.score > bestScore then
+        if v.score > bestScore and v.score == 10 then
             bestScore = v.score
             action = Character.actions[k]
             --print('best so far:', k)
@@ -221,9 +225,6 @@ function Character:do_ai()
     -- If we are currently following a path, continue to do that
     if self.path.nodes then
         self:follow_path()
-        --if self:follow_path() then
-        --  return
-        --end
     end
 
     -- Check if we should dodge a Player
@@ -244,7 +245,7 @@ function Character:do_ai()
         --print('action: flee')
         self:flee_from(self.ai.flee.target)
     elseif self.action == Character.static.actions.chase then
-        --print('action: chase')
+        print('action: chase')
         self:chase(self.ai.chase.target)
     elseif self.action == Character.static.actions.shoot then
         --print('action: shoot')
@@ -393,6 +394,24 @@ function Character:draw(pos)
     end
 
     pos = pos or self.position
+
+    -- Determine which image of this character to draw
+    if (self.images.moving and
+        (self.path.nodes or self.moved or
+         self.action == Character.static.actions.flee)) then
+        self.currentImage = self.images.moving
+    elseif (self.images.sword and
+            self.armory:get_current_weapon_name() == 'sword') then
+        self.currentImage = self.images.sword
+    elseif (self.images.bow and
+            self.armory:get_current_weapon_name() == 'bow') then
+        self.currentImage = self.images.bow
+    elseif (self.images.staff and
+            self.armory:get_current_weapon_name() == 'staff') then
+        self.currentImage = self.images.staff
+    else
+        self.currentImage = self.images.default
+    end
 
     if self.flashTimer == 0 then
         if self.color then
@@ -583,6 +602,7 @@ function Character:path_obsolete()
         -- character now is
         if manhattan_distance(self.path.destination,
                               self.path.character.position) > 5 then
+            print('obsolete')
             return true
         end
     end
@@ -593,6 +613,12 @@ function Character:pick_up(item)
     -- If the item is already being held by someone, or is already used up
     if item.owner or item.isUsed then
         -- Don't pick it up
+        return false
+    end
+
+    -- If we already have 5 items, or 4 and we aren't holding a weapon
+    if #self.inventory.items == 5 or (not self.armory.currentWeapon and
+                                #self.inventory.items == 4) then
         return false
     end
 
@@ -796,23 +822,5 @@ function Character:update()
         -- Flash if hurt
         self.flashTimer = 5
         self.hurt = false
-    end
-
-    -- Determine which image of this character to draw
-    if (self.images.moving and
-        (self.path.nodes or self.moved or
-         self.action == Character.static.actions.flee)) then
-        self.currentImage = self.images.moving
-    elseif (self.images.sword and
-            self.armory:get_current_weapon_name() == 'sword') then
-        self.currentImage = self.images.sword
-    elseif (self.images.bow and
-            self.armory:get_current_weapon_name() == 'bow') then
-        self.currentImage = self.images.bow
-    elseif (self.images.staff and
-            self.armory:get_current_weapon_name() == 'staff') then
-        self.currentImage = self.images.staff
-    else
-        self.currentImage = self.images.default
     end
 end
