@@ -87,10 +87,6 @@ function Game:generate()
     -- Create a player
     self.player = Player()
 
-    -- DEBUG: give player a potion
-    --local potion = Item('potion')
-    --self.player:pick_up(potion)
-
     -- Switch to the first room and put the player at the midPoint
     self.player:move_to({x = 0, y = 0})
     self:switch_to_room(1)
@@ -129,6 +125,9 @@ function Game:keypressed(key)
     -- Toggle pause
     if key == ' ' then
         self.paused = not self.paused
+
+        -- Reset inventoryMenu back to initial view
+        self.inventoryMenu.state = 'inventory'
     end
 
     -- Get player input for switching weapons
@@ -150,16 +149,8 @@ function Game:keypressed(key)
 
     -- If the game is paused
     if self.paused then
-        -- Allow wasd and arrows for selecting inventory items
-        if key == 'w' or key == 'up' then
-            self.statusBar:move_cursor('up')
-        elseif key == 'd' or key == 'right' then
-            self.statusBar:move_cursor('right')
-        elseif key == 's' or key == 'down' then
-            self.statusBar:move_cursor('down')
-        elseif key == 'a' or key == 'left' then
-            self.statusBar:move_cursor('left')
-        end
+        -- Route input to inventory menu
+        self.inventoryMenu:keypressed(key)
 
         -- Don't allow keys below here
         return

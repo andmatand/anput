@@ -174,7 +174,6 @@ function RoomBuilder:cleanup_untouchable_bricks()
             if ok then
                 for j, b2 in pairs(self.bricks) do
                     if j < i and tiles_overlap(b, b2) then
-                        print('removed duplicate brick')
                         ok = false
                     end
                 end

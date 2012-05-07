@@ -1,3 +1,9 @@
+require('util/tile')
+
+local function round(number, interval)
+    return math.floor(number / interval) * interval
+end
+
 -- An InventoryMenu is a visual representation of a character's items and a
 -- menu system for interacting with them
 InventoryMenu = class('InventoryMenu')
@@ -5,14 +11,35 @@ InventoryMenu = class('InventoryMenu')
 function InventoryMenu:init(owner)
     self.owner = owner
 
-    self.position = {x = ROOM_W, y = 2}
     self.size = {w = 11, h = 11}
-    self.selectedItemNum = nil
+    self.position = {x = math.floor((SCREEN_W / 2) - (self.size.w / 2)),
+                     y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
+
+    -- Set the center of the box
+    local x, y
+    x = self.position.x + (self.size.w / 2)
+    x = (x / 2) - .5
+    y = self.position.y + (self.size.h / 2)
+    y = (y / 2) - .5
+    self.center = {x = x, y = y}
+
+    -- Set the positions of each item/action slot
+    self.slotPositions = {{x = x, y = y - 1.5},
+                          {x = x + 1.5, y = y},
+                          {x = x, y = y + 1.5},
+                          {x = x - 1.5, y = y}}
+
+    -- Set the menu state
+    self.state = 'inventory'
 end
 
 function InventoryMenu:draw()
-    local x = (SCREEN_W / 2) - (self.size.w / 2)
-    local y = (SCREEN_H / 2) - (self.size.h / 2)
+    if not self.items then
+        self:update()
+    end
+
+    local x = self.position.x
+    local y = self.position.y
 
     -- Draw a border
     love.graphics.setColor(WHITE)
@@ -26,127 +53,121 @@ function InventoryMenu:draw()
                             upscale_x(self.size.w - 2),
                             upscale_y(self.size.h - 2))
 
-    -- Scale everything 2x
-    love.graphics.push()
-    love.graphics.scale(2, 2)
+    -- Switch to 2x scale
+    SCALE_X = SCALE_X * 2
+    SCALE_Y = SCALE_Y * 2
+    --love.graphics.push()
+    --love.graphics.scale(2, 2)
 
-    -- Set x, y to center of box
-    x = ((SCREEN_W / 2) / 2) - .5
-    y = ((SCREEN_H / 2) / 2) - .5
+    if self.state == 'inventory' then
+        -- Draw the player in the middle
+        self.owner:draw({x = self.center.x, y = self.center.y})
+    end
 
-    -- Draw the player in the middle
-    self.owner:draw({x = x, y = y})
-
-    local itemPositions = {{x = x, y = y - 1.5},
-                           {x = x + 1.5, y = y},
-                           {x = x, y = y + 1.5},
-                           {x = x - 1.5, y = y}}
-
-    -- Draw each item
-    local i = 0
-    for _, item in ipairs(self.owner.inventory.items) do
-        if item ~= self.owner.armory.currentWeapon then
-            i = i + 1
-            item.position = itemPositions[i]
+    if self.state == 'inventory' then
+        -- Draw all the items
+        for i, item in ipairs(self.items) do
             item:draw()
         end
+    elseif (self.state == 'item' or self.state == 'selecting item' or
+            self.state == 'deselecting item') then
+            -- Draw only the selected item
+            self.selectedItem:draw()
     end
 
-    love.graphics.pop()
+    -- Switch back to normal scale
+    --love.graphics.pop()
+    SCALE_X = SCALE_X / 2
+    SCALE_Y = SCALE_Y / 2
 
-    if true then
-        return
-    end
+    if self.state == 'item' then
+        local center = {x = (SCREEN_W / 2) - 1, y = SCREEN_H / 2}
+        cga_print('USE', center.x - 1, center.y - 3)
 
-    -- Draw each item
-    if self.owner.inventory then
-        x = self.position.x
-        y = y + 1
-
-        -- Get totals for each item type
-        local invTotals = {}
-        for _, i in pairs(self.owner.inventory.items) do
-            -- If there is no total for this type yet
-            if invTotals[i.itemType] == nil then
-                -- Initialize it to 0
-                invTotals[i.itemType] = 0
-            end
-
-            -- Add 1 to the total for this tyep
-            invTotals[i.itemType] = invTotals[i.itemType] + 1
-        end
-
-        -- Create oldInvTotals table
-        if oldInvTotals == nil then
-            oldInvTotals = {}
-        end
-
-        -- Display each item type and its total
-        local itemNum = 0
-        for _, i in pairs(self.owner.inventory:get_non_weapons()) do
-            -- If we haven't already displayed an item of this type
-            if invTotals[i.itemType] ~= nil then
-                itemNum = itemNum + 1
-
-                -- If this type isn't in oldInvTotals yet
-                if oldInvTotals[i.itemType] == nil then
-                    -- Set it to zero so we can compare it numerically,
-                    -- later
-                    oldInvTotals[i.itemType] = 0
-                end
-
-                -- If the count increased since last time and the item has
-                -- more than one frame
-                if (oldInvTotals[i.itemType] < invTotals[i.itemType] and
-                    #i.frames > 1) then
-                    -- Run the item's animation once through
-                    i.animationEnabled = true
-                    i.currentFrame = 2
-                elseif i.currentFrame == 1 then
-                    -- Stop the animation at frame 1
-                    i.animationEnabled = false
-                end
-
-                -- Highlight current item
-                if itemNum == self.selectedItemNum then
-                    love.graphics.setColor(MAGENTA)
-                    love.graphics.rectangle('fill',
-                                            upscale_x(x), upscale_y(y),
-                                            TILE_W, TILE_H)
-                end
-
-                -- Draw the item
-                i.position = {x = x, y = y}
-                love.graphics.setColor(WHITE)
-                i:draw()
-
-                -- If there is more than one of this type of item
-                if invTotals[i.itemType] > 1 then
-                    -- Print the total number of this type of item
-                    cga_print(tostring(invTotals[i.itemType]), x + 1, y)
-                    x = x + tostring(invTotals[i.itemType]):len() + 1
-                end
-
-                -- Save the old count
-                oldInvTotals[i.itemType] = invTotals[i.itemType]
-
-                -- Mark this inventory type as already displayed
-                invTotals[i.itemType] = nil
-
-                x = x + 1
-                if x > SCREEN_W then
-                    x = self.position.x
-                    y = y + 1
-                end
-            end
-        end
+        local name = ITEM_NAME[self.selectedItem.itemType]
+        cga_print(name,
+                  center.x - (name:len() / 2),
+                  center.y + 3)
     end
 end
 
 function InventoryMenu:update()
+    if self.state == 'inventory' then
+        -- Find and position the items
+        self.items = {}
+        local i = 0
+        for _, item in ipairs(self.owner.inventory.items) do
+            if item ~= self.owner.armory.currentWeapon then
+                i = i + 1
+                self.items[i] = item
+                self.items[i].position = copy_table(self.slotPositions[i])
+            end
+        end
+    elseif self.state == 'selecting item' then
+        if tiles_overlap(self.selectedItem.position, self.center) then
+            self.state = 'item'
+        else
+            self:move_item_toward(self.center)
+        end
+    elseif self.state == 'deselecting item' then
+        if tiles_overlap(self.selectedItem.position,
+                         self.slotPositions[self.selectedItemIndex]) then
+            self.state = 'inventory'
+        else
+            self:move_item_toward(self.slotPositions[self.selectedItemIndex])
+        end
+    end
 end
 
-function InventoryMenu:move_cursor(dir)
-    if dir == 'up' then
+function InventoryMenu:move_item_toward(destination)
+    local pos = self.selectedItem.position
+
+    local dir = direction_to(self.selectedItem.position, destination)
+    if dir == 1 then
+        self.selectedItem.position.y = self.selectedItem.position.y - .5
+    elseif dir == 2 then
+        self.selectedItem.position.x = self.selectedItem.position.x + .5
+    elseif dir == 3 then
+        self.selectedItem.position.y = self.selectedItem.position.y + .5
+    elseif dir == 4 then
+        self.selectedItem.position.x = self.selectedItem.position.x - .5
+    end
+end
+
+
+function InventoryMenu:keypressed(key)
+    local dir
+    if key == 'up' or key == 'w' then
+        dir = 1
+    elseif key == 'right' or key == 'd' then
+        dir = 2
+    elseif key == 'down' or key == 's' then
+        dir = 3
+    elseif key == 'left' or key == 'a' then
+        dir = 4
+    end
+
+    if dir then
+        if self.state == 'inventory' then
+            if self.items and self.items[dir] then
+                self.selectedItemIndex = dir
+                self.selectedItem = self.items[dir]
+                self.state = 'selecting item'
+            end
+        elseif self.state == 'item' then
+            local reverseDir
+            reverseDir = self.selectedItemIndex + 2
+            if reverseDir > 4 then
+                reverseDir = reverseDir - 4
+            end
+
+            if dir == reverseDir then
+                self.state = 'deselecting item'
+            elseif dir == self.selectedItemIndex then
+                if self.selectedItem:use() then
+                    self.state = 'inventory'
+                end
+            end
+        end
     end
 end

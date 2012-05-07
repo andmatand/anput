@@ -5,9 +5,15 @@ Item = class('Item')
 ITEM_TYPE = {potion = 1,
              arrows = 2,
              shinything = 3,
-             sword = 10,
-             bow = 11,
-             staff = 12}
+             sword = 4,
+             bow = 5,
+             staff = 6}
+ITEM_NAME = {'POTION',
+             'ARROWS',
+             'SHINY THING',
+             'SWORD',
+             'BOW',
+             'STAFF'}
 
 function Item:init(itemType)
     if type(itemType) == 'number' then
@@ -82,8 +88,13 @@ function Item:use()
     if self.owner then
         if self:use_on(self.owner) then
             self.owner.inventory:remove(self)
+            return true
+        else
+            return false
         end
     end
+
+    return false
 end
 
 function Item:use_on(patient)

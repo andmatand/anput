@@ -43,6 +43,7 @@ function Weapon:draw(position)
         img = staffImg
     end
 
+    love.graphics.setColor(255, 255, 255)
     love.graphics.draw(img,
                        upscale_x(position.x), upscale_y(position.y),
                        0, SCALE_X, SCALE_Y)

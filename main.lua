@@ -4,12 +4,16 @@ require('class/sound')
 
 function new_image(filename)
     img = love.graphics.newImage('res/img/' .. filename)
-    img:setFilter('nearest', 'nearest')
+    --img:setFilter('nearest', 'nearest')
     return img
 end
 
 function cga_print(text, x, y, color)
     love.graphics.setColor(BLACK)
+
+    -- Make sure the x and y align to the grid
+    x = math.floor(x)
+    y = math.floor(y)
 
     -- Go through each line of the text
     local i = 0
@@ -72,9 +76,11 @@ function love.load()
     FONT_W = 8
     FONT_H = 8
 
+    -- Set default image fileter to show ALL the pixels
+    love.graphics.setDefaultImageFilter('nearest', 'nearest')
+
     -- Load the font
     --local fontImg = love.graphics.newImage('res/font/cga.png')
-    --fontImg:setFilter('nearest', 'nearest')
     --local font = love.graphics.newImageFont(fontImg,
     --             'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
     font = love.graphics.newFont('res/font/cga.ttf', TILE_W * SCALE_X)
