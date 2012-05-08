@@ -150,7 +150,9 @@ function Game:keypressed(key)
     -- If the game is paused
     if self.paused then
         -- Route input to inventory menu
-        self.inventoryMenu:keypressed(key)
+        if self.inventoryMenu:keypressed(key) then
+            self.paused = false
+        end
 
         -- Don't allow keys below here
         return
@@ -256,11 +258,6 @@ function Game:update()
     self.statusBar:update()
 
     if self.paused then
-        -- Update the player's inventory items (for animations)
-        for _, i in pairs(self.player.inventory.items) do
-            i:update()
-        end
-
         self.inventoryMenu:update()
         return
     end

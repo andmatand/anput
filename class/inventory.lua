@@ -13,10 +13,15 @@ function Inventory:add(item)
     table.insert(self.items, item)
 end
 
-function Inventory:get_item(itemType)
+function Inventory:get_item(itemType, quantity)
+    local items = {}
+
     for _, item in pairs(self.items) do
         if item.itemType == itemType then
-            return item
+            table.insert(items, item)
+            if #items >= (quantity or 1) then
+                return items
+            end
         end
     end
 end
@@ -30,6 +35,20 @@ function Inventory:get_non_weapons()
     end
 
     return temp
+end
+
+function Inventory:get_unique_items()
+    local items = {}
+    local usedItemTypes = {}
+
+    for _, item in pairs(self.items) do
+        if not usedItemTypes[item.itemType] then
+            usedItemTypes[item.itemType] = true
+            table.insert(items, item)
+        end
+    end
+
+    return items
 end
 
 function Inventory:has_item(itemType, quantity)

@@ -617,8 +617,9 @@ function Character:pick_up(item)
     end
 
     -- If we already have 5 items, or 4 and we aren't holding a weapon
-    if #self.inventory.items == 5 or (not self.armory.currentWeapon and
-                                #self.inventory.items == 4) then
+    if (#self.inventory:get_unique_items() == 5 or
+        (not self.armory.currentWeapon and
+         #self.inventory:get_unique_items() == 4)) then
         return false
     end
 

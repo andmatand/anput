@@ -220,8 +220,6 @@ function love.keypressed(key, unicode)
     end
 
     game:keypressed(key)
-
-    if key == 'escape' then love.event.push('quit') end
 end
 
 function love.keyreleased(key, unicode)

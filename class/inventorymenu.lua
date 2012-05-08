@@ -91,12 +91,19 @@ function InventoryMenu:draw()
         local center = {x = upscale_x(self.center.x + .5) * 2,
                         y = upscale_y(self.center.y + .5) * 2}
 
-        cga_print('USE', nil, nil,
-                  {position = {x = center.x,
-                               y = center.y - upscale_y(3)},
-                   center = true})
+        --cga_print('USE', nil, nil,
+        --          {position = {x = center.x,
+        --                       y = center.y - upscale_y(3)},
+        --           center = true})
 
         local name = ITEM_NAME[self.selectedItem.itemType]
+
+        local num = #self.owner.inventory:get_item(self.selectedItem.itemType)
+        if num > 1 then
+            -- Tack the quantity on the beginning
+            name = num .. ' ' .. name
+        end
+
         cga_print(name, nil, nil,
                   {position = {x = center.x,
                                y = center.y + upscale_y(2)},
@@ -105,11 +112,16 @@ function InventoryMenu:draw()
 end
 
 function InventoryMenu:update()
+    for _, item in ipairs(self.owner.inventory:get_unique_items()) do
+        -- Update the item (for animations)
+        item:update()
+    end
+
     if self.state == 'inventory' then
         -- Find and position the items
         self.items = {}
         local i = 0
-        for _, item in ipairs(self.owner.inventory.items) do
+        for _, item in ipairs(self.owner.inventory:get_unique_items()) do
             if item ~= self.owner.armory.currentWeapon then
                 i = i + 1
                 self.items[i] = item
@@ -160,14 +172,23 @@ function InventoryMenu:keypressed(key)
         dir = 4
     end
 
+    if key == 'escape' then
+        if self.state == 'inventory' then
+            return true
+        elseif self.state == 'item' or self.state == 'selecting item' then
+            self.state = 'deselecting item'
+        end
+    end
+
     if dir then
         if self.state == 'inventory' then
             if self.items and self.items[dir] then
+                sound.switchWeapon:play()
                 self.selectedItemIndex = dir
                 self.selectedItem = self.items[dir]
                 self.state = 'selecting item'
             end
-        elseif self.state == 'item' then
+        elseif self.state == 'item' or self.state == 'selecting item' then
             local reverseDir
             reverseDir = self.selectedItemIndex + 2
             if reverseDir > 4 then
