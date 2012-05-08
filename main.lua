@@ -9,7 +9,8 @@ function new_image(filename)
 end
 
 function cga_print(text, x, y, options)
-    local x, y
+    -- Set default options
+    options = options or {}
 
     -- If an actual pixel position is given
     if options.position then
@@ -39,7 +40,7 @@ function cga_print(text, x, y, options)
     end
 
     -- Set the color
-    if options and options.color then
+    if options.color then
         love.graphics.setColor(options.color)
     else
         love.graphics.setColor(WHITE)

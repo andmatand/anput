@@ -79,7 +79,7 @@ function StatusBar:draw()
                 end
             end
 
-            cga_print(tostring(w.ammo), x, y, textColor)
+            cga_print(tostring(w.ammo), x, y, {color = textColor})
         end
     end
 end
