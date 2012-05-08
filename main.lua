@@ -8,28 +8,50 @@ function new_image(filename)
     return img
 end
 
-function cga_print(text, x, y, color)
-    love.graphics.setColor(BLACK)
+function cga_print(text, x, y, options)
+    local x, y
 
-    -- Make sure the x and y align to the grid
-    x = math.floor(x)
-    y = math.floor(y)
+    -- If an actual pixel position is given
+    if options.position then
+        x = options.position.x
+        y = options.position.y
+    else
+        -- Make sure the x and y align to the grid
+        x = math.floor(upscale_x(x))
+        y = math.floor(upscale_y(y))
+    end
 
     -- Go through each line of the text
     local i = 0
+    love.graphics.setColor(BLACK)
     for line in text:gmatch("[^\n]+") do
+        local xPos = x
+        if options.center then
+            xPos = x - (font:getWidth(line) / 2)
+        end
+
         -- Draw a black background behind this line of text
-        love.graphics.rectangle('fill', upscale_x(x), upscale_y(y + i),
-                                font:getWidth(line),
-                                font:getHeight())
+        love.graphics.rectangle('fill', xPos, y + upscale_y(i),
+                                font:getWidth(line), font:getHeight())
 
         -- Keep track of which line number we're on
         i = i + 1
     end
 
+    -- Set the color
+    if options and options.color then
+        love.graphics.setColor(options.color)
+    else
+        love.graphics.setColor(WHITE)
+    end
+
     -- Draw the text
-    love.graphics.setColor(color or WHITE)
-    love.graphics.print(text, upscale_x(x), upscale_y(y) - 1, 0)
+    if options.center then
+        love.graphics.printf(text, x, y - 1, 0, 'center')
+        love.graphics.setPoint(1, 'rough')
+    else
+        love.graphics.print(text, x, y - 1)
+    end
 end
 
 function upscale_x(x)

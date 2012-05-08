@@ -10,7 +10,7 @@ ITEM_TYPE = {potion = 1,
              staff = 6}
 ITEM_NAME = {'POTION',
              'ARROWS',
-             'SHINY THING',
+             'SHINY\nTHING',
              'SWORD',
              'BOW',
              'STAFF'}

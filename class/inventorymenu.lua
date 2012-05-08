@@ -1,7 +1,13 @@
 require('util/tile')
 
-local function round(number, interval)
-    return math.floor(number / interval) * interval
+local function first_line(string)
+    local pos = string:find('\n')
+
+    if pos then
+        return string:sub(1, pos - 1)
+    else
+        return string
+    end
 end
 
 -- An InventoryMenu is a visual representation of a character's items and a
@@ -81,13 +87,20 @@ function InventoryMenu:draw()
     SCALE_Y = SCALE_Y / 2
 
     if self.state == 'item' then
-        local center = {x = (SCREEN_W / 2) - 1, y = SCREEN_H / 2}
-        cga_print('USE', center.x - 1, center.y - 3)
+        -- Create a real-pixel-coordinate version of the center
+        local center = {x = upscale_x(self.center.x + .5) * 2,
+                        y = upscale_y(self.center.y + .5) * 2}
+
+        cga_print('USE', nil, nil,
+                  {position = {x = center.x,
+                               y = center.y - upscale_y(3)},
+                   center = true})
 
         local name = ITEM_NAME[self.selectedItem.itemType]
-        cga_print(name,
-                  center.x - (name:len() / 2),
-                  center.y + 3)
+        cga_print(name, nil, nil,
+                  {position = {x = center.x,
+                               y = center.y + upscale_y(2)},
+                   center = true})
     end
 end
 
