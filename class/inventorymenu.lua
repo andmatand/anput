@@ -77,8 +77,19 @@ function InventoryMenu:draw()
         end
     elseif (self.state == 'item' or self.state == 'selecting item' or
             self.state == 'deselecting item') then
+
             -- Draw only the selected item
             self.selectedItem:draw()
+
+    end
+
+    if self.state == 'item' then
+        -- Draw the verbs
+        love.graphics.setColor(WHITE)
+        love.graphics.draw(handImg,
+                           upscale_x(self.slotPositions[2].x),
+                           upscale_y(self.slotPositions[2].y),
+                           0, SCALE_X, SCALE_Y)
     end
 
     -- Switch back to normal scale
@@ -96,13 +107,15 @@ function InventoryMenu:draw()
         --                       y = center.y - upscale_y(3)},
         --           center = true})
 
-        local name = ITEM_NAME[self.selectedItem.itemType]
-
-        local num = #self.owner.inventory:get_item(self.selectedItem.itemType)
+        local num = #self.owner.inventory:get_items(self.selectedItem.itemType)
         if num > 1 then
-            -- Tack the quantity on the beginning
-            name = num .. ' ' .. name
+            cga_print(tostring(num), nil, nil,
+                      {position = {x = center.x,
+                                   y = center.y - (upscale_y(3))},
+                       center = true})
         end
+
+        local name = ITEM_NAME[self.selectedItem.itemType]
 
         cga_print(name, nil, nil,
                   {position = {x = center.x,
@@ -189,15 +202,24 @@ function InventoryMenu:keypressed(key)
                 self.state = 'selecting item'
             end
         elseif self.state == 'item' or self.state == 'selecting item' then
-            local reverseDir
-            reverseDir = self.selectedItemIndex + 2
-            if reverseDir > 4 then
-                reverseDir = reverseDir - 4
-            end
+            --local reverseDir
+            --reverseDir = self.selectedItemIndex + 2
+            --if reverseDir > 4 then
+            --    reverseDir = reverseDir - 4
+            --end
 
-            if dir == reverseDir then
+            --if dir == reverseDir then
+            --    self.state = 'deselecting item'
+            --elseif dir == self.selectedItemIndex then
+            --    if self.selectedItem:use() then
+            --        self.state = 'inventory'
+            --    end
+            --end
+            --
+
+            if dir == 1 or dir == 3 then
                 self.state = 'deselecting item'
-            elseif dir == self.selectedItemIndex then
+            elseif dir == 2 then
                 if self.selectedItem:use() then
                     self.state = 'inventory'
                 end

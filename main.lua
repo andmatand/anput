@@ -141,6 +141,9 @@ function love.load()
     bowImg = new_image('bow.png')
     staffImg = new_image('staff.png')
 
+    -- Verbs
+    handImg = new_image('hand.png')
+
     -- Create image data for a brick (a magenta rectangle)
     local brickImgData = love.image.newImageData(upscale_x(1),
                                                  upscale_y(1))

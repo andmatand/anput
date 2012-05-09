@@ -26,6 +26,19 @@ function Inventory:get_item(itemType, quantity)
     end
 end
 
+-- This function Returns all items of the specified item type
+function Inventory:get_items(itemType)
+    local items = {}
+
+    for _, item in pairs(self.items) do
+        if item.itemType == itemType then
+            table.insert(items, item)
+        end
+    end
+
+    return items
+end
+
 function Inventory:get_non_weapons()
     local temp = {}
     for _, item in pairs(self.items) do
