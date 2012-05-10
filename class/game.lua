@@ -206,6 +206,10 @@ function Game:keyreleased(key)
     elseif self.player.attackedDir == 4 and key == 'a' then
         self.player.attackedDir = nil
     end
+
+    if self.paused then
+        self.inventoryMenu:keyreleased(key)
+    end
 end
 
 function Game:switch_to_room(roomIndex)
@@ -239,7 +243,7 @@ function Game:switch_to_room(roomIndex)
 
     -- Move player to corresponding doorway
     if prevRoom ~= nil then
-        exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
+        local exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
         self.player:move_to(exit:get_doorway())
     end
 

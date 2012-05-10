@@ -35,8 +35,12 @@ function InventoryMenu:init(owner)
                           {x = x, y = y + 1.5},
                           {x = x - 1.5, y = y}}
 
-    -- Set the menu state
+    -- Initialize the menu state
     self.state = 'inventory'
+
+    -- Initialize the verb button states
+    self.verbs = {use = {isPushed = false},
+                  drop = {isPushed = false}}
 end
 
 function InventoryMenu:draw()
@@ -84,12 +88,20 @@ function InventoryMenu:draw()
     end
 
     if self.state == 'item' then
-        -- Draw the verbs
-        love.graphics.setColor(WHITE)
-        love.graphics.draw(handImg,
-                           upscale_x(self.slotPositions[2].x),
-                           upscale_y(self.slotPositions[2].y),
-                           0, SCALE_X, SCALE_Y)
+        if self.selectedItem.isUsable then
+            -- Set the color based on whether this verb button is pressed
+            if self.verbs.use.isPushed then
+                love.graphics.setColor(MAGENTA)
+            else
+                love.graphics.setColor(WHITE)
+            end
+
+            -- Draw the USE verb
+            love.graphics.draw(handImg,
+                               upscale_x(self.slotPositions[2].x),
+                               upscale_y(self.slotPositions[2].y),
+                               0, SCALE_X, SCALE_Y)
+        end
     end
 
     -- Switch back to normal scale
@@ -172,20 +184,23 @@ function InventoryMenu:move_item_toward(destination)
     end
 end
 
+local function get_direction_input(key)
+    if key == 'up' or key == 'w' then
+        return 1
+    elseif key == 'right' or key == 'd' then
+        return 2
+    elseif key == 'down' or key == 's' then
+        return 3
+    elseif key == 'left' or key == 'a' then
+        return 4
+    end
+end
 
 function InventoryMenu:keypressed(key)
-    local dir
-    if key == 'up' or key == 'w' then
-        dir = 1
-    elseif key == 'right' or key == 'd' then
-        dir = 2
-    elseif key == 'down' or key == 's' then
-        dir = 3
-    elseif key == 'left' or key == 'a' then
-        dir = 4
-    end
+    local dir = get_direction_input(key)
 
     if key == 'escape' then
+        -- Go back to the previous menu
         if self.state == 'inventory' then
             return true
         elseif self.state == 'item' or self.state == 'selecting item' then
@@ -193,6 +208,7 @@ function InventoryMenu:keypressed(key)
         end
     end
 
+    -- If a direction key was pressed
     if dir then
         if self.state == 'inventory' then
             if self.items and self.items[dir] then
@@ -202,28 +218,40 @@ function InventoryMenu:keypressed(key)
                 self.state = 'selecting item'
             end
         elseif self.state == 'item' or self.state == 'selecting item' then
-            --local reverseDir
-            --reverseDir = self.selectedItemIndex + 2
-            --if reverseDir > 4 then
-            --    reverseDir = reverseDir - 4
-            --end
-
-            --if dir == reverseDir then
-            --    self.state = 'deselecting item'
-            --elseif dir == self.selectedItemIndex then
-            --    if self.selectedItem:use() then
-            --        self.state = 'inventory'
-            --    end
-            --end
-            --
-
             if dir == 1 or dir == 3 then
                 self.state = 'deselecting item'
-            elseif dir == 2 then
+            elseif dir == 2 and self.selectedItem.isUsable then
+                self.verbs.use.isPushed = true
                 if self.selectedItem:use() then
-                    self.state = 'inventory'
+                    local otherItems = self.owner.inventory:get_items(
+                                       self.selectedItem.itemType)
+
+                    -- If we still have items of this type left
+                    if #otherItems > 0 then
+                        -- Select one of those items
+                        self.selectedItem = otherItems[1]
+                        self.selectedItem:set_position(self.center)
+                    else
+                        -- Go back to the main inventory screen
+                        self.state = 'inventory'
+                    end
+                else
+                    sound.noAmmo:play()
                 end
+            elseif dir == 2 then
+                self.verbs.drop.isPushed = true
             end
         end
+    end
+end
+
+function InventoryMenu:keyreleased(key)
+    local dir = get_direction_input(key)
+
+    -- Un-push the verb buttons
+    if dir == 2 then
+        self.verbs.use.isPushed = false
+    elseif dir == 4 then
+        self.verbs.drop.isPushed = false
     end
 end

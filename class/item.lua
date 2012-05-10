@@ -22,8 +22,11 @@ function Item:init(itemType)
         self.itemType = ITEM_TYPE[itemType]
     end
 
+    self.isUsable = false
+
     if self.itemType == ITEM_TYPE.potion then
         self.frames = {{image = potionImg}}
+        self.isUsable = true
     elseif self.itemType == ITEM_TYPE.arrows then
         self.frames = {{image = arrowsImg}}
     elseif self.itemType == ITEM_TYPE.shinything then
@@ -77,7 +80,7 @@ function Item:draw()
 end
 
 function Item:set_position(position)
-    self.position = position
+    self.position = {x = position.x, y = position.y}
 end
 
 function Item:update()
