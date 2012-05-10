@@ -220,6 +220,9 @@ function love.keypressed(key, unicode)
            ((love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))
             and key == 'return') then
         love.graphics.toggleFullscreen()
+    elseif key == 'q' and (love.keyboard.isDown('lctrl') or
+                           love.keyboard.isDown('rctrl')) then
+        love.event.quit()
     end
 
     game:keypressed(key)
