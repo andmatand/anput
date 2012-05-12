@@ -111,6 +111,43 @@ function Character:cheap_follow_path(dest)
     return true
 end
 
+function Character:check_for_items()
+    local pickedSomethingUp = false
+
+    -- Don't pick things up if we're dead
+    if self.dead then
+        return
+    end
+
+    for _, i in pairs(self.room.items) do
+        -- If this item has a position
+        if i.position then
+            -- If we are standing on this item
+            if tiles_overlap(self.position, i.position) then
+                -- Pick it up
+                if self:pick_up(i) then
+                    -- If we didn't already pick something up, and we are in a
+                    -- room, and it is the game's current room, or we are a
+                    -- player
+                    if (not pickedSomethingUp and self.room and
+                        (self.room == self.room.game.currentRoom or 
+                         instanceOf(Player, self))) then
+                        -- Play a pick-up sound depending on who we are
+                        if instanceOf(Player, self) then
+                            sound.playerGetItem:play()
+                        else
+                            sound.monsterGetItem:play()
+                        end
+                    end
+
+                    pickedSomethingUp = true
+                end
+            end
+        end
+    end
+end
+
+
 -- Returns true if we already waited the required delay # of frames
 function Character:waited_to(action)
     if (self.aiTimer % self.ai[action].delay == 0 or
@@ -177,7 +214,7 @@ function Character:choose_action()
     if self:waited_to('chase') then
         -- If we are not already following a path
         if not self.path.nodes or self:path_obsolete() then
-            print('new chase target')
+            --print('new chase target')
             -- Set the chase target
             self.ai.chase.target = self.closestEnemy
         end
@@ -202,11 +239,11 @@ function Character:choose_action()
     end
 
     -- See which action has the best score
-    local bestScore = 0
+    local highestProb = 0
     local action = nil
-    for k,v in pairs(self.ai) do
-        if v.score > bestScore and v.score == 10 then
-            bestScore = v.score
+    for k, v in pairs(self.ai) do
+        if v.score == 10 and v.prob > highestProb  then
+            highestProb = v.prob
             action = Character.actions[k]
             --print('best so far:', k)
         end
@@ -482,6 +519,10 @@ function Character:drop(items)
                     end
                 end
             end
+        end
+
+        if not item.position then
+            print('dropping item with no position!')
         end
 
         self:drop_item(item)

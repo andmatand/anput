@@ -4,13 +4,15 @@ MapDisplay = class('MapDisplay')
 function MapDisplay:init(nodes)
     self.nodes = nodes
 
-    -- Place the display on the side of the screen
+    -- Place the display in the center of the screen
     self.nodeSize = 3 * SCALE_X
 
-    self.x1 = upscale_x(ROOM_W) + self.nodeSize
-    self.y1 = upscale_y(12) + self.nodeSize
-    self.x2 = upscale_x(SCREEN_W) - 1 - self.nodeSize
-    self.y2 = upscale_y(SCREEN_H) - 1 - self.nodeSize
+    self.size = {w = 9, h = 9}
+
+    local position = {x = math.floor((SCREEN_W / 2) - (self.size.w / 2)),
+                      y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
+    self.position = {x = upscale_x(position.x),
+                     y = upscale_y(position.y)}
 end
 
 function MapDisplay:draw(currentRoom)
@@ -18,9 +20,23 @@ function MapDisplay:draw(currentRoom)
         self:find_map_offset()
     end
 
+    -- Draw a border
+    love.graphics.setColor(WHITE)
+    love.graphics.rectangle('fill',
+                            self.position.x - upscale_x(1),
+                            self.position.y - upscale_y(1),
+                            upscale_x(self.size.w + 2),
+                            upscale_y(self.size.h + 2))
+    love.graphics.setColor(BLACK)
+    love.graphics.rectangle('fill',
+                            self.position.x,
+                            self.position.y,
+                            upscale_x(self.size.w),
+                            upscale_y(self.size.h))
+
     love.graphics.push()
-    love.graphics.translate(self.x1 + self.mapOffset.x,
-                            self.y1 + self.mapOffset.y)
+    love.graphics.translate(self.position.x + self.mapOffset.x,
+                            self.position.y + self.mapOffset.y)
 
     for _, n in pairs(self.nodes) do
         if n.room.visited then
@@ -47,10 +63,10 @@ end
 -- Find offset necessary to center the map onscreen
 function MapDisplay:find_map_offset()
     -- Find the furthest outside positions in the cardinal directions
-    n = 0
-    e = 0
-    s = 0
-    w = 0
+    local n = 0
+    local e = 0
+    local s = 0
+    local w = 0
 
     for _,j in pairs(self.nodes) do
         if j.y < n then
@@ -67,12 +83,12 @@ function MapDisplay:find_map_offset()
         end
     end
 
-    width = ((e - w) + 1) * self.nodeSize
-    height = ((s - n) + 1) * self.nodeSize
+    local mapW = ((e - w) + 1) * self.nodeSize
+    local mapH = ((s - n) + 1) * self.nodeSize
 
-    displayW = self.x2 - self.x1 + 1
-    displayH = self.y2 - self.y1 + 1
+    local displayW = upscale_x(self.size.w) --self.x2 - self.x1 + 1
+    local displayH = upscale_y(self.size.h) --self.y2 - self.y1 + 1
 
-    self.mapOffset = {x = (displayW / 2) - (width / 2) - (w * self.nodeSize),
-                      y = (displayH / 2) - (height / 2) - (n * self.nodeSize)}
+    self.mapOffset = {x = (displayW / 2) - (mapW / 2) - (w * self.nodeSize),
+                      y = (displayH / 2) - (mapH / 2) - (n * self.nodeSize)}
 end

@@ -11,8 +11,7 @@ require('util/tile')
 Game = class('Game')
 
 function Game:init()
-    self.frameState = 1 -- 0: erase, 1: draw
-    self.showMap = true
+    self.menuState = 'inventory'
     self.paused = false
 end
 
@@ -21,21 +20,17 @@ function Game:do_background_jobs()
         return
     end
 
-    for _, e in pairs(self.currentRoom.exits) do
-        -- If the room that this exit leads to is not completely generated
-        if not self.rooms[e.roomIndex].generated then
-            self.rooms[e.roomIndex]:generate_next_piece()
+    for _, room in pairs(self:get_adjacent_rooms()) do
+        -- If the room is not completely generated
+        if not room.generated then
+            room:generate_next_piece()
             break
         end
     end
 end
 
 function Game:draw()
-    if flickerMode and self.frameState == 0 then
-        self.currentRoom:erase()
-    else
-        self.currentRoom:draw()
-    end
+    self.currentRoom:draw()
 
     -- DEBUG: show turrets
     --for _, t in pairs(self.currentRoom.turrets) do
@@ -60,7 +55,11 @@ function Game:draw()
     self:draw_metadata()
 
     if self.paused then
-        self.inventoryMenu:draw()
+        if self.menuState == 'inventory' then
+            self.inventoryMenu:draw()
+        elseif self.menuState == 'map' then
+            self.map:draw(self.currentRoom)
+        end
     end
 end
 
@@ -68,10 +67,6 @@ function Game:draw_metadata()
     love.graphics.setColor(255, 255, 255)
 
     self.statusBar:draw()
-
-    if self.showMap then
-        self.map:draw(self.currentRoom)
-    end
 
     --if self.paused then
     --    love.graphics.setColor(255, 255, 255)
@@ -81,22 +76,32 @@ end
 
 function Game:generate()
     -- Generate a new map
-    self.map = Map()
+    self.map = Map({game = self})
     self.rooms = self.map:generate()
 
     -- Create a player
     self.player = Player()
 
     -- Switch to the first room and put the player at the midPoint
-    self.player:move_to({x = 0, y = 0})
-    self:switch_to_room(1)
-    self.player:move_to(self.currentRoom.midPoint)
+    self:switch_to_room(self.rooms[1])
+    self.currentRoom:add_object(self.player)
+    self.player:set_position(self.currentRoom.midPoint)
 
     -- Create a status bar
     self.statusBar = StatusBar(self.player)
 
     -- Create an inventory menu
     self.inventoryMenu = InventoryMenu(self.player)
+end
+
+function Game:get_adjacent_rooms()
+    local rooms = {}
+
+    for _, e in pairs(self.currentRoom.exits) do
+        table.insert(rooms, e.room)
+    end
+
+    return rooms
 end
 
 function Game:input()
@@ -122,14 +127,6 @@ function Game:input()
 end
 
 function Game:keypressed(key)
-    -- Toggle pause
-    if key == ' ' then
-        self.paused = not self.paused
-
-        -- Reset inventoryMenu back to initial view
-        self.inventoryMenu.state = 'inventory'
-    end
-
     -- Get player input for switching weapons
     if key == '1' or key == '2' or key == '3' then
         -- Switch to specified weapon number, based on display order
@@ -143,20 +140,65 @@ function Game:keypressed(key)
     if key == 'p' then
         -- Take a potion
         if self.player:has_item(ITEM_TYPE.potion) then
-            self.player.inventory:get_item(ITEM_TYPE.potion):use()
+            self.player.inventory:get_item(ITEM_TYPE.potion)[1]:use()
         end
     end
 
+    -- Toggle pause
+    if key == ' ' then
+        self.paused = not self.paused
+
+        if self.paused then
+            self.inventoryMenu.state = 'inventory'
+        end
+    end
+
+    -- Toggle inventory menu
+    if key == 'i' then
+        if self.paused and self.menuState == 'inventory' then
+            self.paused = false
+        else
+            if not self.paused then
+                -- Reset inventory menu to initial view
+                self.inventoryMenu.state = 'inventory'
+                self.paused = true
+            end
+
+            self.menuState = 'inventory'
+        end
+
+    -- Toggle map
+    elseif key == 'm' then
+        if self.paused and self.menuState == 'map' then
+            self.paused = false
+        else
+            self.paused = true
+            self.menuState = 'map'
+        end
+    end
+
+
     -- If the game is paused
     if self.paused then
-        -- Route input to inventory menu
-        if self.inventoryMenu:keypressed(key) then
+        -- If the inventory is open
+        if self.menuState == 'inventory' then
+            -- Route input to inventory menu
+            if self.inventoryMenu:keypressed(key) then
+                -- InventoryMenu:keypressed() evaluates to true when the user
+                -- exits the menu
+                self.paused = false
+            end
+        end
+
+        -- If the map is open and escape was pressed
+        if self.menuState == 'map' and key == 'escape' then
             self.paused = false
         end
 
         -- Don't allow keys below here
         return
     end
+
 
     -- Get player input for shooting arrows
     shootDir = nil
@@ -189,11 +231,6 @@ function Game:keypressed(key)
     if key == 't' then
         self.player.wantsToTrade = true
     end
-
-    -- DEBUG: toggle map with m
-    if key == 'm' then
-        self.showMap = not self.showMap
-    end
 end
 
 function Game:keyreleased(key)
@@ -207,30 +244,28 @@ function Game:keyreleased(key)
         self.player.attackedDir = nil
     end
 
-    if self.paused then
+    -- If the inventory menu is up
+    if self.paused and self.menuState == 'inventory' then
+        -- Pass key to inventoryMenu
         self.inventoryMenu:keyreleased(key)
     end
 end
 
-function Game:switch_to_room(roomIndex)
+function Game:switch_to_room(room)
     if DEBUG then
-        print('switching to room ' .. roomIndex)
+        print('switching to room ' .. room.roomIndex)
     end
 
     prevRoom = self.currentRoom
 
     -- If there was a previous room
     if prevRoom then
-        -- Remove player from previous room
-        prevRoom:remove_sprite(self.player)
-
         -- Clear previous room's FOV cache to save memory
         prevRoom.fovCache = {}
     end
 
     -- Set the new room as the current room
-    self.currentRoom = self.rooms[roomIndex]
-    self.currentRoom.game = self
+    self.currentRoom = room
     self.currentRoom.visited = true
 
     if DEBUG then
@@ -238,18 +273,9 @@ function Game:switch_to_room(roomIndex)
         print('room difficulty:', self.currentRoom.difficulty)
     end
 
-    -- Add player to current room
-    self.currentRoom:add_object(self.player)
-
-    -- Move player to corresponding doorway
-    if prevRoom ~= nil then
-        local exit = self.currentRoom:get_exit({roomIndex = prevRoom.index})
-        self.player:move_to(exit:get_doorway())
-    end
-
     -- Make sure room has been completely generated
-    if not self.rooms[roomIndex].generated then
-        self.rooms[roomIndex]:generate_all()
+    if not self.currentRoom.generated then
+        self.currentRoom:generate_all()
     end
 
     -- Update the new current room
@@ -266,23 +292,31 @@ function Game:update()
         return
     end
 
-    if flickerMode and self.frameState == 0 then
-        self.frameState = 1
-        return
-    else
-        self.frameState = 0
-    end
-
     self:input()
+
+    -- Store which room player was in before this frame
+    local oldRoom = self.player.room
 
     -- Update the current room
     self.currentRoom:update()
 
-    -- Switch rooms when player is on an exit
-    for _, e in pairs(self.currentRoom.exits) do
-        if tiles_overlap(self.player.position, e) then
-            self:switch_to_room(e.roomIndex)
-            break
+    -- Update adjacent rooms that have been generated
+    for _, room in pairs(self:get_adjacent_rooms()) do
+        if room.generated then
+            room:update()
         end
     end
+
+    -- If the player entered a different room
+    if self.player.room and self.player.room ~= oldRoom then
+        -- Switch the game view to the player's current room
+        self:switch_to_room(self.player.room)
+    end
+
+    -- Switch rooms when player is on an exit
+    --for _, e in pairs(self.currentRoom.exits) do
+    --    if tiles_overlap(self.player.position, e) then
+    --        break
+    --    end
+    --end
 end

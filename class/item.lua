@@ -44,6 +44,7 @@ function Item:init(itemType)
     self.animateTimer = 0
     self.animationEnabled = true
 
+    self.name = ITEM_NAME[self.itemType]
     self.owner = nil
     self.position = {}
 end

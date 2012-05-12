@@ -42,6 +42,9 @@ function Room:add_object(obj)
 
         -- Re-enable animation
         obj.animationEnabled = true
+
+        -- Add a reference to this room to the item
+        --obj.room = self
     elseif instanceOf(Brick, obj) then
         table.insert(self.bricks, obj)
     end
@@ -253,7 +256,8 @@ function Room:get_exit(search)
     for i,e in pairs(self.exits) do
         if (e.x ~= nil and e.x == search.x) or
            (e.y ~= nil and e.y == search.y) or
-           (e.roomIndex ~= nil and e.roomIndex == search.roomIndex) then
+           (e.roomIndex ~= nil and e.roomIndex == search.roomIndex) or
+           (e.room ~= nil and e.room == search.room) then
             return e
         end
     end
@@ -426,8 +430,14 @@ function Room:update()
     for _, s in pairs(self.sprites) do
         s:physics()
 
-        -- Check if we the sprite is on an item
-        s:check_for_items()
+        -- If the sprite is still in this room
+        if s.room == self then
+            -- If this is a character
+            if instanceOf(Character, s) then
+                -- Check if he is on an item
+                s:check_for_items()
+            end
+        end
     end
     for _, s in pairs(self.sprites) do
         s:post_physics()
@@ -438,8 +448,6 @@ function Room:update()
     for _, s in pairs(self.sprites) do
         if not s.dead then
             table.insert(temp, s)
-        else
-            deadThing = s
         end
     end
     self.sprites = temp

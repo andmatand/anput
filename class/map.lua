@@ -11,6 +11,10 @@ require('util/tile')
 -- A Map generates a random contiguous layout of rooms and their exits
 Map = class('Map')
 
+function Map:init(args)
+    self.game = args.game
+end
+
 function Map:generate()
     self.path = self:generate_path()
     self.branches = self:add_branches(self.path)
@@ -174,22 +178,18 @@ function Map:generate_rooms()
     -- Make a new room for each node
     rooms = {}
     for i,node in ipairs(self.nodes) do
-        --print('\nnode ' .. i)
+        -- Add the new room and attach it to this node
+        r = Room({exits = exits, index = #rooms + 1, game = self.game})
+        r.distanceFromStart = manhattan_distance(node, self.path[1])
+        table.insert(rooms, r)
+        node.room = r
+
         neighbors = find_neighbor_tiles(node, self.nodes, {diagonals = false})
 
         -- Add exits to correct walls of room
         exits = {}
         for j,n in ipairs(neighbors) do
             if n.occupied then
-                --if n.room ~= nil then
-                --  print('neighbor ' .. j .. ' is a room with ' ..
-                --        #n.room.exits .. ' exits')
-                --  for k,e in pairs(n.room.exits) do
-                --      print('  exit ' .. k .. ': ', e.x, e.y, e.roomIndex)
-                --  end
-                --else
-                --  print('neighbor ' .. j .. ' is not a room yet')
-                --end
                 linkedExit = nil
 
                 x = math.random(2, ROOM_W - 2)
@@ -225,8 +225,11 @@ function Map:generate_rooms()
 
                 newExit = Exit({x = x, y = y})
                 if linkedExit ~= nil then
-                    linkedExit.roomIndex = #rooms + 1
+                    linkedExit.roomIndex = #rooms
+                    linkedExit.room = node.room
+
                     newExit.roomIndex = n.room.index
+                    newExit.room = n.room
                 end
                 --print('new exit:', newExit.x, newExit.y, newExit.roomIndex)
 
@@ -234,11 +237,8 @@ function Map:generate_rooms()
             end
         end
 
-        -- Add the new room and attach it to this node
-        r = Room({exits = exits, index = #rooms + 1})
-        r.distanceFromStart = manhattan_distance(node, self.path[1])
-        table.insert(rooms, r)
-        node.room = r
+        -- Add the exits to the room we created
+        node.room.exits = exits
     end
 
     -- Find the room that's farthest away from the first room, and set it as
@@ -284,6 +284,10 @@ function Map:add_required_objects()
     -- Put a sword in the starting room
     local sword = Weapon('sword')
     self.rooms[1].requiredObjects = {sword}
+
+    -- DEBUG: put a potion in the first room
+    --local potion = Item('potion')
+    --table.insert(self.rooms[1].requiredObjects, potion)
 
     -- Create a table of the 5 earliest rooms
     local earlyRooms = self:get_early_rooms(5)

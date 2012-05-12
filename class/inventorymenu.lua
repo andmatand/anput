@@ -17,7 +17,7 @@ InventoryMenu = class('InventoryMenu')
 function InventoryMenu:init(owner)
     self.owner = owner
 
-    self.size = {w = 11, h = 11}
+    self.size = {w = 9, h = 9}
     self.position = {x = math.floor((SCREEN_W / 2) - (self.size.w / 2)),
                      y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
 
@@ -48,20 +48,19 @@ function InventoryMenu:draw()
         self:update()
     end
 
-    local x = self.position.x
-    local y = self.position.y
-
     -- Draw a border
     love.graphics.setColor(WHITE)
     love.graphics.rectangle('fill',
-                            upscale_x(x), upscale_y(y),
-                            upscale_x(self.size.w),
-                            upscale_y(self.size.h))
+                            upscale_x(self.position.x - 1),
+                            upscale_y(self.position.y - 1),
+                            upscale_x(self.size.w + 2),
+                            upscale_y(self.size.h + 2))
     love.graphics.setColor(BLACK)
     love.graphics.rectangle('fill',
-                            upscale_x(x + 1), upscale_y(y + 1),
-                            upscale_x(self.size.w - 2),
-                            upscale_y(self.size.h - 2))
+                            upscale_x(self.position.x),
+                            upscale_y(self.position.y),
+                            upscale_x(self.size.w),
+                            upscale_y(self.size.h))
 
     -- Switch to 2x scale
     SCALE_X = SCALE_X * 2

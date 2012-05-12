@@ -5,6 +5,7 @@ function Exit:init(args)
     self.y = args.y
 
     self.roomIndex = nil
+    self.room = nil
 end
 
 function Exit:get_doorframes()

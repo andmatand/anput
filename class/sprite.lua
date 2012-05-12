@@ -15,38 +15,6 @@ function Sprite:init()
     --self.y = function() return self.position.y end
 end
 
-function Sprite:check_for_items()
-    local pickedSomethingUp = false
-
-    -- If we are a character who is alive
-    if instanceOf(Character, self) and not self.dead then
-        for _, i in pairs(self.room.items) do
-            -- If this item has a position
-            if i.position then
-                -- If we are standing on this item
-                if tiles_overlap(self.position, i.position) then
-                    -- Pick it up
-                    if self:pick_up(i) then
-                        -- If we didn't already pick something up, and we are
-                        -- in a room, and it is the game's current room
-                        if (not pickedSomethingUp and self.room and
-                            self.room == self.room.game.currentRoom) then
-                            -- Play a pick-up sound depending on who we are
-                            if instanceOf(Player, self) then
-                                sound.playerGetItem:play()
-                            else
-                                sound.monsterGetItem:play()
-                            end
-                        end
-
-                        pickedSomethingUp = true
-                    end
-                end
-            end
-        end
-    end
-end
-
 function Sprite:die()
     self.dead = true
 end
@@ -92,9 +60,12 @@ function Sprite:hit(patient)
     return true
 end
 
-function Sprite:move_to(coordinates)
-    self.position.x = coordinates.x
-    self.position.y = coordinates.y
+function Sprite:move_to_room(room)
+    -- Remove ourself from our current room
+    self.room:remove_sprite(self)
+
+    -- Add ourself to the new room
+    room:add_object(self)
 end
 
 function Sprite:physics()
@@ -120,8 +91,9 @@ function Sprite:physics()
     if not self.velocity.x then self.velocity.x = 0 end
     if not self.velocity.y then self.velocity.y = 0 end
 
-    -- Test coordinates
-    self.test = {x = self.position.x, y = self.position.y}
+    -- Create a test version of our position and room
+    local test = {position = {x = self.position.x, y = self.position.y},
+                  room = self.room}
 
     -- Restrict velocity to only one axis at a time (no diagonal moving)
     if self.velocity.x ~= 0 and self.velocity.y ~= 0 then
@@ -129,12 +101,12 @@ function Sprite:physics()
     end
 
     -- Compute test coordinates for potential new position
-    self.test.x = self.test.x + self.velocity.x
-    self.test.y = self.test.y + self.velocity.y
+    test.position.x = test.position.x + self.velocity.x
+    test.position.y = test.position.y + self.velocity.y
     
     -- Check for collision with bricks
-    for i,b in pairs(self.room.bricks) do
-        if tiles_overlap(self.test, b) then
+    for i,b in pairs(test.room.bricks) do
+        if tiles_overlap(test.position, b) then
             if self:hit(b) then
                 -- Registered as a hit; done with physics
                 return
@@ -144,17 +116,50 @@ function Sprite:physics()
     end
 
     -- Check for collision with room edge
-    if self.test.x < 0 or self.test.x > ROOM_W - 1 or
-       self.test.y < 0 or self.test.y > ROOM_H - 1 then
-       if self:hit(nil) then
-           return
-       end
+    --if test.position.x < 0 or test.position.x > ROOM_W - 1 or
+    --   test.position.y < 0 or test.position.y > ROOM_H - 1 then
+    --   if self:hit(nil) then
+    --       return
+    --   end
+    --end
+
+    -- Iterate through the room's exits
+    for _, e in pairs(test.room.exits) do
+        -- If we are going to hit this exit
+        if tiles_overlap(test.position, e) then
+            -- If we are a player
+            if instanceOf(Player, self) then
+                -- Generate the room if it hasn't already been generated
+                if not e.room.generated then
+                    e.room:generate_all()
+                end
+            end
+
+            -- If the room it leads to has been generated
+            if e.room.generated then
+                print('testing entry to room')
+
+                local oldRoom = test.room
+
+                -- Move test object to new room
+                test.room = e.room
+
+                -- Move the test coordinates to the doorway of the
+                -- corresponding exit
+                local newExit = test.room:get_exit({room = oldRoom})
+                test.position = newExit:get_doorway()
+
+                break
+            else
+                return
+            end
+        end
     end
 
     -- Check for collision with other sprites
-    for i,s in pairs(self.room.sprites) do
+    for i,s in pairs(test.room.sprites) do
         if s ~= self then
-            if tiles_overlap(self.test, s.position) then
+            if tiles_overlap(test.position, s.position) then
                 -- If the other sprite hasn't done its physics yet
                 if s.didPhysics == false and s.owner ~= self then
                     s.physics(s)
@@ -167,9 +172,12 @@ function Sprite:physics()
             -- If the other sprite hasn't done physics yet, and we would have
             -- hit it if it had already
             elseif s.didPhysics == false and
-                   tiles_overlap(self.test, s:preview_position()) then
+                   tiles_overlap(test.position, s:preview_position()) then
                 -- Allow us to move
-                self.position = {x = self.test.x, y = self.test.y}
+                self.position = {x = test.position.x, y = test.position.y}
+                if test.room ~= self.room then
+                    self:move_to_room(test.room)
+                end
                 self.moved = true
 
                 -- Do physics on the other sprite (will hit us)
@@ -196,7 +204,10 @@ function Sprite:physics()
     end
 
     -- If there were no hits, make the move for real
-    self.position = {x = self.test.x, y = self.test.y}
+    self.position = {x = test.position.x, y = test.position.y}
+    if test.room ~= self.room then
+        self:move_to_room(test.room)
+    end
     self.moved = true
 end
 
@@ -211,7 +222,7 @@ function Sprite:receive_hit(agent)
 end
 
 function Sprite:set_position(position)
-    self.position = position
+    self.position = {x = position.x, y = position.y}
 end
 
 function Sprite:update()
