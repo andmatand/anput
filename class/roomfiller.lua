@@ -110,82 +110,66 @@ function RoomFiller:add_monsters()
     return false
 end
 
-
-function RoomFiller:add_objects(num, fTest, fNew, freeTiles)
-    args = {}
-    for i = 1, num do
-        for tries = 1, 5 do
-            local position = freeTiles[math.random(1, #freeTiles)]
-
-            local ok = true
-            if fTest == nil then
-                -- Default test function: Don't place in occupied tile
-                if not self.room:tile_walkable(position) then
-                    ok = false
-                end
-            else
-                testResult = fTest(self, position)
-                ok = testResult.ok
-                for k,v in pairs(testResult) do
-                    if k ~= 'ok' then
-                        args[k] = v
-                    end
-                end
-            end
-
-            if ok then
-                args.position = position
-                self.room:add_object(fNew(args))
-                break
-            end
-        end
-    end
-end
-
 function RoomFiller:add_turrets()
     if self.addedTurrets then
         -- Flag that this step was already completed
         return true
     end
 
-    local numTurrets = math.random(0, #self.room.bricks * .03)
-    fTest =
-        function(roomFiller, pos)
+    local numTurrets = math.random(0, #self.room.bricks * .02 *
+                                   (self.room.difficulty * .1))
+
+    -- Make a copy of the room's brick table
+    local freeTiles = copy_table(self.room.bricks)
+
+    for i = 1, numTurrets do
+        while #freeTiles > 0 do
+            local freeTilesIndex = math.random(1, #freeTiles)
+            local position = freeTiles[freeTilesIndex]
+            local dir
+            local ok = false
+
             -- Find a direction in which we can fire
-            dirs = {1, 2, 3, 4}
+            local dirs = {1, 2, 3, 4}
             while #dirs > 0 do
                 index = math.random(1, #dirs)
                 dir = dirs[index]
-                pos2 = {x = pos.x, y = pos.y}
+                local pos2 = {x = position.x, y = position.y}
 
-                -- Find the coordinates of three spaces ahead
+                -- Find the coordinates of 4 spaces ahead
                 if dir == 1 then
-                    pos2.y = pos2.y - 3 -- North
+                    pos2.y = pos2.y - 4 -- North
                 elseif dir == 2 then
-                    pos2.x = pos2.x + 3 -- East
+                    pos2.x = pos2.x + 4 -- East
                 elseif dir == 3 then
-                    pos2.y = pos2.y + 3 -- South
+                    pos2.y = pos2.y + 4 -- South
                 elseif dir == 4 then
-                    pos2.x = pos2.x - 3 -- West
+                    pos2.x = pos2.x - 4 -- West
                 end
 
-                -- Check if there is a line of sight between these tiles
-                if roomFiller.room:line_of_sight(pos, pos2) then
-                    return {dir = dir, ok = true}
+                -- If there is a line of sight between these tiles
+                if self.room:line_of_sight(position, pos2) then
+                    ok = true
+                    break
                 else
                     table.remove(dirs, index)
                 end
             end
-            return {ok = false}
+
+            if ok then
+                local newTurret = Turret(position, dir, 5 * math.random(1, 10))
+                self.room:add_object(newTurret)
+                break
+            else
+                -- Remove this tile from consideration
+                table.remove(freeTiles, freTilesIndex)
+            end
         end
-    fNew =
-        function(pos)
-            return Turret(args.position, args.dir, 5 * math.random(1, 10))
-        end
-    self:add_objects(numTurrets, fTest, fNew, self.room.bricks)
+    end
 
     self.addedTurrets = true
 
+    -- Flag that the turrets weren't already generated
     return false
 end
 
