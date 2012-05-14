@@ -30,7 +30,6 @@ function Monster:init(pos, monsterType)
 
         self.ai.dodge = {dist = 5, prob = 2, delay = 3}
         self.ai.flee = {dist = 15, prob = 9, delay = 3}
-        self.ai.wander.prob = nil
     elseif self.monsterType == 2 then
         self.images = monsterImg.bird
         self.health = 20
@@ -47,7 +46,6 @@ function Monster:init(pos, monsterType)
 
         self.ai.dodge = {dist = 7, prob = 7, delay = 2}
         self.ai.chase = {dist = 10, prob = 9, delay = 2}
-        self.ai.wander.prob = 0
     elseif self.monsterType == 4 then
         self.images = monsterImg.mummy
         self.health = 40

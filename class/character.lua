@@ -30,11 +30,11 @@ function Character:init()
 
     -- Default AI levels
     self.ai = {}
-    self.ai.dodge = {dist = 0, prob = nil, target = nil, delay = 100}
-    self.ai.flee = {dist = 0, prob = nil, target = nil, delay = 100}
-    self.ai.chase = {dist = 0, prob = nil, target = nil, delay = 100}
-    self.ai.shoot = {dist = 0, prob = nil, target = nil, delay = 100}
-    self.ai.wander = {dist = nil, prob = 0, target = nil, delay = 100}
+    self.ai.dodge = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.ai.flee = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.ai.chase = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.ai.shoot = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.ai.wander = {dist = nil, prob = nil, target = nil, delay = nil}
 
     self.aiTimer = 0
 
@@ -181,7 +181,8 @@ function Character:choose_action()
     end
 
     self.closestEnemy = nil
-    if (self:waited_to('chase') or self:waited_to('shoot')) then
+    if (self:waited_to('chase') or self:waited_to('shoot') or
+        self:waited_to('flee')) then
         -- Find the closest character on other team
         local closestDist = 999
         for _, s in pairs(self.room.sprites) do
@@ -899,6 +900,10 @@ end
 
 -- Returns true if we already waited the required delay # of frames
 function Character:waited_to(action)
+    if not self.ai[action].delay then
+        return false
+    end
+
     if (self.aiTimer % self.ai[action].delay == 0 or
         self.ai[action].delay == 0) then
         return true

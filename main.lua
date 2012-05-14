@@ -120,10 +120,10 @@ function love.load()
                          moving = new_image('scarab-moving.png')}
     monsterImg.bird = {default = new_image('bird.png'),
                        dodge = new_image('bird-dodge.png')}
-    monsterImg.mummy = {default = new_image('mummy.png'),
-                        moving = new_image('mummy-moving.png')}
     monsterImg.cat = {default = new_image('cat.png'),
                       moving = new_image('cat-moving.png')}
+    monsterImg.mummy = {default = new_image('mummy.png'),
+                        moving = new_image('mummy-moving.png')}
     monsterImg.ghost = {default = new_image('ghost.png')}
 
     projectileImg = {}
