@@ -267,6 +267,14 @@ function Room:get_fov_obstacles()
     return self.bricks
 end
 
+function Room:is_audible()
+    if self.game.currentRoom == self then
+        return true
+    else
+        return false
+    end
+end
+
 function Room:line_of_sight(a, b)
     if tiles_overlap(a, b) then
         return true

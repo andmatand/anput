@@ -58,7 +58,9 @@ function Character:add_health(amount)
         if instanceOf(Player, patient) then
             sound.playerGetHP:play()
         elseif instanceOf(Monster, patient) then
-            sound.monsterGetHP:play()
+            if self:is_audible() then
+                sound.monsterGetHP:play()
+            end
         end
 
         return true
@@ -143,7 +145,9 @@ function Character:check_for_items()
                         if instanceOf(Player, self) then
                             sound.playerGetItem:play()
                         else
-                            sound.monsterGetItem:play()
+                            if self:is_audible() then
+                                sound.monsterGetItem:play()
+                            end
                         end
                     end
 
@@ -151,17 +155,6 @@ function Character:check_for_items()
                 end
             end
         end
-    end
-end
-
-
--- Returns true if we already waited the required delay # of frames
-function Character:waited_to(action)
-    if (self.aiTimer % self.ai[action].delay == 0 or
-        self.ai[action].delay == 0) then
-        return true
-    else
-        return false
     end
 end
 
@@ -275,7 +268,7 @@ function Character:choose_action()
     end
 
     -- If no action was chosen, and we're not following a path
-    if action == nil and not self.path.nodes then
+    if not action and not self.path.nodes then
         if self.ai.wander.prob then
             if math.random(self.ai.wander.prob, 10) == 10 then
                 action = AI_ACTION.wander
@@ -312,7 +305,7 @@ function Character:do_ai()
         --print('action: dodge')
         self:dodge(self.ai.dodge.target)
     elseif self.action == AI_ACTION.flee then
-        --print('action: flee')
+        print('action: flee')
         self:flee_from(self.ai.flee.target)
     elseif self.action == AI_ACTION.chase then
         -- print('action: chase')
@@ -587,7 +580,7 @@ function Character:find_path(dest)
 end
 
 function Character:flee_from(sprite)
-    if self:waited_to('flee') then
+    if not self:waited_to('flee') then
         return
     end
 
@@ -761,7 +754,9 @@ function Character:receive_damage(amount)
     end
 
     if not instanceOf(Player, self) and not self.dead then
-        sound.monsterCry:play()
+        if self:is_audible() then
+            sound.monsterCry:play()
+        end
     end
 end
 
@@ -899,5 +894,15 @@ function Character:update()
         -- Flash if hurt
         self.flashTimer = 5
         self.hurt = false
+    end
+end
+
+-- Returns true if we already waited the required delay # of frames
+function Character:waited_to(action)
+    if (self.aiTimer % self.ai[action].delay == 0 or
+        self.ai[action].delay == 0) then
+        return true
+    else
+        return false
     end
 end

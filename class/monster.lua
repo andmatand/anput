@@ -30,6 +30,7 @@ function Monster:init(pos, monsterType)
 
         self.ai.dodge = {dist = 5, prob = 2, delay = 3}
         self.ai.flee = {dist = 15, prob = 9, delay = 3}
+        self.ai.wander.prob = nil
     elseif self.monsterType == 2 then
         self.images = monsterImg.bird
         self.health = 20
@@ -78,7 +79,9 @@ end
 function Monster:die()
     Character.die(self)
 
-    sound.monsterDie:play()
+    if self:is_audible() then
+        sound.monsterDie:play()
+    end
 end
 
 function Monster:hit(patient)
