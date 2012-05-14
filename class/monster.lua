@@ -3,11 +3,11 @@ require('class/character')
 Monster = class('Monster', Character)
 
 Monster.static.difficulties = {
-     1, -- 1. Scarab
-     5, -- 2. Bird
-    10, -- 3. mummy
-    15, -- 4. cat
-    40  -- 5. ghost
+     1, -- 1 scarab
+     5, -- 2 bird
+    10, -- 3 cat
+    20, -- 4 mummy
+    40  -- 5 ghost
     }
 
 function Monster:init(pos, monsterType)
@@ -28,41 +28,37 @@ function Monster:init(pos, monsterType)
         self.images = monsterImg.scarab
         self.health = 10
 
-        self.ai.dodge = {dist = 5, prob = 2, delay = 4}
+        self.ai.dodge = {dist = 5, prob = 2, delay = 3}
         self.ai.flee = {dist = 15, prob = 9, delay = 3}
-        self.ai.chase = {dist = 2, prob = 5, delay = 5}
     elseif self.monsterType == 2 then
         self.images = monsterImg.bird
         self.health = 20
 
-        self:pick_up(Weapon('sword'), false)
+        self:pick_up(Weapon('sword'))
 
         self.ai.dodge = {dist = 5, prob = 5, delay = 5}
         self.ai.chase = {dist = 10, prob = 8, delay = 3}
     elseif self.monsterType == 3 then
-        self.images = monsterImg.mummy
-        self.health = 40
-
-        self:pick_up(Weapon('sword'), false)
-        local bow = Weapon('bow')
-        bow:add_ammo(20)
-        self:pick_up(bow, false)
-
-        self.ai.dodge = {dist = 5, prob = 7, delay = 4}
-        self.ai.chase = {dist = 20, prob = 7, delay = 10}
-        self.ai.shoot = {dist = 15, prob = 7, delay = 4}
-    elseif self.monsterType == 4 then
         self.images = monsterImg.cat
         self.health = 40
 
-        self.inventory:add(Weapon('sword'))
+        self:pick_up(Weapon('sword'))
+
+        self.ai.dodge = {dist = 7, prob = 7, delay = 2}
+        self.ai.chase = {dist = 10, prob = 9, delay = 2}
+        self.ai.wander.prob = 0
+    elseif self.monsterType == 4 then
+        self.images = monsterImg.mummy
+        self.health = 40
+
+        self:pick_up(Weapon('sword'))
         local bow = Weapon('bow')
         bow:add_ammo(20)
-        self:pick_up(bow, false)
+        self:pick_up(bow)
 
-        self.ai.dodge = {dist = 7, prob = 9, delay = 3}
-        self.ai.chase = {dist = 10, prob = 9, delay = 3}
-        self.ai.shoot = {dist = 15, prob = 5, delay = 3}
+        self.ai.dodge = {dist = 5, prob = 7, delay = 2}
+        self.ai.chase = {dist = 20, prob = 8, delay = 3}
+        self.ai.shoot = {dist = 15, prob = 8, delay = 2}
     elseif self.monsterType == 5 then
         self.images = monsterImg.ghost
         self.health = 80

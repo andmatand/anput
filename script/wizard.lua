@@ -10,6 +10,7 @@ wizard.aiDelay = 1
 wizard.ai.dodge = {dist = 5, prob = 10, delay = 0}
 wizard.ai.chase = {dist = 2, prob = 10, delay = 0}
 wizard.ai.shoot = {dist = 10, prob = 10, delay = 0}
+wizard.ai.wander.prob = nil
 
 -- Trader properties
 wizard.price.quantity = 7

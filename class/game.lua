@@ -119,11 +119,6 @@ function Game:input()
     elseif love.keyboard.isDown('a') then
         self.player:step(4)
     end
-
-    -- Get monsters' directional input
-    if self.currentRoom ~= nil then
-        self.currentRoom:character_input()
-    end
 end
 
 function Game:keypressed(key)
@@ -253,7 +248,7 @@ end
 
 function Game:switch_to_room(room)
     if DEBUG then
-        print('switching to room ' .. room.roomIndex)
+        print('switching to room ' .. room.index)
     end
 
     prevRoom = self.currentRoom

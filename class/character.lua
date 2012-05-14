@@ -9,10 +9,14 @@ require('util/tile')
 -- A Character is a Sprite with AI
 Character = class('Character', Sprite)
 
+AI_ACTION = {dodge = 1,
+             flee = 2,
+             chase = 3,
+             shoot = 4,
+             wander = 5}
+
 function Character:init()
     Sprite.init(self)
-
-    Character.static.actions = {dodge = 1, flee = 2, chase = 3, shoot = 4}
 
     self.frame = 1
 
@@ -26,10 +30,11 @@ function Character:init()
 
     -- Default AI levels
     self.ai = {}
-    self.ai.dodge = {dist = 0, prob = 0, target = nil, delay = 4}
-    self.ai.flee = {dist = 0, prob = 0, target = nil, delay = 4}
-    self.ai.chase = {dist = 0, prob = 0, target = nil, delay = 4}
-    self.ai.shoot = {dist = 0, prob = 0, target = nil, delay = 4}
+    self.ai.dodge = {dist = 0, prob = nil, target = nil, delay = 100}
+    self.ai.flee = {dist = 0, prob = nil, target = nil, delay = 100}
+    self.ai.chase = {dist = 0, prob = nil, target = nil, delay = 100}
+    self.ai.shoot = {dist = 0, prob = nil, target = nil, delay = 100}
+    self.ai.wander = {dist = nil, prob = 0, target = nil, delay = 100}
 
     self.aiTimer = 0
 
@@ -73,12 +78,14 @@ function Character:afraid_of(sprite)
     return true
 end
 
-function Character:chase(sprite)
+function Character:chase(target)
     -- Set path to destination
-    self:find_path(sprite.position)
-    self.path.action = Character.static.actions.chase
-    if instanceOf(Character, sprite) then
-        self.path.character = sprite
+    self:find_path(target:get_position())
+    self.path.action = AI_ACTION.chase
+    if instanceOf(Character, target) then
+        self.path.character = target
+    else
+        self.path.character = nil
     end
 
     -- Start following the path
@@ -212,26 +219,44 @@ function Character:choose_action()
 
     self.ai.chase.target = nil
     if self:waited_to('chase') then
-        -- If we are not already following a path
-        if not self.path.nodes or self:path_obsolete() then
-            --print('new chase target')
-            -- Set the chase target
-            self.ai.chase.target = self.closestEnemy
+        -- If we are chasing a character
+        if self.path.character then
+            -- If the character we were chasing entered another room
+            if self.path.character.room ~= self.room then
+                local exit = self.room:get_exit({room =
+                                                 self.path.character.room})
+                self.ai.chase.target = exit
+
+                if DEBUG then
+                    print('new chase target: exit')
+                end
+            end
+        end
+
+        -- If we don't already have a potential chase target
+        if not self.ai.chase.target then
+            -- If we are not already following a path, or we are following a
+            -- path that is now obsolete
+            if not self.path.nodes or self:path_obsolete() then
+                --if DEBUG then
+                --    print('new chase target: closest enemy')
+                --end
+
+                -- Set the closest enemy as our chase target
+                self.ai.chase.target = self.closestEnemy
+            end
         end
     end
 
     -- Set the flee target
     self.ai.flee.target = self.closestEnemy
 
-    -- Clear all old AI probability scores
-    for k in pairs(self.ai) do
-        self.ai[k].score = 0
-    end
-
     -- Give random scores to each of the AI actions
     for k, a in pairs(self.ai) do
-        if a.prob > 0 and a.target and
-           manhattan_distance(self.position, a.target.position) <= a.dist then
+        if (a.prob and -- This action is not disabled
+            a.target and -- This action has a target
+            manhattan_distance(self.position, -- The target is close enough
+                               a.target:get_position()) <= a.dist) then
             a.score = math.random(a.prob, 10)
         else
             a.score = -1
@@ -242,10 +267,19 @@ function Character:choose_action()
     local highestProb = 0
     local action = nil
     for k, v in pairs(self.ai) do
-        if v.score == 10 and v.prob > highestProb  then
+        if v.score == 10 and v.prob > highestProb then
             highestProb = v.prob
-            action = Character.actions[k]
+            action = AI_ACTION[k]
             --print('best so far:', k)
+        end
+    end
+
+    -- If no action was chosen, and we're not following a path
+    if action == nil and not self.path.nodes then
+        if self.ai.wander.prob then
+            if math.random(self.ai.wander.prob, 10) == 10 then
+                action = AI_ACTION.wander
+            end
         end
     end
 
@@ -259,34 +293,36 @@ function Character:do_ai()
         self.aiTimer = 0
     end
 
-    -- If we are currently following a path, continue to do that
-    if self.path.nodes then
-        self:follow_path()
-    end
+    -- Continue to follow our current path (if we have one)
+    self:follow_path()
 
-    -- Check if we should dodge a Player
+    -- Check if we should dodge a Player on our team walking at us
     for _, s in pairs(self.room.sprites) do
         if instanceOf(Player, s) and s.team == self.team then
             if s:will_hit(self) then
                 self:dodge(s)
+                return
             end
         end
     end
 
     self.action = self:choose_action()
 
-    if self.action == Character.static.actions.dodge then
+    if self.action == AI_ACTION.dodge then
         --print('action: dodge')
         self:dodge(self.ai.dodge.target)
-    elseif self.action == Character.static.actions.flee then
+    elseif self.action == AI_ACTION.flee then
         --print('action: flee')
         self:flee_from(self.ai.flee.target)
-    elseif self.action == Character.static.actions.chase then
-        print('action: chase')
+    elseif self.action == AI_ACTION.chase then
+        -- print('action: chase')
         self:chase(self.ai.chase.target)
-    elseif self.action == Character.static.actions.shoot then
+    elseif self.action == AI_ACTION.shoot then
         --print('action: shoot')
         self:shoot(self:direction_to(self.ai.shoot.target.position))
+    elseif self.action == AI_ACTION.wander then
+        -- Step in a random direction
+        self:step(math.random(1, 4))
     end
 end
 
@@ -418,7 +454,7 @@ function Character:dodge(sprite)
     if destination ~= nil then
         -- Set path to destination
         self:find_path(destination)
-        self.path.action = Character.static.actions.dodge
+        self.path.action = AI_ACTION.dodge
 
         -- Start following the path
         self:follow_path()
@@ -435,7 +471,7 @@ function Character:draw(pos)
     -- Determine which image of this character to draw
     if (self.images.moving and
         (self.path.nodes or self.moved or
-         self.action == Character.static.actions.flee)) then
+         self.action == AI_ACTION.flee)) then
         self.currentImage = self.images.moving
     elseif (self.images.sword and
             self.armory:get_current_weapon_name() == 'sword') then
@@ -521,10 +557,6 @@ function Character:drop(items)
             end
         end
 
-        if not item.position then
-            print('dropping item with no position!')
-        end
-
         self:drop_item(item)
 
         if DEBUG then
@@ -549,8 +581,9 @@ function Character:drop_item(item)
 end
 
 function Character:find_path(dest)
+    print('finding path to', dest.x, dest.y)
     self.path.nodes = self.room:find_path(self.position, dest, self.team)
-    self.path.destination = dest
+    self.path.destination = {x = dest.x, y = dest.y}
 end
 
 function Character:flee_from(sprite)
@@ -558,35 +591,30 @@ function Character:flee_from(sprite)
         return
     end
 
-    if math.random(0, 1) == 0 then
-        if sprite.position.x < self.position.x then
-            self:step(2) -- East
-        elseif sprite.position.x > self.position.x then
-            self:step(4) -- West
-        else
-            if math.random(0, 1) == 0 then
-                self:step(2) else self:step(4)
-            end
-        end
-    else
-        if self.position.y > sprite.position.y then
-            self:step(3) -- South
-        elseif self.position.y < sprite.position.y then
-            self:step(1) -- North
-        else
-            if math.random(0, 1) == 0 then
-                self:step(3) else self:step(1)
+    local currentDistance = manhattan_distance(self.position, sprite.position)
+    local neighborTiles = find_neighbor_tiles(self.position, self.room.bricks,
+                                              {diagonals = false})
+
+    -- Iterate through our neighboring tiles
+    for _, n in pairs(neighborTiles) do
+        -- If this tile is not occupied by a brick
+        if not n.occupied then
+            -- If this tile is farther away from the sprite than our current
+            -- position
+            if manhattan_distance(n, sprite.position) > currentDistance then
+                self:step_toward(n)
+                break
             end
         end
     end
 end
 
 function Character:follow_path()
-    if self.path.action == Character.static.actions.chase then
+    if self.path.action == AI_ACTION.chase then
         if not self:waited_to('chase') then
             return
         end
-    elseif self.path.action == Character.static.actions.dodge then
+    elseif self.path.action == AI_ACTION.dodge then
         if not self:waited_to('dodge') then
             return
         end
@@ -596,19 +624,26 @@ function Character:follow_path()
         return false
     end
 
+    -- If we are adjacent to the next tile of the path
     if tiles_touching(self.position, self.path.nodes[1]) then
+        -- Step onto the next tile of the path
         self:step(self:direction_to(self.path.nodes[1]))
 
         -- Pop the step off the path
         table.remove(self.path.nodes, 1)
 
         if #self.path.nodes == 0 then
+            if DEBUG then
+                print('path complete!')
+            end
             self.path.nodes = nil
         end
     else
         -- We got off the path somehow; abort
         self.path.nodes = nil
-        print('aborted path')
+        if DEBUG then
+            print('aborted path')
+        end
         return false
     end
 
@@ -643,7 +678,7 @@ function Character:path_obsolete()
         -- character now is
         if manhattan_distance(self.path.destination,
                               self.path.character.position) > 5 then
-            print('obsolete')
+            print('path is obsolete')
             return true
         end
     end

@@ -19,6 +19,10 @@ function Sprite:die()
     self.dead = true
 end
 
+function Sprite:get_position()
+    return {x = self.position.x, y = self.position.y}
+end
+
 -- Preview what position the sprite will be at when its velocity is added
 function Sprite:preview_position()
     if not self.position.x or not self.position.y then

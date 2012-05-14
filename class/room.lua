@@ -405,6 +405,10 @@ function Room:tile_walkable(tile)
 end
 
 function Room:update()
+    -- Get monsters' directional input
+    self:character_input()
+
+
     -- Update turrets
     for _, t in pairs(self.turrets) do
         t:update()

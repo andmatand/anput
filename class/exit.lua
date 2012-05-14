@@ -59,3 +59,7 @@ function Exit:get_doorway()
 
     return {x = x, y = y}
 end
+
+function Exit:get_position()
+    return {x = self.x, y = self.y}
+end
