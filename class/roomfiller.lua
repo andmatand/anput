@@ -180,8 +180,20 @@ function RoomFiller:add_required_objects()
         return true
     end
 
-    -- Give positions to objects required to be in this room
-    self:position_objects(self.room.requiredObjects)
+    -- For objects that already have positions, just add them to the room
+    local unpositionedObjects = {}
+    for _, obj in pairs(self.room.requiredObjects) do
+        local pos = obj:get_position()
+
+        if pos.x and pos.y  then
+            self.room:add_object(obj)
+        else
+            table.insert(unpositionedObjects, obj)
+        end
+    end
+
+    -- Give positions to objects that need positions
+    self:position_objects(unpositionedObjects)
     self.room.requiredObjects = nil
 
     -- Flag that the required objects were not already added before now

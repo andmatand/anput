@@ -169,6 +169,7 @@ function love.load()
     sound.monsterGetHP = Sound('res/sfx/monster-get-hp.wav')
     sound.monsterDie = Sound('res/sfx/monster-die.wav')
     sound.playerDie = Sound('res/sfx/player-die.wav')
+    sound.secret = Sound('res/sfx/secret.wav')
 
     showDebug = false
     flickerMode = false

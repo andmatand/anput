@@ -52,6 +52,16 @@ function Game:draw()
         end
     end
 
+    -- DEBUG: show false bricks
+    --for _, b in pairs(self.currentRoom.bricks) do
+    --    if instanceOf(FalseBrick, b) then
+    --        love.graphics.setColor(0, 255, 0, 255)
+    --        love.graphics.rectangle('fill', upscale_x(b.x), upscale_x(b.y),
+    --                                upscale_x(1), upscale_y(1))
+    --    end
+    --end
+
+
     self:draw_metadata()
 
     if self.paused then

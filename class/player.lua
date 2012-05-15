@@ -63,7 +63,7 @@ function Player:hit(patient)
     --                       10))
     --end
 
-    return Character.hit(self, patient)
+    return Player.super.hit(self, patient)
 end
 
 function Player:receive_damage(amount)

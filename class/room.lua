@@ -24,15 +24,9 @@ function Room:add_object(obj)
     if instanceOf(Sprite, obj) then
         -- Add this sprite to the room's sprite table
         table.insert(self.sprites, obj)
-
-        -- Add a reference to this room to the sprite
-        obj.room = self
     elseif instanceOf(Turret, obj) then
         -- Add this turret to the room's turret table
         table.insert(self.turrets, obj)
-
-        -- Add a reference to this room to the turret
-        obj.room = self
     elseif instanceOf(Item, obj) then
         -- Add this item to the room's item table
         table.insert(self.items, obj)
@@ -42,12 +36,14 @@ function Room:add_object(obj)
 
         -- Re-enable animation
         obj.animationEnabled = true
-
-        -- Add a reference to this room to the item
-        --obj.room = self
     elseif instanceOf(Brick, obj) then
         table.insert(self.bricks, obj)
+    else
+        return false
     end
+
+    -- Add a reference to this room to the object
+    obj.room = self
 end
 
 function Room:add_message(message)
@@ -472,6 +468,15 @@ function Room:update()
         end
     end
     self.items = temp
+
+    -- Remove all dead bricks
+    local temp = {}
+    for _, b in pairs(self.bricks) do
+        if not b.dead then
+            table.insert(temp, b)
+        end
+    end
+    self.bricks = temp
 
     -- Iterate through the room objects which can have mouths
     --for _, o in pairs(self.sprites) do

@@ -80,6 +80,10 @@ function Item:draw()
     end
 end
 
+function Item:get_position()
+    return {x = self.position.x, y = self.position.y}
+end
+
 function Item:set_position(position)
     self.position = {x = position.x, y = position.y}
 end

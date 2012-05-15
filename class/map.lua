@@ -1,3 +1,4 @@
+require('class/falsebrick')
 require('class/exit')
 require('class/mapdisplay')
 require('class/pathfinder')
@@ -22,6 +23,7 @@ function Map:generate()
 
     self.rooms = self:generate_rooms()
 
+    self:add_secret_passages()
     self:add_required_objects()
 
     return self.rooms
@@ -283,7 +285,7 @@ end
 function Map:add_required_objects()
     -- Put a sword in the starting room
     local sword = Weapon('sword')
-    self.rooms[1].requiredObjects = {sword}
+    table.insert(self.rooms[1].requiredObjects, sword)
 
     -- DEBUG: put a potion in the first room
     --local potion = Item('potion')
@@ -317,4 +319,23 @@ function Map:add_required_objects()
             table.remove(earlyRooms, roomNum)
         end
     end
+end
+
+function Map:add_secret_passages()
+    for _, r in pairs(self.rooms) do
+        -- If this room has only 1 exit
+        if #r.exits == 1 then
+            -- Put a false brick in front of the exit that leads to this room
+            local adjacentRoom = r.exits[1].room
+            local adjacentExit = adjacentRoom:get_exit({room = r})
+            local falseBrick = FalseBrick(adjacentExit:get_doorway())
+            table.insert(adjacentRoom.requiredObjects, falseBrick)
+        end
+    end
+
+    -- DEBUG: put false brick in first room
+    --local exit = self.rooms[1].exits[1]
+    ---- Put a false brick in front of the exit that leads to this room
+    --local falseBrick = FalseBrick(exit:get_doorway())
+    --table.insert(self.rooms[1].requiredObjects, falseBrick)
 end
