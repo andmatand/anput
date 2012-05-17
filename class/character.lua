@@ -330,10 +330,10 @@ function Character:die()
 
         -- If this item is a weapon
         if instanceOf(Weapon, item) then
-            -- We are a not the game's player
-            if self ~= self.room.game.player then
-                -- If the game's player already has this type of weapon
-                if self.room.game.player:has_item(item.itemType) then
+            -- If we are a not a player
+            if not instanceOf(Player, self) then
+                -- If the weapon is a sword
+                if item.itemType == ITEM_TYPE.sword then
                     -- Do not drop it
                     ok = false
                 end
@@ -575,7 +575,10 @@ function Character:drop_item(item)
 end
 
 function Character:find_path(dest)
-    print('finding path to', dest.x, dest.y)
+    if DEBUG then
+        print('finding path to', dest.x, dest.y)
+    end
+
     self.path.nodes = self.room:find_path(self.position, dest, self.team)
     self.path.destination = {x = dest.x, y = dest.y}
 end
