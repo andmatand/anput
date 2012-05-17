@@ -140,6 +140,7 @@ function love.load()
     swordImg = new_image('sword.png')
     bowImg = new_image('bow.png')
     staffImg = new_image('staff.png')
+    ankhImg = new_image('ankh.png')
 
     -- Verbs
     handImg = new_image('hand.png')

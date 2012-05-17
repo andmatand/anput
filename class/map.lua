@@ -319,12 +319,15 @@ function Map:add_required_objects()
             table.remove(earlyRooms, roomNum)
         end
     end
+
+    -- Put the ankh in the last room
+    table.insert(self.lastRoom.requiredObjects, Item('ankh'))
 end
 
 function Map:add_secret_passages()
     for _, r in pairs(self.rooms) do
         -- If this room has only 1 exit
-        if #r.exits == 1 then
+        if r.distanceFromStart > 0 and #r.exits == 1 then
             -- Put a false brick in front of the exit that leads to this room
             local adjacentRoom = r.exits[1].room
             local adjacentExit = adjacentRoom:get_exit({room = r})
@@ -339,3 +342,8 @@ function Map:add_secret_passages()
     --local falseBrick = FalseBrick(exit:get_doorway())
     --table.insert(self.rooms[1].requiredObjects, falseBrick)
 end
+
+function Map:update()
+    self.display:update()
+end
+

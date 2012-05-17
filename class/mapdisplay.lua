@@ -13,6 +13,7 @@ function MapDisplay:init(nodes)
                       y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
     self.position = {x = upscale_x(position.x),
                      y = upscale_y(position.y)}
+    self.flash = {timer = 0, state = false}
 end
 
 function MapDisplay:draw(currentRoom)
@@ -40,7 +41,7 @@ function MapDisplay:draw(currentRoom)
 
     for _, n in pairs(self.nodes) do
         if n.room.visited then
-            if n.room == currentRoom then
+            if n.room == currentRoom and self.flash.state then
                 love.graphics.setColor(MAGENTA)
             elseif n.finalRoom then
                 love.graphics.setColor(CYAN)
@@ -91,4 +92,13 @@ function MapDisplay:find_map_offset()
 
     self.mapOffset = {x = (displayW / 2) - (mapW / 2) - (w * self.nodeSize),
                       y = (displayH / 2) - (mapH / 2) - (n * self.nodeSize)}
+end
+
+function MapDisplay:update()
+    if self.flash.timer > 0 then
+        self.flash.timer = self.flash.timer - 1
+    else
+        self.flash.state = not self.flash.state
+        self.flash.timer = 4
+    end
 end

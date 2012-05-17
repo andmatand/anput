@@ -7,13 +7,15 @@ ITEM_TYPE = {potion = 1,
              shinything = 3,
              sword = 4,
              bow = 5,
-             staff = 6}
+             staff = 6,
+             ankh = 7}
 ITEM_NAME = {'POTION',
              'ARROWS',
              'SHINY\nTHING',
              'SWORD',
              'BOW',
-             'STAFF'}
+             'STAFF',
+             'ANKH'}
 
 function Item:init(itemType)
     if type(itemType) == 'number' then
@@ -36,6 +38,8 @@ function Item:init(itemType)
             {image = shinyThingImg[3], delay = 2},
             {image = shinyThingImg[2], delay = 2},
             {image = shinyThingImg[3], delay = 2}}
+    elseif self.itemType == ITEM_TYPE.ankh then
+        self.frames = {{image = ankhImg}}
     else
         self.frames = nil
     end

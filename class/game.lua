@@ -293,7 +293,12 @@ function Game:update()
     self.statusBar:update()
 
     if self.paused then
-        self.inventoryMenu:update()
+        if self.menuState == 'inventory' then
+            self.inventoryMenu:update()
+        elseif self.menuState == 'map' then
+            self.map:update()
+        end
+
         return
     end
 
