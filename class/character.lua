@@ -497,6 +497,14 @@ end
 
 -- Drops a table of items, choosing good positions for them
 function Character:drop(items)
+    -- If we are not dead
+    if not self.dead then
+        -- If we are a player
+        if instanceOf(Player, self) then
+            sound.playerDropItem:play()
+        end
+    end
+
     -- Find all neighboring tiles
     local neighbors = find_neighbor_tiles(self.position)
 
