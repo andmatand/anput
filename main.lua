@@ -143,7 +143,8 @@ function love.load()
     ankhImg = new_image('ankh.png')
 
     -- Verbs
-    handImg = new_image('hand.png')
+    dropImg = new_image('drop.png')
+    useImg = new_image('use.png')
 
     -- Create image data for a brick (a magenta rectangle)
     local brickImgData = love.image.newImageData(upscale_x(1),

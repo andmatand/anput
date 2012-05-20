@@ -85,6 +85,9 @@ function Inventory:remove(item)
     -- Search for the item in our items table
     for i, invItem in ipairs(self.items) do
         if invItem == item then
+            -- Remove ourself as owner
+            invItem.owner = nil
+
             -- Remove the item from our items table
             table.remove(self.items, i)
             break

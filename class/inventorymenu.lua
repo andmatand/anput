@@ -96,11 +96,24 @@ function InventoryMenu:draw()
             end
 
             -- Draw the USE verb
-            love.graphics.draw(handImg,
+            love.graphics.draw(useImg,
                                upscale_x(self.slotPositions[2].x),
                                upscale_y(self.slotPositions[2].y),
                                0, SCALE_X, SCALE_Y)
         end
+
+        -- Set the color based on whether this verb button is pressed
+        if self.verbs.drop.isPushed then
+            love.graphics.setColor(MAGENTA)
+        else
+            love.graphics.setColor(WHITE)
+        end
+
+        -- Draw the USE verb
+        love.graphics.draw(dropImg,
+                           upscale_x(self.slotPositions[4].x),
+                           upscale_y(self.slotPositions[4].y),
+                           0, SCALE_X, SCALE_Y)
     end
 
     -- Switch back to normal scale
@@ -139,6 +152,14 @@ function InventoryMenu:update()
     for _, item in ipairs(self.owner.inventory:get_unique_items()) do
         -- Update the item (for animations)
         item:update()
+    end
+
+    -- If an item is currently selected
+    if self.selectedItem then
+        -- If the owner is no longer holding it
+        if self.selectedItem.owner ~= self.owner then
+            self:post_use_item()
+        end
     end
 
     if self.state == 'inventory' then
@@ -195,16 +216,22 @@ local function get_direction_input(key)
     end
 end
 
+function InventoryMenu:go_back()
+    -- Go back to the previous menu
+    if self.state == 'inventory' then
+        return true
+    elseif not self.selectedItem then
+        self.state = 'inventory'
+    elseif self.state == 'item' or self.state == 'selecting item' then
+        self.state = 'deselecting item'
+    end
+end
+
 function InventoryMenu:keypressed(key)
     local dir = get_direction_input(key)
 
     if key == 'escape' then
-        -- Go back to the previous menu
-        if self.state == 'inventory' then
-            return true
-        elseif self.state == 'item' or self.state == 'selecting item' then
-            self.state = 'deselecting item'
-        end
+        return self:go_back()
     end
 
     -- If a direction key was pressed
@@ -215,32 +242,31 @@ function InventoryMenu:keypressed(key)
                 self.selectedItemIndex = dir
                 self.selectedItem = self.items[dir]
                 self.state = 'selecting item'
+                return
             end
         elseif self.state == 'item' or self.state == 'selecting item' then
-            if dir == 1 or dir == 3 then
-                self.state = 'deselecting item'
-            elseif dir == 2 and self.selectedItem.isUsable then
+            if dir == 2 and self.selectedItem.isUsable then
                 self.verbs.use.isPushed = true
                 if self.selectedItem:use() then
-                    local otherItems = self.owner.inventory:get_items(
-                                       self.selectedItem.itemType)
-
-                    -- If we still have items of this type left
-                    if #otherItems > 0 then
-                        -- Select one of those items
-                        self.selectedItem = otherItems[1]
-                        self.selectedItem:set_position(self.center)
-                    else
-                        -- Go back to the main inventory screen
-                        self.state = 'inventory'
-                    end
+                    self:post_use_item()
                 else
                     sound.noAmmo:play()
                 end
-            elseif dir == 2 then
+
+                return
+            elseif dir == 4 then
                 self.verbs.drop.isPushed = true
+                self.selectedItem.position = nil
+                self.owner:drop({self.selectedItem})
+                self:post_use_item()
+
+                return
             end
         end
+
+        -- Nothing was triggered by this direction since we are still here, so
+        -- go back to the previous menu
+        self:go_back()
     end
 end
 
@@ -252,5 +278,28 @@ function InventoryMenu:keyreleased(key)
         self.verbs.use.isPushed = false
     elseif dir == 4 then
         self.verbs.drop.isPushed = false
+    end
+end
+
+function InventoryMenu:reset()
+    self.state = 'inventory'
+    self:update()
+end
+
+function InventoryMenu:post_use_item()
+    -- Find all items of the same type as the one currently selected
+    local items = self.owner.inventory:get_items(self.selectedItem.itemType)
+
+    -- Clear the selected item
+    self.selectedItem = nil
+
+    -- If we still have items of this type left
+    if #items > 0 then
+        -- Select the first of those items
+        self.selectedItem = items[1]
+        self.selectedItem:set_position(self.center)
+    else
+        -- Go back to the main inventory screen
+        self:go_back()
     end
 end

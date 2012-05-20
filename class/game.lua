@@ -154,7 +154,8 @@ function Game:keypressed(key)
         self.paused = not self.paused
 
         if self.paused then
-            self.inventoryMenu.state = 'inventory'
+            -- Reset inventory menu to initial view
+            self.inventoryMenu:reset()
         end
     end
 
@@ -165,7 +166,7 @@ function Game:keypressed(key)
         else
             if not self.paused then
                 -- Reset inventory menu to initial view
-                self.inventoryMenu.state = 'inventory'
+                self.inventoryMenu:reset()
                 self.paused = true
             end
 
@@ -293,9 +294,8 @@ function Game:update()
     self.statusBar:update()
 
     if self.paused then
-        if self.menuState == 'inventory' then
-            self.inventoryMenu:update()
-        elseif self.menuState == 'map' then
+        self.inventoryMenu:update()
+        if self.menuState == 'map' then
             self.map:update()
         end
 
