@@ -20,6 +20,8 @@ function Weapon:init(weaponType)
     for k, v in pairs(Weapon.static.templates[weaponType]) do
         self[k] = v
     end
+
+    self.isUsable = true
 end
 
 function Weapon:add_ammo(amount)
@@ -68,5 +70,16 @@ function Weapon:shoot(dir)
             sound.noAmmo:play()
             return false
         end
+    end
+end
+
+function Weapon:use()
+    if self.owner then
+        -- Make this weapon the owner's current weapon
+        self.owner.armory:set_current_weapon(self)
+
+        return true
+    else
+        return false
     end
 end

@@ -15,7 +15,7 @@ function Room:init(args)
     self.turrets = {}
     self.items = {}
     self.requiredObjects = {}
-    self.drawn = false
+    self.bricksDirty = true
     self.fovCache = {}
     self.messages = {}
 end
@@ -117,11 +117,11 @@ function Room:draw()
     --                            upscale_x(1), upscale_y(1))
     --end
 
-    self.drawn = true
+    self.bricksDirty = false
 end
 
 function Room:draw_bricks()
-    if self.game.player.moved or not self.drawn then
+    if self.bricksDirty then
         self.lightBrickBatch:bind()
         self.darkBrickBatch:bind()
 
@@ -492,6 +492,12 @@ function Room:update()
     if (self.game.player.moved and
         self:tile_in_room(self.game.player.position)) then
         self:update_fov()
+    end
+
+    -- If the player moved
+    if self.game.player.moved then
+        -- Flag the bricks for a redraw
+        self.bricksDirty = true
     end
 end
 

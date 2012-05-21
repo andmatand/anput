@@ -286,7 +286,7 @@ function Game:switch_to_room(room)
 
     -- Update the new current room
     self.currentRoom.fov = nil
-    self.currentRoom.drawn = false
+    self.currentRoom.bricksDirty = true
     self.currentRoom:update()
 end
 
