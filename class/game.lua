@@ -160,7 +160,7 @@ function Game:keypressed(key)
     end
 
     -- Toggle inventory menu
-    if key == 'i' then
+    if key == 'i' or (self.menuState == 'map' and key == 'tab') then
         if self.paused and self.menuState == 'inventory' then
             self.paused = false
         else
@@ -174,7 +174,7 @@ function Game:keypressed(key)
         end
 
     -- Toggle map
-    elseif key == 'm' then
+    elseif key == 'm' or (self.menuState == 'inventory' and key == 'tab') then
         if self.paused and self.menuState == 'map' then
             self.paused = false
         else
