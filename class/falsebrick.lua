@@ -16,8 +16,8 @@ function FalseBrick:receive_hit(agent)
     -- Stop agent from moving until direction is pressed again
     agent.attackedDir = agent.dir
 
-    -- Force a redraw of the room
-    self.room.drawn = false
+    -- Force a redraw of the room's bricks
+    self.room.bricksDirty = true
 
     if self:is_audible() then
         sound.monsterDie:play()
