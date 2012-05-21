@@ -154,6 +154,8 @@ function Game:keypressed(key)
         self.paused = not self.paused
 
         if self.paused then
+            --sound.pause:play()
+
             -- Reset inventory menu to initial view
             self.inventoryMenu:reset()
         end
@@ -168,6 +170,8 @@ function Game:keypressed(key)
                 -- Reset inventory menu to initial view
                 self.inventoryMenu:reset()
                 self.paused = true
+            else
+                sound.menuSelect:play()
             end
 
             self.menuState = 'inventory'
@@ -178,9 +182,14 @@ function Game:keypressed(key)
         if self.paused and self.menuState == 'map' then
             self.paused = false
         else
-            self.paused = true
-            self.menuState = 'map'
+            if not self.paused then
+                self.paused = true
+            else
+                sound.menuSelect:play()
+            end
         end
+
+        self.menuState = 'map'
     end
 
 

@@ -238,7 +238,7 @@ function InventoryMenu:keypressed(key)
     if dir then
         if self.state == 'inventory' then
             if self.items and self.items[dir] then
-                sound.switchWeapon:play()
+                sound.menuSelect:play()
                 self.selectedItemIndex = dir
                 self.selectedItem = self.items[dir]
                 self.state = 'selecting item'
@@ -287,16 +287,20 @@ function InventoryMenu:reset()
 end
 
 function InventoryMenu:post_use_item()
-    -- Find all items of the same type as the one currently selected
-    local items = self.owner.inventory:get_items(self.selectedItem.itemType)
+    local dups = {}
+
+    if not instanceOf(Weapon, self.selectedItem) then
+        -- Find all items of the same type as the one currently selected
+        local dups = self.owner.inventory:get_items(self.selectedItem.itemType)
+    end
 
     -- Clear the selected item
     self.selectedItem = nil
 
     -- If we still have items of this type left
-    if #items > 0 then
+    if #dups > 0 then
         -- Select the first of those items
-        self.selectedItem = items[1]
+        self.selectedItem = dups[1]
         self.selectedItem:set_position(self.center)
     else
         -- Go back to the main inventory screen
