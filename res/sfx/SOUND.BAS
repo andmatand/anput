@@ -2,7 +2,7 @@
 '' sounds for Temple of Anput.  The sounds were recorded by running QBASIC
 '' under DOSBox and using DOSBox's audio-recording feature.
 
-SELECT CASE 6 '' Change this number to hear different sounds
+SELECT CASE 13 '' Change this number to hear different sounds
 CASE 1
     '' theme
     PLAY "mb t130 l10 o3  cde-b >c <b a- g c."
@@ -25,7 +25,7 @@ CASE 5
 
 CASE 6
     '' player drop item
-    PLAY "mb t130 l40 o3  c < a"
+    PLAY "mb t130 l40 o2  b g+"
 
 CASE 7
     '' monster cry
@@ -52,11 +52,19 @@ CASE 12
     PLAY "mb t130 l40 o2  bb-bb-bb-bb- dd-dd-dd-dd-"
 
 CASE 13
+    '' pause
+    PLAY "mb t130 l40 o2  gg+"
+
+CASE 15
     '' menu select
     PLAY "mb t130 l40 o2  b"
 
-CASE 14
+CASE 16
     '' secret find
     PLAY "mb t130 l10 o3  cfecd-."
+
+CASE 17
+    '' trap
+    PLAY "mb t130 l25 o2  g >c <b g+"
 END SELECT
 

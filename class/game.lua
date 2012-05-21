@@ -154,7 +154,7 @@ function Game:keypressed(key)
         self.paused = not self.paused
 
         if self.paused then
-            --sound.pause:play()
+            sound.pause:play()
 
             -- Reset inventory menu to initial view
             self.inventoryMenu:reset()
