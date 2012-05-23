@@ -151,25 +151,20 @@ function Game:keypressed(key)
 
     -- Toggle pause
     if key == ' ' then
-        self.paused = not self.paused
-
         if self.paused then
-            sound.pause:play()
-
-            -- Reset inventory menu to initial view
-            self.inventoryMenu:reset()
+            self:unpause()
+        else
+            self:pause()
         end
     end
 
     -- Toggle inventory menu
     if key == 'i' or (self.menuState == 'map' and key == 'tab') then
         if self.paused and self.menuState == 'inventory' then
-            self.paused = false
+            self:unpause()
         else
             if not self.paused then
-                -- Reset inventory menu to initial view
-                self.inventoryMenu:reset()
-                self.paused = true
+                self:pause()
             else
                 sound.menuSelect:play()
             end
@@ -180,10 +175,10 @@ function Game:keypressed(key)
     -- Toggle map
     elseif key == 'm' or (self.menuState == 'inventory' and key == 'tab') then
         if self.paused and self.menuState == 'map' then
-            self.paused = false
+            self:unpause()
         else
             if not self.paused then
-                self.paused = true
+                self:pause()
             else
                 sound.menuSelect:play()
             end
@@ -266,6 +261,17 @@ function Game:keyreleased(key)
     end
 end
 
+function Game:pause()
+    if not self.paused then
+        sound.pause:play()
+
+        -- Reset inventory menu to initial view
+        self.inventoryMenu:reset()
+
+        self.paused = true
+    end
+end
+
 function Game:switch_to_room(room)
     if DEBUG then
         print('switching to room ' .. room.index)
@@ -297,6 +303,12 @@ function Game:switch_to_room(room)
     self.currentRoom.fov = nil
     self.currentRoom.bricksDirty = true
     self.currentRoom:update()
+end
+
+function Game:unpause()
+    if self.paused then
+        self.paused = false
+    end
 end
 
 function Game:update()
