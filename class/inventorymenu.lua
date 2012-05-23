@@ -291,7 +291,7 @@ function InventoryMenu:post_use_item()
 
     if not instanceOf(Weapon, self.selectedItem) then
         -- Find all items of the same type as the one currently selected
-        local dups = self.owner.inventory:get_items(self.selectedItem.itemType)
+        dups = self.owner.inventory:get_items(self.selectedItem.itemType)
     end
 
     -- Clear the selected item
