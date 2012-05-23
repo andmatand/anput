@@ -93,7 +93,7 @@ function love.load()
 
     -- Alpha values
     LIGHT = 255
-    DARK = 10
+    DARK = 20
 
     -- These are the dimensions of one letter of the font before scaling
     FONT_W = 8
