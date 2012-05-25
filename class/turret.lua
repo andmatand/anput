@@ -85,25 +85,16 @@ function Turret:sense()
         -- Check if we reached a character
         for _, c in pairs(self.room:get_characters()) do
             if tiles_overlap({x = x, y = y}, c:get_position()) then
+                -- If this room hasn't played the trap sound yet, and we are
+                -- targeting a player
+                if not self.room.playedTrapSound and instanceOf(Player, c) then
+                    -- Play the trap sound
+                    self.room.playedTrapSound = true
+                    sound.trap:play()
+                end
                 return true
             end
         end
-
-        --contents = self.room:tile_contents({x = x, y = y})
-
-        ---- If we got to a tile outside the bounds of the room
-        --if contents == nil then
-        --    return false
-        --end
-
-        --for _,c in pairs(contents) do
-        --    if instanceOf(Character, c) then
-        --        return true
-        --    elseif instanceOf(Brick, c) then
-        --        -- Encountered a brick or outside bounds of room
-        --        return false
-        --    end
-        --end
     end
 end
 

@@ -174,6 +174,7 @@ function love.load()
     sound.pause = Sound('res/sfx/pause.wav')
     sound.menuSelect = Sound('res/sfx/menu-select.wav')
     sound.secret = Sound('res/sfx/secret.wav')
+    sound.trap = Sound('res/sfx/trap.wav')
 
     showDebug = false
     flickerMode = false

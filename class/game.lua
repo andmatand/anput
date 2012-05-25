@@ -54,13 +54,13 @@ function Game:draw()
     --end
 
     -- DEBUG: show turrets
-    for _, t in pairs(self.currentRoom.turrets) do
-        love.graphics.setColor(0, 0, 255, 255)
-        love.graphics.rectangle('fill',
-                                upscale_x(t.position.x),
-                                upscale_y(t.position.y),
-                                upscale_x(1), upscale_y(1))
-    end
+    --for _, t in pairs(self.currentRoom.turrets) do
+    --    love.graphics.setColor(0, 0, 255, 255)
+    --    love.graphics.rectangle('fill',
+    --                            upscale_x(t.position.x),
+    --                            upscale_y(t.position.y),
+    --                            upscale_x(1), upscale_y(1))
+    --end
 
     self:draw_metadata()
 
