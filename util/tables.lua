@@ -16,3 +16,13 @@ function copy_table(table)
 
     return new
 end
+
+function value_in_table(value, table)
+    for _,v in pairs(table) do
+        if v == value then
+            return true
+        end
+    end
+
+    return false
+end

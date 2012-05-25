@@ -1,16 +1,19 @@
-function add_direction(tile, dir)
+function add_direction(tile, dir, distance)
+    -- Distance defauls to 1
+    local dist = 1 or distance
+
     if dir == 1 then
         -- North
-        return {x = tile.x, y = tile.y - 1}
+        return {x = tile.x, y = tile.y - dist}
     elseif dir == 2 then
         -- East
-        return {x = tile.x + 1, y = tile.y}
+        return {x = tile.x + dist, y = tile.y}
     elseif dir == 3 then
         -- East
-        return {x = tile.x, y = tile.y + 1}
+        return {x = tile.x, y = tile.y + dist}
     elseif dir == 4 then
         -- West
-        return {x = tile.x - 1, y = tile.y}
+        return {x = tile.x - dist, y = tile.y}
     end
 end
 
@@ -122,8 +125,8 @@ function num_neighbor_tiles(tile, otherTiles)
     return num
 end
 
-function tile_occupied(tile, occupiedTiles)
-    for i,t in pairs(occupiedTiles) do
+function tile_in_table(tile, table)
+    for i,t in pairs(table) do
         if t.position == nil then
             if tile.x == t.x and tile.y == t.y then
                 return true
@@ -180,5 +183,18 @@ function tiles_touching_diagonally(a, b)
         return true
     else
         return false
+    end
+end
+
+function perpendicular_directions(dir)
+    -- If the direction is north or south
+    if dir == 1 or dir == 3 then
+        -- Return west and east
+        return {2, 4}
+
+    -- If the direction is west or east
+    elseif dir == 2 or dir == 4 then
+        -- Return north and south
+        return {1, 3}
     end
 end

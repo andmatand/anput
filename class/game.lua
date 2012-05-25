@@ -32,15 +32,6 @@ end
 function Game:draw()
     self.currentRoom:draw()
 
-    -- DEBUG: show turrets
-    --for _, t in pairs(self.currentRoom.turrets) do
-    --  love.graphics.setColor(255, 0, 0)
-    --  love.graphics.circle('fill',
-    --                       upscale_x(t.position.x) + (upscale_x(1) / 2),
-    --                       upscale_y(t.position.y) * (upscale_y(1) / 2),
-    --                       upscale_x(1) / 2)
-    --end
-
     if DEBUG then
         -- Show tiles added to make room for required room objects
         if #self.currentRoom.debugTiles > 0 then
@@ -50,6 +41,7 @@ function Game:draw()
                                         upscale_x(1), upscale_y(1))
             end
         end
+
     end
 
     -- DEBUG: show false bricks
@@ -61,6 +53,14 @@ function Game:draw()
     --    end
     --end
 
+    -- DEBUG: show turrets
+    for _, t in pairs(self.currentRoom.turrets) do
+        love.graphics.setColor(0, 0, 255, 255)
+        love.graphics.rectangle('fill',
+                                upscale_x(t.position.x),
+                                upscale_y(t.position.y),
+                                upscale_x(1), upscale_y(1))
+    end
 
     self:draw_metadata()
 

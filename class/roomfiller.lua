@@ -1,6 +1,8 @@
 require('class/item')
 require('class/monster')
 require('class/turret')
+require('util/tile')
+require('util/tables')
 
 -- A RoomFiller fills a room with monsters, items
 RoomFiller = class('RoomFiller')
@@ -116,54 +118,19 @@ function RoomFiller:add_turrets()
         return true
     end
 
-    local numTurrets = math.random(0, #self.room.bricks * .02 *
-                                   (self.room.difficulty * .1))
+    -- Set the maximum number of turrets in a row, depending on the room's size
+    -- and difficulty
+    local max = math.random(0, #self.room.bricks * .02 *
+                            (self.room.difficulty * .1))
 
-    -- Make a copy of the room's brick table
-    local freeTiles = copy_table(self.room.bricks)
+    -- DEBUG: hard limits of min and max
+    local min = 3
+    local max = 5
 
-    for i = 1, numTurrets do
-        while #freeTiles > 0 do
-            local freeTilesIndex = math.random(1, #freeTiles)
-            local position = freeTiles[freeTilesIndex]
-            local dir
-            local ok = false
-
-            -- Find a direction in which we can fire
-            local dirs = {1, 2, 3, 4}
-            while #dirs > 0 do
-                index = math.random(1, #dirs)
-                dir = dirs[index]
-                local pos2 = {x = position.x, y = position.y}
-
-                -- Find the coordinates of 4 spaces ahead
-                if dir == 1 then
-                    pos2.y = pos2.y - 4 -- North
-                elseif dir == 2 then
-                    pos2.x = pos2.x + 4 -- East
-                elseif dir == 3 then
-                    pos2.y = pos2.y + 4 -- South
-                elseif dir == 4 then
-                    pos2.x = pos2.x - 4 -- West
-                end
-
-                -- If there is a line of sight between these tiles
-                if self.room:line_of_sight(position, pos2) then
-                    ok = true
-                    break
-                else
-                    table.remove(dirs, index)
-                end
-            end
-
-            if ok then
-                local newTurret = Turret(position, dir, 5 * math.random(1, 10))
-                self.room:add_object(newTurret)
-                break
-            else
-                -- Remove this tile from consideration
-                table.remove(freeTiles, freTilesIndex)
-            end
+    local turretPositions, dir = self:find_turret_positions(min, max)
+    if turretPositions then
+        for _, pos in pairs(turretPositions) do
+            self.room:add_object(Turret(pos, dir))
         end
     end
 
@@ -171,6 +138,97 @@ function RoomFiller:add_turrets()
 
     -- Flag that the turrets weren't already generated
     return false
+end
+
+function RoomFiller:find_turret_positions(min, max)
+    -- This is the table of turret positions we will return
+    local positions = {}
+
+    -- Make a copy of the room's brick table
+    local bricks = copy_table(self.room.bricks)
+
+    while #bricks > 0 do
+        local srcPos, shootableDirs
+        while #bricks > 0 do
+            -- Pick a random brick's position as the starting position
+            local brickIndex = math.random(1, #bricks)
+
+            srcPos = bricks[brickIndex]:get_position()
+
+            shootableDirs = shootable_directions(srcPos,
+                                                 self.room.freeTiles)
+
+            print('#shootableDirs:', #shootableDirs)
+            if #shootableDirs == 0 or #shootableDirs > 3 then
+                -- Remove this starting position from consideration
+                table.remove(bricks, brickIndex)
+            else
+                -- Use this starting position
+                break
+            end
+        end
+
+        print('#bricks:', #bricks)
+        print('#positions:', #positions)
+        print('trying source brick at ', srcPos.x, srcPos.y)
+
+        -- Iterate through the directions in which there is room to shoot
+        for _, shootDir in pairs(shootableDirs) do
+            -- Reset the positions table to only the source position
+            positions = {srcPos}
+
+            -- Iterate through the directions in which we should look for
+            -- neighboring /ricks
+            for _, dir in pairs(perpendicular_directions(shootDir)) do
+                -- Search out from the source brick
+                local pos = srcPos
+                while true do
+                    -- Move to the next tile in this direction
+                    pos = add_direction(pos, dir)
+
+                    -- If there is a brick here
+                    if tile_in_table(pos, bricks) then
+                        -- If one of the shootable directions from this tile
+                        -- is the same as the source brick's shooting direction
+                        if value_in_table(shootDir, shootable_directions(pos,
+                                                    self.room.freeTiles)) then
+                            -- Add a turret position here
+                            table.insert(positions, pos)
+
+                            -- If we have reached our maximum number of turret
+                            -- positions in a row
+                            if #positions == max then
+                                return positions, shootDir
+                            end
+                        else
+                            -- Stop searching for neighboring bricks in this
+                            -- direction
+                            break
+                        end
+                    else
+                        -- Stop searching for neighboring bricks in this
+                        -- direction
+                        break
+                    end
+                end
+            end
+
+            -- If we found a long enough row of positions
+            if #positions >= min then
+                return positions, shootDir
+            else
+                -- Remove all the positions from future consideration
+                for i,p in pairs(positions) do
+                    for j,b in pairs(bricks) do
+                        if tiles_overlap(p, b) then
+                            table.remove(bricks, j)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 function RoomFiller:add_required_objects()

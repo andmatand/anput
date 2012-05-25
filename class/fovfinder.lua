@@ -218,7 +218,7 @@ function FOVFinder:shadow_cast()
             local newSlope2 = job.cone.slope2
             for i, tile in ipairs(job.cone:get_column(job.colNum)) do
                 local transTile = job.cone:translate_octant(tile)
-                local occupied = tile_occupied(transTile,
+                local occupied = tile_in_table(transTile,
                                                self.room:get_fov_obstacles())
                 --local visible = false
 
@@ -304,7 +304,7 @@ function FOVFinder:shadow_cast()
                     --  transTileBelow = job.cone:translate_octant(
                     --      {x = tile.x, y = tile.y + 1})
 
-                    --  if not tile_occupied(transTileBelow,
+                    --  if not tile_in_table(transTileBelow,
                     --                       self.obstacles) then
                     --      --print('column ' .. job.colNum ..' special')
                     --      newSlope1 = 0

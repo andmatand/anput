@@ -80,14 +80,14 @@ function Room:draw()
     
     -- Draw items
     for _, i in pairs(self.items) do
-        if tile_occupied(i.position, self.fov) then
+        if tile_in_table(i.position, self.fov) then
             i:draw()
         end
     end
 
     -- Draw sprites
     for _, s in pairs(self.sprites) do
-        if tile_occupied(s.position, self.fov) then
+        if tile_in_table(s.position, self.fov) then
             s:draw()
         end
     end
@@ -131,7 +131,7 @@ function Room:draw_bricks()
 
         -- Add each brick to the correct spriteBatch
         for _, b in pairs(self.bricks) do
-            if tile_occupied(b, self.fov) then
+            if tile_in_table(b, self.fov) then
                 self.lightBrickBatch:add(upscale_x(b.x), upscale_y(b.y))
             else
                 self.darkBrickBatch:add(upscale_x(b.x), upscale_y(b.y))
@@ -314,6 +314,16 @@ function Room:line_of_sight(a, b)
     end
 end
 
+local function remove_dead_objects(objects)
+    local temp = {}
+    for _, o in pairs(objects) do
+        if not o.dead then
+            table.insert(temp, o)
+        end
+    end
+    return temp
+end
+
 function Room:remove_sprite(sprite)
     for i, s in pairs(self.sprites) do
         if s == sprite then
@@ -356,7 +366,7 @@ end
 -- Returns true if an item can be safely dropped here
 function Room:tile_is_droppoint(tile)
     if (self:tile_in_room(tile) and
-        not tile_occupied(tile, concat_tables({self.bricks,
+        not tile_in_table(tile, concat_tables({self.bricks,
                                                self:get_characters(),
                                                self.items}))) then
         return true
@@ -370,12 +380,12 @@ function Room:tile_in_room(tile, options)
         return false
     end
 
-    if tile_occupied(tile, self.freeTiles) then
+    if tile_in_table(tile, self.freeTiles) then
         return true
     end
 
     if options and options.includeBricks then
-        if tile_occupied(tile, self.bricks) then
+        if tile_in_table(tile, self.bricks) then
             return true
         end
     end
@@ -387,7 +397,7 @@ end
 -- objects)
 function Room:tile_walkable(tile)
     -- If the tile is not inside the room, or the tile is occupied by a brick
-    if not self:tile_in_room(tile) or tile_occupied(tile, self.bricks) then
+    if not self:tile_in_room(tile) or tile_in_table(tile, self.bricks) then
         return false
     end
 
@@ -401,7 +411,7 @@ function Room:tile_walkable(tile)
     end
 
     -- If the tile's position is occupied by that of a collidable sprite
-    if tile_occupied(tile, collidables) then
+    if tile_in_table(tile, collidables) then
         return false
     end
 
@@ -451,14 +461,14 @@ function Room:update()
         s:post_physics()
     end
 
-    -- Remove all dead sprites
-    local temp = {}
-    for _, s in pairs(self.sprites) do
-        if not s.dead then
-            table.insert(temp, s)
-        end
-    end
-    self.sprites = temp
+    -- Remove dead sprites
+    self.sprites = remove_dead_objects(self.sprites)
+
+    -- Remove dead bricks
+    self.bricks = remove_dead_objects(self.bricks)
+
+    -- Remove dead turrets
+    self.turrets = remove_dead_objects(self.turrets)
 
     -- Keep only items that have no owner and have not been used
     local temp = {}
@@ -468,15 +478,6 @@ function Room:update()
         end
     end
     self.items = temp
-
-    -- Remove all dead bricks
-    local temp = {}
-    for _, b in pairs(self.bricks) do
-        if not b.dead then
-            table.insert(temp, b)
-        end
-    end
-    self.bricks = temp
 
     -- Iterate through the room objects which can have mouths
     --for _, o in pairs(self.sprites) do
