@@ -118,19 +118,21 @@ function RoomFiller:add_turrets()
         return true
     end
 
+    -- The minimum number of turrets is always 3
+    local min = 3
+
     -- Set the maximum number of turrets in a row, depending on the room's size
     -- and difficulty
     local max = math.random(0, #self.room.bricks * .02 *
                             (self.room.difficulty * .1))
+    print('max turrets:', max)
 
-    -- DEBUG: hard limits of min and max
-    local min = 3
-    local max = 5
-
-    local turretPositions, dir = self:find_turret_positions(min, max)
-    if turretPositions then
-        for _, pos in pairs(turretPositions) do
-            self.room:add_object(Turret(pos, dir))
+    if max >= min then
+        local turretPositions, dir = self:find_turret_positions(min, max)
+        if turretPositions then
+            for _, pos in pairs(turretPositions) do
+                self.room:add_object(Turret(pos, dir))
+            end
         end
     end
 
@@ -158,7 +160,6 @@ function RoomFiller:find_turret_positions(min, max)
             shootableDirs = shootable_directions(srcPos,
                                                  self.room.freeTiles)
 
-            print('#shootableDirs:', #shootableDirs)
             if #shootableDirs == 0 or #shootableDirs > 3 then
                 -- Remove this starting position from consideration
                 table.remove(bricks, brickIndex)
@@ -167,10 +168,6 @@ function RoomFiller:find_turret_positions(min, max)
                 break
             end
         end
-
-        print('#bricks:', #bricks)
-        print('#positions:', #positions)
-        print('trying source brick at ', srcPos.x, srcPos.y)
 
         -- Iterate through the directions in which there is room to shoot
         for _, shootDir in pairs(shootableDirs) do
