@@ -145,7 +145,7 @@ function Game:keypressed(key)
     if key == 'p' then
         -- Take a potion
         if self.player:has_item(ITEM_TYPE.potion) then
-            self.player.inventory:get_item(ITEM_TYPE.potion)[1]:use()
+            self.player.inventory:get_item(ITEM_TYPE.potion):use()
         end
     end
 

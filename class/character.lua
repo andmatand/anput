@@ -708,6 +708,18 @@ function Character:pick_up(item)
     if instanceOf(Weapon, item) then
         -- If we already have this type of weapon
         if self:has_item(item.itemType) then
+            -- If the weapon has ammo
+            if item.ammo and item.ammo > 0 then
+                -- Put the ammo in the instance of that weapon type that we are
+                -- holding
+                self.inventory:get_item(item.itemType):add_ammo(item.ammo)
+
+                -- Remove the ammo from the weapon on the ground
+                item.ammo = 0
+
+                return true
+            end
+            
             -- Don't pick it up
             return false
         end

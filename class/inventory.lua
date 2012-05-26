@@ -13,26 +13,27 @@ function Inventory:add(item)
     table.insert(self.items, item)
 end
 
-function Inventory:get_item(itemType, quantity)
-    local items = {}
-
+-- This function returns one item of the specified type
+function Inventory:get_item(itemType)
     for _, item in pairs(self.items) do
         if item.itemType == itemType then
-            table.insert(items, item)
-            if #items >= (quantity or 1) then
-                return items
-            end
+            return item
         end
     end
 end
 
--- This function Returns all items of the specified item type
-function Inventory:get_items(itemType)
+-- This function returns a specified quantity of items of the specified type,
+-- or all of them if no quantity is given
+function Inventory:get_items(itemType, quantity)
     local items = {}
 
     for _, item in pairs(self.items) do
         if item.itemType == itemType then
             table.insert(items, item)
+
+            if quantity and #items >= quantity then
+                return items
+            end
         end
     end
 
