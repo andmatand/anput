@@ -34,33 +34,15 @@ function Game:draw()
 
     if DEBUG then
         -- Show tiles added to make room for required room objects
-        if #self.currentRoom.debugTiles > 0 then
-            for _, t in pairs(self.currentRoom.debugTiles) do
-                love.graphics.setColor(0, 255, 0, 100)
-                love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
-                                        upscale_x(1), upscale_y(1))
-            end
-        end
+        --if #self.currentRoom.debugTiles > 0 then
+        --    for _, t in pairs(self.currentRoom.debugTiles) do
+        --        love.graphics.setColor(0, 255, 0, 100)
+        --        love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
+        --                                upscale_x(1), upscale_y(1))
+        --    end
+        --end
 
     end
-
-    -- DEBUG: show false bricks
-    --for _, b in pairs(self.currentRoom.bricks) do
-    --    if instanceOf(FalseBrick, b) then
-    --        love.graphics.setColor(0, 255, 0, 255)
-    --        love.graphics.rectangle('fill', upscale_x(b.x), upscale_x(b.y),
-    --                                upscale_x(1), upscale_y(1))
-    --    end
-    --end
-
-    -- DEBUG: show turrets
-    --for _, t in pairs(self.currentRoom.turrets) do
-    --    love.graphics.setColor(0, 0, 255, 255)
-    --    love.graphics.rectangle('fill',
-    --                            upscale_x(t.position.x),
-    --                            upscale_y(t.position.y),
-    --                            upscale_x(1), upscale_y(1))
-    --end
 
     self:draw_metadata()
 
@@ -284,7 +266,7 @@ function Game:switch_to_room(room)
     -- If there was a previous room
     if prevRoom then
         -- Clear previous room's FOV cache to save memory
-        prevRoom.fovCache = {}
+        --prevRoom.fovCache = {}
     end
 
     -- Set the new room as the current room

@@ -75,6 +75,17 @@ function Room:draw()
         self:update_fov()
     end
 
+    if DEBUG then
+        -- Show occupiedTiles
+        for _, tile in pairs(self.roomBuilder.occupiedTiles) do
+            love.graphics.setColor(0, 255, 0, 100)
+            love.graphics.rectangle('fill',
+                                    upscale_x(tile.x), upscale_y(tile.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+    end
+
+
     -- Draw bricks
     self:draw_bricks()
     
@@ -108,16 +119,34 @@ function Room:draw()
     --                            upscale_x(1), upscale_y(1))
     --end
 
-    -- DEBUG: show tiles in FOV
-    --for _, tile in ipairs(self.fov) do
-    --    love.graphics.setColor(0, 255, 0)
-    --    love.graphics.setLine(1, 'rough')
-    --    love.graphics.rectangle('line',
-    --                            upscale_x(tile.x), upscale_y(tile.y),
-    --                            upscale_x(1), upscale_y(1))
-    --end
+    if DEBUG then
+        -- Show tiles in FOV
+        for _, tile in pairs(self.fov) do
+            love.graphics.setColor(0, 255, 0)
+            love.graphics.setLine(1, 'rough')
+            love.graphics.rectangle('line',
+                                    upscale_x(tile.x), upscale_y(tile.y),
+                                    upscale_x(1), upscale_y(1))
+        end
 
-    self.bricksDirty = false
+        -- Show turrets
+        for _, t in pairs(self.turrets) do
+            love.graphics.setColor(0, 0, 255, 255)
+            love.graphics.rectangle('fill',
+                                    upscale_x(t.position.x),
+                                    upscale_y(t.position.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+
+        -- Show false bricks
+        for _, b in pairs(self.bricks) do
+            if instanceOf(FalseBrick, b) then
+                love.graphics.setColor(50, 50, 255, 255)
+                love.graphics.rectangle('fill', upscale_x(b.x), upscale_x(b.y),
+                                        upscale_x(1), upscale_y(1))
+            end
+        end
+    end
 end
 
 function Room:draw_bricks()
@@ -140,6 +169,8 @@ function Room:draw_bricks()
 
         self.lightBrickBatch:unbind()
         self.darkBrickBatch:unbind()
+
+        self.bricksDirty = false
     end
 
     love.graphics.setColor(255, 255, 255, DARK)
@@ -222,7 +253,7 @@ function Room:generate_next_piece()
             self.generated = true
 
             -- Free up the memory used by the roomBuilder
-            self.roomBuilder = nil
+            --self.roomBuilder = nil
 
             print('generated room ' .. self.index)
 
@@ -490,25 +521,32 @@ function Room:update()
     -- Update messages
     self:update_messages()
 
-    if (self.game.player.moved and
-        self:tile_in_room(self.game.player.position)) then
-        self:update_fov()
-    end
+    -- If this is the game's current room
+    if self.game.currentRoom == self then
+        if (self.game.player.moved and
+            self:tile_in_room(self.game.player.position)) then
+            self:update_fov()
+        end
 
-    -- If the player moved
-    if self.game.player.moved then
-        -- Flag the bricks for a redraw
-        self.bricksDirty = true
+        -- If the player moved
+        if self.game.player.moved then
+            -- Flag the bricks for a redraw
+            --self.bricksDirty = true
+        end
     end
 end
 
 function Room:update_fov()
+    self.bricksDirty = true
+
     -- Check if the player's position is in the FOV cache
     for _, fov in pairs(self.fovCache) do
         if tiles_overlap(fov.origin, self.game.player.position) then
             self.fov = fov.fov
 
-            --print('used cached FOV')
+            if DEBUG then
+                print('used cached FOV')
+            end
             return
         end
     end

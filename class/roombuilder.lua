@@ -263,12 +263,12 @@ function RoomBuilder:plot_midpaths()
                 self:add_occupied_tile({x = t.x, y = t.y})
             end
 
-            if DEBUG then
-                table.insert(self.room.debugTiles, {x = e.x, y = e.y})
-                for _, t in pairs(tiles) do
-                    table.insert(self.room.debugTiles, t)
-                end
-            end
+            --if DEBUG then
+            --    table.insert(self.room.debugTiles, {x = e.x, y = e.y})
+            --    for _, t in pairs(tiles) do
+            --        table.insert(self.room.debugTiles, t)
+            --    end
+            --end
 
             -- Flag that the midpaths are not yet complete
             return false

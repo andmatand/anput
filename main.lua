@@ -214,12 +214,6 @@ function love.keypressed(key, unicode)
     if key == 'n' then
         game = Game()
         game:generate()
-    elseif key == 'f1' then
-        if showDebug == true then
-            showDebug = false
-        else
-            showDebug = true
-        end
     elseif key == 'f2' then
         toggle_flicker_mode()
     elseif key == 'f11' or
@@ -229,9 +223,11 @@ function love.keypressed(key, unicode)
     elseif key == 'q' and (love.keyboard.isDown('lctrl') or
                            love.keyboard.isDown('rctrl')) then
         love.event.quit()
+    elseif key == 'f1' then
+        DEBUG = not DEBUG
+    else
+        game:keypressed(key)
     end
-
-    game:keypressed(key)
 end
 
 function love.keyreleased(key, unicode)
@@ -239,9 +235,9 @@ function love.keyreleased(key, unicode)
 end
 
 function love.draw()
-    if showDebug then
+    if false then
         -- DEBUG show map obstacles
-        for i,o in pairs(game.map.obstacles) do
+        for _,o in pairs(game.map.obstacles) do
             love.graphics.setColor(255, 0, 0)
             love.graphics.circle('fill',
                                  (o.x * TILE_W) + (TILE_W / 2) - (TILE_W * 5),
@@ -250,7 +246,7 @@ function love.draw()
         end
 
         -- DEBUG show map path
-        for i,o in pairs(game.map.path) do
+        for _,o in pairs(game.map.path) do
             if o.room.index == game.currentRoom.index then
                 love.graphics.setColor(255, 255, 255)
             else
@@ -263,7 +259,7 @@ function love.draw()
         end
 
         -- DEBUG show map branches
-        for i,o in pairs(game.map.branches) do
+        for _,o in pairs(game.map.branches) do
             if o.room.index == game.currentRoom.index then
                 love.graphics.setColor(255, 255, 255)
             else
