@@ -82,6 +82,25 @@ function Inventory:has_item(itemType, quantity)
     return false
 end
 
+function Inventory:has_room_for(item)
+    -- If we have less than 4 unique items
+    if (#self:get_unique_items() < 4) then
+        return true
+    -- If we have >= 4 unique items
+    elseif #self:get_unique_items() >= 4 then
+        -- If we are holding one item as a weapon
+        if self.owner.armory.currentWeapon then
+            return true
+
+        -- If the new item is of the same type as one of our current ones
+        elseif self:get_item(item.itemType) ~= nil then
+            return true
+        end
+    end
+
+    return false
+end
+
 function Inventory:remove(item)
     -- Search for the item in our items table
     for i, invItem in ipairs(self.items) do

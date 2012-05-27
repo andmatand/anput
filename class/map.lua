@@ -287,19 +287,26 @@ function Map:add_required_objects()
     local sword = Weapon('sword')
     table.insert(self.rooms[1].requiredObjects, sword)
 
-    -- DEBUG: put a potion in the first room
-    --local potion = Item('potion')
-    --table.insert(self.rooms[1].requiredObjects, potion)
 
     -- Create a table of the 5 earliest rooms
     local earlyRooms = self:get_early_rooms(5)
 
     -- Put the wizard in one of the 5 earliest rooms
-    local roomNum = math.random(1, #earlyRooms)
     local chunk = love.filesystem.load('script/wizard.lua')
     local wizard = chunk()
-    table.insert(earlyRooms[roomNum].requiredObjects, wizard)
-    --table.insert(self.rooms[1].requiredObjects, wizard)
+    while #earlyRooms > 0 do
+        local roomNum = math.random(1, #earlyRooms)
+
+        -- If this is a secret room
+        if earlyRooms[roomNum].isSecret then
+            -- Remove it from consideration
+            table.remove(earlyRooms, roomNum)
+        else
+            table.insert(earlyRooms[roomNum].requiredObjects, wizard)
+            break
+        end
+    end
+
 
     -- Create a table of the 14 earliest rooms
     local earlyRooms = self:get_early_rooms(14)
@@ -333,6 +340,9 @@ function Map:add_secret_passages()
             local adjacentExit = adjacentRoom:get_exit({room = r})
             local falseBrick = FalseBrick(adjacentExit:get_doorway())
             table.insert(adjacentRoom.requiredObjects, falseBrick)
+
+            -- Mark the adjacent room as a secret room
+            adjacentRoom.isSecret = true
         end
     end
 
