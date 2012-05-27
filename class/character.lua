@@ -801,8 +801,10 @@ function Character:receive_damage(amount, agent)
                 topAgent = topAgent.owner
             end
 
-            -- Give the agent credit for the kill
-            topAgent.log:add_kill(self)
+            if topAgent.log then
+                -- Give the agent credit for the kill
+                topAgent.log:add_kill(self)
+            end
         end
 
         self:die()
