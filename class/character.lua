@@ -713,10 +713,8 @@ function Character:pick_up(item)
         return false
     end
 
-    -- If we already have 5 items, or 4 and we aren't holding a weapon
-    if (#self.inventory:get_unique_items() == 5 or
-        (not self.armory.currentWeapon and
-         #self.inventory:get_unique_items() == 4)) then
+    -- Check if there's room in our inventory to pick this item up
+    if not self.inventory:has_room_for(item) then
         return false
     end
 
@@ -798,6 +796,8 @@ function Character:receive_damage(amount, agent)
             -- e.g. an arrow
             local topAgent = agent
             while topAgent.owner do
+                print('agent:', topAgent)
+                print('  owner:', topAgent.owner)
                 topAgent = topAgent.owner
             end
 

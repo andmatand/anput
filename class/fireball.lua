@@ -12,7 +12,7 @@ end
 function Fireball:hit(patient)
     -- Damage characters
     if instanceOf(Character, patient) and patient:receive_hit(self) then
-        patient:receive_damage(self.damage)
+        patient:receive_damage(self.damage, self)
     end
 
     -- Only stop when we hit a wall or go out of bounds
