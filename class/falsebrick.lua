@@ -8,8 +8,6 @@ function FalseBrick:is_audible()
 end
 
 function FalseBrick:receive_hit(agent)
-    print('false brick received hit')
-
     -- Die when we are hit
     self.dead = true
 
