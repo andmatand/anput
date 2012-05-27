@@ -96,5 +96,5 @@ function Monster:receive_hit(agent)
         end
     end
 
-    return Character.receive_hit(self, agent)
+    return Monster.super.receive_hit(self, agent)
 end

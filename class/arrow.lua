@@ -13,7 +13,7 @@ function Arrow:hit(patient)
     -- Damage characters
     if instanceOf(Character, patient) then
         if patient:receive_hit(self) then
-            patient:receive_damage(self.damage)
+            patient:receive_damage(self.damage, self)
         else
             return false
         end

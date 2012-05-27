@@ -1,5 +1,6 @@
 require('class/armory')
 require('class/inventory')
+require('class/log')
 require('class/mouth')
 require('class/sprite')
 require('util/tile')
@@ -40,6 +41,7 @@ function Character:init()
 
     self.inventory = Inventory(self)
     self.armory = Armory(self)
+    self.log = Log()
 end
 
 function Character:add_health(amount)
@@ -141,6 +143,7 @@ function Character:check_for_items()
                     if (not pickedSomethingUp and self.room and
                         (self.room == self.room.game.currentRoom or 
                          instanceOf(Player, self))) then
+
                         -- Play a pick-up sound depending on who we are
                         if instanceOf(Player, self) then
                             sound.playerGetItem:play()
@@ -306,7 +309,7 @@ function Character:do_ai()
         --print('action: dodge')
         self:dodge(self.ai.dodge.target)
     elseif self.action == AI_ACTION.flee then
-        print('action: flee')
+        --print('action: flee')
         self:flee_from(self.ai.flee.target)
     elseif self.action == AI_ACTION.chase then
         -- print('action: chase')
@@ -666,14 +669,27 @@ function Character:hit(patient)
         self.team ~= patient.team) then -- Patient is on a different team
         -- If the patient receives our hit
         if patient:receive_hit(self) then
-            patient:receive_damage(self.armory.currentWeapon.damage)
+            patient:receive_damage(self.armory.currentWeapon.damage, self)
             self.attackedDir = self.dir
         else
             return false
         end
     end
 
-    return Sprite.hit(self, patient)
+    return Character.super.hit(self, patient)
+end
+
+function Character:is_audible()
+    if self.room then
+        local playerKills = self.room.game.player.log:get_kills()
+
+        -- If the player just killed us
+        if playerKills[#playerKills] == self then
+            return true
+        end
+    end
+
+    return Character.super.is_audible(self)
 end
 
 function Character:path_obsolete()
@@ -763,9 +779,10 @@ function Character:pick_up(item)
     end
 end
 
-function Character:receive_damage(amount)
+function Character:receive_damage(amount, agent)
     if self.dead then
-        return
+        -- Do not receive any damage
+        return false
     end
 
     self.health = self.health - amount
@@ -774,6 +791,20 @@ function Character:receive_damage(amount)
 
     if self.health <= 0 then
         self.health = 0
+
+        -- If an agent was given
+        if agent then
+            -- Find who was ultimately responsible for this kill, if this was
+            -- e.g. an arrow
+            local topAgent = agent
+            while topAgent.owner do
+                topAgent = topAgent.owner
+            end
+
+            -- Give the agent credit for the kill
+            topAgent.log:add_kill(self)
+        end
+
         self:die()
     end
 
@@ -782,6 +813,8 @@ function Character:receive_damage(amount)
             sound.monsterCry:play()
         end
     end
+
+    return true
 end
 
 function Character:receive_hit(agent)

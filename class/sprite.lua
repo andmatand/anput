@@ -52,17 +52,19 @@ end
 
 -- Default hit method
 function Sprite:hit(patient)
-    if patient and instanceOf(Projectile, patient) then
-        -- Don't stop when hitting a projectile
-        return false
-    elseif patient and patient:receive_hit(self) == false then
-        -- Don't stop if the patient did not receive the hit
-        return false
-    else
-        -- Stop
-        self.velocity.x = 0
-        self.velocity.y = 0
+    if patient then
+        if instanceOf(Projectile, patient) then
+            -- Don't stop when hitting a projectile
+            return false
+        elseif patient:receive_hit(self) == false then
+            -- Don't stop if the patient did not receive the hit
+            return false
+        end
     end
+
+    -- Stop
+    self.velocity.x = 0
+    self.velocity.y = 0
 
     -- Valid hit
     return true
@@ -145,8 +147,6 @@ function Sprite:physics()
 
             -- If the room it leads to has been generated
             if e.room.generated then
-                print('testing entry to room')
-
                 local oldRoom = test.room
 
                 -- Move test object to new room

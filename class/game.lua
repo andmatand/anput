@@ -78,10 +78,10 @@ function Game:draw_metadata()
 
     self.statusBar:draw()
 
-    --if self.paused then
-    --    love.graphics.setColor(255, 255, 255)
-    --    cga_print('PAUSED', 11, 12)
-    --end
+    if self.player.dead then
+        cga_print("YOU KILLED " .. #self.player.log:get_kills() .. " MONSTERS",
+                  1, 1)
+    end
 end
 
 function Game:generate()
@@ -159,7 +159,8 @@ function Game:keypressed(key)
     end
 
     -- Toggle inventory menu
-    if key == 'i' or (self.menuState == 'map' and key == 'tab') then
+    if key == 'i' or (self.paused and self.menuState == 'map' and
+                      key == 'tab') then
         if self.paused and self.menuState == 'inventory' then
             self:unpause()
         else
@@ -173,7 +174,8 @@ function Game:keypressed(key)
         end
 
     -- Toggle map
-    elseif key == 'm' or (self.menuState == 'inventory' and key == 'tab') then
+    elseif key == 'm' or (self.paused and self.menuState == 'inventory' and
+                          key == 'tab') then
         if self.paused and self.menuState == 'map' then
             self:unpause()
         else
