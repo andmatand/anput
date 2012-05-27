@@ -66,7 +66,8 @@ function Turret:sense()
 
     local x, y
     x, y = self.position.x, self.position.y
-    while true do
+    -- Only sense 10 tiles ahead
+    for i = 1,10 do
         x = x + xDir
         y = y + yDir
 
@@ -82,8 +83,11 @@ function Turret:sense()
             end
         end
 
+        -- Get a copy of the rooms characters
+        local dudes = self.room:get_characters()
+
         -- Check if we reached a character
-        for _, c in pairs(self.room:get_characters()) do
+        for _, c in pairs(dudes) do
             if tiles_overlap({x = x, y = y}, c:get_position()) then
                 -- If this room hasn't played the trap sound yet, and we are
                 -- targeting a player
@@ -96,6 +100,8 @@ function Turret:sense()
             end
         end
     end
+
+    return false
 end
 
 function Turret:shoot()
