@@ -1,5 +1,12 @@
 require('class/character')
 
+MONSTER_TYPE = {scarab = 1,
+                bird = 2,
+                cat = 3,
+                mummy = 4,
+                ghost = 5}
+
+
 Monster = class('Monster', Character)
 
 Monster.static.difficulties = {
@@ -24,13 +31,13 @@ function Monster:init(pos, monsterType)
     self.difficulty = Monster.static.difficulties[monsterType]
 
     -- Set monster properties
-    if self.monsterType == 1 then
+    if self.monsterType == MONSTER_TYPE.scarab then
         self.images = monsterImg.scarab
         self.health = 10
 
         self.ai.dodge = {dist = 5, prob = 2, delay = 3}
         self.ai.flee = {dist = 15, prob = 9, delay = 3}
-    elseif self.monsterType == 2 then
+    elseif self.monsterType == MONSTER_TYPE.bird then
         self.images = monsterImg.bird
         self.health = 20
 
@@ -38,7 +45,7 @@ function Monster:init(pos, monsterType)
 
         self.ai.dodge = {dist = 5, prob = 5, delay = 5}
         self.ai.chase = {dist = 10, prob = 8, delay = 3}
-    elseif self.monsterType == 3 then
+    elseif self.monsterType == MONSTER_TYPE.cat then
         self.images = monsterImg.cat
         self.health = 40
 
@@ -46,7 +53,7 @@ function Monster:init(pos, monsterType)
 
         self.ai.dodge = {dist = 7, prob = 7, delay = 2}
         self.ai.chase = {dist = 10, prob = 9, delay = 2}
-    elseif self.monsterType == 4 then
+    elseif self.monsterType == MONSTER_TYPE.mummy then
         self.images = monsterImg.mummy
         self.health = 40
 
@@ -58,15 +65,15 @@ function Monster:init(pos, monsterType)
         self.ai.dodge = {dist = 5, prob = 7, delay = 2}
         self.ai.chase = {dist = 20, prob = 8, delay = 3}
         self.ai.shoot = {dist = 15, prob = 8, delay = 2}
-    elseif self.monsterType == 5 then
+    elseif self.monsterType == MONSTER_TYPE.ghost then
         self.images = monsterImg.ghost
         self.health = 80
         self.isCorporeal = false
 
-        local staff = Weapon('staff')
-        staff:add_ammo(20)
-        staff:set_projectile_class(Fireball)
-        self:pick_up(staff, false)
+        --local staff = Weapon('staff')
+        --staff:add_ammo(20)
+        --staff:set_projectile_class(Fireball)
+        --self:pick_up(staff, false)
 
         self.ai.dodge = {dist = 5, prob = 9, delay = 3}
         self.ai.chase = {dist = 20, prob = 1, delay = 3}
@@ -83,11 +90,15 @@ function Monster:die()
 end
 
 function Monster:hit(patient)
-    return Character.hit(self, patient)
+    if self.monsterType == MONSTER_TYPE.ghost then
+        return false
+    end
+
+    return Monster.super.hit(self, patient)
 end
 
 function Monster:receive_hit(agent)
-    if self.monsterType == 5 then -- A ghost
+    if self.monsterType == MONSTER_TYPE.ghost then
         -- Only magic hits ghosts
         if instanceOf(Fireball, agent) then
             return true

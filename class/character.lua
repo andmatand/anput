@@ -73,8 +73,7 @@ end
 
 function Character:afraid_of(sprite)
     if instanceOf(Arrow, sprite) then
-        -- Ghost
-        if self.monsterType == 5 then
+        if self.monsterType == MONSTER_TYPE.ghost then
             return false
         end
     end
