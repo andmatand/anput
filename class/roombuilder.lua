@@ -111,7 +111,7 @@ function RoomBuilder:build_next_piece()
 
     if DEBUG then
         local elapsed = love.timer.getTime() - timer
-        if elapsed > 1 / fps then
+        if elapsed > 1 / FPS then
             print('** took too long to build piece: ' .. elapsed)
         end
     end

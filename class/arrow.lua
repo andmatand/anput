@@ -7,6 +7,7 @@ function Arrow:init(owner, dir)
 
     self.damage = 10
     self.images = projectileImg.arrow
+    self.playedSound = false
 end
 
 function Arrow:hit(patient)
@@ -23,5 +24,17 @@ function Arrow:hit(patient)
         return true
     else
         return false
+    end
+end
+
+function Arrow:update()
+    if not self.playedSound then
+        if self.owner and instanceOf(Player, self.owner) then
+            sound.playerShootArrow:play()
+        else
+            sound.shootArrow:play()
+        end
+
+        self.playedSound = true
     end
 end

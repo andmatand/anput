@@ -180,24 +180,6 @@ function Room:draw_bricks()
     love.graphics.draw(self.lightBrickBatch, 0, 0)
 end
 
-function Room:erase()
-    for _, b in pairs(self.bricks) do
-        b:draw()
-    end
-
-    for _, i in pairs(self.items) do
-        i:erase()
-    end
-
-    for _, c in pairs(self:get_characters()) do
-        c:erase()
-    end
-
-    for _, p in pairs(self.projectiles) do
-        p:erase()
-    end
-end
-
 function Room:find_path(src, dest, characterTeam)
     -- Create a table of the room's occupied nodes
     hotLava = {}

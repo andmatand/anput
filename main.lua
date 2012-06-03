@@ -49,7 +49,6 @@ function cga_print(text, x, y, options)
     -- Draw the text
     if options.center then
         love.graphics.printf(text, x, y - 1, 0, 'center')
-        love.graphics.setPoint(1, 'rough')
     else
         love.graphics.print(text, x, y - 1)
     end
@@ -126,6 +125,7 @@ function love.load()
                         moving = new_image('mummy-moving.png')}
     monsterImg.ghost = {default = new_image('ghost.png')}
 
+    -- Projectiles
     projectileImg = {}
     projectileImg.arrow = {new_image('arrow.png')}
     projectileImg.fireball = {new_image('fireball1.png'),
@@ -165,11 +165,13 @@ function love.load()
     sound.playerGetItem = Sound('res/sfx/player-get-item.wav')
     sound.playerDropItem = Sound('res/sfx/player-drop-item.wav')
     sound.playerGetHP = Sound('res/sfx/player-get-hp.wav')
+    sound.playerShootArrow = Sound('res/sfx/shoot-arrow.wav')
     sound.monsterCry = Sound('res/sfx/monster-cry.wav')
     sound.monsterGetItem = Sound('res/sfx/monster-get-item.wav')
     sound.monsterGetHP = Sound('res/sfx/monster-get-hp.wav')
     sound.monsterDie = Sound('res/sfx/monster-die.wav')
     sound.playerDie = Sound('res/sfx/player-die.wav')
+    sound.shootArrow = Sound('res/sfx/shoot-arrow.wav')
     sound.noAmmo = Sound('res/sfx/no-ammo.wav')
     sound.pause = Sound('res/sfx/pause.wav')
     sound.menuSelect = Sound('res/sfx/menu-select.wav')
@@ -177,9 +179,8 @@ function love.load()
     sound.trap = Sound('res/sfx/trap.wav')
 
     showDebug = false
-    flickerMode = false
 
-    fps = 15
+    FPS = 15
     fpsTimer = 0
 
     game = Game()
@@ -188,24 +189,14 @@ function love.load()
     --love.keyboard.setKeyRepeat(75, 50)
 end
 
-function toggle_flicker_mode()
-    if flickerMode == false then
-        flickerMode = true
-        fps = fps * 2
-    else
-        flickerMode = false
-        fps = fps / 2
-    end
-end
-
 function love.update(dt)
     -- Limit FPS
     fpsTimer = fpsTimer + dt
 
-    if fpsTimer > 1 / fps then
+    if fpsTimer > 1 / FPS then
         game:update()
         fpsTimer = 0
-    elseif fpsTimer < (1 / fps) / 4 then
+    elseif fpsTimer < (1 / FPS) / 4 then
         game:do_background_jobs()
     end
 end
@@ -214,8 +205,6 @@ function love.keypressed(key, unicode)
     if key == 'n' then
         game = Game()
         game:generate()
-    elseif key == 'f2' then
-        toggle_flicker_mode()
     elseif key == 'f11' or
            ((love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))
             and key == 'return') then

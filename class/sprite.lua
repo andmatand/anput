@@ -43,13 +43,6 @@ function Sprite:preview_position()
     end
 end
 
-function Sprite:erase()
-    if self.oldPosition.x == self.position.x and
-       self.oldPosition.y == self.position.y then
-        self:draw()
-    end
-end
-
 -- Default hit method
 function Sprite:hit(patient)
     if patient then
