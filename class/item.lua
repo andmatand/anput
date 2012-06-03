@@ -74,12 +74,13 @@ function Item:animate()
     end
 end
 
-function Item:draw()
+function Item:draw(manualPosition)
+    local position = manualPosition or {x = upscale_x(self.position.x),
+                                        y = upscale_y(self.position.y)}
     if self.frames then
         love.graphics.setColor(255, 255, 255)
         love.graphics.draw(self.frames[self.currentFrame].image,
-                           upscale_x(self.position.x),
-                           upscale_y(self.position.y),
+                           position.x, position.y,
                            0, SCALE_X, SCALE_Y)
     end
 end

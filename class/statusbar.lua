@@ -1,3 +1,5 @@
+require('class/toast')
+
 local function draw_progress_bar(barInfo, x, y, w, h)
     bar = {}
     bar.x = x + SCALE_X
@@ -22,7 +24,7 @@ local function draw_progress_bar(barInfo, x, y, w, h)
     love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
 end
 
--- An StatusBar is a horizontal line at the bottom of the screen which displays
+-- A StatusBar is a horizontal line at the bottom of the screen which displays
 -- health, ammo, etc.
 StatusBar = class('StatusBar')
 
@@ -31,9 +33,10 @@ function StatusBar:init(owner)
 
     self.position = {x = ROOM_W, y = 2}
     self.selectedItemNum = nil
-    self.healthMeterPos = {x = 0, y = ROOM_H}
-    self.healthMeterOffset = {x = 0, y = 0}
-    self.healthMeterHideTimer = 0
+
+    self.healthMeter = {toast = Toast()}
+    self.newestItem = {item = nil, toast = Toast()}
+
     self.flash = {timer = 0, state = true}
 end
 
@@ -43,6 +46,9 @@ function StatusBar:draw()
 
     -- Display the health meter
     self:draw_health_meter()
+
+    -- Display the most recently picked up item for a few seconds
+    self:draw_newest_item()
 
     -- Display the ammo for the current weapon
     local w = self.owner.armory.currentWeapon
@@ -86,12 +92,13 @@ end
 
 function StatusBar:draw_health_meter()
     if self.owner.health < 100 then
-        --self.displayHealth = true
-        self.healthMeterOffset.y = 0
+        self.healthMeter.toast:show()
+        self.healthMeter.toast:freeze()
     end
 
     -- If the health meter is positioned offscreen
-    if self.healthMeterOffset.y > TILE_H then
+    if not self.healthMeter.toast:is_visible() then
+        -- Don't bother drawing it
         return
     end
 
@@ -114,40 +121,62 @@ function StatusBar:draw_health_meter()
         end
     end
     
-    local x = self.healthMeterPos.x
-    local y = self.healthMeterPos.y
+    local x = 0
+    local y = self.healthMeter.toast:get_y()
+    print('heath meter:', x, y)
 
     draw_progress_bar({num = self.owner.health, max = 100,
                        color = MAGENTA, borderColor = borderColor},
                       upscale_x(x) + SCALE_X,
-                      upscale_y(y + .5) - SCALE_Y + self.healthMeterOffset.y,
+                      --upscale_y(y + .5) - SCALE_Y,
+                      y + (upscale_y(1) / 2) - SCALE_Y,
                       upscale_x(8) - (SCALE_X * 2),
                       upscale_y(1) / 2)
+end
+
+function StatusBar:draw_newest_item()
+    if #self.owner.inventory.items > 0 then
+        local realNewestItem =
+            self.owner.inventory.items[#self.owner.inventory.items]
+        -- If the owner's newest item is different than the previous newest
+        -- item we displayed
+        if (realNewestItem ~= self.newestItem.item and
+            not instanceOf(Weapon, realNewestItem)) then
+            self.newestItem.item = realNewestItem
+            self.newestItem.toast:show()
+        end
+    end
+
+    if self.newestItem.toast:is_visible() then
+        local x = upscale_x((ROOM_W / 2) - 1)
+        local y = self.newestItem.toast:get_y()
+        local num =
+            #self.owner.inventory:get_items(self.newestItem.item.itemType)
+
+        love.graphics.setColor(WHITE)
+        love.graphics.print(num, x, y)
+        self.newestItem.item:draw({x = x + (upscale_x(1) *
+                                            tostring(num):len()),
+                                   y = y})
+    end
 end
 
 function StatusBar:update()
     -- If the health meter is full
     if self.owner.health >= 100 then
-        -- If the timer is not already set, and the health meter hasn't
-        -- started moving offscreen
-        if (self.healthMeterHideTimer == 0 and
-            self.healthMeterOffset.y == 0) then
-            -- Set a delay before hiding it
-            self.healthMeterHideTimer = fps
-
-        -- Decrement the timer
-        elseif self.healthMeterHideTimer > 0 then
-            self.healthMeterHideTimer = self.healthMeterHideTimer - 1
-        end
-
-        -- If the delay period is over
-        if (self.healthMeterHideTimer == 0 and
-            self.healthMeterOffset.y < TILE_H + 1) then
-            -- Hide the health meter
-            self.healthMeterOffset.y = self.healthMeterOffset.y + SCALE_Y
-        end
+        self.healthMeter.toast:unfreeze()
     end
 
+    -- Update the toast popups
+    self.healthMeter.toast:update()
+    self.newestItem.toast:update()
+
+    -- Update the newestItem's animation
+    if self.newestItem.item then
+        self.newestItem.item:update()
+    end
+
+    -- Decrement the flash timer
     if self.flash.timer > 0 then
         self.flash.timer = self.flash.timer - 1
     else
