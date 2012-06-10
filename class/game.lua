@@ -61,7 +61,15 @@ function Game:draw_metadata()
     self.statusBar:draw()
 
     if self.player.dead then
-        cga_print("YOU KILLED " .. #self.player.log:get_kills() .. " MONSTERS",
+        local visitedRooms = 0
+        for _,r in pairs(self.rooms) do
+            if r.visited then
+                visitedRooms = visitedRooms + 1
+            end
+        end
+
+        cga_print("KILLED " .. #self.player.log:get_kills() .. " MONSTERS\n" ..
+                  "DISCOVERED " .. visitedRooms .. " ROOMS",
                   1, 1)
     end
 end
