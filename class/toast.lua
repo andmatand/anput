@@ -30,7 +30,7 @@ end
 
 function Toast:show()
     self.offset.y = 0
-    self.hideTimer.value = 8
+    self.hideTimer.value = self.hideTimer.delay
 end
 
 function Toast:unfreeze()

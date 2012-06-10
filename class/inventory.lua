@@ -11,6 +11,9 @@ function Inventory:add(item)
     item.position = nil
     item.owner = self.owner
     table.insert(self.items, item)
+
+    -- Save a pointer to the most recently added item
+    self.newestItem = item
 end
 
 -- This function returns one item of the specified type
@@ -110,6 +113,12 @@ function Inventory:remove(item)
 
             -- Remove the item from our items table
             table.remove(self.items, i)
+
+            -- If this is our most recently added item
+            if item == self.newestItem then
+                -- Clear the pointer to the most recently added item
+                self.newestItem = nil
+            end
             break
         end
     end

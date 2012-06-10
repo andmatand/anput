@@ -123,7 +123,6 @@ function StatusBar:draw_health_meter()
     
     local x = 0
     local y = self.healthMeter.toast:get_y()
-    print('heath meter:', x, y)
 
     draw_progress_bar({num = self.owner.health, max = 100,
                        color = MAGENTA, borderColor = borderColor},
@@ -135,16 +134,17 @@ function StatusBar:draw_health_meter()
 end
 
 function StatusBar:draw_newest_item()
-    if #self.owner.inventory.items > 0 then
-        local realNewestItem =
-            self.owner.inventory.items[#self.owner.inventory.items]
+    if self.owner.inventory.newestItem then
         -- If the owner's newest item is different than the previous newest
-        -- item we displayed
-        if (realNewestItem ~= self.newestItem.item and
-            not instanceOf(Weapon, realNewestItem)) then
-            self.newestItem.item = realNewestItem
+        -- item we displayed, and it's not a weapon
+        if (self.owner.inventory.newestItem ~= self.newestItem.item and
+            not instanceOf(Weapon, self.owner.inventory.newestItem)) then
+            self.newestItem.item = self.owner.inventory.newestItem
             self.newestItem.toast:show()
         end
+    else
+        self.newestItem.item = nil
+        return
     end
 
     if self.newestItem.toast:is_visible() then
@@ -171,8 +171,10 @@ function StatusBar:update()
     self.healthMeter.toast:update()
     self.newestItem.toast:update()
 
-    -- Update the newestItem's animation
-    if self.newestItem.item then
+    -- If there is an item popup showing, and the game is not paused
+    if (self.newestItem.item and self.newestItem.toast:is_visible() and
+        not self.owner.room.game.paused) then
+        -- Update the newestItem's animation
         self.newestItem.item:update()
     end
 
