@@ -170,11 +170,12 @@ function RoomBuilder:cleanup_untouchable_bricks()
             end
 
             -- Make sure this brick isn't in the same position as another
-            -- earlier brick
+            -- brick that was already added
             if ok then
-                for j, b2 in pairs(self.bricks) do
-                    if j < i and tiles_overlap(b, b2) then
+                for _, b2 in pairs(temp) do
+                    if tiles_overlap(b, b2) then
                         ok = false
+                        break
                     end
                 end
             end
