@@ -24,7 +24,6 @@ function cga_print(text, x, y, options)
 
     -- Go through each line of the text
     local i = 0
-    love.graphics.setColor(BLACK)
     for line in text:gmatch("[^\n]+") do
         local xPos = x
         if options.center then
@@ -32,25 +31,23 @@ function cga_print(text, x, y, options)
         end
 
         -- Draw a black background behind this line of text
+        love.graphics.setColor(BLACK)
         love.graphics.rectangle('fill', xPos, y + upscale_y(i),
                                 font:getWidth(line), font:getHeight())
 
+        -- Set the color
+        if options.color then
+            love.graphics.setColor(options.color)
+        else
+            love.graphics.setColor(WHITE)
+        end
+
+        -- Draw this line of text
+        love.graphics.printf(line, xPos, y + upscale_y(i),
+                             font:getWidth(line) + 1, 'center')
+
         -- Keep track of which line number we're on
         i = i + 1
-    end
-
-    -- Set the color
-    if options.color then
-        love.graphics.setColor(options.color)
-    else
-        love.graphics.setColor(WHITE)
-    end
-
-    -- Draw the text
-    if options.center then
-        love.graphics.printf(text, x, y - 1, 0, 'center')
-    else
-        love.graphics.print(text, x, y - 1)
     end
 end
 

@@ -132,16 +132,27 @@ function InventoryMenu:draw()
         --           center = true})
 
         local num = #self.owner.inventory:get_items(self.selectedItem.itemType)
+        --if num > 1 then
+        --    cga_print(tostring(num), nil, nil,
+        --              {position = {x = center.x,
+        --                           y = center.y - (upscale_y(3))},
+        --               center = true})
+        --end
+
+        local caption = Message({text =
+                                 ITEM_NAME[self.selectedItem.itemType]})
         if num > 1 then
-            cga_print(tostring(num), nil, nil,
-                      {position = {x = center.x,
-                                   y = center.y - (upscale_y(3))},
-                       center = true})
+            caption.text = num .. ' ' .. caption.text
+
+            -- If the item name does not already end in "S"
+            if string.sub(caption.text, -1) ~= 'S' then
+                -- Add an "S" to the end
+                caption.text = caption.text .. 'S'
+            end
         end
+        caption:wrap(8)
 
-        local name = ITEM_NAME[self.selectedItem.itemType]
-
-        cga_print(name, nil, nil,
+        cga_print(caption.text, nil, nil,
                   {position = {x = center.x,
                                y = center.y + upscale_y(2)},
                    center = true})

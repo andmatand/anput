@@ -11,7 +11,7 @@ ITEM_TYPE = {potion = 1,
              ankh = 7}
 ITEM_NAME = {'POTION',
              'ARROWS',
-             'SHINY\nTHING',
+             'SHINY THING',
              'SWORD',
              'BOW',
              'STAFF',

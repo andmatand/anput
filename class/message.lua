@@ -159,7 +159,7 @@ function Message:wrap(width)
         nextWord, endOfWord = next_word(self.text, cur)
 
         -- If the end of the current word would exceed the wrap width
-        if x + nextWord:len() >= width then
+        if x + nextWord:len() > width then
             -- Insert a linebreak before the current word
             self.text = self.text:sub(1, cur - 1) .. '\n' ..
                         self.text:sub(cur + 1)
