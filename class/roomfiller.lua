@@ -54,7 +54,7 @@ end
 function RoomFiller:add_monsters()
     local max = #self.room.freeTiles * .04
 
-    if self.addedMonsters then
+    if self.addedMonsters or self.room.isSecret then
         -- Flag that this step was already completed
         return true
     end

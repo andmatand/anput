@@ -341,8 +341,8 @@ function Map:add_secret_passages()
             local falseBrick = FalseBrick(adjacentExit:get_doorway())
             table.insert(adjacentRoom.requiredObjects, falseBrick)
 
-            -- Mark the adjacent room as a secret room
-            adjacentRoom.isSecret = true
+            -- Mark this room as a secret room
+            r.isSecret = true
         end
     end
 
