@@ -28,6 +28,7 @@ function InventoryMenu:init(owner)
     y = self.position.y + (self.size.h / 2)
     y = (y / 2) - .5
     self.center = {x = x, y = y}
+    self.dropPosition = {x = x, y = y + 2.5}
 
     -- Set the positions of each item/action slot
     self.slotPositions = {{x = x, y = y - 1.5},
@@ -62,6 +63,12 @@ function InventoryMenu:draw()
                             upscale_x(self.size.w),
                             upscale_y(self.size.h))
 
+    -- Set only the inside of the box as the drawable area
+    love.graphics.setScissor(upscale_x(self.position.x),
+                             upscale_y(self.position.y),
+                             upscale_x(self.size.w),
+                             upscale_y(self.size.h))
+
     -- Switch to 2x scale
     SCALE_X = SCALE_X * 2
     SCALE_Y = SCALE_Y * 2
@@ -79,15 +86,16 @@ function InventoryMenu:draw()
             item:draw()
         end
     elseif (self.state == 'item' or self.state == 'selecting item' or
-            self.state == 'deselecting item') then
+            self.state == 'deselecting item' or
+            self.state == 'dropping item') and self.selectedItem then
 
-            -- Draw only the selected item
+            -- Draw the selected item
             self.selectedItem:draw()
-
     end
 
-    if self.state == 'item' then
-        if self.selectedItem.isUsable then
+    if self.state == 'item' or self.state == 'dropping item' then
+        if self.verbs.use.isPushed or (self.selectedItem and
+                                       self.selectedItem.isUsable) then
             -- Set the color based on whether this verb button is pressed
             if self.verbs.use.isPushed then
                 love.graphics.setColor(MAGENTA)
@@ -102,18 +110,20 @@ function InventoryMenu:draw()
                                0, SCALE_X, SCALE_Y)
         end
 
-        -- Set the color based on whether this verb button is pressed
-        if self.verbs.drop.isPushed then
-            love.graphics.setColor(MAGENTA)
-        else
-            love.graphics.setColor(WHITE)
-        end
+        if self.selectedItem or self.verbs.drop.isPushed then
+            -- Set the color based on whether this verb button is pressed
+            if self.verbs.drop.isPushed then
+                love.graphics.setColor(MAGENTA)
+            else
+                love.graphics.setColor(WHITE)
+            end
 
-        -- Draw the USE verb
-        love.graphics.draw(dropImg,
-                           upscale_x(self.slotPositions[4].x),
-                           upscale_y(self.slotPositions[4].y),
-                           0, SCALE_X, SCALE_Y)
+            -- Draw the USE verb
+            love.graphics.draw(dropImg,
+                               upscale_x(self.slotPositions[4].x),
+                               upscale_y(self.slotPositions[4].y),
+                               0, SCALE_X, SCALE_Y)
+        end
     end
 
     -- Switch back to normal scale
@@ -121,7 +131,10 @@ function InventoryMenu:draw()
     SCALE_X = SCALE_X / 2
     SCALE_Y = SCALE_Y / 2
 
-    if self.state == 'item' then
+    -- Enable drawing everywhere again
+    love.graphics.setScissor()
+
+    if self.state == 'item' and self.selectedItem then
         -- Create a real-pixel-coordinate version of the center
         local center = {x = upscale_x(self.center.x + .5) * 2,
                         y = upscale_y(self.center.y + .5) * 2}
@@ -159,6 +172,22 @@ function InventoryMenu:draw()
     end
 end
 
+function InventoryMenu:refresh_items()
+    -- Find the items the owner is holding, and position them in a circle
+    self.items = {}
+    local i = 1
+    for _, item in ipairs(self.owner.inventory:get_unique_items()) do
+        if item ~= self.owner.armory.currentWeapon then
+            if self.selectedItem ~= item then
+                item.position = copy_table(self.slotPositions[i])
+            end
+            table.insert(self.items, item)
+
+            i = i + 1
+        end
+    end
+end
+
 function InventoryMenu:update()
     for _, item in ipairs(self.owner.inventory:get_unique_items()) do
         -- Update the item (for animations)
@@ -168,23 +197,17 @@ function InventoryMenu:update()
     -- If an item is currently selected
     if self.selectedItem then
         -- If the owner is no longer holding it
-        if self.selectedItem.owner ~= self.owner then
+        if self.selectedItem.owner ~= self.owner and
+           self.state ~= 'dropping item' then
             self:post_use_item()
         end
     end
 
+    self:refresh_items()
+
     if self.state == 'inventory' then
-        -- Find and position the items
-        self.items = {}
-        local i = 0
-        for _, item in ipairs(self.owner.inventory:get_unique_items()) do
-            if item ~= self.owner.armory.currentWeapon then
-                i = i + 1
-                self.items[i] = item
-                self.items[i].position = copy_table(self.slotPositions[i])
-            end
-        end
-    elseif self.state == 'selecting item' then
+        self.selectedItem = nil
+    elseif self.state == 'selecting item' and self.selectedItem then
         if tiles_overlap(self.selectedItem.position, self.center) then
             self.state = 'item'
         else
@@ -196,6 +219,24 @@ function InventoryMenu:update()
             self.state = 'inventory'
         else
             self:move_item_toward(self.slotPositions[self.selectedItemIndex])
+        end
+    elseif self.state == 'dropping item' then
+        if tiles_overlap(self.selectedItem.position, self.dropPosition) then
+            self.selectedItem.position = nil
+            self.owner:drop({self.selectedItem})
+            self:post_use_item()
+
+            if self.selectedItem then
+                self.state = 'item'
+            else
+                if self.verbs.drop.isPushed then
+                    self.state = 'item'
+                else
+                    self:go_back()
+                end
+            end
+        else
+            self:move_item_toward(self.dropPosition)
         end
     end
 end
@@ -267,9 +308,8 @@ function InventoryMenu:keypressed(key)
                 return
             elseif dir == 4 then
                 self.verbs.drop.isPushed = true
-                self.selectedItem.position = nil
-                self.owner:drop({self.selectedItem})
-                self:post_use_item()
+                self.state = 'dropping item'
+                --self:post_use_item()
 
                 return
             end
@@ -285,10 +325,18 @@ function InventoryMenu:keyreleased(key)
     local dir = get_direction_input(key)
 
     -- Un-push the verb buttons
-    if dir == 2 then
+    if dir == 2 and self.verbs.use.isPushed then
         self.verbs.use.isPushed = false
-    elseif dir == 4 then
+
+        if not self.selectedItem then
+            self:go_back()
+        end
+    elseif dir == 4 and self.verbs.drop.isPushed then
         self.verbs.drop.isPushed = false
+
+        if not self.selectedItem and self.state ~= 'dropping item' then
+            self:go_back()
+        end
     end
 end
 
@@ -315,6 +363,6 @@ function InventoryMenu:post_use_item()
         self.selectedItem:set_position(self.center)
     else
         -- Go back to the main inventory screen
-        self:go_back()
+        --self:go_back()
     end
 end
