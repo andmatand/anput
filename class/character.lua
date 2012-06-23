@@ -836,28 +836,26 @@ function Character:receive_hit(agent)
 end
 
 function Character:recharge()
-    local slow = .25
-    local fast = .5
-    local amount
+    if not self.rechargeTimer then
+        self.rechargeTimer = {delay = 4, value = 0}
+    end
 
-    -- If we didn't move
-    if not self.moved then
-        -- Recharge faster
-        amount = fast
+    if self.rechargeTimer.value > 0 then
+        self.rechargeTimer.value = self.rechargeTimer.value - 1
     else
-        -- Recharge slowly
-        amount = slow
-    end
+        self.rechargeTimer.value = self.rechargeTimer.delay
 
-    -- If we have a staff
-    if self.armory.weapons.staff then
-        -- Recharge it
-        self.armory.weapons.staff:add_ammo(amount)
-    end
+        -- If we have a staff
+        if self.armory.weapons.staff then
+            -- Recharge it
+            self.armory.weapons.staff:add_ammo(1)
+        end
 
-    if love.timer.getTime() > self.hurtTimer + 2 then
-        -- Recharge health
-        self:add_health(slow)
+        -- If it's been > 2 seconds since we were hurt
+        if love.timer.getTime() > self.hurtTimer + 2 then
+            -- Recharge health
+            self:add_health(1)
+        end
     end
 end
 
