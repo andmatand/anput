@@ -70,10 +70,10 @@ function Monster:init(pos, monsterType)
         self.health = 80
         self.isCorporeal = false
 
-        --local staff = Weapon('staff')
-        --staff:add_ammo(20)
-        --staff:set_projectile_class(Fireball)
-        --self:pick_up(staff, false)
+        local staff = Weapon('staff')
+        staff:add_ammo(20)
+        staff:set_projectile_class(Fireball)
+        self:pick_up(staff, false)
 
         self.ai.dodge = {dist = 5, prob = 9, delay = 3}
         self.ai.chase = {dist = 20, prob = 1, delay = 3}
