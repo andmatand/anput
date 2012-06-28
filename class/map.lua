@@ -287,12 +287,15 @@ function Map:add_required_objects()
     local sword = Weapon('sword')
     table.insert(self.rooms[1].requiredObjects, sword)
 
+    -- Put a potion in the starting room
+    --local potion = Item('potion')
+    --table.insert(self.rooms[1].requiredObjects, potion)
 
     -- Create a table of the 5 earliest rooms
     local earlyRooms = self:get_early_rooms(5)
 
     -- Put the wizard in one of the 5 earliest rooms
-    local chunk = love.filesystem.load('script/wizard.lua')
+    local chunk = love.filesystem.load('npc/wizard.lua')
     local wizard = chunk()
     while #earlyRooms > 0 do
         local roomNum = math.random(1, #earlyRooms)
