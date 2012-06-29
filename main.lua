@@ -66,11 +66,6 @@ function love.load()
     end
     love.mouse.setVisible(false)
 
-    randomSeed = os.time()
-    --randomSeed = 1336237086
-    math.randomseed(randomSeed)
-    print('random seed: ' .. randomSeed)
-
     -- These are the tile dimensions in pixels
     TILE_W = 8
     TILE_H = 8

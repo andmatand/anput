@@ -75,6 +75,11 @@ function Game:draw_metadata()
 end
 
 function Game:generate()
+    randomSeed = os.time() + math.random(0, 1000)
+    --randomSeed = 1340880381
+    math.randomseed(randomSeed)
+    --print('\nrandom seed for game: ' .. randomSeed)
+
     -- Generate a new map
     self.map = Map({game = self})
     self.rooms = self.map:generate()
