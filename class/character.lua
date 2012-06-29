@@ -698,7 +698,7 @@ function Character:path_obsolete()
         -- character now is
         if manhattan_distance(self.path.destination,
                               self.path.character.position) > 5 then
-            print('path is obsolete')
+            --print('path is obsolete')
             return true
         end
     end
@@ -795,8 +795,6 @@ function Character:receive_damage(amount, agent)
             -- e.g. an arrow
             local topAgent = agent
             while topAgent.owner do
-                print('agent:', topAgent)
-                print('  owner:', topAgent.owner)
                 topAgent = topAgent.owner
             end
 
