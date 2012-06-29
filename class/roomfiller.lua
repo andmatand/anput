@@ -125,7 +125,7 @@ function RoomFiller:add_turrets()
     -- and difficulty
     local max = math.random(0, #self.room.bricks * .02 *
                             (self.room.difficulty * .1))
-    print('max turrets:', max)
+    --print('max turrets:', max)
 
     if max >= min then
         local turretPositions, dir = self:find_turret_positions(min, max)
