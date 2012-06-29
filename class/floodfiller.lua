@@ -5,7 +5,7 @@
 FloodFiller = class('FloodFiller')
 
 function FloodFiller:init(source, hotLava)
-    self.source = source -- Needs to have and x and y key, e.g. {x = 2, y = 47}
+    self.source = source -- Needs to have an x and y key, e.g. {x = 2, y = 47}
     self.hotLava = hotLava -- Coordinates which are illegal to traverse
 
     self.freeTiles = {}
