@@ -34,7 +34,7 @@ function Trader:find_customer()
     local player = self.room.game.player
 
     -- If the player is touching us
-    if (player.room == self.room and
+    if (player.room == self.room and not player.dead and
         tiles_touching(self.position, player.position)) then
         -- Consider him our customer
         self.customer = player
