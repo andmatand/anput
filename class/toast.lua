@@ -30,6 +30,7 @@ end
 
 function Toast:show()
     self.offset.y = 0
+    self.velocity = 1
     self.hideTimer.value = self.hideTimer.delay
 end
 
@@ -58,6 +59,8 @@ function Toast:update()
     -- hidden
     if self.hideTimer.value == 0 and self.offset.y < upscale_y(1) then
         -- Move down a little
-        self.offset.y = self.offset.y + SCALE_Y
+        --self.offset.y = self.offset.y + SCALE_Y
+        self.velocity = self.velocity * 1.5
+        self.offset.y = self.offset.y + self.velocity
     end
 end
