@@ -59,9 +59,17 @@ function Room:character_input()
 end
 
 function Room:contains_npc()
-    for _, c in pairs(self:get_characters()) do
-        if c.name then
-            return true
+    if self.generated then
+        for _, c in pairs(self:get_characters()) do
+            if c.name then
+                return true
+            end
+        end
+    elseif self.requiredObjects then
+        for _, ro in pairs(self.requiredObjects) do
+            if instanceOf(Character, ro) and ro.name then
+                return true
+            end
         end
     end
 
@@ -346,6 +354,26 @@ function Room:remove_sprite(sprite)
     end
 end
 
+function Room:sweep()
+    -- Remove dead sprites
+    self.sprites = remove_dead_objects(self.sprites)
+
+    -- Remove dead bricks
+    self.bricks = remove_dead_objects(self.bricks)
+
+    -- Remove dead turrets
+    self.turrets = remove_dead_objects(self.turrets)
+
+    -- Keep only items that have no owner and have not been used
+    local temp = {}
+    for _, i in pairs(self.items) do
+        if not i.owner and not i.isUsed then
+            table.insert(temp, i)
+        end
+    end
+    self.items = temp
+end
+
 -- Returns a table of everything within a specified tile
 function Room:tile_contents(tile)
     contents = {}
@@ -474,23 +502,8 @@ function Room:update()
         s:post_physics()
     end
 
-    -- Remove dead sprites
-    self.sprites = remove_dead_objects(self.sprites)
-
-    -- Remove dead bricks
-    self.bricks = remove_dead_objects(self.bricks)
-
-    -- Remove dead turrets
-    self.turrets = remove_dead_objects(self.turrets)
-
-    -- Keep only items that have no owner and have not been used
-    local temp = {}
-    for _, i in pairs(self.items) do
-        if not i.owner and not i.isUsed then
-            table.insert(temp, i)
-        end
-    end
-    self.items = temp
+    -- Clean up dead objects
+    self:sweep()
 
     -- Iterate through the room objects which can have mouths
     --for _, o in pairs(self.sprites) do

@@ -167,6 +167,11 @@ function Sprite:physics()
                 end
 
                 if self:hit(s) then
+                    if test.room ~= self.room then
+                        -- Sweep up in case we killed something
+                        test.room:sweep()
+                    end
+
                     -- Registered as a hit; done with physics
                     return
                 end

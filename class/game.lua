@@ -274,12 +274,12 @@ function Game:switch_to_room(room)
         print('switching to room ' .. room.index)
     end
 
-    prevRoom = self.currentRoom
+    self.previousRoom = self.currentRoom
 
     -- If there was a previous room
-    if prevRoom then
+    if self.previousRoom then
         -- Clear previous room's FOV cache to save memory
-        --prevRoom.fovCache = {}
+        --self.previousRoom.fovCache = {}
     end
 
     -- Set the new room as the current room
@@ -328,11 +328,28 @@ function Game:update()
     -- Update the current room
     self.currentRoom:update()
 
-    -- Update adjacent rooms that have been generated
+    -- Check if we need to update the adjacent rooms
     for _, room in pairs(self:get_adjacent_rooms()) do
-        if room.generated then
-            room:update()
+        if room.generated and room ~= self.previousRoom then
+            local needsToUpdate = false
+
+            -- Check if there are any projectiles
+            for _, s in pairs(room.sprites) do
+                if instanceOf(Projectile, s) then
+                    needsToUpdate = true
+                    break
+                end
+            end
+
+            if needsToUpdate then
+                room:update()
+            end
         end
+    end
+
+    if self.previousRoom then
+        -- Update the previous room
+        self.previousRoom:update()
     end
 
     -- If the player entered a different room
