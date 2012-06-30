@@ -282,6 +282,18 @@ function Map:get_early_rooms(num)
     end
 end
 
+function Map:get_rooms_below_difficulty(diff)
+    local rooms = {}
+
+    for _, r in pairs(self.rooms) do
+        if r.difficulty < diff then
+            table.insert(rooms, r)
+        end
+    end
+
+    return rooms
+end
+
 function Map:add_required_objects()
     -- Put a sword in the starting room
     local sword = Weapon('sword')
@@ -311,22 +323,24 @@ function Map:add_required_objects()
     end
 
 
-    -- Create a table of the 14 earliest rooms
-    local earlyRooms = self:get_early_rooms(14)
+    -- Create a table of the rooms lower than the difficulty at which ghosts
+    -- would spawn
+    local easyRooms = self:get_rooms_below_difficulty(
+                      MONSTER_DIFFICULTY[MONSTER_TYPE.ghost])
     local numShinyThings = 0
     while numShinyThings < 7 do
         -- Pick a random early room
-        local roomNum = math.random(1, #earlyRooms)
+        local roomNum = math.random(1, #easyRooms)
 
         -- If this room doesn't already have too many reqiured objects
-        if #earlyRooms[roomNum].requiredObjects < 1 then
+        if #easyRooms[roomNum].requiredObjects < 1 then
             -- Add a shiny thing as a required object
             numShinyThings = numShinyThings + 1
-            table.insert(earlyRooms[roomNum].requiredObjects,
+            table.insert(easyRooms[roomNum].requiredObjects,
                          Item('shinything'))
         else
             -- Otherwise remove this room from consideration
-            table.remove(earlyRooms, roomNum)
+            table.remove(easyRooms, roomNum)
         end
     end
 

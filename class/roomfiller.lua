@@ -68,7 +68,7 @@ function RoomFiller:add_monsters()
         -- Find the hardest monster diffculty we still have room for
         local hardest = 0
         local monsterType = nil
-        for mt, diff in ipairs(Monster.static.difficulties) do
+        for mt, diff in ipairs(MONSTER_DIFFICULTY) do
             if diff + totalDifficulty > self.room.difficulty then
                 break
             end

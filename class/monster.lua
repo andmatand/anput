@@ -9,13 +9,14 @@ MONSTER_TYPE = {scarab = 1,
 
 Monster = class('Monster', Character)
 
-Monster.static.difficulties = {
+MONSTER_DIFFICULTY = {
      1, -- 1 scarab
      5, -- 2 bird
     10, -- 3 cat
     20, -- 4 mummy
     40  -- 5 ghost
     }
+
 
 function Monster:init(pos, monsterType)
     Character.init(self)
@@ -28,7 +29,7 @@ function Monster:init(pos, monsterType)
     self.team = 2 -- Bad guys
 
     -- Copy monster difficulty level
-    self.difficulty = Monster.static.difficulties[monsterType]
+    self.difficulty = MONSTER_DIFFICULTY[monsterType]
 
     -- Set monster properties
     if self.monsterType == MONSTER_TYPE.scarab then
