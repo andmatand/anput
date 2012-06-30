@@ -40,7 +40,7 @@ function MapDisplay:draw(currentRoom)
                             self.position.y + self.mapOffset.y)
 
     for _, n in pairs(self.nodes) do
-        if n.room.visited then
+        if n.room.visited or DEBUG then
             if n.room == currentRoom and self.flash.state then
                 love.graphics.setColor(MAGENTA)
             elseif n.finalRoom then
