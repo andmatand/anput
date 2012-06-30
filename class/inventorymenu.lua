@@ -76,8 +76,16 @@ function InventoryMenu:draw()
     --love.graphics.scale(2, 2)
 
     if self.state == 'inventory' then
+        local pos, rotation
+        pos = {x = upscale_x(self.center.x), y = upscale_y(self.center.y)}
+
+        if self.owner.dead then
+            rotation = math.rad(-90)
+            pos.y = pos.y + upscale_y(1)
+        end
+
         -- Draw the player in the middle
-        self.owner:draw({x = self.center.x, y = self.center.y})
+        self.owner:draw(pos, rotation)
     end
 
     if self.state == 'inventory' then

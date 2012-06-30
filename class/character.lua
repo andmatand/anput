@@ -457,12 +457,18 @@ function Character:dodge(sprite)
     end
 end
 
-function Character:draw(pos)
+function Character:draw(pos, rotation)
     if not self.images then
         return
     end
 
-    pos = pos or self.position
+    local position
+    if pos then
+        position = pos
+    else
+        position = {x = upscale_x(self.position.x),
+                    y = upscale_y(self.position.y)}
+    end
 
     -- Determine which image of this character to draw
     if (self.images.moving and
@@ -489,9 +495,9 @@ function Character:draw(pos)
             love.graphics.setColor(255, 255, 255)
         end
         love.graphics.draw(self.currentImage,
-                           pos.x * TILE_W * SCALE_X,
-                           pos.y * TILE_H * SCALE_Y,
-                           0, SCALE_X, SCALE_Y)
+                           position.x, position.y,
+                           rotation,
+                           SCALE_X, SCALE_Y)
     else
         self.flashTimer = self.flashTimer - 1
     end

@@ -67,7 +67,8 @@ function Message:draw()
     -- If we have an avatar to draw before the text
     if self.avatar then
         -- Draw the avatar
-        self.avatar:draw({x = self.position.x, y = self.position.y + yOffset})
+        self.avatar:draw({x = upscale_x(self.position.x),
+                          y = upscale_y(self.position.y + yOffset)})
 
         -- Print a colon after the avatar
         love.graphics.setColor(WHITE)
