@@ -830,7 +830,10 @@ function Character:receive_hit(agent)
             -- If the owner is on our team
             if agent.owner.team == self.team then
                 -- Turn against him
-                self.speech = "THAT WAS NOT VERY NICE"
+                if self.mouth then
+                    self.mouth.speech = "THAT WAS NOT VERY NICE"
+                    self.mouth:speak(true)
+                end
                 self.team = 3
             end
         end
