@@ -284,6 +284,19 @@ function Room:get_fov_obstacles()
     return self.bricks
 end
 
+-- Returns a table of all monsters in the room
+function Room:get_monsters()
+    local monsters = {}
+
+    for _, s in pairs(self.sprites) do
+        if instanceOf(Monster, s) then
+            table.insert(monsters, s)
+        end
+    end
+
+    return monsters
+end
+
 function Room:is_audible()
     if self.game.currentRoom == self then
         return true

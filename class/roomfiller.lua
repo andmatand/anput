@@ -40,14 +40,56 @@ function RoomFiller:fill_next_step()
         if self:add_internal_bricks() then
             if self:add_turrets() then
                 if self:add_monsters() then
-                    -- Flag that room is done being filled
-                    return true
+                    if self:add_items() then
+                        -- Flag that room is done being filled
+                        return true
+                    end
                 end
             end
         end
     end
 
     -- Flag that room is not yet done being filled
+    return false
+end
+
+function RoomFiller:add_items()
+    if self.addedItems then
+        return true
+    end
+
+    if self.room.isSecret then
+        -- Add some goodies
+        --local max = #self.room.freeTiles * .05
+        --if max < 1 then max = 1 end
+        local numGoodies = math.random(1, 5)
+        local goodies = {}
+
+        for i = 1, numGoodies do
+            -- Choose a random item type including shiny things
+            local itemType = math.random(1, 3)
+
+            table.insert(goodies, Item(itemType))
+        end
+
+        -- Place the goodies in the room
+        self:position_objects(goodies)
+    else
+        -- Give items to the monsters
+        for _, m in pairs(self.room:get_monsters()) do
+            if math.random(m.difficulty, 100) >= 25 then
+                -- Choose a random item type
+                local itemType = math.random(1, 2)
+
+                local newItem = Item(itemType)
+
+                -- Pretend the monster picked it up
+                m:pick_up(newItem)
+            end
+        end
+    end
+
+    self.addedItems = true
     return false
 end
 
@@ -88,19 +130,6 @@ function RoomFiller:add_monsters()
         for _, item in pairs(self.room.items) do
             -- Give the item to a random monster
             monsters[math.random(1, #monsters)]:pick_up(item)
-        end
-    end
-
-    -- Give items to the monsters
-    for _, m in pairs(monsters) do
-        if math.random(m.difficulty, 100) >= 25 then
-            -- Choose a random item type
-            local itemType = math.random(1, 2)
-
-            local newItem = Item(itemType)
-
-            -- Pretend the monster picked it up
-            m:pick_up(newItem)
         end
     end
 
