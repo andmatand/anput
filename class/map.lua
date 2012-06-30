@@ -299,7 +299,7 @@ function Map:add_required_objects()
     local sword = Weapon('sword')
     table.insert(self.rooms[1].requiredObjects, sword)
 
-    -- Put a potion in the starting room
+    -- DEBUG: Put a potion in the starting room
     --local potion = Item('potion')
     --table.insert(self.rooms[1].requiredObjects, potion)
 
