@@ -47,6 +47,8 @@ function MapDisplay:draw(currentRoom)
                 love.graphics.setColor(CYAN)
             elseif n.room:contains_npc() then
                 love.graphics.setColor(CYAN)
+            elseif DEBUG and n.room.isSecret then
+                love.graphics.setColor(255, 0, 0)
             else
                 love.graphics.setColor(WHITE)
             end
