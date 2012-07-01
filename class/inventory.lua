@@ -86,17 +86,20 @@ function Inventory:has_item(itemType, quantity)
 end
 
 function Inventory:has_room_for(item)
+    local num = #self:get_unique_items()
+
     -- If we have less than 4 unique items
-    if (#self:get_unique_items() < 4) then
+    if (num < 4) then
         return true
-    -- If we have >= 4 unique items
-    elseif #self:get_unique_items() >= 4 then
+    -- If we have 5 unique items
+    elseif num == 4 then
         -- If we are holding one item as a weapon
         if self.owner.armory.currentWeapon then
             return true
-
+        end
+    elseif num == 5 then
         -- If the new item is of the same type as one of our current ones
-        elseif self:get_item(item.itemType) ~= nil then
+        if self:get_item(item.itemType) ~= nil then
             return true
         end
     end
