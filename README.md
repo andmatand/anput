@@ -17,11 +17,13 @@ and the LÖVE framework.
 ##Controls
 * move: wasd
 * switch weapon: 1 - 3, or Shift
-* shoot: arrows
+* shoot: arrow buttons
+* pause: spacebar
+* switch menu (while paused): tab
 * inventory: i
 * map: m
 * use potion: p
 * trade with dudes: t
 * fullscreen: f11, Alt + Enter
-* new game: n
+* new game: Ctrl + n
 * quit: Ctrl + q, or close the window

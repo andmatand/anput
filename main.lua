@@ -194,7 +194,8 @@ function love.update(dt)
 end
 
 function love.keypressed(key, unicode)
-    if key == 'n' then
+    if key == 'n' and (love.keyboard.isDown('lctrl') or
+                       love.keyboard.isDown('rctrl')) then
         game = Game()
         game:generate()
     elseif key == 'f11' or
