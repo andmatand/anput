@@ -48,56 +48,18 @@ function Turret:update()
 end
 
 function Turret:sense()
-    xDir = 0
-    yDir = 0
-    if self.dir == 1 then
-        -- North
-        yDir = -1
-    elseif self.dir == 2 then
-        -- East
-        xDir = 1
-    elseif self.dir == 3 then
-        -- South
-        yDir = 1
-    elseif self.dir == 4 then
-        -- West
-        xDir = -1
-    end
-
-    local x, y
-    x, y = self.position.x, self.position.y
-    -- Only sense 10 tiles ahead
-    for i = 1,10 do
-        x = x + xDir
-        y = y + yDir
-
-        -- If we got to a tile outside the room
-        if not self.room:tile_in_room({x = x, y = y}) then
-            return false
-        end
-
-        -- Check if we reached a brick
-        for _, b in pairs(self.room.bricks) do
-            if tiles_overlap({x = x, y = y}, b:get_position()) then
-                return false
+    -- Iterate through all the room's characters
+    for _, c in pairs(self.room:get_characters()) do
+        -- If there is a line of sight to this character
+        if self.room:line_of_sight(self.position, c.position) then
+            -- If this room hasn't played the trap sound yet, and we are
+            -- targeting a player
+            if not self.room.playedTrapSound and instanceOf(Player, c) then
+                -- Play the trap sound
+                self.room.playedTrapSound = true
+                sound.trap:play()
             end
-        end
-
-        -- Get a copy of the rooms characters
-        local dudes = self.room:get_characters()
-
-        -- Check if we reached a character
-        for _, c in pairs(dudes) do
-            if tiles_overlap({x = x, y = y}, c:get_position()) then
-                -- If this room hasn't played the trap sound yet, and we are
-                -- targeting a player
-                if not self.room.playedTrapSound and instanceOf(Player, c) then
-                    -- Play the trap sound
-                    self.room.playedTrapSound = true
-                    sound.trap:play()
-                end
-                return true
-            end
+            return true
         end
     end
 
