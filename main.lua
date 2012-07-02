@@ -125,7 +125,7 @@ function love.load()
 
     -- Items
     potionImg = new_image('potion.png')
-    arrowsImg = new_image('arrow-item.png')
+    arrowImg = new_image('arrow.png')
     shinyThingImg = {new_image('shiny1.png'),
                      new_image('shiny2.png'),
                      new_image('shiny3.png')}

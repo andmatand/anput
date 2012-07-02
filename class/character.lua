@@ -342,25 +342,25 @@ function Character:pick_up(item)
 
         -- If it's a bow
         if item.itemType == ITEM_TYPE.bow then
-            -- Apply any arrow packs we have
-            local foundArrowPack
+            -- Apply any arrows
+            local foundArrow
             repeat
-                foundArrowPack = false
+                foundArrow = false
                 for _, i in pairs(self.inventory.items) do
-                    if i.itemType == ITEM_TYPE.arrows then
+                    if i.itemType == ITEM_TYPE.arrow then
                         i:use()
-                        foundArrowPack = true
+                        foundArrow = true
 
                         -- Break here because Item:use() alters the inventory's
                         -- items table
                         break
                     end
                 end
-            until not foundArrowPack
+            until not foundArrow
         end
 
     -- If it's arrows and we have a bow
-    elseif (item.itemType == ITEM_TYPE.arrows and
+    elseif (item.itemType == ITEM_TYPE.arrow and
             self:has_item(ITEM_TYPE.bow)) then
         -- Apply arrows to bow instead of putting them in inventory
         item:use_on(self)

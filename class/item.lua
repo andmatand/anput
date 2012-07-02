@@ -3,14 +3,14 @@
 Item = class('Item')
 
 ITEM_TYPE = {potion = 1,
-             arrows = 2,
+             arrow = 2,
              shinything = 3,
              sword = 4,
              bow = 5,
              staff = 6,
              ankh = 7}
 ITEM_NAME = {'POTION',
-             'ARROWS',
+             'ARROW',
              'SHINY THING',
              'SWORD',
              'BOW',
@@ -29,8 +29,9 @@ function Item:init(itemType)
     if self.itemType == ITEM_TYPE.potion then
         self.frames = {{image = potionImg}}
         self.isUsable = true
-    elseif self.itemType == ITEM_TYPE.arrows then
-        self.frames = {{image = arrowsImg}}
+    elseif self.itemType == ITEM_TYPE.arrow then
+        self.frames = {{image = arrowImg}}
+        --self.frames = {{image = projectileImg.arrow}}
     elseif self.itemType == ITEM_TYPE.shinything then
         self.frames = {
             {image = shinyThingImg[1], delay = 8},
@@ -126,11 +127,11 @@ function Item:use_on(patient)
             
             return true
         end
-    elseif self.itemType == ITEM_TYPE.arrows then
+    elseif self.itemType == ITEM_TYPE.arrow then
         -- Arrows
         -- If the patient has a bow
         if patient.armory.weapons.bow then
-            patient.armory.weapons.bow:add_ammo(10)
+            patient.armory.weapons.bow:add_ammo(1)
             self.isUsed = true
             return true
         end
