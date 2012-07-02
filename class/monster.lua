@@ -36,24 +36,24 @@ function Monster:init(pos, monsterType)
         self.images = monsterImg.scarab
         self.health = 10
 
-        self.ai.dodge = {dist = 5, prob = 2, delay = 3}
-        self.ai.flee = {dist = 15, prob = 9, delay = 3}
+        self.ai.level.dodge = {dist = 5, prob = 2, delay = 3}
+        self.ai.level.flee = {dist = 15, prob = 9, delay = 3}
     elseif self.monsterType == MONSTER_TYPE.bird then
         self.images = monsterImg.bird
         self.health = 20
 
         self:pick_up(Weapon('sword'))
 
-        self.ai.dodge = {dist = 5, prob = 5, delay = 5}
-        self.ai.chase = {dist = 10, prob = 8, delay = 3}
+        self.ai.level.dodge = {dist = 5, prob = 5, delay = 5}
+        self.ai.level.chase = {dist = 10, prob = 8, delay = 3}
     elseif self.monsterType == MONSTER_TYPE.cat then
         self.images = monsterImg.cat
         self.health = 40
 
         self:pick_up(Weapon('sword'))
 
-        self.ai.dodge = {dist = 7, prob = 7, delay = 2}
-        self.ai.chase = {dist = 10, prob = 9, delay = 2}
+        self.ai.level.dodge = {dist = 7, prob = 7, delay = 2}
+        self.ai.level.chase = {dist = 10, prob = 9, delay = 2}
     elseif self.monsterType == MONSTER_TYPE.mummy then
         self.images = monsterImg.mummy
         self.health = 40
@@ -63,9 +63,9 @@ function Monster:init(pos, monsterType)
         bow:add_ammo(20)
         self:pick_up(bow)
 
-        self.ai.dodge = {dist = 5, prob = 7, delay = 2}
-        self.ai.chase = {dist = 20, prob = 8, delay = 3}
-        self.ai.shoot = {dist = 15, prob = 8, delay = 2}
+        self.ai.level.dodge = {dist = 5, prob = 7, delay = 2}
+        self.ai.level.chase = {dist = 20, prob = 8, delay = 3}
+        self.ai.level.shoot = {dist = 15, prob = 8, delay = 2}
     elseif self.monsterType == MONSTER_TYPE.ghost then
         self.images = monsterImg.ghost
         self.health = 80
@@ -76,9 +76,9 @@ function Monster:init(pos, monsterType)
         staff:set_projectile_class(Fireball)
         self:pick_up(staff, false)
 
-        self.ai.dodge = {dist = 5, prob = 9, delay = 3}
-        self.ai.chase = {dist = 20, prob = 1, delay = 3}
-        self.ai.shoot = {dist = 10, prob = 7, delay = 4}
+        self.ai.level.dodge = {dist = 5, prob = 9, delay = 3}
+        self.ai.level.chase = {dist = 20, prob = 1, delay = 3}
+        self.ai.level.shoot = {dist = 10, prob = 7, delay = 4}
     end
 end
 

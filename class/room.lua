@@ -53,7 +53,7 @@ end
 function Room:character_input()
     for _, c in pairs(self:get_characters()) do
         if not instanceOf(Player, c) then
-            c:do_ai()
+            c:input()
         end
     end
 end
