@@ -49,126 +49,67 @@ function AI:chase(target)
 end
 
 function AI:choose_action()
-    self.level.dodge.target = nil
-    if self:waited_to('dodge') then
-        -- See if there is a projectile we should dodge
-        local closestDist = 999
-        for _, s in pairs(self.owner.room.sprites) do
-            if instanceOf(Projectile, s) then
-                -- If this is a projectile type that we want to dodge, and if
-                -- it is heading toward us
-                if self:afraid_of(s) and s:will_hit(self.owner) then
-                    local dist = manhattan_distance(s.position,
-                                                    self.owner.position)
+    -- Go through each of our actions and roll the dice
+    for action, properties in pairs(self.level) do
+        local ok = false
 
-                    -- If it's closer than the current closest projectile
-                    if dist < closestDist then
-                        closestDist = dist
-                        self.level.dodge.target = s
+        -- If this action is not permanently disabled
+        if properties.prob then
+            --props.score = math.random(props.prob, 10)
+            if math.random(properties.prob, 10) == 10 then
+                if self:do_action(action) then
+                    return
+                end
+            end
+        end
+    end
+end
+
+function AI:do_action(action)
+    if self:waited_to(action) then
+        local target
+
+        if action == 'chase' then
+            -- If we are not already following a path, or the target moved and
+            -- rendered the path obsolete
+            if not self.path.nodes or self:path_obsolete() then
+                target = self:find_enemy()
+                if target and self:target_in_range(target, action) then
+                        self:chase(target)
+                        return true
+                end
+            end
+        elseif action == 'dodge' then
+            target = self:find_projectile()
+            if target then
+                self:dodge(target)
+                return true
+            end
+        elseif action == 'flee' then
+            target = self:find_enemy()
+            if target and self:target_in_range(target, action) then
+                self:flee_from(target)
+                return true
+            end
+        elseif action == 'shoot' then
+            -- Check if there's an enemy in our sights we should shoot
+            for _, c in pairs(self.owner.room:get_characters()) do
+                if c.team ~= self.owner.team then
+                    if (self:target_in_range(c, action) and
+                        self.owner:line_of_sight(c)) then
+                        return self.owner:shoot(self.owner:direction_to(
+                                                c.position))
                     end
                 end
             end
+        elseif action == 'wander' then
+            -- Step in a random direction
+            self.owner:step(math.random(1, 4))
+            return true
         end
     end
 
-    self.closestEnemy = nil
-    if (self:waited_to('chase') or self:waited_to('shoot') or
-        self:waited_to('flee')) then
-        -- Find the closest character on other team
-        local closestDist = 999
-        for _, s in pairs(self.owner.room.sprites) do
-            -- If this is a character on the other team
-            if instanceOf(Character, s) and s.team ~= self.owner.team then
-                dist = manhattan_distance(s.position, self.owner.position)
-
-                -- If it's closer than the current closest
-                if dist < closestDist then
-                    closestDist = dist
-                    self.closestEnemy = s
-                end
-            end
-        end
-    end
-
-    self.level.shoot.target = nil
-    if self:waited_to('shoot') then
-        -- Check if there's an enemy in our sights we should shoot
-        for _,s in pairs(self.owner.room.sprites) do
-            if instanceOf(Character, s) and s.team ~= self.owner.team then
-                if self.owner:line_of_sight(s) then
-                    self.level.shoot.target = s
-                end
-            end
-        end
-    end
-
-    self.level.chase.target = nil
-    if self:waited_to('chase') then
-        -- If we are chasing a character
-        if self.path.character then
-            -- If the character we were chasing entered another room
-            if self.path.character.room ~= self.owner.room then
-                local exit = self.owner.room:get_exit({room =
-                                                 self.path.character.room})
-                self.level.chase.target = exit
-
-                if DEBUG then
-                    print('new chase target: exit')
-                end
-            end
-        end
-
-        -- If we don't already have a potential chase target
-        if not self.level.chase.target then
-            -- If we are not already following a path, or we are following a
-            -- path that is now obsolete
-            if not self.path.nodes or self:path_obsolete() then
-                --if DEBUG then
-                --    print('new chase target: closest enemy')
-                --end
-
-                -- Set the closest enemy as our chase target
-                self.level.chase.target = self.closestEnemy
-            end
-        end
-    end
-
-    -- Set the flee target
-    self.level.flee.target = self.closestEnemy
-
-    -- Give random scores to each of the AI actions
-    for k, a in pairs(self.level) do
-        if (a.prob and -- This action is not disabled
-            a.target and -- This action has a target
-            manhattan_distance(self.owner.position, -- Target is close enough
-                               a.target:get_position()) <= a.dist) then
-            a.score = math.random(a.prob, 10)
-        else
-            a.score = -1
-        end
-    end
-
-    -- See which action has the best score
-    local highestProb = 0
-    local action = nil
-    for k, v in pairs(self.level) do
-        if v.score == 10 and v.prob > highestProb then
-            highestProb = v.prob
-            action = AI_ACTION[k]
-            --print('best so far:', k)
-        end
-    end
-
-    -- If no action was chosen, and we're not following a path
-    if not action and not self.path.nodes then
-        if self.level.wander.prob then
-            if math.random(self.level.wander.prob, 10) == 10 then
-                action = AI_ACTION.wander
-            end
-        end
-    end
-
-    return action
+    return false
 end
 
 function AI:dodge(sprite)
@@ -267,12 +208,69 @@ function AI:dodge(sprite)
     end
 end
 
+function AI:find_enemy()
+    local closestEnemy
+
+    -- Find the closest character on other team
+    local closestDist = 999
+    for _, s in pairs(self.owner.room.sprites) do
+        -- If this is a character on the other team
+        if instanceOf(Character, s) and s.team ~= self.owner.team then
+            dist = manhattan_distance(s.position, self.owner.position)
+
+            -- If it's closer than the current closest
+            if dist < closestDist then
+                closestDist = dist
+                closestEnemy = s
+            end
+        end
+    end
+
+    return closestEnemy
+end
+
+function AI:find_path(dest)
+    if DEBUG then
+        print('finding path to', dest.x, dest.y)
+    end
+
+    self.path.nodes = self.owner.room:find_path(self.owner.position, dest,
+                                                self.owner.team)
+    self.path.destination = {x = dest.x, y = dest.y}
+end
+
+function AI:find_projectile()
+    local closestProjectile
+
+    -- See if there is a projectile we should dodge
+    local closestDist = 999
+    for _, s in pairs(self.owner.room.sprites) do
+        if instanceOf(Projectile, s) then
+            -- If this is a projectile type that we want to dodge, and if it is
+            -- heading toward us
+            if self:afraid_of(s) and s:will_hit(self.owner) then
+                local dist = manhattan_distance(s.position,
+                                                self.owner.position)
+
+                -- If it's closer than the current closest projectile
+                if dist < closestDist then
+                    closestDist = dist
+                    closestProjectile = s
+                end
+            end
+        end
+    end
+
+    return closestProjectile
+end
+
 function AI:flee_from(sprite)
     if not self:waited_to('flee') then
         return
     end
 
-    local currentDistance = manhattan_distance(self.owner.position, sprite.position)
+    local currentDistance = manhattan_distance(self.owner.position,
+                                               sprite.position)
     local neighborTiles = find_neighbor_tiles(self.owner.position,
                                               self.owner.room.bricks,
                                               {diagonals = false})
@@ -291,16 +289,6 @@ function AI:flee_from(sprite)
     end
 end
 
-function AI:find_path(dest)
-    if DEBUG then
-        print('finding path to', dest.x, dest.y)
-    end
-
-    self.path.nodes = self.owner.room:find_path(self.owner.position, dest,
-                                                self.owner.team)
-    self.path.destination = {x = dest.x, y = dest.y}
-end
-
 function AI:follow_path()
     if self.path.action == AI_ACTION.chase then
         if not self:waited_to('chase') then
@@ -314,6 +302,20 @@ function AI:follow_path()
 
     if not self.path.nodes then
         return false
+    end
+
+    -- If we are chasing a character
+    if self.path.character then
+        -- If the character we were chasing entered another room
+        if self.path.character.room ~= self.owner.room then
+            -- Find the exit through which we can follow the target
+            local exit = self.owner.room:get_exit({room =
+                                                   self.path.character.room})
+
+            -- Start a new path toward the exit
+            self:chase(exit)
+            return
+        end
     end
 
     -- If we are adjacent to the next tile of the path
@@ -356,6 +358,15 @@ function AI:path_obsolete()
     return false
 end
 
+function AI:target_in_range(target, action)
+    if manhattan_distance(self.owner.position, target.position) <=
+       self.level[action].dist then
+        return true
+    else
+        return false
+    end
+end
+
 function AI:update()
     -- Increment timer for AI delay
     self.aiTimer = self.aiTimer + 1
@@ -376,25 +387,12 @@ function AI:update()
         end
     end
 
-    self.action = self:choose_action()
+    self:choose_action()
 
-    if self.action == AI_ACTION.dodge then
-        --print('action: dodge')
-        self:dodge(self.level.dodge.target)
-    elseif self.action == AI_ACTION.flee then
-        --print('action: flee')
-        self:flee_from(self.level.flee.target)
-    elseif self.action == AI_ACTION.chase then
-        -- print('action: chase')
-        self:chase(self.level.chase.target)
-    elseif self.action == AI_ACTION.shoot then
-        --print('action: shoot')
-        self.owner:shoot(self.owner:direction_to(
-                                    self.level.shoot.target.position))
-    elseif self.action == AI_ACTION.wander then
-        -- Step in a random direction
-        self.owner:step(math.random(1, 4))
-    end
+    --if self.action == AI_ACTION.wander then
+    --    -- Step in a random direction
+    --    self.owner:step(math.random(1, 4))
+    --end
 end
 
 -- Returns true if we already waited the required delay # of frames
