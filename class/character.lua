@@ -108,7 +108,9 @@ function Character:die()
             -- If we are a not a player
             if not instanceOf(Player, self) then
                 -- If the weapon is a sword
-                if item.itemType == ITEM_TYPE.sword then
+                if item.itemType == ITEM_TYPE.sword or
+                   -- Or the item is a staff and we are not an NPC
+                   (item.itemType == ITEM_TYPE.staff and not self.name) then
                     -- Do not drop it
                     ok = false
                 end
