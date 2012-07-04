@@ -91,7 +91,6 @@ function Inventory:has_room_for(item)
     -- If we have less than 4 unique items
     if (num < 4) then
         return true
-    -- If we have 5 unique items
     elseif num == 4 then
         -- If we are holding one item as a weapon
         if self.owner.armory.currentWeapon then
@@ -100,6 +99,10 @@ function Inventory:has_room_for(item)
     elseif num == 5 then
         -- If the new item is of the same type as one of our current ones
         if self:get_item(item.itemType) ~= nil then
+            return true
+        -- If the new item is an arrow and we have a bow
+        elseif (item.itemType == ITEM_TYPE.arrow and
+                self:has_item(ITEM_TYPE.bow)) then
             return true
         end
     end
