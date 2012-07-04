@@ -272,9 +272,10 @@ function Character:has_item(itemType, quantity)
 end
 
 function Character:hit(patient)
-    -- Damage other characters with sword
+    -- Damage other characters with melee weapons
     if (instanceOf(Character, patient) and -- We hit a character
-        self.armory:get_current_weapon_name() == 'sword' and
+        self.armory.currentWeapon and -- We have a current weapon
+        self.armory.currentWeapon.damage and -- Our weapon does melee damage
         self.team ~= patient.team) then -- Patient is on a different team
         -- If the patient receives our hit
         if patient:receive_hit(self) then

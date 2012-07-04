@@ -10,7 +10,7 @@ Weapon.static.templates = {
     bow = {name = 'bow', order = 2, ammo = 0, cost = 1,
            projectileClass = Arrow},
     staff = {name = 'staff', order = 3, ammo = 100, maxAmmo = 100, cost = 10,
-             projectileClass = Fireball}
+             damage = 5, projectileClass = Fireball}
     }
 
 function Weapon:init(weaponType)
