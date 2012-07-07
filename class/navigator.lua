@@ -25,8 +25,9 @@ function Navigator:plot()
             src = self.destinations[i - 1]
         end
 
-        pf = PathFinder(src, d, self.hotLava, self.points, {smooth = true})
-        points = pf:plot()
+        local pf = PathFinder(src, d, self.hotLava, self.points,
+                              {smooth = true})
+        local points = pf:plot()
 
         for j, p in ipairs(points) do
             -- Exclude the source point (since it is the same as the previous
