@@ -45,8 +45,9 @@ function Turret:find_max_distance()
     while true do
         pos = add_direction(pos, self.dir)
 
-        if tile_in_table(pos, self.room.bricks) then
-            -- Encountered a brick; this is our maximum sensing distance
+        -- If we encountered a brick, or the edge of the screen
+        if tile_in_table(pos, self.room.bricks) or tile_offscreen(pos) then
+            -- This is our maximum sensing distance
             self.maxDistance = dist
             return
         else
