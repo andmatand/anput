@@ -28,7 +28,7 @@ function InventoryMenu:init(owner)
     y = self.position.y + (self.size.h / 2)
     y = (y / 2) - .5
     self.center = {x = x, y = y}
-    self.dropPosition = {x = x, y = y + 2.5}
+    self.dropPosition = {x = x, y = y + 3}
 
     -- Set the positions of each item/action slot
     self.slotPositions = {{x = x, y = y - 1.5},
@@ -250,17 +250,36 @@ function InventoryMenu:update()
 end
 
 function InventoryMenu:move_item_toward(destination)
-    local pos = self.selectedItem.position
+    local dist = manhattan_distance(self.selectedItem.position, destination)
+    -- If the distance is a negligable amount, or the item is being dropped and
+    -- it has gone below its y destination
+    if dist < .125 or (self.state == 'dropping item' and
+                       self.selectedItem.position.y > destination.y) then
+        -- Move the item to the destination
+        self.selectedItem.position.x = destination.x
+        self.selectedItem.position.y = destination.y
+        return
+    end
+
+    local vel
+    -- If the item is being dropped
+    if self.state == 'dropping item' then
+        -- Accelerate as it drops
+        vel = 1 / dist
+    else
+        -- Come to a smooth stop
+        vel = dist / 1.5
+    end
 
     local dir = direction_to(self.selectedItem.position, destination)
     if dir == 1 then
-        self.selectedItem.position.y = self.selectedItem.position.y - .5
+        self.selectedItem.position.y = self.selectedItem.position.y - vel
     elseif dir == 2 then
-        self.selectedItem.position.x = self.selectedItem.position.x + .5
+        self.selectedItem.position.x = self.selectedItem.position.x + vel
     elseif dir == 3 then
-        self.selectedItem.position.y = self.selectedItem.position.y + .5
+        self.selectedItem.position.y = self.selectedItem.position.y + vel
     elseif dir == 4 then
-        self.selectedItem.position.x = self.selectedItem.position.x - .5
+        self.selectedItem.position.x = self.selectedItem.position.x - vel
     end
 end
 
@@ -296,7 +315,7 @@ function InventoryMenu:keypressed(key)
 
     -- If a direction key was pressed
     if dir then
-        if self.state == 'inventory' then
+        if self.state == 'inventory' or self.state == 'deselecting item' then
             if self.items and self.items[dir] then
                 sound.menuSelect:play()
                 self.selectedItemIndex = dir
