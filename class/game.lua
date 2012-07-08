@@ -124,10 +124,10 @@ function Game:keypressed(key)
     end
 
     -- Get player input for using items
-    if key == 'p' then
-        -- Take a potion
-        if self.player:has_item(ITEM_TYPE.potion) then
-            self.player.inventory:get_item(ITEM_TYPE.potion):use()
+    if key == 'e' then
+        -- Take an elixir
+        if self.player:has_item(ITEM_TYPE.elixir) then
+            self.player.inventory:get_item(ITEM_TYPE.elixir):use()
         end
     end
 

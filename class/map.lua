@@ -305,7 +305,7 @@ function Map:add_required_objects()
 
     -- DEBUG: Put a bunch of items in the starting room to fill up the
     -- inventory
-    --table.insert(self.rooms[1].requiredObjects, Item('potion'))
+    --table.insert(self.rooms[1].requiredObjects, Item('elixir'))
     --table.insert(self.rooms[1].requiredObjects, Item('shinything'))
     --table.insert(self.rooms[1].requiredObjects, Weapon('bow'))
     --table.insert(self.rooms[1].requiredObjects, Weapon('staff'))

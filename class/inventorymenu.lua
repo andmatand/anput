@@ -328,8 +328,6 @@ function InventoryMenu:keypressed(key)
                 self.verbs.use.isPushed = true
                 if self.selectedItem:use() then
                     self:post_use_item()
-                else
-                    sound.noAmmo:play()
                 end
 
                 return

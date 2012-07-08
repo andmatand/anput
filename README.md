@@ -22,7 +22,7 @@ and the LÖVE framework.
 * switch menu (while paused): tab
 * inventory: i
 * map: m
-* use potion: p
+* use elixir: e
 * trade with dudes: t
 * fullscreen: f11, Alt + Enter
 * new game: Ctrl + n

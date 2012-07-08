@@ -219,7 +219,7 @@ function love.load()
                               new_image('fireball2.png')}
 
     -- Items
-    potionImg = new_image('potion.png')
+    elixirImg = new_image('elixir.png')
     arrowImg = new_image('arrow.png')
     shinyThingImg = {new_image('shiny1.png'),
                      new_image('shiny2.png'),
@@ -259,7 +259,7 @@ function love.load()
     sound.monsterDie = Sound('res/sfx/monster-die.wav')
     sound.playerDie = Sound('res/sfx/player-die.wav')
     sound.shootArrow = Sound('res/sfx/shoot-arrow.wav')
-    sound.noAmmo = Sound('res/sfx/no-ammo.wav')
+    sound.unable = Sound('res/sfx/unable.wav')
     sound.pause = Sound('res/sfx/pause.wav')
     sound.menuSelect = Sound('res/sfx/menu-select.wav')
     sound.secret = Sound('res/sfx/secret.wav')

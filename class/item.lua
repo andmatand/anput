@@ -2,14 +2,14 @@
 -- a Character's inventory
 Item = class('Item')
 
-ITEM_TYPE = {potion = 1,
+ITEM_TYPE = {elixir = 1,
              arrow = 2,
              shinything = 3,
              sword = 4,
              bow = 5,
              staff = 6,
              ankh = 7}
-ITEM_NAME = {'POTION',
+ITEM_NAME = {'ELIXIR',
              'ARROW',
              'SHINY THING',
              'SWORD',
@@ -26,8 +26,8 @@ function Item:init(itemType)
 
     self.isUsable = false
 
-    if self.itemType == ITEM_TYPE.potion then
-        self.frames = {{image = potionImg}}
+    if self.itemType == ITEM_TYPE.elixir then
+        self.frames = {{image = elixirImg}}
         self.isUsable = true
     elseif self.itemType == ITEM_TYPE.arrow then
         self.frames = {{image = arrowImg}}
@@ -112,11 +112,11 @@ function Item:use()
 end
 
 function Item:use_on(patient)
-    if self.itemType == ITEM_TYPE.potion then
-        -- Health potion
+    if self.itemType == ITEM_TYPE.elixir then
+        -- Health elixir
         if patient:add_health(20) then
             self.isUsed = true
-            print('used potion')
+            print('used elixir')
 
             -- Play sound depending on who got health
             if instanceOf(Player, patient) then
@@ -126,6 +126,9 @@ function Item:use_on(patient)
             end
             
             return true
+        else
+            sound.unable:play()
+            return false
         end
     elseif self.itemType == ITEM_TYPE.arrow then
         -- Arrows
