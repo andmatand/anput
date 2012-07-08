@@ -75,14 +75,15 @@ function Game:draw_metadata()
 end
 
 function Game:generate()
-    randomSeed = os.time() + math.random(0, 1000)
-    --randomSeed = 1340880381
-    math.randomseed(randomSeed)
-    --print('\nrandom seed for game: ' .. randomSeed)
+    self.randomSeed = os.time() + math.random(0, 1000)
+    --self.randomSeed = 1341787276
+    math.randomseed(self.randomSeed)
+    print('\nrandom seed for game: ' .. self.randomSeed)
 
     -- Generate a new map
     self.map = Map({game = self})
     self.rooms = self.map:generate()
+    roomGenTimer = love.timer.getTime()
 
     -- Create a player
     self.player = Player()
@@ -272,26 +273,24 @@ end
 function Game:switch_to_room(room)
     if DEBUG then
         print('switching to room ' .. room.index)
+        print('  random seed: ' .. room.randomSeed)
+        print('  distance from start: ' .. room.distanceFromStart)
+        print('  difficulty: ' .. room.difficulty)
     end
 
     self.previousRoom = self.currentRoom
 
     -- If there was a previous room
-    if self.previousRoom then
+    --if self.previousRoom then
         -- Clear previous room's FOV cache to save memory
         --self.previousRoom.fovCache = {}
-    end
+    --end
 
     -- Set the new room as the current room
     self.currentRoom = room
     self.currentRoom.visited = true
 
-    if DEBUG then
-        print('room distance from start:', self.currentRoom.distanceFromStart)
-        print('room difficulty:', self.currentRoom.difficulty)
-    end
-
-    -- Make sure room has been completely generated
+    -- Make sure the room has been completely generated
     if not self.currentRoom.generated then
         self.currentRoom:generate_all()
     end

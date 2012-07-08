@@ -59,6 +59,101 @@ function upscale_y(y)
     return y * TILE_H * SCALE_Y
 end
 
+function serialize_room(room)
+    local msg = ''
+    msg = msg .. 'local room = {}\n'
+    msg = msg .. 'room.randomSeed = ' .. room.randomSeed .. '\n'
+    msg = msg .. 'room.index = ' .. room.index .. '\n'
+    if room.needsSpaceForNPC then
+        msg = msg .. 'room.needsSpaceForNPC = true\n'
+    end
+
+    msg = msg .. 'room.exits = {}\n'
+    for _, e in pairs(room.exits) do
+        msg = msg .. 'table.insert(room.exits, Exit({x = ' .. e.x .. ', ' ..
+                                                    'y = ' .. e.y .. '}))'
+        msg = msg .. '\n'
+    end
+    msg = msg .. 'return room'
+
+    return msg
+end
+
+function manage_roombuilder_thread()
+    -- Check the brick_layer thread for a message containing a pseudo-room
+    -- object
+    local result = roombuilder_thread:get('result')
+
+    -- If we got a message
+    if result then
+        --print('got result from thread!')
+        -- Execute the string as Lua code
+        local chunk = loadstring(result)
+        local room = chunk()
+
+        local roomIsFromThisGame = true
+
+        -- Find the real room that has the same index
+        local realRoom = game.rooms[room.index]
+
+        if realRoom then
+            if room.randomSeed ~= realRoom.randomSeed then
+                -- Room-specific random seed does not match
+                roomIsFromThisGame = false
+            else
+                for i, e in ipairs(room.exits) do
+                    if not tiles_overlap(e:get_position(),
+                                         realRoom.exits[i]:get_position()) then
+                        -- All exits do not match
+                        roomIsFromThisGame = false
+                        break
+                    end
+                end
+            end
+        else
+            roomIsFromThisGame = false
+        end
+
+        if roomIsFromThisGame then
+            -- Attach psuedo room's member variables to the real room
+            for k, v in pairs(room) do
+                if k ~= 'exits' then
+                    game.rooms[room.index][k] = v
+                end
+            end
+            game.rooms[room.index].isBuilt = true
+        else
+            print('rejected room built for previous game')
+        end
+    end
+
+    -- If the roombuilder thread does not have any input message
+    if not roombuilder_thread:peek('input') then
+        -- Find the next room that is not generated
+        local nextRoom = nil
+        for _, r in pairs(game:get_adjacent_rooms()) do
+            if not r.isBuilt then
+                nextRoom = r
+                break
+            end
+        end
+        if not nextRoom then
+            for _, r in pairs(game.rooms) do
+                if not r.isBuilt then
+                    nextRoom = r
+                    break
+                end
+            end
+        end
+
+        if nextRoom then
+            -- Send another pseduo-room message
+            local input = serialize_room(nextRoom)
+            roombuilder_thread:set('input', input)
+        end
+    end
+end
+
 function love.load()
     love.graphics.setCaption('TEMPLE OF ANPUT')
     if love.graphics.isCreated() == false then
@@ -178,7 +273,10 @@ function love.load()
     game = Game()
     game:generate()
 
-    --love.keyboard.setKeyRepeat(75, 50)
+    -- Create a new thread for building rooms' walls
+    roombuilder_thread = love.thread.newThread('roombuilder_thread',
+                                               'thread/roombuilder.lua')
+    roombuilder_thread:start()
 end
 
 function love.update(dt)
@@ -188,8 +286,16 @@ function love.update(dt)
     if fpsTimer > 1 / FPS then
         game:update()
         fpsTimer = 0
-    elseif fpsTimer < (1 / FPS) / 4 then
-        game:do_background_jobs()
+    else
+        manage_roombuilder_thread()
+
+        if fpsTimer < (1 / FPS) / 4 then
+            for _, r in pairs(game.rooms) do
+                if r.isBuilt and not r.generated then
+                    r:generate_next_piece()
+                end
+            end
+        end
     end
 end
 
@@ -272,5 +378,7 @@ function love.draw()
 
     end
 
-    game:draw()
+    if game then
+        game:draw()
+    end
 end

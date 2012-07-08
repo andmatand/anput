@@ -1,6 +1,7 @@
 require('class/brick')
 require('class/navigator')
 require('class/floodfiller')
+require('util/tables')
 require('util/tile')
 
 --local DEBUG = true
@@ -73,10 +74,6 @@ function RoomBuilder:init(room)
 
     self.bricks = {}
     self.occupiedTiles = {}
-
-    if DEBUG then
-        self.room.debugTiles = {}
-    end
 end
 
 function RoomBuilder:add_occupied_tile(tile)
@@ -92,32 +89,33 @@ function RoomBuilder:add_occupied_tile(tile)
     return true
 end
 
-function RoomBuilder:build_next_piece()
+function RoomBuilder:build()
+    if self.room.isBuilt or self.room.isBeingBuilt then
+        return false
+    end
+
+    -- Initialize PRNG with the room's speicfied random seed
+    math.randomseed(self.room.randomSeed)
+
     local timer
     if DEBUG then
         timer = love.timer.getTime()
     end
 
-    if self:plot_midpaths() then
-        if self:plot_walls() then
-            if self:cleanup_untouchable_bricks() then
-                self:finalize()
+    -- Mark the room as being built
+    self.room.isBeingBuilt = true
 
-                -- Flag that all the pieces have been built
-                return true
-            end
-        end
-    end
+    self:plot_midpaths()
+    self:plot_walls()
+    self:cleanup_untouchable_bricks()
+    self:finalize()
 
-    if DEBUG then
+    if DEBUG and timer then
         local elapsed = love.timer.getTime() - timer
-        if elapsed > 1 / FPS then
-            print('** took too long to build piece: ' .. elapsed)
-        end
+        print('built room ' .. self.room.index .. ' in ' .. elapsed)
     end
 
-    -- Flag that not all the pieces are done yet
-    return false
+    return true
 end
 
 function RoomBuilder:finalize()
@@ -125,30 +123,24 @@ function RoomBuilder:finalize()
     self.room.bricks = self.bricks
     self.room.freeTiles = self.freeTiles
     self.room.midPoint = self.midPoint
+    self.room.midPaths = self.occupiedTiles
+
+    -- Mark the room as built
+    self.room.isBuilt = true
+    self.room.isBeingBuilt = false
 end
 
 function RoomBuilder:cleanup_untouchable_bricks()
-    if self.cleanedUpUntouchableBricks then
-        -- Flag that this step is already done
-        return true
-    end
+    -- Do a floodfill on the inside of the room, using the bricks as hotLava
+    local ff = FloodFiller(self.midPoint, self.bricks)
+    self.freeTiles = ff:flood()
 
-    if not self.freeTiles then
-        -- Do a floodfill on the inside of the room, using the bricks as
-        -- hotLava
-        local ff = FloodFiller(self.midPoint, self.bricks)
-        self.freeTiles = ff:flood()
-
-        -- Add the midpoint to freeTiles, since it is not included by the
-        -- floodfiller
-        table.insert(self.freeTiles, self.midPoint)
-
-        -- Flag that we did work
-        return false
-    end
+    -- Add the midpoint to freeTiles, since it is not included by the
+    -- floodfiller
+    table.insert(self.freeTiles, self.midPoint)
 
     -- Remove any bricks that do not touch the inside of the room
-    local temp = {}
+    local newBricks = {}
     for i, b in pairs(self.bricks) do
         for _, t in pairs(self.freeTiles) do
             local ok = false
@@ -164,7 +156,7 @@ function RoomBuilder:cleanup_untouchable_bricks()
             -- Make sure this brick isn't in the same position as another
             -- brick that was already added
             if ok then
-                for _, b2 in pairs(temp) do
+                for _, b2 in pairs(newBricks) do
                     if tiles_overlap(b, b2) then
                         ok = false
                         break
@@ -173,247 +165,162 @@ function RoomBuilder:cleanup_untouchable_bricks()
             end
 
             if ok then
-                table.insert(temp, Brick(b))
+                table.insert(newBricks, Brick(b))
                 break
             end
         end
     end
-    self.bricks = temp
-
-    self.cleanedUpUntouchableBricks = true
-
-    -- Flag that we did work
-    return false
+    self.bricks = newBricks
 end
 
 function RoomBuilder:plot_midpaths()
-    local timer
-    if DEBUG then
-        timer = love.timer.getTime()
-    end
-
-    if not self.midPoint then
-        -- Pick a random point in the middle of the room
-        self.midPoint = {x = math.random(1, ROOM_W - 2),
-                         y = math.random(1, ROOM_H - 2)}
-    end
-
-    if not self.doorframeTiles then
-        -- Save positions of doorframe tiles at each exit
-        self.doorframeTiles = {}
-        for _, e in ipairs(self.exits) do
-            local df = e:get_doorframes()
-            table.insert(self.doorframeTiles, {x = df.x1, y = df.y1})
-            table.insert(self.doorframeTiles, {x = df.x2, y = df.y2})
-        end
-    end
+    -- Pick a random point in the middle of the room
+    self.midPoint = {x = math.random(1, ROOM_W - 2),
+                     y = math.random(1, ROOM_H - 2)}
 
     -- Plot paths from all exits to the midpoint
     for _, e in pairs(self.exits) do
-        if not e.hasMidPath then
-            if DEBUG then
-                print('plotting midpath from exit')
-            end
-
-            e.hasMidPath = true
-
-            -- Add the exit position to the list of illegal coordinates
-            self:add_occupied_tile({x = e.x, y = e.y})
-
-            -- Give doorframeTiles as the only hotLava for this path
-            --local pf = PathFinder(e, self.midPoint, self.doorframeTiles)
-            --local tiles = pf:plot()
-
-            -- Get the position into the room by one tile
-            local src = {x = e.x, y = e.y}
-            if src.y == -1 then
-                src.y = src.y + 1
-            elseif src.x == ROOM_W then
-                src.x = src.x - 1
-            elseif src.y == ROOM_H then
-                src.y = src.y - 1
-            elseif src.x == -1 then
-                src.x = src.x + 1
-            end
-
-            local tiles = cheap_line(src, self.midPoint)
-
-            -- Append these coordinates to list of illegal coordinates
-            for _, t in pairs(tiles) do
-                self:add_occupied_tile({x = t.x, y = t.y})
-            end
-
-            --if DEBUG then
-            --    table.insert(self.room.debugTiles, {x = e.x, y = e.y})
-            --    for _, t in pairs(tiles) do
-            --        table.insert(self.room.debugTiles, t)
-            --    end
-            --end
-
-            -- Flag that the midpaths are not yet complete
-            return false
+        if DEBUG then
+            print('plotting midpath from exit')
         end
+
+        -- Add the exit position to the list of illegal coordinates
+        self:add_occupied_tile({x = e.x, y = e.y})
+
+        -- Get the position into the room by one tile
+        local src = {x = e.x, y = e.y}
+        if src.y == -1 then
+            src.y = src.y + 1
+        elseif src.x == ROOM_W then
+            src.x = src.x - 1
+        elseif src.y == ROOM_H then
+            src.y = src.y - 1
+        elseif src.x == -1 then
+            src.x = src.x + 1
+        end
+
+        local tiles = cheap_line(src, self.midPoint)
+
+        -- Append these coordinates to list of illegal coordinates
+        for _, t in pairs(tiles) do
+            self:add_occupied_tile({x = t.x, y = t.y})
+        end
+
+        --if DEBUG then
+        --    table.insert(self.room.debugTiles, {x = e.x, y = e.y})
+        --    for _, t in pairs(tiles) do
+        --        table.insert(self.room.debugTiles, t)
+        --    end
+        --end
     end
 
-    if not self.accountedForRequiredObjects then
-        self.accountedForRequiredObjects = true
+    -- Iterate through the required objects for this room
+    if self.room.needsSpaceForNPC then
+        -- Choose a position for the center of the square that is not
+        -- too close to any room edges
+        local center = self.midPoint
+        if center.x < 2 then
+            center.x = center.x + 1
+        elseif center.x > (ROOM_W - 1) - 2 then
+            center.x = center.x - 1
+        end
+        if center.y < 2 then
+            center.y = center.y + 1
+        elseif center.y > (ROOM_H - 1) - 2 then
+            center.y = center.y - 1
+        end
 
-        -- Iterate through the required objects for this room
-        for _, obj in pairs(self.room.requiredObjects) do
-            -- If this object will be an obstacle for the player
-            if obj.isCorporeal then
-                -- Choose a position for the center of the square that is not
-                -- too close to any room edges
-                local center = self.midPoint
-                if center.x < 2 then
-                    center.x = center.x + 1
-                elseif center.x > (ROOM_W - 1) - 2 then
-                    center.x = center.x - 1
-                end
-                if center.y < 2 then
-                    center.y = center.y + 1
-                elseif center.y > (ROOM_H - 1) - 2 then
-                    center.y = center.y - 1
-                end
-
-                -- Mark off a square of tiles to make more room for the object
-                for y = -1, 1 do
-                    for x = -1, 1 do
-                        self:add_occupied_tile({x = center.x + x,
-                                                y = center.y + y})
-                    end
-                end
-
-                -- Only do this once
-                break
+        -- Mark off a square of tiles to make more room for the object
+        for y = -1, 1 do
+            for x = -1, 1 do
+                self:add_occupied_tile({x = center.x + x,
+                                        y = center.y + y})
             end
         end
     end
-
-    -- Flag that the midpaths are complete
-    return true
 end
 
 function RoomBuilder:plot_walls()
-    if self.plottedWalls then
-        return true
-    end
-
     -- Make wall from right doorframe of each exit to left doorframe of next
     -- exit
     for i, e in ipairs(self.exits) do
-        if not e.src then
-            local df = e:get_doorframes()
-            e.src = {x = df.x2, y = df.y2}
+        local df = e:get_doorframes()
+        local src = {x = df.x2, y = df.y2}
+
+        local destdf
+        -- If there is another exit to connect to
+        if self.exits[i + 1] ~= nil then
+            -- Set the next exit's left doorframe as the destination
+            destdf = self.exits[i + 1]:get_doorframes()
+        else
+            -- Set the first exit's left doorframe as the destination
+            destdf = self.exits[1]:get_doorframes()
         end
+        local dest = {x = destdf.x1, y = destdf.y1}
 
-        if not e.dest then
-            local destdf
 
-            -- If there is another exit to connect to
-            if self.exits[i + 1] ~= nil then
-                -- Set the next exit's left doorframe as the destination
-                destdf = self.exits[i + 1]:get_doorframes()
-            else
-                -- Set the first exit's left doorframe as the destination
-                destdf = self.exits[1]:get_doorframes()
-            end
+        -- Find all vacant tiles accessible from the source doorframe
+        local ff = FloodFiller(src, self.occupiedTiles)
+        e.freeTiles = ff:flood()
 
-            e.dest = {x = destdf.x1, y = destdf.y1}
-        end
-
-        if not e.hasFloodFill then
-            if DEBUG then
-                print('doing floodfiller for wall')
-            end
-
-            e.hasFloodFill = true
-
-            if DEBUG then
-                timer = love.timer.getTime()
-            end
-
-            -- Find all vacant tiles accessible from the source doorframe
-            local ff = FloodFiller(e.src, self.occupiedTiles)
-            e.freeTiles = ff:flood()
-
-            for k, v in pairs(self.occupiedTiles) do
-                for k2, v2 in pairs(self.occupiedTiles) do
-                    if k ~= k2 and v.x == v2.x and v.y == v2.y then
-                        print('* redundant hotLava: ' .. v.x, v.y)
-                    end
+        for k, v in pairs(self.occupiedTiles) do
+            for k2, v2 in pairs(self.occupiedTiles) do
+                if k ~= k2 and v.x == v2.x and v.y == v2.y then
+                    print('* redundant hotLava: ' .. v.x, v.y)
                 end
             end
+        end
 
-            -- Remove dest from freeTiles
-            for j, t in pairs(e.freeTiles) do
-                if tiles_overlap(t, e.dest) then
-                    table.remove(e.freeTiles, j)
+        -- Remove dest from freeTiles
+        for j, t in pairs(e.freeTiles) do
+            if tiles_overlap(t, dest) then
+                table.remove(e.freeTiles, j)
+                break
+            end
+        end
+
+
+        -- If the distance from src to dest is shorter than the distance
+        -- from src to the room's midpoint
+        local intermediatePoint
+        --if (manhattan_distance(src, dest) <
+        --  manhattan_distance(src, self.midPoint)) then
+        --  -- Make a direct path to dest
+        --  intermediatePoint = false
+        --else
+        --  intermediatePoint = true
+        --end
+        intermediatePoint = true
+
+        local destinations = {}
+        if intermediatePoint then
+            -- Find a free tile which is close to an occupied tile
+            for _, t in pairs(e.freeTiles) do
+                if manhattan_distance(t, self.midPoint) <= 5 then
+                    table.insert(destinations, t)
                     break
                 end
             end
-
-            -- The walls are not done yet
-            return false
         end
 
-        if not e.hasWall then
-            e.hasWall = true
+        -- Add dest to end of table of destinations
+        table.insert(destinations, dest)
+        
+        --if DEBUG then
+        --  print('doing navigator:')
+        --  print('  ' .. src.x .. ', ' .. src.y)
+        --  for _, p in ipairs(destinations) do
+        --      print('  ' .. p.x .. ', ' .. p.y)
+        --  end
+        --end
 
-            -- If the distance from src to dest is shorter than the distance
-            -- from src to the room's midpoint
-            local intermediatePoint
-            --if (manhattan_distance(e.src, e.dest) <
-            --  manhattan_distance(e.src, self.midPoint)) then
-            --  -- Make a direct path to dest
-            --  intermediatePoint = false
-            --else
-            --  intermediatePoint = true
-            --end
-            intermediatePoint = true
+        -- Plot a path from src along all points in destinations
+        nav = Navigator(src, destinations, self.occupiedTiles)
+        tiles = nav:plot()
 
-            local destinations = {}
-            if intermediatePoint then
-                -- Find a free tile which is close to an occupied tile
-                for _, t in pairs(e.freeTiles) do
-                    if manhattan_distance(t, self.midPoint) <= 5 then
-                        table.insert(destinations, t)
-                        break
-                    end
-                end
-            end
-
-            -- Add dest to end of table of destinations
-            table.insert(destinations, e.dest)
-            
-            --if DEBUG then
-            --  print('doing navigator:')
-            --  print('  ' .. e.src.x .. ', ' .. e.src.y)
-            --  for _, p in ipairs(destinations) do
-            --      print('  ' .. p.x .. ', ' .. p.y)
-            --  end
-            --end
-
-            -- Plot a path from src along all points in destinations
-            local nav = Navigator(e.src, destinations, self.occupiedTiles)
-            local tiles = nav:plot()
-
-            -- Make bricks at these coordinates
-            for _, b in pairs(tiles) do
-                table.insert(self.bricks, Brick(b))
-            end
-
-            -- Flag that the walls are not done yet
-            return false
+        -- Make bricks at these coordinates
+        for _, b in pairs(tiles) do
+            table.insert(self.bricks, Brick(b))
         end
     end
-
-    self.plottedWalls = true
-
-    if DEBUG then
-        print('finished plotting walls')
-    end
-
-    -- Flag that we did work
-    return false
 end

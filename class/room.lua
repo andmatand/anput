@@ -84,9 +84,19 @@ function Room:draw()
     end
 
     if DEBUG then
-        -- Show occupiedTiles
-        for _, tile in pairs(self.roomBuilder.occupiedTiles) do
+        -- Show freeTiles
+        for _, t in pairs(self.freeTiles) do
             love.graphics.setColor(0, 255, 0, 100)
+            if tiles_overlap(t, self.midPoint) then
+                love.graphics.setColor(255, 0, 0, 100)
+            end
+            love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+
+        -- Show midPaths
+        for _, tile in pairs(self.midPaths) do
+            love.graphics.setColor(150, 0, 200)
             love.graphics.rectangle('fill',
                                     upscale_x(tile.x), upscale_y(tile.y),
                                     upscale_x(1), upscale_y(1))
@@ -116,16 +126,6 @@ function Room:draw()
         -- Draw the message
         self.messages[1]:draw()
     end
-
-    -- DEBUG: show freeTiles
-    --for _, t in pairs(self.freeTiles) do
-    --    love.graphics.setColor(0, 255, 0, 100)
-    --    if tiles_overlap(t, self.midPoint) then
-    --        love.graphics.setColor(255, 0, 0, 100)
-    --    end
-    --    love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
-    --                            upscale_x(1), upscale_y(1))
-    --end
 
     if DEBUG then
         -- Show tiles in FOV
@@ -215,41 +215,42 @@ function Room:find_path(src, dest, characterTeam)
 end
 
 function Room:generate_all()
+    local roomBuilder = RoomBuilder(self)
+    roomBuilder:build()
+
     repeat until self:generate_next_piece()
 end
 
 function Room:generate_next_piece()
-    if not self.roomBuilder then
-        self.roomBuilder = RoomBuilder(self)
+    if not self.roomFiller then
+        self.roomFiller = RoomFiller(self)
     end
 
-    -- Continue building the walls of the room
-    if self.roomBuilder:build_next_piece() then
-        if not self.roomFiller then
-            self.roomFiller = RoomFiller(self)
+    -- Continue filling the room with monsters, items, etc.
+    if self.roomFiller:fill_next_step() then
+        -- Make a spriteBatch for bricks within the player's FOV
+        self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg,
+                                                            #self.bricks)
+
+        -- Make a spriteBatch for bricks outside the player's FOV
+        self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg,
+                                                           #self.bricks)
+
+        -- Mark the generation process as complete
+        self.generated = true
+
+        -- Free up the memory used by the roomBuilder
+        --self.roomBuilder = nil
+
+        print('generated room ' .. self.index)
+
+        if self.index == #self.game.rooms then
+            print('generated entire map in ' ..
+                  love.timer.getTime() - roomGenTimer .. ' seconds')
         end
 
-        -- Continue filling the room with monsters, items, etc.
-        if self.roomFiller:fill_next_step() then
-            -- Make a spriteBatch for bricks within the player's FOV
-            self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg,
-                                                                #self.bricks)
-
-            -- Make a spriteBatch for bricks outside the player's FOV
-            self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg,
-                                                               #self.bricks)
-
-            -- Mark the generation process as complete
-            self.generated = true
-
-            -- Free up the memory used by the roomBuilder
-            --self.roomBuilder = nil
-
-            print('generated room ' .. self.index)
-
-            -- Flag that room is generated
-            return true
-        end
+        -- Flag that room is generated
+        return true
     end
 
     -- Flag that room is not finished generating
@@ -331,7 +332,7 @@ function Room:line_of_sight(a, b)
     end
 
     -- Find any occupied tiles between a and b
-    x, y = a.x, a.y
+    local x, y = a.x, a.y
     while true do
         x = x + xDir
         y = y + yDir

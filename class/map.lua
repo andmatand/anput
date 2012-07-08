@@ -253,9 +253,13 @@ function Map:generate_rooms()
         end
     end
 
-    -- Assign difficulty to each room based on distance from first room
-    -- compared to last room
     for _, r in pairs(rooms) do
+        -- Give the room a specifc random seed
+        r.randomSeed = math.random(self.game.randomSeed + r.index +
+                                   math.random(1, 1000))
+
+        -- Assign difficulty to each room based on distance from first room
+        -- compared to last room
         r.difficulty = math.floor((r.distanceFromStart /
                                     self.lastRoom.distanceFromStart) * 100)
     end
@@ -299,9 +303,14 @@ function Map:add_required_objects()
     local sword = Weapon('sword')
     table.insert(self.rooms[1].requiredObjects, sword)
 
-    -- DEBUG: Put a potion in the starting room
-    --local potion = Item('potion')
-    --table.insert(self.rooms[1].requiredObjects, potion)
+    -- DEBUG: Put a bunch of items in the starting room to fill up the
+    -- inventory
+    --table.insert(self.rooms[1].requiredObjects, Item('potion'))
+    --table.insert(self.rooms[1].requiredObjects, Item('shinything'))
+    --table.insert(self.rooms[1].requiredObjects, Weapon('bow'))
+    --table.insert(self.rooms[1].requiredObjects, Weapon('staff'))
+    -- And then the ankh
+    --table.insert(self.rooms[1].requiredObjects, Item('ankh'))
 
     -- Create a table of the 5 earliest rooms
     local earlyRooms = self:get_early_rooms(5)
@@ -318,6 +327,7 @@ function Map:add_required_objects()
             table.remove(earlyRooms, roomNum)
         else
             table.insert(earlyRooms[roomNum].requiredObjects, wizard)
+            earlyRooms[roomNum].needsRoomForNPC = true
             break
         end
     end
