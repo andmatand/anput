@@ -420,18 +420,22 @@ function Character:receive_damage(amount, agent)
 end
 
 function Character:receive_hit(agent)
-    -- If the agent is a projectile
-    if instanceOf(Projectile, agent) then
-        -- If it has an owner
-        if agent.owner then
-            -- If the owner is on our team
-            if agent.owner.team == self.team then
-                -- Turn against him
-                if self.mouth then
-                    self.mouth.speech = "THAT WAS NOT VERY NICE"
-                    self.mouth:speak(true)
+    -- If we are not a player (since players make their own decisions about
+    -- what team they're on)
+    if not instanceOf(Player, self) then
+        -- If the agent is a projectile
+        if instanceOf(Projectile, agent) then
+            -- If it has an owner
+            if agent.owner then
+                -- If the owner is on our team
+                if agent.owner.team == self.team then
+                    -- Turn against him
+                    if self.mouth then
+                        self.mouth.speech = "THAT WAS NOT VERY NICE"
+                        self.mouth:speak(true)
+                    end
+                    self.team = 3
                 end
-                self.team = 3
             end
         end
     end
