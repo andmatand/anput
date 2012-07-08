@@ -15,20 +15,6 @@ function Game:init()
     self.paused = false
 end
 
-function Game:do_background_jobs()
-    if not self.currentRoom then
-        return
-    end
-
-    for _, room in pairs(self:get_adjacent_rooms()) do
-        -- If the room is not completely generated
-        if not room.generated then
-            room:generate_next_piece()
-            break
-        end
-    end
-end
-
 function Game:draw()
     self.currentRoom:draw()
 
