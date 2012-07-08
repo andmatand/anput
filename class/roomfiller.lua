@@ -328,25 +328,35 @@ function RoomFiller:position_objects(objects)
 
             -- If this object cannot overlap with other objects
             if o.isCorporeal then
-                ok = false
+                ok = nil
 
-                -- Find the neighbor tiles
-                local neighbors = find_neighbor_tiles(position,
-                                                      self.room.bricks)
-
-                -- Make sure there are at least 5 unoccupied
-                -- clockwise-consecuitive neighbor tiles in a row
-                local numInARow = 0
-                for _, n in ipairs(neighbors) do
-                    if n.occupied then
-                        numInARow = 0
-                    else
-                        numInARow = numInARow + 1
-                    end
-
-                    if numInARow == 5 then
-                        ok = true
+                -- Make sure the position is not blocking a doorway
+                for _, e in pairs(self.room.exits) do
+                    if tiles_touching(position, e:get_doorway()) then
+                        ok = false
                         break
+                    end
+                end
+
+                if ok ~= false then
+                    -- Find the neighbor tiles
+                    local neighbors = find_neighbor_tiles(position,
+                                                          self.room.bricks)
+
+                    -- Make sure there are at least 5 unoccupied
+                    -- clockwise-consecuitive neighbor tiles in a row
+                    local numInARow = 0
+                    for _, n in ipairs(neighbors) do
+                        if n.occupied then
+                            numInARow = 0
+                        else
+                            numInARow = numInARow + 1
+                        end
+
+                        if numInARow == 5 then
+                            ok = true
+                            break
+                        end
                     end
                 end
             else
