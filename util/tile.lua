@@ -36,38 +36,45 @@ end
 function find_neighbor_tiles(node, otherNodes, options)
     -- Make sure options is at least an empty table, so we can index it
     options = options or {}
+    if options.diagonals == nil then
+        -- Enable diagonals by default
+        options.diagonals = true
+    end
 
     -- Initialize all 8 neighbors' positions
     neighbors = {}
-    for d = 1,8 do
-        n = {occupied = false}
+    for d = 1, 8 do
+        local n = {occupied = false}
         if d == 1 then -- N
             n.x = node.x
             n.y = node.y - 1
-        elseif d == 2 then -- NE
+        elseif options.diagonals and d == 2 then -- NE
             n.x = node.x + 1
             n.y = node.y - 1
         elseif d == 3 then -- E
             n.x = node.x + 1
             n.y = node.y
-        elseif d == 4 then -- SE
+        elseif options.diagonals and d == 4 then -- SE
             n.x = node.x + 1
             n.y = node.y + 1
         elseif d == 5 then -- S
             n.x = node.x
             n.y = node.y + 1
-        elseif d == 6 then -- SW
+        elseif options.diagonals and d == 6 then -- SW
             n.x = node.x - 1
             n.y = node.y + 1
         elseif d == 7 then -- W
             n.x = node.x - 1
             n.y = node.y
-        elseif d == 8 then -- NW
+        elseif options.diagonals and d == 8 then -- NW
             n.x = node.x - 1
             n.y = node.y - 1
         end
 
-        neighbors[d] = n
+        -- If this direction was not excluded
+        if n.x then
+            table.insert(neighbors, n)
+        end
     end
 
     -- Check if any of the otherNodes are in the neighbor positions
@@ -85,26 +92,12 @@ function find_neighbor_tiles(node, otherNodes, options)
 
     if options.countBorders then
         -- Check if any of the neighbor positions touch the room border
-        for i,n in pairs(neighbors) do
-            if n.y == 0 or
-               n.x == ROOM_W - 1 or
-               n.y == ROOM_H - 1 or
-               n.x == 0 then
+        for i, n in pairs(neighbors) do
+            if (n.y == 0 or n.x == ROOM_W - 1 or n.y == ROOM_H - 1 or
+                n.x == 0) then
                 n.occupied = true
             end
         end
-    end
-
-    -- If diagonals are explicitly disabled
-    if options.diagonals == false then
-        -- Remove diagonal neighbors
-        temp = {}
-        for i,n in ipairs(neighbors) do
-            if i == 1 or i == 3 or i == 5 or i == 7 then
-                table.insert(temp, n)
-            end
-        end
-        neighbors = temp
     end
 
     return neighbors
