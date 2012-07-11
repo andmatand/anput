@@ -1,5 +1,5 @@
 require('util/oo')
-require('../class/exit')
+require('class/exit')
 require('class/roombuilder')
 require('class/roomfiller')
 
