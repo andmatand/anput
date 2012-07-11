@@ -77,8 +77,8 @@ function Monster:init(pos, monsterType)
         self:pick_up(staff, false)
 
         self.ai.level.dodge = {dist = 5, prob = 9, delay = 3}
-        self.ai.level.chase = {dist = 20, prob = 1, delay = 3}
-        self.ai.level.shoot = {dist = 10, prob = 7, delay = 4}
+        self.ai.level.chase = {dist = 20, prob = 5, delay = 3}
+        self.ai.level.shoot = {dist = 10, prob = 7, delay = 3}
     end
 end
 
