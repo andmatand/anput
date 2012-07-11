@@ -1,6 +1,6 @@
 require('util/tile')
 
---local DEBUG = true
+local DEBUG = false
 
 -- Returns distance between to points
 local function distance(a, b)
