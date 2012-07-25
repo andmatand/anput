@@ -108,17 +108,21 @@ end
 
 -- Override the Character pick_up() method
 function Trader:pick_up(item)
-    Character.pick_up(self, item)
+    local pickedUpItem = Character.pick_up(self, item)
 
-    -- If we are waiting to recieve payment
-    if self.receivedPayment == false then
-        -- Check if we have the full price
-        if self:has_item(self.price.currency,
-                         self.price.quantity) then
-            self.receivedPayment = true
-            self.paymentPosition = nil
+    if pickedUpItem then
+        -- If we are waiting to recieve payment
+        if self.receivedPayment == false then
+            -- Check if we have the full price
+            if self:has_item(self.price.currency,
+                self.price.quantity) then
+                self.receivedPayment = true
+                self.paymentPosition = nil
+            end
         end
     end
+
+    return pickedUpItem
 end
 
 function Trader:pick_up_payment()
