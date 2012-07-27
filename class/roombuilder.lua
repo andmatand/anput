@@ -1,8 +1,8 @@
-require('class/brick')
-require('class/navigator')
-require('class/floodfiller')
-require('util/tables')
-require('util/tile')
+require('class.brick')
+require('class.navigator')
+require('class.floodfiller')
+require('util.tables')
+require('util.tile')
 
 --local DEBUG = true
 

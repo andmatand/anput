@@ -1,4 +1,4 @@
-require('util/tile')
+require('util.tile')
 
 function shootable_directions(position, freeTiles)
     -- This is the minimum number of free tiles which must exist in front of

@@ -1,5 +1,5 @@
-require('class/arrow')
-require('class/fireball')
+require('class.arrow')
+require('class.fireball')
 
 -- A weapon is an Item that can also hurt other Characters or shoot Projectiles
 Weapon = class('Weapon', Item)

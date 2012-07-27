@@ -1,7 +1,7 @@
-require('util/oo')
-require('class/exit')
-require('class/roombuilder')
-require('class/roomfiller')
+require('util.oo')
+require('class.exit')
+require('class.roombuilder')
+require('class.roomfiller')
 
 ROOM_W = 40
 ROOM_H = 24

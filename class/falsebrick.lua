@@ -1,4 +1,4 @@
-require('class/brick')
+require('class.brick')
 
 -- A FalseBrick is a brick that is breakable and conceals a hidden exit
 FalseBrick = class('FalseBrick', Brick)

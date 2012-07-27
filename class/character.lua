@@ -1,10 +1,10 @@
-require('class/ai')
-require('class/armory')
-require('class/inventory')
-require('class/log')
-require('class/mouth')
-require('class/sprite')
-require('util/tile')
+require('class.ai')
+require('class.armory')
+require('class.inventory')
+require('class.log')
+require('class.mouth')
+require('class.sprite')
+require('util.tile')
 
 --local DEBUG = true
 

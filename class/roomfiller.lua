@@ -1,8 +1,8 @@
-require('class/item')
-require('class/monster')
-require('class/turret')
-require('util/tile')
-require('util/tables')
+require('class.item')
+require('class.monster')
+require('class.turret')
+require('util.tile')
+require('util.tables')
 
 -- A RoomFiller fills a room with monsters, items
 RoomFiller = class('RoomFiller')

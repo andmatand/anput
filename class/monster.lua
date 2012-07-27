@@ -1,4 +1,4 @@
-require('class/character')
+require('class.character')
 
 MONSTER_TYPE = {scarab = 1,
                 bird = 2,

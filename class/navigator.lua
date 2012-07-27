@@ -1,4 +1,4 @@
-require('class/pathfinder')
+require('class.pathfinder')
 
 -- A Navigator plots a path with multiple destinations
 Navigator = class('Navigator')

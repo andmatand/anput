@@ -1,4 +1,4 @@
-require('class/toast')
+require('class.toast')
 
 local function draw_progress_bar(barInfo, x, y, w, h)
     bar = {}

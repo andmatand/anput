@@ -1,4 +1,4 @@
-require('class/sprite')
+require('class.sprite')
 
 Projectile = class('Projectile', Sprite) 
 

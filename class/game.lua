@@ -1,9 +1,9 @@
-require('class/inventorymenu')
-require('class/map')
-require('class/player')
-require('class/statusbar')
-require('util/tables')
-require('util/tile')
+require('class.inventorymenu')
+require('class.map')
+require('class.player')
+require('class.statusbar')
+require('util.tables')
+require('util.tile')
 
 local DEBUG = true
 

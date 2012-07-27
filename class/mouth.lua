@@ -1,4 +1,4 @@
-require('class/message')
+require('class.message')
 
 -- A mouth enables something to "speak" (instantiate messages which appear
 -- onscreen)

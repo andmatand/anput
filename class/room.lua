@@ -1,6 +1,6 @@
-require('class/fovfinder')
-require('class/roombuilder')
-require('class/roomfiller')
+require('class.fovfinder')
+require('class.roombuilder')
+require('class.roomfiller')
 
 Room = class('Room')
 

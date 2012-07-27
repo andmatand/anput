@@ -1,4 +1,4 @@
-require('class/projectile')
+require('class.projectile')
 
 Arrow = class('Arrow', Projectile)
 

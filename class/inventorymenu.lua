@@ -1,4 +1,4 @@
-require('util/tile')
+require('util.tile')
 
 local function first_line(string)
     local pos = string:find('\n')

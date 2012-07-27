@@ -1,4 +1,4 @@
-require('util/tile')
+require('util.tile')
 
 AI = class('AI')
 
