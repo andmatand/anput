@@ -58,6 +58,8 @@ function RoomFiller:add_items()
         return true
     end
 
+    addedElixir = false
+
     if self.room.isSecret then
         -- Add some goodies
         --local max = #self.room.freeTiles * .05
@@ -77,9 +79,21 @@ function RoomFiller:add_items()
     else
         -- Give items to the monsters
         for _, m in pairs(self.room:get_monsters()) do
-            if math.random(m.difficulty, 100) >= 25 then
+            if math.random(m.difficulty, 100) >= 20 then
+                local minItemType = 1
+
+                -- If we already added an elixir to this room
+                if addedElixir then
+                    -- Do not allow adding any more
+                    minItemType = 2
+                end
+
                 -- Choose a random item type
-                local itemType = math.random(1, 2)
+                local itemType = math.random(minItemType, 2)
+
+                if itemType == ITEM_TYPE.elixir then
+                    addedElixir = true
+                end
 
                 local newItem = Item(itemType)
 
@@ -119,7 +133,7 @@ function RoomFiller:add_monsters()
         end
 
         totalDifficulty = totalDifficulty + hardest
-        table.insert(monsters, Monster({}, monsterType))
+        table.insert(monsters, Monster(monsterType))
     end
 
     -- DEBUG
