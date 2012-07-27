@@ -58,7 +58,7 @@ function RoomFiller:add_items()
         return true
     end
 
-    addedElixir = false
+    local addedElixir = false
 
     if self.room.isSecret then
         -- Add some goodies
