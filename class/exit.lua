@@ -63,3 +63,19 @@ end
 function Exit:get_position()
     return {x = self.x, y = self.y}
 end
+
+function Exit:is_hidden()
+    if not self.room or not self.room.bricks then
+        return false
+    end
+
+    -- Check if there is a false brick in our doorway
+    for _, b in pairs(self.room.bricks) do
+        if instanceOf(falseBrick, b) and
+           tiles_overlap(b, self:get_doorway()) then
+            return true
+        end
+    end
+
+    return false
+end

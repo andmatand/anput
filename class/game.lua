@@ -5,7 +5,7 @@ require('class/statusbar')
 require('util/tables')
 require('util/tile')
 
---local DEBUG = true
+local DEBUG = true
 
 -- A Game handles a collection of rooms
 Game = class('Game')
@@ -13,6 +13,13 @@ Game = class('Game')
 function Game:init()
     self.menuState = 'inventory'
     self.paused = false
+    self.time = love.timer.getTime()
+end
+
+function Game:add_time(seconds)
+    if not self.paused then
+        self.time = self.time + seconds
+    end
 end
 
 function Game:draw()
@@ -62,7 +69,7 @@ end
 
 function Game:generate()
     self.randomSeed = os.time() + math.random(0, 1000)
-    --self.randomSeed = 1341787276
+    --self.randomSeed = 1343195560
     math.randomseed(self.randomSeed)
     print('\nrandom seed for game: ' .. self.randomSeed)
 
@@ -293,7 +300,7 @@ function Game:unpause()
     end
 end
 
-function Game:update()
+function Game:update(dt)
     self.statusBar:update()
 
     if self.paused then
@@ -316,19 +323,19 @@ function Game:update()
     -- Check if we need to update the adjacent rooms
     for _, room in pairs(self:get_adjacent_rooms()) do
         if room.generated and room ~= self.previousRoom then
-            local needsToUpdate = false
+            --local needsToUpdate = false
 
-            -- Check if there are any projectiles
-            for _, s in pairs(room.sprites) do
-                if instanceOf(Projectile, s) then
-                    needsToUpdate = true
-                    break
-                end
-            end
+            ---- Check if there are any projectiles
+            --for _, s in pairs(room.sprites) do
+            --    if instanceOf(Projectile, s) then
+            --        needsToUpdate = true
+            --        break
+            --    end
+            --end
 
-            if needsToUpdate then
+            --if needsToUpdate then
                 room:update()
-            end
+            --end
         end
     end
 

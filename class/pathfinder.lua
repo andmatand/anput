@@ -159,9 +159,8 @@ function PathFinder:AStar(src, dest)
                 if not alreadyFound then
                     if self.options.smooth == true and
                        currentNode.parent ~= nil then
-                        if changed_direction(
-                            {x = x, y = y}, currentNode,
-                            self.closedNodes[currentNode.parent])
+                        if changed_direction({x = x, y = y}, currentNode,
+                           self.closedNodes[currentNode.parent])
                         then
                             gPenalty = gPenalty + 4
                         end

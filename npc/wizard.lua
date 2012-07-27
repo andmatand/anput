@@ -8,8 +8,13 @@ wizard.color = CYAN
 -- AI
 wizard.aiDelay = 1
 wizard.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
-wizard.ai.level.chase = {dist = 2, prob = 10, delay = 0}
-wizard.ai.level.shoot = {dist = 10, prob = 10, delay = 1}
+wizard.ai.level.chase = {dist = 2, prob = 10, delay = .1}
+wizard.ai.level.shoot = {dist = 10, prob = 10, delay = .25}
+--wizard.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
+--wizard.ai.level.chase = {dist = 20, prob = 10, delay = .1}
+--wizard.ai.level.loot = {dist = 20, prob = 10, delay = .1}
+--wizard.ai.level.seek = {dist = 15, prob = 8, delay = 1}
+--wizard.ai.level.shoot = {dist = 10, prob = 10, delay = .25}
 
 -- Trader properties
 wizard.price.quantity = 7

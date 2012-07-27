@@ -65,7 +65,7 @@ end
 
 function Sprite:move_to_room(room)
     -- Remove ourself from our current room
-    self.room:remove_sprite(self)
+    self.room:remove_object(self)
 
     -- Add ourself to the new room
     room:add_object(self)

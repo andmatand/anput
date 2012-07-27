@@ -42,13 +42,13 @@ function Character:add_health(amount)
         end
 
         -- Play sound depending on who gained health
-        if instanceOf(Player, patient) then
-            sound.playerGetHP:play()
-        elseif instanceOf(Monster, patient) then
-            if self:is_audible() then
-                sound.monsterGetHP:play()
-            end
-        end
+        --if instanceOf(Player, patient) then
+        --    sound.playerGetHP:play()
+        --else
+        --    if self:is_audible() then
+        --        sound.monsterGetHP:play()
+        --    end
+        --end
 
         return true
     end
@@ -64,20 +64,17 @@ function Character:check_for_items()
         return
     end
 
-    for _, i in pairs(self.room.items) do
+    for _, item in pairs(self.room.items) do
         -- If this item has a position
-        if i.position then
+        if item.position then
             -- If we are standing on this item
-            if tiles_overlap(self.position, i.position) then
+            if tiles_overlap(self.position, item.position) then
                 -- Pick it up
-                if self:pick_up(i) then
+                if self:pick_up(item) then
                     -- If we didn't already pick something up, and we are in a
                     -- room, and it is the game's current room, or we are a
                     -- player
-                    if (not pickedSomethingUp and self.room and
-                        (self.room == self.room.game.currentRoom or 
-                         instanceOf(Player, self))) then
-
+                    if (not pickedSomethingUp) then
                         -- Play a pick-up sound depending on who we are
                         if instanceOf(Player, self) then
                             sound.playerGetItem:play()
@@ -177,8 +174,6 @@ function Character:draw(pos, rotation)
                            position.x, position.y,
                            rotation,
                            SCALE_X, SCALE_Y)
-    else
-        self.flashTimer = self.flashTimer - 1
     end
 end
 
@@ -292,7 +287,10 @@ function Character:hit(patient)
 end
 
 function Character:input()
-    self.ai:update()
+    if self.ai then
+        self.attackedDir = nil
+        self.ai:update()
+    end
 end
 
 function Character:is_audible()
@@ -310,7 +308,7 @@ end
 
 function Character:pick_up(item)
     -- If the item is already being held by someone, or is already used up
-    if item.owner or item.isUsed then
+    if item.owner then
         -- Don't pick it up
         return false
     end
@@ -366,6 +364,7 @@ function Character:pick_up(item)
     elseif (item.itemType == ITEM_TYPE.arrow and
             self:has_item(ITEM_TYPE.bow)) then
         -- Apply arrows to bow instead of putting them in inventory
+        item.owner = self
         item:use_on(self)
         return true
     end
@@ -373,10 +372,7 @@ function Character:pick_up(item)
     -- Add the item to our inventory
     self.inventory:add(item)
 
-    -- If the item was picked up
-    if item.owner or item.isUsed then
-        return true
-    end
+    return true
 end
 
 function Character:receive_damage(amount, agent)
@@ -515,9 +511,6 @@ function Character:step(dir)
     -- If we just attacked in this direction
     if self.attackedDir == dir then
         return
-    else
-        -- Clear attackedDir
-        self.attackedDir = nil
     end
 
     self.stepped = true
@@ -534,8 +527,6 @@ function Character:step(dir)
         self.velocity.x = -1
         self.velocity.y = 0
     end
-
-    -- Do physics if we haven't already
 
     -- Store this direction for directional attacking
     self.dir = dir
@@ -554,9 +545,15 @@ function Character:step_toward(dest)
 end
 
 function Character:update()
+    self.stepped = false
+
+    if self.flashTimer > 0 then
+        self.flashTimer = self.flashTimer - 1
+    end
+
     if self.hurt then
         -- Flash if hurt
-        self.flashTimer = 5
+        self.flashTimer = 2
         self.hurt = false
     end
 end

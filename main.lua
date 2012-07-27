@@ -1,6 +1,6 @@
-require('util/oo')
-require('class/game')
-require('class/sound')
+require('util.oo')
+require('class.game')
+require('class.sound')
 
 function new_image(filename)
     img = love.graphics.newImage('res/img/' .. filename)
@@ -252,7 +252,6 @@ function love.load()
     sound.playerGetItem = Sound('res/sfx/player-get-item.wav')
     sound.playerDropItem = Sound('res/sfx/player-drop-item.wav')
     sound.playerGetHP = Sound('res/sfx/player-get-hp.wav')
-    sound.playerShootArrow = Sound('res/sfx/shoot-arrow.wav')
     sound.monsterCry = Sound('res/sfx/monster-cry.wav')
     sound.monsterGetItem = Sound('res/sfx/monster-get-item.wav')
     sound.monsterGetHP = Sound('res/sfx/monster-get-hp.wav')
@@ -283,19 +282,28 @@ function love.update(dt)
     -- Limit FPS
     fpsTimer = fpsTimer + dt
 
+    game:add_time(dt)
+
     if fpsTimer > 1 / FPS then
         game:update()
+
+        --game.player.health = 100
+        --if not game.player.armory.sword then
+        --    local sword = Weapon('sword')
+        --    game.player:pick_up(sword)
+        --end
+
         fpsTimer = 0
     else
         manage_roombuilder_thread()
 
-        if fpsTimer < (1 / FPS) / 4 then
+        --if fpsTimer < (1 / FPS) / 4 then
             for _, r in pairs(game.rooms) do
                 if r.isBuilt and not r.generated then
                     r:generate_next_piece()
                 end
             end
-        end
+        --end
     end
 end
 

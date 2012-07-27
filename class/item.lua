@@ -87,7 +87,9 @@ function Item:draw(manualPosition)
 end
 
 function Item:get_position()
-    return {x = self.position.x, y = self.position.y}
+    if self.position then
+        return {x = self.position.x, y = self.position.y}
+    end
 end
 
 function Item:set_position(position)
@@ -115,13 +117,12 @@ function Item:use_on(patient)
     if self.itemType == ITEM_TYPE.elixir then
         -- Health elixir
         if patient:add_health(20) then
-            self.isUsed = true
             print('used elixir')
 
             -- Play sound depending on who got health
             if instanceOf(Player, patient) then
                 sound.playerGetHP:play()
-            elseif instanceOf(Monster, patient) then
+            else
                 sound.monsterGetHP:play()
             end
             
@@ -135,7 +136,6 @@ function Item:use_on(patient)
         -- If the patient has a bow
         if patient.armory.weapons.bow then
             patient.armory.weapons.bow:add_ammo(1)
-            self.isUsed = true
             return true
         end
     end

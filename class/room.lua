@@ -52,9 +52,7 @@ end
 
 function Room:character_input()
     for _, c in pairs(self:get_characters()) do
-        if not instanceOf(Player, c) then
-            c:input()
-        end
+        c:input()
     end
 end
 
@@ -109,14 +107,14 @@ function Room:draw()
     
     -- Draw items
     for _, i in pairs(self.items) do
-        if tile_in_table(i.position, self.fov) then
+        if tile_in_table(i.position, self.fov) or DEBUG then
             i:draw()
         end
     end
 
     -- Draw sprites
     for _, s in pairs(self.sprites) do
-        if tile_in_table(s.position, self.fov) then
+        if tile_in_table(s.position, self.fov) or DEBUG then
             s:draw()
         end
     end
@@ -154,64 +152,51 @@ function Room:draw()
                                         upscale_x(1), upscale_y(1))
             end
         end
+
+        -- Show tagged AI targets
+        for _, c in pairs(self:get_characters()) do
+            if c.ai and c.tag and c.ai.path.destination then
+                local pos = c.ai.path.destination
+                love.graphics.setColor(220, 100, 0, 200)
+                love.graphics.rectangle('fill',
+                                        upscale_x(pos.x), upscale_y(pos.y),
+                                        upscale_x(1), upscale_y(1))
+            end
+        end
     end
 end
 
 function Room:draw_bricks()
     if self.bricksDirty then
-        self.lightBrickBatch:bind()
-        self.darkBrickBatch:bind()
+        self.brickBatch:bind()
 
         -- Clear old bricks
-        self.lightBrickBatch:clear()
-        self.darkBrickBatch:clear()
+        self.brickBatch:clear()
 
         -- Add each brick to the correct spriteBatch
+        local alpha
+        local dist
         for _, b in pairs(self.bricks) do
+            --dist = manhattan_distance(b, self.game.player.position)
             if tile_in_table(b, self.fov) then
-                self.lightBrickBatch:add(upscale_x(b.x), upscale_y(b.y))
+                --alpha = LIGHT - ((2 ^ dist) * .05)
+                alpha = LIGHT
             else
-                self.darkBrickBatch:add(upscale_x(b.x), upscale_y(b.y))
+                alpha = DARK
             end
+            --if alpha < DARK then alpha = DARK end
+
+            self.brickBatch:setColor(255, 255, 255, alpha)
+            self.brickBatch:add(upscale_x(b.x), upscale_y(b.y))
         end
 
-        self.lightBrickBatch:unbind()
-        self.darkBrickBatch:unbind()
+        self.brickBatch:unbind()
 
         self.bricksDirty = false
     end
 
-    love.graphics.setColor(255, 255, 255, DARK)
-    love.graphics.draw(self.darkBrickBatch, 0, 0)
-
-    love.graphics.setColor(255, 255, 255, LIGHT)
-    love.graphics.draw(self.lightBrickBatch, 0, 0)
-end
-
-function Room:find_path(src, dest, characterTeam)
-    -- Create a table of the room's occupied nodes
-    hotLava = {}
-    for _, b in pairs(self.bricks) do
-        table.insert(hotLava, {x = b.x, y = b.y})
-    end
-    for _, c in pairs(self:get_characters()) do
-        -- If this character is on the team of the one who called this function
-        if c.team == characterTeam then
-            table.insert(hotLava, {x = c.position.x, y = c.position.y})
-        end
-    end
-
-    pf = PathFinder(src, dest, hotLava)
-    path = pf:plot()
-
-    -- Remove first node from path
-    table.remove(path, 1)
-
-    if #path > 0 then
-        return path
-    else
-        return nil
-    end
+    --love.graphics.setColor(WHITE)
+    love.graphics.draw(self.brickBatch, 0, 0)
 end
 
 function Room:generate_all()
@@ -229,12 +214,7 @@ function Room:generate_next_piece()
     -- Continue filling the room with monsters, items, etc.
     if self.roomFiller:fill_next_step() then
         -- Make a spriteBatch for bricks within the player's FOV
-        self.lightBrickBatch = love.graphics.newSpriteBatch(brickImg,
-                                                            #self.bricks)
-
-        -- Make a spriteBatch for bricks outside the player's FOV
-        self.darkBrickBatch = love.graphics.newSpriteBatch(brickImg,
-                                                           #self.bricks)
+        self.brickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
 
         -- Mark the generation process as complete
         self.generated = true
@@ -242,7 +222,7 @@ function Room:generate_next_piece()
         -- Free up the memory used by the roomBuilder
         --self.roomBuilder = nil
 
-        print('generated room ' .. self.index)
+        --print('generated room ' .. self.index)
 
         if self.index == #self.game.rooms then
             print('generated entire map in ' ..
@@ -349,6 +329,32 @@ function Room:line_of_sight(a, b)
     end
 end
 
+function Room:plot_path(src, dest, characterTeam)
+    -- Create a table of the room's occupied nodes
+    hotLava = {}
+    for _, b in pairs(self.bricks) do
+        table.insert(hotLava, {x = b.x, y = b.y})
+    end
+    for _, c in pairs(self:get_characters()) do
+        -- If this character is on the team of the one who called this function
+        if c.team == characterTeam then
+            table.insert(hotLava, {x = c.position.x, y = c.position.y})
+        end
+    end
+
+    pf = PathFinder(src, dest, hotLava, nil, {smooth = true})
+    path = pf:plot()
+
+    -- Remove first node from path
+    table.remove(path, 1)
+
+    if #path > 0 then
+        return path
+    else
+        return nil
+    end
+end
+
 local function remove_dead_objects(objects)
     local temp = {}
     for _, o in pairs(objects) do
@@ -359,11 +365,21 @@ local function remove_dead_objects(objects)
     return temp
 end
 
-function Room:remove_sprite(sprite)
-    for i, s in pairs(self.sprites) do
-        if s == sprite then
-            table.remove(self.sprites, i)
-            break
+function Room:remove_object(obj)
+    if instanceOf(Item, obj) then
+        for i, item in pairs(self.items) do
+            if item == obj then
+                print('removing item from room')
+                table.remove(self.items, i)
+                break
+            end
+        end
+    elseif instanceOf(Sprite, obj) then
+        for i, s in pairs(self.sprites) do
+            if s == obj then
+                table.remove(self.sprites, i)
+                break
+            end
         end
     end
 end
@@ -378,14 +394,14 @@ function Room:sweep()
     -- Remove dead turrets
     self.turrets = remove_dead_objects(self.turrets)
 
-    -- Keep only items that have no owner and have not been used
-    local temp = {}
-    for _, i in pairs(self.items) do
-        if not i.owner and not i.isUsed then
-            table.insert(temp, i)
+    -- Keep only items with a position and no owner
+    local items = {}
+    for _, item in pairs(self.items) do
+        if item.position and not item.owner then
+            table.insert(items, item)
         end
     end
-    self.items = temp
+    self.items = items
 end
 
 -- Returns a table of everything within a specified tile
@@ -451,6 +467,13 @@ end
 -- Return true if tile can be walked on right now (contains no collidable
 -- objects)
 function Room:tile_walkable(tile)
+    -- If the tile is on an exit
+    for _, e in pairs(self.exits) do
+        if tiles_overlap(tile, e:get_position()) then
+            return true
+        end
+    end
+
     -- If the tile is not inside the room, or the tile is occupied by a brick
     if not self:tile_in_room(tile) or tile_in_table(tile, self.bricks) then
         return false

@@ -5,6 +5,9 @@ Player = class('Player', Character)
 function Player:init()
     Player.super.init(self)
 
+    -- Remove AI in favor of just I
+    self.ai = nil
+
     self.images = playerImg
     self.team = 1 -- Good guys
 
