@@ -29,10 +29,7 @@ end
 
 function Arrow:update()
     if not self.playedSound then
-        if (self.owner and instanceOf(Player, self.owner) and
-            self:is_audible()) then
-            sound.playerShootArrow:play()
-        else
+        if self:is_audible() then
             sound.shootArrow:play()
         end
 
