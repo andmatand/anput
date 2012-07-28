@@ -284,7 +284,7 @@ function Game:switch_to_room(room)
     self.currentRoom.visited = true
 
     -- Make sure the room has been completely generated
-    if not self.currentRoom.generated then
+    if not self.currentRoom.isGenerated then
         self.currentRoom:generate_all()
     end
 
@@ -322,7 +322,7 @@ function Game:update(dt)
 
     -- Check if we need to update the adjacent rooms
     for _, room in pairs(self:get_adjacent_rooms()) do
-        if room.generated and room ~= self.previousRoom then
+        if room.isGenerated and room ~= self.previousRoom then
             --local needsToUpdate = false
 
             ---- Check if there are any projectiles

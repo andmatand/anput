@@ -133,13 +133,13 @@ function Sprite:physics()
             -- If we are a player
             if instanceOf(Player, self) then
                 -- Generate the room if it hasn't already been generated
-                if not e.room.generated then
+                if not e.room.isGenerated then
                     e.room:generate_all()
                 end
             end
 
             -- If the room it leads to has been generated
-            if e.room.generated then
+            if e.room.isGenerated then
                 local oldRoom = test.room
 
                 -- Move test object to new room

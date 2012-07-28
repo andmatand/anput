@@ -118,10 +118,11 @@ function manage_roombuilder_thread()
             -- Attach psuedo room's member variables to the real room
             for k, v in pairs(room) do
                 if k ~= 'exits' then
-                    game.rooms[room.index][k] = v
+                    realRoom[k] = v
                 end
             end
-            game.rooms[room.index].isBuilt = true
+            realRoom.isBuilt = true
+            realRoom.isBeingBuilt = false
         else
             print('rejected room built for previous game')
         end
@@ -129,17 +130,17 @@ function manage_roombuilder_thread()
 
     -- If the roombuilder thread does not have any input message
     if not roombuilder_thread:peek('input') then
-        -- Find the next room that is not generated
+        -- Find the next room that is not built or being built
         local nextRoom = nil
         for _, r in pairs(game:get_adjacent_rooms()) do
-            if not r.isBuilt then
+            if not r.isBuilt and not r.isBeingBuilt then
                 nextRoom = r
                 break
             end
         end
         if not nextRoom then
             for _, r in pairs(game.rooms) do
-                if not r.isBuilt then
+                if not r.isBuilt and not r.isBeingBuilt then
                     nextRoom = r
                     break
                 end
@@ -147,6 +148,8 @@ function manage_roombuilder_thread()
         end
 
         if nextRoom then
+            nextRoom.isBeingBuilt = true
+
             -- Send another pseduo-room message
             local input = serialize_room(nextRoom)
             roombuilder_thread:set('input', input)
@@ -299,7 +302,7 @@ function love.update(dt)
 
         --if fpsTimer < (1 / FPS) / 4 then
             for _, r in pairs(game.rooms) do
-                if r.isBuilt and not r.generated then
+                if r.isBuilt and not r.isGenerated then
                     r:generate_next_piece()
                 end
             end

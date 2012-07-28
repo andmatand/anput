@@ -9,7 +9,7 @@ function Room:init(args)
     self.exits = args.exits
     self.index = args.index
 
-    self.generated = false
+    self.isGenerated = false
     self.visited = false
     self.sprites = {}
     self.turrets = {}
@@ -57,7 +57,7 @@ function Room:character_input()
 end
 
 function Room:contains_npc()
-    if self.generated then
+    if self.isGenerated then
         for _, c in pairs(self:get_characters()) do
             if c.name then
                 return true
@@ -200,13 +200,19 @@ function Room:draw_bricks()
 end
 
 function Room:generate_all()
-    local roomBuilder = RoomBuilder(self)
-    roomBuilder:build()
+    if not self.isBuilt then
+        local roomBuilder = RoomBuilder(self)
+        roomBuilder:build()
+    end
 
     repeat until self:generate_next_piece()
 end
 
 function Room:generate_next_piece()
+    if self.isGenerated then
+        return true
+    end
+
     if not self.roomFiller then
         self.roomFiller = RoomFiller(self)
     end
@@ -217,7 +223,7 @@ function Room:generate_next_piece()
         self.brickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
 
         -- Mark the generation process as complete
-        self.generated = true
+        self.isGenerated = true
 
         -- Free up the memory used by the roomBuilder
         --self.roomBuilder = nil
@@ -369,7 +375,6 @@ function Room:remove_object(obj)
     if instanceOf(Item, obj) then
         for i, item in pairs(self.items) do
             if item == obj then
-                print('removing item from room')
                 table.remove(self.items, i)
                 break
             end
