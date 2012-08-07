@@ -117,6 +117,11 @@ end
 function Intro:keypressed(key)
     if key == 'escape' then
         self.finished = true
+    elseif key == '.' then
+        -- If there is a message on the queue
+        if self.room.messages[1] then
+            self.room.messages[1].finished = true
+        end
     end
 end
 
