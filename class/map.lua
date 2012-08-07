@@ -22,11 +22,52 @@ function Map:generate()
     self.display = nil
 
     self.rooms = self:generate_rooms()
+    self:add_temple_exit()
 
     self:add_secret_passages()
     self:add_required_objects()
 
     return self.rooms
+end
+
+function Map:add_temple_exit()
+    -- Get the exit in the first room
+    local exit = self.path[1].room.exits[1]
+
+    if #self.path[1].room.exits > 1 then
+        print('OOPS: first room has more than 1 exit')
+        love.event.quit()
+    end
+
+    -- Find the wall opposite the first room's exit
+    local dir = opposite_direction(exit:get_direction())
+
+    local x = math.random(2, ROOM_W - 2)
+    local y = math.random(2, ROOM_H - 2)
+
+    if dir == 1 then
+        -- North
+        y = -1
+    elseif dir == 2 then
+        -- East
+        x = ROOM_W
+    elseif dir == 3 then
+        -- South
+        y = ROOM_H
+    elseif dir == 4 then
+        -- West
+        x = -1
+    end
+
+    -- Add an exit to the first room which leads outside
+    local newExit = Exit({x = x, y = y})
+    newExit.room = self.game.outside
+    table.insert(self.rooms[1].exits, newExit)
+
+    -- Ad an exit to the outside room which leads inside
+    local exitToInside = Exit({x = 30, y = 15})
+    exitToInside.room = self.rooms[1]
+    table.insert(self.game.outside.exits, exitToInside)
 end
 
 function move_random(node)
@@ -77,34 +118,39 @@ function find_empty_neighbors(node, otherNodesTables)
 end
 
 function Map:add_branches(path)
-    branches = {}
-    for i,p in pairs(path) do
-        -- Don't branch off from the final room
-        if i == #path then break end
+    local branches = {}
+    for i, p in pairs(path) do
+        -- Don't branch off from the first room or the final room
+        if not (i == 1 or p.finalRoom) then
+            --print('\npath node ' .. i .. ':', p.x, p.y)
 
-        --print('\npath node ' .. i .. ':', p.x, p.y)
+            local neighbors = find_empty_neighbors(p, {path, branches})
 
-        neighbors = find_empty_neighbors(p, {path, branches})
+            for j, n in pairs(neighbors) do
+                if (math.random(0, 2) == 0 and
+                    not tiles_touching(n, path[1])) then
+                    -- Form a branch starting from this neighbor
+                    table.insert(branches, n)
 
-        for j,n in pairs(neighbors) do
-            if math.random(0, 2) == 0 then
-                -- Form a branch starting from this neighbor
-                table.insert(branches, n)
+                    local maxLength = math.random(1, 6)
+                    local branchLength = 1
+                    local tile = n
+                    while branchLength < maxLength do
+                        possibleMoves = find_empty_neighbors(tile,
+                                                             {path, branches})
 
-                maxLength = math.random(1, 6)
-                branchLength = 1
-                tile = n
-                while branchLength < maxLength do
-                    possibleMoves = find_empty_neighbors(tile,
-                                                         {path, branches})
-
-                    if #possibleMoves > 0 then
-                        -- Move randomly to one of the open neighbors
-                        tile = possibleMoves[math.random(1, #possibleMoves)]
-                        branchLength = branchLength + 1
-                        table.insert(branches, tile)
-                    else
-                        break
+                        if #possibleMoves > 0 then
+                            -- Move randomly to one of the open neighbors
+                            tile = possibleMoves[math.random(1,
+                                                             #possibleMoves)]
+                            if tiles_touching(tile, path[1]) then
+                                break
+                            end
+                            branchLength = branchLength + 1
+                            table.insert(branches, tile)
+                        else
+                            break
+                        end
                     end
                 end
             end
@@ -178,24 +224,25 @@ function Map:generate_rooms()
     self.nodes = concat_tables({self.path, self.branches})
 
     -- Make a new room for each node
-    rooms = {}
-    for i,node in ipairs(self.nodes) do
+    local rooms = {}
+    for i, node in ipairs(self.nodes) do
         -- Add the new room and attach it to this node
-        r = Room({exits = exits, index = #rooms + 1, game = self.game})
+        local r = Room({exits = exits, index = #rooms + 1, game = self.game})
         r.distanceFromStart = manhattan_distance(node, self.path[1])
         table.insert(rooms, r)
         node.room = r
 
-        neighbors = find_neighbor_tiles(node, self.nodes, {diagonals = false})
+        local neighbors = find_neighbor_tiles(node, self.nodes,
+                                              {diagonals = false})
 
         -- Add exits to correct walls of room
-        exits = {}
-        for j,n in ipairs(neighbors) do
+        local exits = {}
+        for j, n in ipairs(neighbors) do
             if n.occupied then
                 linkedExit = nil
 
-                x = math.random(2, ROOM_W - 2)
-                y = math.random(2, ROOM_H - 2)
+                local x = math.random(2, ROOM_W - 2)
+                local y = math.random(2, ROOM_H - 2)
                 if j == 1 then
                     y = -1 -- North
 
@@ -245,7 +292,7 @@ function Map:generate_rooms()
 
     -- Find the room that's farthest away from the first room, and set it as
     -- the last room
-    farthestDistance = 0
+    local farthestDistance = 0
     for _, r in pairs(rooms) do
         if r.distanceFromStart > farthestDistance then
             farthestDistance = r.distanceFromStart
@@ -312,12 +359,19 @@ function Map:add_required_objects()
     -- And then the ankh
     --table.insert(self.rooms[1].requiredObjects, Item('ankh'))
 
+    -- DEBUG: Put a cat in the starting room
+    --local cat = Monster(MONSTER_TYPE.cat)
+    --cat.tag = true
+    --table.insert(self.rooms[1].requiredObjects, cat)
+
+
     -- Create a table of the 5 earliest rooms
     local earlyRooms = self:get_early_rooms(5)
 
     -- Put the wizard in one of the 5 earliest rooms
     local chunk = love.filesystem.load('npc/wizard.lua')
     local wizard = chunk()
+    --wizard.tag = true
     while #earlyRooms > 0 do
         local roomNum = math.random(1, #earlyRooms)
 
@@ -337,20 +391,24 @@ function Map:add_required_objects()
     -- would spawn
     local easyRooms = self:get_rooms_below_difficulty(
                       MONSTER_DIFFICULTY[MONSTER_TYPE.ghost])
+    local easyRoomsCopy = copy_table(easyRooms)
     local numShinyThings = 0
     while numShinyThings < 7 do
         -- Pick a random early room
-        local roomNum = math.random(1, #easyRooms)
+        local roomNum = math.random(1, #easyRoomsCopy)
 
-        -- If this room doesn't already have too many reqiured objects
-        if #easyRooms[roomNum].requiredObjects < 1 then
-            -- Add a shiny thing as a required object
-            numShinyThings = numShinyThings + 1
-            table.insert(easyRooms[roomNum].requiredObjects,
-                         Item('shinything'))
-        else
-            -- Otherwise remove this room from consideration
-            table.remove(easyRooms, roomNum)
+        -- Add a shiny thing as a required object
+        numShinyThings = numShinyThings + 1
+        table.insert(easyRoomsCopy[roomNum].requiredObjects,
+                     Item('shinything'))
+
+        -- Remove this room from consideration
+        table.remove(easyRoomsCopy, roomNum)
+
+        -- If we ran out of easy rooms
+        if #easyRooms == 0 then
+            -- Get the list again
+            easyRoomsCopy = copy_table(easyRooms)
         end
     end
 

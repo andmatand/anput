@@ -5,7 +5,7 @@ require('class.statusbar')
 require('util.tables')
 require('util.tile')
 
-local DEBUG = true
+--local DEBUG = true
 
 -- A Game handles a collection of rooms
 Game = class('Game')
@@ -14,6 +14,11 @@ function Game:init()
     self.menuState = 'inventory'
     self.paused = false
     self.time = love.timer.getTime()
+
+    -- Create the outside "room"
+    self.outside = Room({game = self, index = -1})
+    self.outside.isBuilt = true
+    self.outside.isGenerated = true
 end
 
 function Game:add_time(seconds)
@@ -77,14 +82,18 @@ function Game:generate()
     self.map = Map({game = self})
     self.rooms = self.map:generate()
     roomGenTimer = love.timer.getTime()
+    self.generatedAllRooms = false
 
     -- Create a player
     self.player = Player()
 
-    -- Switch to the first room and put the player at the midPoint
+    -- Switch to the first room
     self:switch_to_room(self.rooms[1])
     self.currentRoom:add_object(self.player)
-    self.player:set_position(self.currentRoom.midPoint)
+    
+    -- Put the player at the temple exit
+    self.player:set_position(
+        self.currentRoom:get_exit({room = self.outside}):get_doorway())
 
     -- Create a status bar
     self.statusBar = StatusBar(self.player)
@@ -346,8 +355,13 @@ function Game:update(dt)
 
     -- If the player entered a different room
     if self.player.room and self.player.room ~= oldRoom then
-        -- Switch the game view to the player's current room
-        self:switch_to_room(self.player.room)
+        if self.player.room == self.outside then
+            -- End the game
+            self.finished = true
+        else
+            -- Switch the game view to the player's current room
+            self:switch_to_room(self.player.room)
+        end
     end
 
     -- Switch rooms when player is on an exit

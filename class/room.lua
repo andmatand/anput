@@ -5,19 +5,23 @@ require('class.roomfiller')
 Room = class('Room')
 
 function Room:init(args)
-    self.game = args.game
-    self.exits = args.exits
-    self.index = args.index
-
     self.isGenerated = false
     self.visited = false
+    self.bricksDirty = true
+    self.bricks = {}
+    self.exits = {}
+    self.items = {}
     self.sprites = {}
     self.turrets = {}
-    self.items = {}
     self.requiredObjects = {}
-    self.bricksDirty = true
     self.fovCache = {}
     self.messages = {}
+
+    if args then
+        self.game = args.game
+        self.exits = args.exits or {}
+        self.index = args.index
+    end
 end
 
 function Room:add_object(obj)
@@ -101,7 +105,6 @@ function Room:draw()
         end
     end
 
-
     -- Draw bricks
     self:draw_bricks()
     
@@ -119,11 +122,7 @@ function Room:draw()
         end
     end
 
-    -- If there is a message on the queue
-    if self.messages[1] then
-        -- Draw the message
-        self.messages[1]:draw()
-    end
+    self:draw_messages()
 
     if DEBUG then
         -- Show tiles in FOV
@@ -153,9 +152,9 @@ function Room:draw()
             end
         end
 
-        -- Show tagged AI targets
+        -- Show AI targets
         for _, c in pairs(self:get_characters()) do
-            if c.ai and c.tag and c.ai.path.destination then
+            if c.ai and c.ai.path.destination then
                 local pos = c.ai.path.destination
                 love.graphics.setColor(220, 100, 0, 200)
                 love.graphics.rectangle('fill',
@@ -199,6 +198,14 @@ function Room:draw_bricks()
     love.graphics.draw(self.brickBatch, 0, 0)
 end
 
+function Room:draw_messages()
+    -- If there is a message on the queue
+    if self.messages[1] then
+        -- Draw the message
+        self.messages[1]:draw()
+    end
+end
+
 function Room:generate_all()
     if not self.isBuilt then
         local roomBuilder = RoomBuilder(self)
@@ -229,11 +236,6 @@ function Room:generate_next_piece()
         --self.roomBuilder = nil
 
         --print('generated room ' .. self.index)
-
-        if self.index == #self.game.rooms then
-            print('generated entire map in ' ..
-                  love.timer.getTime() - roomGenTimer .. ' seconds')
-        end
 
         -- Flag that room is generated
         return true
@@ -612,5 +614,9 @@ function Room:update_messages()
             -- Remove it from the queue
             table.remove(self.messages, 1)
         end
+
+        return true
     end
+
+    return false
 end

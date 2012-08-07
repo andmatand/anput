@@ -118,6 +118,18 @@ function num_neighbor_tiles(tile, otherTiles)
     return num
 end
 
+function opposite_direction(dir)
+    if dir == 1 then
+        return 3
+    elseif dir == 2 then
+        return 4
+    elseif dir == 3 then
+        return 1
+    elseif dir == 4 then
+        return 2
+    end
+end
+
 function tile_in_table(tile, table)
     for i,t in pairs(table) do
         if t.position == nil then

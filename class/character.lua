@@ -133,7 +133,7 @@ function Character:direction_to(position)
     return direction_to(self.position, position)
 end
 
-function Character:draw(pos, rotation)
+function Character:draw(pos, rotation, mirror)
     if not self.images then
         return
     end
@@ -170,10 +170,18 @@ function Character:draw(pos, rotation)
         else
             love.graphics.setColor(255, 255, 255)
         end
+
+        local sx
+        if mirror then 
+            sx = -SCALE_X
+        else
+            sx = SCALE_X
+        end
+
         love.graphics.draw(self.currentImage,
                            position.x, position.y,
                            rotation,
-                           SCALE_X, SCALE_Y)
+                           sx, SCALE_Y)
     end
 end
 

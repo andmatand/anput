@@ -41,16 +41,18 @@ function Message:choose_position()
         return
     end
 
-    -- If the player is too close to our y position
-    if math.abs(self.room.game.player.position.y -
-        self.position.y) <= self.numLines + 5 then
-        -- Move to the other side of the room
-        if self.position.y == 0 then
-            self.position.y = ROOM_H - 1
-            self.verticalAlign = 'bottom'
-        else
-            self.position.y = 0
-            self.verticalAlign = 'top'
+    if self.room.game then
+        -- If the player is too close to our y position
+        if math.abs(self.room.game.player.position.y -
+            self.position.y) <= self.numLines + 5 then
+            -- Move to the other side of the room
+            if self.position.y == 0 then
+                self.position.y = ROOM_H - 1
+                self.verticalAlign = 'bottom'
+            else
+                self.position.y = 0
+                self.verticalAlign = 'top'
+            end
         end
     end
 end

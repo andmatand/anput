@@ -1,6 +1,6 @@
 require('util.oo')
-require('class.game')
 require('class.sound')
+require('class.wrapper')
 
 function new_image(filename)
     img = love.graphics.newImage('res/img/' .. filename)
@@ -77,84 +77,6 @@ function serialize_room(room)
     msg = msg .. 'return room'
 
     return msg
-end
-
-function manage_roombuilder_thread()
-    -- Check the brick_layer thread for a message containing a pseudo-room
-    -- object
-    local result = roombuilder_thread:get('result')
-
-    -- If we got a message
-    if result then
-        --print('got result from thread!')
-        -- Execute the string as Lua code
-        local chunk = loadstring(result)
-        local room = chunk()
-
-        local roomIsFromThisGame = true
-
-        -- Find the real room that has the same index
-        local realRoom = game.rooms[room.index]
-
-        if realRoom then
-            if room.randomSeed ~= realRoom.randomSeed then
-                -- Room-specific random seed does not match
-                roomIsFromThisGame = false
-            else
-                for i, e in ipairs(room.exits) do
-                    if not tiles_overlap(e:get_position(),
-                                         realRoom.exits[i]:get_position()) then
-                        -- All exits do not match
-                        roomIsFromThisGame = false
-                        break
-                    end
-                end
-            end
-        else
-            roomIsFromThisGame = false
-        end
-
-        if roomIsFromThisGame then
-            -- Attach psuedo room's member variables to the real room
-            for k, v in pairs(room) do
-                if k ~= 'exits' then
-                    realRoom[k] = v
-                end
-            end
-            realRoom.isBuilt = true
-            realRoom.isBeingBuilt = false
-        else
-            print('rejected room built for previous game')
-        end
-    end
-
-    -- If the roombuilder thread does not have any input message
-    if not roombuilder_thread:peek('input') then
-        -- Find the next room that is not built or being built
-        local nextRoom = nil
-        for _, r in pairs(game:get_adjacent_rooms()) do
-            if not r.isBuilt and not r.isBeingBuilt then
-                nextRoom = r
-                break
-            end
-        end
-        if not nextRoom then
-            for _, r in pairs(game.rooms) do
-                if not r.isBuilt and not r.isBeingBuilt then
-                    nextRoom = r
-                    break
-                end
-            end
-        end
-
-        if nextRoom then
-            nextRoom.isBeingBuilt = true
-
-            -- Send another pseduo-room message
-            local input = serialize_room(nextRoom)
-            roombuilder_thread:set('input', input)
-        end
-    end
 end
 
 function love.load()
@@ -270,51 +192,19 @@ function love.load()
     showDebug = false
 
     FPS = 15
-    fpsTimer = 0
 
-    game = Game()
-    game:generate()
-
-    -- Create a new thread for building rooms' walls
-    roombuilder_thread = love.thread.newThread('roombuilder_thread',
-                                               'thread/roombuilder.lua')
-    roombuilder_thread:start()
+    -- Create a new wrapper object
+    wrapper = Wrapper()
 end
 
 function love.update(dt)
-    -- Limit FPS
-    fpsTimer = fpsTimer + dt
-
-    game:add_time(dt)
-
-    if fpsTimer > 1 / FPS then
-        game:update()
-
-        --game.player.health = 100
-        --if not game.player.armory.sword then
-        --    local sword = Weapon('sword')
-        --    game.player:pick_up(sword)
-        --end
-
-        fpsTimer = 0
-    else
-        manage_roombuilder_thread()
-
-        --if fpsTimer < (1 / FPS) / 4 then
-            for _, r in pairs(game.rooms) do
-                if r.isBuilt and not r.isGenerated then
-                    r:generate_next_piece()
-                end
-            end
-        --end
-    end
+    wrapper:update(dt)
 end
 
 function love.keypressed(key, unicode)
     if key == 'n' and (love.keyboard.isDown('lctrl') or
                        love.keyboard.isDown('rctrl')) then
-        game = Game()
-        game:generate()
+        wrapper:restart()
     elseif key == 'f11' or
            ((love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))
             and key == 'return') then
@@ -325,12 +215,12 @@ function love.keypressed(key, unicode)
     elseif key == 'f1' then
         DEBUG = not DEBUG
     else
-        game:keypressed(key)
+        wrapper:keypressed(key)
     end
 end
 
 function love.keyreleased(key, unicode)
-    game:keyreleased(key)
+    wrapper:keyreleased(key)
 end
 
 function love.draw()
@@ -389,7 +279,5 @@ function love.draw()
 
     end
 
-    if game then
-        game:draw()
-    end
+    wrapper:draw()
 end

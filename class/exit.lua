@@ -5,7 +5,7 @@ function Exit:init(args)
     self.y = args.y
 
     self.roomIndex = nil
-    self.room = nil
+    self.room = nil -- The room to which this exit leads
 end
 
 function Exit:get_doorframes()
@@ -39,19 +39,20 @@ function Exit:get_doorframes()
 end
 
 function Exit:get_doorway()
-    if self.y == -1 then
+    local dir = self:get_direction()
+    if dir == 1 then
         -- North
         x = self.x
         y = self.y + 1
-    elseif self.x == ROOM_W then
+    elseif dir == 2 then
         -- East
         x = self.x - 1
         y = self.y
-    elseif self.y == ROOM_H then
+    elseif dir == 3 then
         -- South
         x = self.x
         y = self.y - 1
-    elseif self.x == -1 then
+    elseif dir == 4 then
         -- West
         x = self.x + 1
         y = self.y
@@ -62,6 +63,18 @@ end
 
 function Exit:get_position()
     return {x = self.x, y = self.y}
+end
+
+function Exit:get_direction()
+    if self.y == -1 then
+        return 1 -- North
+    elseif self.x == ROOM_W then
+        return 2 -- East
+    elseif self.y == ROOM_H then
+        return 3 -- South
+    elseif self.x == -1 then
+        return 4 -- West
+    end
 end
 
 function Exit:is_hidden()
