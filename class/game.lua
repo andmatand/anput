@@ -95,6 +95,23 @@ function Game:generate()
     self.player:set_position(
         self.currentRoom:get_exit({room = self.outside}):get_doorway())
 
+    -- Put the sword near the player
+    for _, tile in pairs(self.currentRoom.midPaths) do
+        local dist = manhattan_distance(tile, self.player:get_position())
+        if dist >= 3 and dist <= 10 then
+            local sword
+            for _, item in pairs(self.currentRoom.items) do
+                if item.itemType == ITEM_TYPE.sword then
+                    sword = item
+                    break
+                end
+            end
+            sword:set_position(tile)
+            print(tile.x, tile.y)
+            break
+        end
+    end
+
     -- Create a status bar
     self.statusBar = StatusBar(self.player)
 
