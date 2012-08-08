@@ -14,8 +14,10 @@ function Message:init(args)
     self.mouth = args.mouth
     self.avatar = args.avatar
 
-    -- Default to 1 frame per character
-    self.delay = args.delay or self.text:len()
+    -- Delay is the number of seconds to keep the message onscreen once all the
+    -- letters have finished appearing
+    -- finished appearing onscreen
+    self.delay = args.delay or 1
 
     self.cursor = 0 -- Last character currently visible (when unfurling text)
     self.position = {x = 0, y = 0}
@@ -113,10 +115,10 @@ function Message:update()
                 break
             end
         end
+    elseif not self.delayTimer then
+        self.delayTimer = love.timer.getTime()
     else
-        self.delay = self.delay - 1
-
-        if self.delay <= 0 then
+        if love.timer.getTime() >= self.delayTimer + self.delay then
             self.finished = true
 
             -- If we have an associated mouth
