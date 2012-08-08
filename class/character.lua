@@ -171,15 +171,17 @@ function Character:draw(pos, rotation, mirror)
             love.graphics.setColor(255, 255, 255)
         end
 
-        local sx
-        if mirror then 
+        local x, sx
+        if self.mirrored then 
+            x = position.x + (self.currentImage:getWidth() * SCALE_X)
             sx = -SCALE_X
         else
+            x = position.x
             sx = SCALE_X
         end
 
         love.graphics.draw(self.currentImage,
-                           position.x, position.y,
+                           x, position.y,
                            rotation,
                            sx, SCALE_Y)
     end
@@ -563,5 +565,21 @@ function Character:update()
         -- Flash if hurt
         self.flashTimer = 2
         self.hurt = false
+    end
+
+    if not self.stepped then
+        if self.dir == 2 then
+            if instanceOf(Monster, self) then
+                self.mirrored = true
+            else
+                self.mirrored = false
+            end
+        elseif self.dir == 4 then
+            if instanceOf(Monster, self) then
+                self.mirrored = false
+            else
+                self.mirrored = true
+            end
+        end
     end
 end

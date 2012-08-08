@@ -92,8 +92,9 @@ function Game:generate()
     self.currentRoom:add_object(self.player)
     
     -- Put the player at the temple exit
-    self.player:set_position(
-        self.currentRoom:get_exit({room = self.outside}):get_doorway())
+    local templeExit = self.currentRoom:get_exit({room = self.outside})
+    self.player:set_position(templeExit:get_doorway())
+    self.player.dir = opposite_direction(self.player:direction_to(templeExit))
 
     -- Put the sword near the player
     for _, tile in pairs(self.currentRoom.midPaths) do
