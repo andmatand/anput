@@ -22,7 +22,7 @@ function Intro:init()
     self.player = Player()
     self.player:set_position({x = 11,
                               y = 15 + (playerImg.default:getHeight() /
-                                        SCALE_Y)})
+                                        4)})
     
     -- Put the player in a fake room
     self.room = Room()
@@ -134,11 +134,8 @@ function Intro:update()
     elseif self.state == 'walk' then
         if love.timer.getTime() >= self.player.stepTimer + .1 then
             if self.player:get_position().x < 30 then
-                if self.player.mirrored then
-                    self.player.mirrored = false
-                else
-                    self.player:step(2)
-                end
+                --self.player.mirrored = false
+                self.player:step(2)
             else
                 self.state = 'open'
             end
@@ -163,6 +160,7 @@ function Intro:update()
         end
     end
 
+    self.player:update()
     self.player:physics()
     self.player:post_physics()
 end
