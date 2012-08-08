@@ -18,8 +18,8 @@ end
 
 function Wrapper:draw()
     if self.state == 'boot' then
-        -- Switch to intro after we have drawn a black frame
-        self.state = 'intro'
+        -- Start generating the game after we have drawn a black frame
+        self.state = 'load'
     elseif self.state == 'intro' then
         self.intro:draw()
     elseif self.state == 'game' then
@@ -127,14 +127,18 @@ function Wrapper:restart()
 end
 
 function Wrapper:update(dt)
+    if self.state == 'boot' then
+        return
+    end
+
     -- Add to timer to limit FPS
     self.fpsTimer = self.fpsTimer + dt
 
+    -- Add to game time
     self.game:add_time(dt)
 
-    if self.state == 'boot' then
-        return
-    elseif self.state == 'intro' and self.intro.finished then
+    -- Change states
+    if self.state == 'intro' and self.intro.finished then
         -- Switch state to the game
         self.state = 'game'
     elseif self.state == 'game' and self.game.finished then
@@ -187,6 +191,9 @@ function Wrapper:update(dt)
             end
         else
             self.game:generate()
+
+            -- Start the intro after the map is done generating
+            self.state = 'intro'
         end
     end
 end
