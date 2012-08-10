@@ -10,6 +10,7 @@ function Room:init(args)
     self.bricksDirty = true
     self.bricks = {}
     self.exits = {}
+    self.freeTiles = {}
     self.items = {}
     self.sprites = {}
     self.turrets = {}
@@ -269,7 +270,7 @@ function Room:get_exit(search)
     end
 end
 
-function Room:get_fov_obstacles()
+function Room:get_obstacles()
     return self.bricks
 end
 

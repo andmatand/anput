@@ -12,6 +12,9 @@ function RoomFiller:init(room)
 
     -- Make a copy of the room's free tiles for manipulation
     self.freeTiles = copy_table(self.room.freeTiles)
+    
+    -- Make a table of tiles in which non-walkable obstacles may be placed
+    self.obstacleTiles = copy_table(self.room.freeTiles)
 
     -- Remove doorways from freeTiles
     for _, e in pairs(self.room.exits) do
@@ -313,22 +316,95 @@ function RoomFiller:add_internal_bricks()
     end
 
     local someBricks = {}
-    for _ = 1, math.random(0, #self.room.freeTiles * .02) do
+    for _ = 1, math.random(0, #self.room.freeTiles * .07) do
         table.insert(someBricks, Brick({}))
     end
 
-    -- Place bricks in room
-    self:position_objects(someBricks)
+    local seedBricks = copy_table(self.room.bricks)
 
-    -- Remove the bricks' positions from the room's freeTiles
-    for _, b in pairs(someBricks) do
-        for i, ft in pairs(self.room.freeTiles) do
-            if tiles_overlap(b, ft) then
-                table.remove(self.room.freeTiles, i)
-                break
+    local previoiusPosition, position, ok
+    for _, brick in pairs(someBricks) do
+        ok = false
+
+        -- If there was no previous brick
+        if not previoiusPosition then
+            -- Pick a random brick in the room
+            while #seedBricks > 0 do
+                local index = math.random(1, #seedBricks)
+                local pos = seedBricks[index]
+
+                if consecutive_free_neighbors(pos, self.room.bricks, 5) then
+                    previoiusPosition = pos
+                    break
+                else
+                    table.remove(seedBricks, index)
+                end
             end
         end
+        
+        -- If we have the position of a previous brick
+        if previoiusPosition then
+            -- Find a position adjacent to the previous position
+            local neighbors = adjacent_tiles(previoiusPosition)
+            while #neighbors > 0 do
+                local index = math.random(1, #neighbors)
+                local pos = neighbors[index]
+
+                -- If a brick can fit here
+                if self:use_obstacle_tile(pos) then
+                    position = pos
+                    ok = true
+                    break
+                else
+                    -- Remove this position from consideration
+                    table.remove(neighbors, index)
+                end
+            end
+        else
+            -- Pick a random free position in the room
+            while #self.obstacleTiles > 0 do
+                local index = math.random(1, #self.obstacleTiles)
+                local pos = self.obstacleTiles[index]
+                
+                -- If a brick can fit here
+                if self:use_obstacle_tile(pos) then
+                    position = pos
+                    ok = true
+                    break
+                end
+            end
+        end
+
+        if ok then
+            brick:set_position(position)
+            self.room:add_object(brick)
+
+            -- Remove the brick's positions from the room's freeTiles
+            for i, ft in pairs(self.room.freeTiles) do
+                if tiles_overlap(position, ft) then
+                    table.remove(self.room.freeTiles, i)
+                    break
+                end
+            end
+
+            previoiusPosition = position
+        else
+            previoiusPosition = nil
+        end
     end
+
+    -- Place bricks in room
+    --self:position_objects(someBricks)
+
+    -- Remove the bricks' positions from the room's freeTiles
+    --for _, b in pairs(someBricks) do
+    --    for i, ft in pairs(self.room.freeTiles) do
+    --        if tiles_overlap(b, ft) then
+    --            table.remove(self.room.freeTiles, i)
+    --            break
+    --        end
+    --    end
+    --end
 
     self.addedInternalBricks = true
 
@@ -361,25 +437,10 @@ function RoomFiller:position_objects(objects)
                 end
 
                 if ok ~= false then
-                    -- Find the neighbor tiles
-                    local neighbors = find_neighbor_tiles(position,
-                                                          self.room.bricks)
-
-                    -- Make sure there are at least 5 unoccupied
-                    -- clockwise-consecuitive neighbor tiles in a row
-                    local numInARow = 0
-                    for _, n in ipairs(neighbors) do
-                        if n.occupied then
-                            numInARow = 0
-                        else
-                            numInARow = numInARow + 1
-                        end
-
-                        if numInARow == 5 then
-                            ok = true
-                            break
-                        end
-                    end
+                   if consecutive_free_neighbors(position,
+                                                 self.room.bricks, 5) then
+                       ok = true
+                   end
                 end
             else
                 ok = true
@@ -399,5 +460,40 @@ function RoomFiller:position_objects(objects)
         if #self.freeTiles == 0 then
             print('no more places to position object:', o)
         end
+    end
+end
+
+
+function RoomFiller:use_obstacle_tile(tile)
+    local tileIsAvailable = false
+
+    -- Ensure the tile is still available
+    for i, t in pairs(self.obstacleTiles) do
+        if tiles_overlap(tile, t) then
+            tileIsAvailable = true
+
+            -- Remove this tile from future use
+            table.remove(self.obstacleTiles, i)
+
+            for j, ft in pairs(self.freeTiles) do
+                if tiles_overlap(tile, ft) then
+                    table.remove(self.freeTiles, j)
+                    break
+                end
+            end
+
+            break
+        end
+    end
+
+    if not tileIsAvailable then
+        return false
+    end
+    
+    -- If this tile has 5 consecutive free adjacent tiles
+    if consecutive_free_neighbors(tile, self.room:get_obstacles(), 5) then
+        return true
+    else
+        return false
     end
 end

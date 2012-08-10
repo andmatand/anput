@@ -33,53 +33,69 @@ function direction_to(from, to)
     end
 end
 
-function find_neighbor_tiles(node, otherNodes, options)
+-- Returns a table of adjacent tile positions
+function adjacent_tiles(tile, options)
+    local options = options or {}
+    local tiles = {}
+
+    -- Initialize all 8 neighbors' positions
+    for d = 1, 8 do
+        local t = {}
+
+        if d == 1 then -- N
+            t.x = tile.x
+            t.y = tile.y - 1
+        elseif options.diagonals and d == 2 then -- NE
+            t.x = tile.x + 1
+            t.y = tile.y - 1
+        elseif d == 3 then -- E
+            t.x = tile.x + 1
+            t.y = tile.y
+        elseif options.diagonals and d == 4 then -- SE
+            t.x = tile.x + 1
+            t.y = tile.y + 1
+        elseif d == 5 then -- S
+            t.x = tile.x
+            t.y = tile.y + 1
+        elseif options.diagonals and d == 6 then -- SW
+            t.x = tile.x - 1
+            t.y = tile.y + 1
+        elseif d == 7 then -- W
+            t.x = tile.x - 1
+            t.y = tile.y
+        elseif options.diagonals and d == 8 then -- NW
+            t.x = tile.x - 1
+            t.y = tile.y - 1
+        end
+
+        -- If this direction was not excluded
+        if t.x then
+            table.insert(tiles, t)
+        end
+    end
+
+    return tiles
+end
+
+-- Returns a table of adjacent tiles with marks on the ones which are in
+-- occupied positions
+function find_neighbor_tiles(node, occupiedNodes, options)
     -- Make sure options is at least an empty table, so we can index it
-    options = options or {}
+    local options = options or {}
     if options.diagonals == nil then
         -- Enable diagonals by default
         options.diagonals = true
     end
 
     -- Initialize all 8 neighbors' positions
-    neighbors = {}
-    for d = 1, 8 do
-        local n = {occupied = false}
-        if d == 1 then -- N
-            n.x = node.x
-            n.y = node.y - 1
-        elseif options.diagonals and d == 2 then -- NE
-            n.x = node.x + 1
-            n.y = node.y - 1
-        elseif d == 3 then -- E
-            n.x = node.x + 1
-            n.y = node.y
-        elseif options.diagonals and d == 4 then -- SE
-            n.x = node.x + 1
-            n.y = node.y + 1
-        elseif d == 5 then -- S
-            n.x = node.x
-            n.y = node.y + 1
-        elseif options.diagonals and d == 6 then -- SW
-            n.x = node.x - 1
-            n.y = node.y + 1
-        elseif d == 7 then -- W
-            n.x = node.x - 1
-            n.y = node.y
-        elseif options.diagonals and d == 8 then -- NW
-            n.x = node.x - 1
-            n.y = node.y - 1
-        end
-
-        -- If this direction was not excluded
-        if n.x then
-            table.insert(neighbors, n)
-        end
+    local neighbors = adjacent_tiles(node, options)
+    for _, n in pairs(neighbors) do
+        n.occupied = false
     end
 
-    -- Check if any of the otherNodes are in the neighbor positions
-    if otherNodes then
-        for _, o in pairs(otherNodes) do
+    -- Check if any of the neighbor positions overlap with occupiedNodes
+    if occupiedNodes then
+        for _, o in pairs(occupiedNodes) do
             for _, n in pairs(neighbors) do
                 if tiles_overlap(o, n) then
                     -- Mark this neighbor-tile as occupied
@@ -128,6 +144,30 @@ function opposite_direction(dir)
     elseif dir == 4 then
         return 2
     end
+end
+
+function consecutive_free_neighbors(tile, occupiedTiles, numInARow)
+    -- Find the neighbor tiles
+    local neighbors = find_neighbor_tiles(tile, occupiedTiles)
+
+    -- Make sure there are at least <num> unoccupied
+    -- clockwise-consecuitive neighbor tiles in a row
+    local num = 0
+    for _, n in ipairs(neighbors) do
+        -- If we encounter an occupied tile
+        if n.occupied then
+            -- Reset the count to 0
+            num = 0
+        else
+            num = num + 1
+        end
+
+        if num == numInARow then
+            return true
+        end
+    end
+
+    return false
 end
 
 function tile_in_table(tile, table)

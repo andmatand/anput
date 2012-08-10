@@ -219,7 +219,7 @@ function FOVFinder:shadow_cast()
             for i, tile in ipairs(job.cone:get_column(job.colNum)) do
                 local transTile = job.cone:translate_octant(tile)
                 local occupied = tile_in_table(transTile,
-                                               self.room:get_fov_obstacles())
+                                               self.room:get_obstacles())
                 --local visible = false
 
                 if DEBUG then
