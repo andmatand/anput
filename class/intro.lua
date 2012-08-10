@@ -10,7 +10,7 @@ function Intro:init()
     self.outside.player.position.x = 11
     self.outside.player.dir = 4
 
-    self:choose_speech()
+    self.outside:add_dialogue(self:choose_speech())
     self.state = 'talk'
 end
 
@@ -49,21 +49,7 @@ function Intro:choose_speech()
     }
 
     n = math.random(1, #choices)
-    for _, line in pairs(choices[n]) do
-        for actor, text in pairs(line) do
-            if actor == 'm' then
-                table.insert(self.outside.room.messages,
-                             Message({text = text,
-                                      room = self.outside.room,
-                                      avatar = self.outside.museum}))
-            elseif actor == 'p' then
-                table.insert(self.outside.room.messages,
-                             Message({text = text,
-                                      room = self.outside.room,
-                                      avatar = self.outside.player}))
-            end
-        end
-    end
+    return choices[n]
 end
 
 function Intro:draw()

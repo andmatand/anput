@@ -31,6 +31,24 @@ function Outside:init()
     self.door = {timer = love.timer.getTime(), height = 0, maxHeight = 5}
 end
 
+function Outside:add_dialogue(lines)
+    for _, line in pairs(lines) do
+        for actor, text in pairs(line) do
+            if actor == 'm' then
+                table.insert(self.room.messages,
+                             Message({text = text,
+                                      room = self.room,
+                                      avatar = self.museum}))
+            elseif actor == 'p' then
+                table.insert(self.room.messages,
+                             Message({text = text,
+                                      room = self.room,
+                                      avatar = self.player}))
+            end
+        end
+    end
+end
+
 function Outside:draw()
     -- Switch to 2x scale
     SCALE_X = SCALE_X * 2

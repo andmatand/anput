@@ -21,42 +21,57 @@ function Outro:init(game)
     self.outside.player:set_position({x = 31, y = y})
     self.outside.player.dir = 4
 
-    self:choose_speech()
+    self.outside:add_dialogue(self:choose_speech())
     self.state = 'talk'
 end
 
 function Outro:choose_speech()
-    local choices
+    local lines = {}
 
     -- If the player has the artifact
     if self.game.player:has_artifact() then
     else
-        choices = {
+        local choices = {
             {{m = 'DID YOU FIND AN ARTIFACT YET?'},
              {p = '...'}},
+            {{m = 'WHERE IS THE ARTIFACT?'},
+             {p = '...'}},
+            {{m = 'DON\'T JUST STAND THERE'},
+             {m = 'GO FIND AN ARTIFACT'}},
+            {{m = 'DON\'T COME BACK WITHOUT AN ARTIFACT'}},
+            {{m = 'GET BACK IN THERE AND FIND AN ARTIFACT'}},
+            {{m = 'HOW MANY TIMES DO I HAVE TO TELL YOU?'}},
+            {{m = 'ENJOYING THE FRESH AIR?'}},
+            {{m = 'SMOKE BREAK\'S OVER'}},
+            {{m = 'FIND AN ARTIFACT!'}},
+            {{m = 'NOW!'}},
+            {{m = '!'}},
+            {{m = '!!!!!!'}},
             {{m = 'LET ME GUESS'},
              {m = 'YOU STILL HAVEN\'T FOUND AN ARTIFACT, HAVE YOU?'},
-             {m = 'I KNEW WE SHOULD HAVE GONE WITH THAT DR. JONES GUY'},
-             {p = '...'}}
+             {p = '...'}},
+            {{m = 'I KNEW WE SHOULD HAVE GONE WITH THAT DR. JONES GUY'}},
+            {{m = 'OR EVEN THAT ONE CHICK WHOSE ONLY EXPERIENCE WAS WITH' ..
+                  'TOMBS'}},
+            {{m = 'THE MUSEUM GIVES YOU ONE THING TO DO'}},
+            {{m = 'WORST. ARCHAEOLOGIST. EVER.'}},
+            {{m = 'THAT\'S IT'},
+             {m = 'YOU\'RE FIRED!'}}
         }
+
+        local n = self.game.numOutsideVisits
+        if n > #choices then
+            n = #choices
+        end
+
+        if n == #choices then
+            self.game.status = 'game over'
+        end
+
+        lines = choices[n]
     end
 
-    n = math.random(1, #choices)
-    for _, line in pairs(choices[n]) do
-        for actor, text in pairs(line) do
-            if actor == 'm' then
-                table.insert(self.outside.room.messages,
-                             Message({text = text,
-                                      room = self.outside.room,
-                                      avatar = self.outside.museum}))
-            elseif actor == 'p' then
-                table.insert(self.outside.room.messages,
-                             Message({text = text,
-                                      room = self.outside.room,
-                                      avatar = self.outside.player}))
-            end
-        end
-    end
+    return lines
 end
 
 function Outro:draw()
@@ -76,25 +91,19 @@ end
 function Outro:update()
     if self.state == 'talk' then
         if not self.outside.room:update_messages() then
-            self.state = 'walk'
+            self.state = 'turn'
             self.outside.player.stepTimer = love.timer.getTime() + .3
         end
-    elseif self.state == 'walk' then
-        if love.timer.getTime() >= self.outside.player.stepTimer + .1 then
-            if self.outside.player:get_position().x < 30 then
-                --self.outside.player.mirrored = false
-                self.outside.player:step(2)
-            else
-                self.state = 'open'
-            end
-            self.outside.player.stepTimer = love.timer.getTime()
-        end
+    elseif self.state == 'turn' then
+        self.outside.player.dir = 2
         self.state = 'finish'
         self.finishTimer = love.timer.getTime()
     elseif self.state == 'finish' then
         if love.timer.getTime() >= self.finishTimer + .2 then
             if self.game.player:has_artifact() then
                 self.state = 'win'
+            elseif self.game.status == 'game over' then
+                love.event.quit()
             else
                 self.state = 'go back'
             end

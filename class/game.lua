@@ -19,6 +19,7 @@ function Game:init()
     self.outside = Room({game = self, index = -1})
     self.outside.isBuilt = true
     self.outside.isGenerated = true
+    self.numOutsideVisits = 0
 end
 
 function Game:add_time(seconds)
@@ -89,9 +90,8 @@ function Game:generate()
 
     -- Switch to the first room
     self:switch_to_room(self.rooms[1])
-    --self.currentRoom:add_object(self.player)
-
     self:move_player_to_start()
+    --self.currentRoom:add_object(self.player)
 
     -- Put the sword near the player
     for _, tile in pairs(self.currentRoom.midPaths) do
@@ -277,12 +277,20 @@ function Game:keyreleased(key)
 end
 
 function Game:move_player_to_start()
-    self.player:move_to_room(self.rooms[1])
+    local room = self.rooms[1]
+
+    self.player:move_to_room(room)
 
     -- Put the player at the temple exit
-    local templeExit = self.rooms[1]:get_exit({room = self.outside})
+    local templeExit = room:get_exit({room = self.outside})
     self.player:set_position(templeExit:get_doorway())
-    self.player.dir = opposite_direction(self.player:direction_to(templeExit))
+
+    -- Face the player toward the room's midpoint (left/right only)
+    if room.midPoint.x < self.player.position.x then
+        self.player.dir = 4
+    else
+        self.player.dir = 2
+    end
 end
 
 function Game:pause()
@@ -384,8 +392,12 @@ function Game:update(dt)
 
     -- If the player entered a different room
     if self.player.room and self.player.room ~= oldRoom then
+        -- If the player is outside the temple
         if self.player.room == self.outside then
-            -- End the game
+            -- Add to the total number of times the player has walked outside
+            self.numOutsideVisits = self.numOutsideVisits + 1
+
+            -- Mark the game as finished (for now)
             self.finished = true
         else
             -- Switch the game view to the player's current room
