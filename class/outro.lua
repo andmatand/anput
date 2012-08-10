@@ -74,7 +74,6 @@ function Outro:keypressed(key)
 end
 
 function Outro:update()
-    print(self.state)
     if self.state == 'talk' then
         if not self.outside.room:update_messages() then
             self.state = 'walk'
