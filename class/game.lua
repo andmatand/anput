@@ -89,12 +89,9 @@ function Game:generate()
 
     -- Switch to the first room
     self:switch_to_room(self.rooms[1])
-    self.currentRoom:add_object(self.player)
-    
-    -- Put the player at the temple exit
-    local templeExit = self.currentRoom:get_exit({room = self.outside})
-    self.player:set_position(templeExit:get_doorway())
-    self.player.dir = opposite_direction(self.player:direction_to(templeExit))
+    --self.currentRoom:add_object(self.player)
+
+    self:move_player_to_start()
 
     -- Put the sword near the player
     for _, tile in pairs(self.currentRoom.midPaths) do
@@ -279,6 +276,15 @@ function Game:keyreleased(key)
     end
 end
 
+function Game:move_player_to_start()
+    self.player:move_to_room(self.rooms[1])
+
+    -- Put the player at the temple exit
+    local templeExit = self.rooms[1]:get_exit({room = self.outside})
+    self.player:set_position(templeExit:get_doorway())
+    self.player.dir = opposite_direction(self.player:direction_to(templeExit))
+end
+
 function Game:pause()
     if not self.paused then
         sound.pause:play()
@@ -328,6 +334,11 @@ function Game:unpause()
 end
 
 function Game:update(dt)
+    if not self.playedTheme then
+        sound.theme:play()
+        self.playedTheme = true
+    end
+
     self.statusBar:update()
 
     if self.paused then

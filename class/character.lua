@@ -133,7 +133,7 @@ function Character:direction_to(position)
     return direction_to(self.position, position)
 end
 
-function Character:draw(pos, rotation, mirror)
+function Character:draw(pos, rotation)
     if not self.images then
         return
     end
@@ -169,6 +169,22 @@ function Character:draw(pos, rotation, mirror)
             love.graphics.setColor(self.color)
         else
             love.graphics.setColor(255, 255, 255)
+        end
+
+        if not self.stepped then
+            if self.dir == 2 then
+                if instanceOf(Monster, self) then
+                    self.mirrored = true
+                else
+                    self.mirrored = false
+                end
+            elseif self.dir == 4 then
+                if instanceOf(Monster, self) then
+                    self.mirrored = false
+                else
+                    self.mirrored = true
+                end
+            end
         end
 
         local x, sx
@@ -565,21 +581,5 @@ function Character:update()
         -- Flash if hurt
         self.flashTimer = 2
         self.hurt = false
-    end
-
-    if not self.stepped then
-        if self.dir == 2 then
-            if instanceOf(Monster, self) then
-                self.mirrored = true
-            else
-                self.mirrored = false
-            end
-        elseif self.dir == 4 then
-            if instanceOf(Monster, self) then
-                self.mirrored = false
-            else
-                self.mirrored = true
-            end
-        end
     end
 end

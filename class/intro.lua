@@ -6,8 +6,9 @@ function Intro:init()
     -- Create an outside environment which we can manipulate
     self.outside = Outside()
 
-    -- Start with the player facing left
-    self.outside.player.mirrored = true
+    -- Start with the player facing left next to the museum
+    self.outside.player.position.x = 11
+    self.outside.player.dir = 4
 
     self:choose_speech()
     self.state = 'talk'
@@ -20,7 +21,7 @@ function Intro:choose_speech()
         {{m = 'PERFORM AN ARCHAEOLOGY IN THE ANCIENT TEMPLE OF EGYPT'},
          {p = 'AN ARTIFACT WILL BE FOUND'}},
         {{m = 'GO FIND AN ARTIFACT IN THE ANCIENT TEMPLE OF EGYPT'},
-         {p = 'RIGHT AWAY BOSS'}},
+         {p = 'RIGHT AWAY, BOSS'}},
         {{m = 'GO DO ARCHAEOLOGY ON THE TEMPLE OF ANPUT, GODDESS OF EGYPT'},
          {p = 'I SHALL RETRIEVE AN ARTIFACT'}},
         {{m = 'THE MUSEUM NEEDS AN EGYPTIAN ARTIFACT. DO ARCHAEOLOGY.'},
@@ -75,6 +76,7 @@ function Intro:keypressed(key)
     elseif key == '.' then
         -- If there is a message on the queue
         if self.outside.room.messages[1] then
+            -- Skip it
             self.outside.room.messages[1].finished = true
         end
     end
@@ -98,7 +100,7 @@ function Intro:update()
         end
     elseif self.state == 'open' then
         if love.timer.getTime() >= self.outside.door.timer + .2 then
-            if self.outside.door.height < 5 then
+            if self.outside.door.height < self.outside.door.maxHeight then
                 self.outside.door.height = self.outside.door.height + 1
             else
                 self.state = 'enter'

@@ -28,7 +28,7 @@ function Outside:init()
     self.room = Room()
     self.player.room = self.room
 
-    self.door = {timer = love.timer.getTime(), height = 0}
+    self.door = {timer = love.timer.getTime(), height = 0, maxHeight = 5}
 end
 
 function Outside:draw()
@@ -60,7 +60,7 @@ function Outside:draw()
     SCALE_X = SCALE_X / 2
     SCALE_Y = SCALE_Y / 2
 
-    self.player:draw(nil, 0, self.player.mirrored)
+    self.player:draw(nil, 0)
 
     self.room:draw_messages()
 end

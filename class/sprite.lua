@@ -64,8 +64,10 @@ function Sprite:hit(patient)
 end
 
 function Sprite:move_to_room(room)
-    -- Remove ourself from our current room
-    self.room:remove_object(self)
+    if self.room then
+        -- Remove ourself from our current room
+        self.room:remove_object(self)
+    end
 
     -- Add ourself to the new room
     room:add_object(self)

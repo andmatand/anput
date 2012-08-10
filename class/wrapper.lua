@@ -1,5 +1,6 @@
 require('class.game')
 require('class.intro')
+require('class.outro')
 
 Wrapper = class('Wrapper')
 
@@ -22,6 +23,8 @@ function Wrapper:draw()
         self.state = 'load'
     elseif self.state == 'intro' then
         self.intro:draw()
+    elseif self.state == 'outro' then
+        self.outro:draw()
     elseif self.state == 'game' then
         self.game:draw()
     end
@@ -30,6 +33,8 @@ end
 function Wrapper:keypressed(key)
     if self.state == 'intro' then
         self.intro:keypressed(key)
+    elseif self.state == 'outro' then
+        self.outro:keypressed(key)
     elseif self.state == 'game' then
         self.game:keypressed(key)
     end
@@ -139,11 +144,23 @@ function Wrapper:update(dt)
 
     -- Change states
     if self.state == 'intro' and self.intro.finished then
+        -- Free the memory used by the intro
+        self.intro = nil
+
         -- Switch state to the game
         self.state = 'game'
     elseif self.state == 'game' and self.game.finished then
+        -- Create a new outro object
+        self.outro = Outro(self.game)
+
         self.state = 'outro'
-        print('wrapper: changed state to outro')
+    elseif self.state == 'outro' and self.outro.state == 'go back' then
+        -- Free the memory used by the outro
+        self.outro = nil
+
+        self.state = 'game'
+        self.game.finished = false
+        self.game:move_player_to_start()
     end
 
     -- If we have waited long enough between frames
@@ -160,12 +177,7 @@ function Wrapper:update(dt)
             --    self.game.player:pick_up(sword)
             --end
         elseif self.state == 'outro' then
-            love.event.quit()
-            --if not self.outro then
-            --    self.outro = Outro()
-            --end
-
-            --self.outro:update()
+            self.outro:update()
         end
 
         self.fpsTimer = 0

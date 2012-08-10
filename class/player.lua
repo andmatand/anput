@@ -51,6 +51,16 @@ function Player:drop_payment(price, position)
     self.wantsToTrade = false
 end
 
+function Player:has_artifact()
+    for _, item in pairs(self.inventory) do
+        if (item.itemType == ITEM_TYPE.ankh) then
+            return true
+        end
+    end
+
+    return false
+end
+
 function Player:hit(patient)
     -- Ignore screen edge
     if patient == nil then

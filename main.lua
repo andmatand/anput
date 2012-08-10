@@ -173,6 +173,7 @@ function love.load()
 
     -- Sounds
     sound = {}
+    sound.theme = Sound('res/sfx/theme.wav')
     sound.playerCry = Sound('res/sfx/player-cry.wav')
     sound.playerGetItem = Sound('res/sfx/player-get-item.wav')
     sound.playerDropItem = Sound('res/sfx/player-drop-item.wav')
