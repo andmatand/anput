@@ -285,6 +285,14 @@ function RoomFiller:add_required_objects()
 
         if pos.x and pos.y  then
             self.room:add_object(obj)
+
+            -- Remove the object's position from freeTiles
+            for i, t in pairs(self.freeTiles) do
+                if tiles_overlap(t, pos) then
+                    table.remove(self.freeTiles, i)
+                    break
+                end
+            end
         else
             table.insert(unpositionedObjects, obj)
         end
