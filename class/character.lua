@@ -27,6 +27,7 @@ function Character:init()
     self.inventory = Inventory(self)
     self.armory = Armory(self)
     self.log = Log()
+    self.visitedRooms = {}
 end
 
 function Character:add_health(amount)
@@ -54,6 +55,17 @@ function Character:add_health(amount)
     end
 
     return false
+end
+
+function Character:add_visited_room(room)
+    for _, r in pairs(self.visitedRooms) do
+        -- If we have already visited this room
+        if r == room then
+            return
+        end
+    end
+
+    table.insert(self.visitedRooms, room)
 end
 
 function Character:check_for_items()
@@ -313,6 +325,11 @@ function Character:hit(patient)
 end
 
 function Character:input()
+    -- DEBUG: if we are a player, let the user override our movements
+    if instanceOf(Player, self) and self.stepped then
+        return
+    end
+
     if self.ai then
         self.attackedDir = nil
         self.ai:update()
@@ -582,4 +599,8 @@ function Character:update()
         self.flashTimer = 2
         self.hurt = false
     end
+end
+
+function Character:visited_room(room)
+    return value_in_table(room, self.visitedRooms)
 end

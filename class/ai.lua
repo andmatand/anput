@@ -319,19 +319,28 @@ function AI:find_random_position()
 end
 
 function AI:find_exit()
+    local visitedExits = {}
+
     -- Find a random exit in the room
     local exits = copy_table(self.owner.room.exits)
     repeat
         local index = math.random(1, #exits)
+        local exit = exits[index]
 
         local ok = true
 
         -- If we are in the doorway of this exit (and thus just came from it)
-        if tiles_overlap(self.owner.position, exits[index]:get_doorway()) then
+        if tiles_overlap(self.owner.position, exit:get_doorway()) then
             ok = false
         -- If the exit is concealed by a false brick
-        elseif exits[index]:is_hidden() then
+        elseif exit:is_hidden() then
             ok = false
+        -- If the exit leads to outside
+        elseif exit.room == self.owner.room.game.outside then
+            ok = false
+        elseif self.owner:visited_room(exit.room) then
+            ok = false
+            table.insert(visitedExits, exit)
         end
 
         if ok then
@@ -341,6 +350,12 @@ function AI:find_exit()
             table.remove(exits, index)
         end
     until #exits == 0
+
+    -- If we still haven't chosen an exit, just choose one of the exits we have
+    -- already been through
+    if #visitedExits > 0 then
+        return visitedExits[math.random(1, #visitedExits)]
+    end
 end
 
 function AI:find_item()
@@ -351,8 +366,10 @@ function AI:find_item()
         if item.position then
             dist = manhattan_distance(item.position, self.owner.position)
 
-            -- If it's closer than the current closest
-            if dist < closestDist then
+            -- If the item is closer than the current closest, and we can pick
+            -- it up
+            if (dist < closestDist and
+                self.owner.inventory:can_pick_up(item)) then
                 closestDist = dist
                 closestItem = item
             end
@@ -581,6 +598,12 @@ function AI:should_follow(target)
 end
 
 function AI:update()
+    -- If we are outside (in a cutscene)
+    if self.owner.room == self.owner.room.game.outside then
+        -- Don't do any AI
+        return
+    end
+
     self.choseAction = false
 
     -- Continue to follow our current path (if we have one)

@@ -71,6 +71,10 @@ function Sprite:move_to_room(room)
 
     -- Add ourself to the new room
     room:add_object(self)
+
+    if instanceOf(Character, self) then
+        self:add_visited_room(room)
+    end
 end
 
 function Sprite:physics()

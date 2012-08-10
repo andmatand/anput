@@ -16,6 +16,25 @@ function Inventory:add(item)
     self.newestItem = item
 end
 
+function Inventory:can_pick_up(item)
+    -- If the item is a weapon
+    if instanceOf(Weapon, item) then
+        -- If it contains ammo
+        if item.ammo and item.ammo > 0 then
+            return true
+        end
+
+        -- If we already have this type of weapon
+        if self:has_item(item.itemType) then
+            return false
+        end
+    end
+
+    if self:has_room_for(item) then
+        return true
+    end
+end
+
 -- This function returns one item of the specified type
 function Inventory:get_item(itemType)
     for _, item in pairs(self.items) do
