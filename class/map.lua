@@ -397,18 +397,20 @@ function Map:add_required_objects()
         -- Pick a random early room
         local roomNum = math.random(1, #easyRoomsCopy)
 
-        -- Add a shiny thing as a required object
-        numShinyThings = numShinyThings + 1
-        table.insert(easyRoomsCopy[roomNum].requiredObjects,
-                     Item('shinything'))
+        if easyRoomsCopy[roomNum].index ~= 1 then
+            -- Add a shiny thing as a required object
+            numShinyThings = numShinyThings + 1
+            table.insert(easyRoomsCopy[roomNum].requiredObjects,
+                         Item('shinything'))
 
-        -- Remove this room from consideration
-        table.remove(easyRoomsCopy, roomNum)
+            -- Remove this room from consideration
+            table.remove(easyRoomsCopy, roomNum)
 
-        -- If we ran out of easy rooms
-        if #easyRooms == 0 then
-            -- Get the list again
-            easyRoomsCopy = copy_table(easyRooms)
+            -- If we ran out of easy rooms
+            if #easyRooms == 0 then
+                -- Get the list again
+                easyRoomsCopy = copy_table(easyRooms)
+            end
         end
     end
 
