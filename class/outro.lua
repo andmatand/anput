@@ -40,9 +40,18 @@ function Outro:choose_speech()
              {m = 'GO FIND AN ARTIFACT'}},
             {{m = 'DON\'T COME BACK WITHOUT AN ARTIFACT'}},
             {{m = 'GET BACK IN THERE AND FIND AN ARTIFACT'}},
-            {{m = 'HOW MANY TIMES DO I HAVE TO TELL YOU?'}},
             {{m = 'ENJOYING THE FRESH AIR?'}},
+            {{m = '*AHEM*'}},
             {{m = 'SMOKE BREAK\'S OVER'}},
+            {{m = 'BUT SERIOUSLY'}},
+            {{m = 'HOW\'S THAT ARTIFACT COMING?'}},
+            {{m = 'IF YOU BRING AN ARTIFACT SOON, YOU CAN RIDE ON THE ' ..
+                  'STEGASAURUS LIKE YOU\'VE ALWAYS WANTED'}},
+            {{m = 'OKAY FINE, THE T-REX TOO'}},
+            {{m = 'IF YOU DON\'T FIND AN ARTIFACT, ALL OF THE ORPHANS WILL ' ..
+                  'BE SO SAD THAT THEY WILL CONTRACT MEASLES AND DIE'}},
+            {{m = 'HAVE YOU NO CONCERN FOR THE REPUTATION OF THIS MUSEUM?'}},
+            {{m = 'HOW MANY TIMES DO I HAVE TO TELL YOU?'}},
             {{m = 'FIND AN ARTIFACT!'}},
             {{m = 'NOW!'}},
             {{m = '!'}},
@@ -52,8 +61,7 @@ function Outro:choose_speech()
              {p = '...'}},
             {{m = 'I KNEW WE SHOULD HAVE GONE WITH THAT DR. JONES GUY'}},
             {{m = 'OR EVEN THAT ONE CHICK WHOSE ONLY EXPERIENCE WAS WITH' ..
-                  'TOMBS'}},
-            {{m = 'THE MUSEUM GIVES YOU ONE THING TO DO'}},
+                  ' TOMBS'}},
             {{m = 'WORST. ARCHAEOLOGIST. EVER.'}},
             {{m = 'THAT\'S IT'},
              {m = 'YOU\'RE FIRED!'}}
