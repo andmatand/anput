@@ -5,7 +5,7 @@ AI = class('AI')
 AI_ACTION = {dodge = 1,  -- Dodge a sprite (if it's coming at us)
              flee = 2,   -- Flee from an enemy
              chase = 3,  -- Chase an enemy
-             seek = 4,   -- Walk around to try to find something interesting
+             explore = 4,   -- Walk around to try to find something interesting
              shoot = 5}  -- Shoot (if a target is lined up)
 
 function AI:init(owner)
@@ -15,12 +15,14 @@ function AI:init(owner)
 
     -- Default AI levels
     self.level = {}
-    self.level.dodge = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.flee = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.chase = {dist = nil, prob = nil, target = nil, delay = 1}
+    self.level.dodge = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.explore = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.flee = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.loot = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.seek = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.shoot = {dist = nil, prob = nil, target = nil, delay = nil}
+
+    self.exploredPositions = {}
 end
 
 function AI:afraid_of(sprite)
@@ -130,7 +132,7 @@ function AI:do_action(action, force)
             self:chase(target)
             return true
         end
-    elseif action == 'seek' then
+    elseif action == 'explore' then
         if self:do_action('chase', true) then
             return true
         elseif self:do_action('loot', true) then
@@ -143,7 +145,7 @@ function AI:do_action(action, force)
                 return true
             else
                 if self.owner.tag then
-                    print('AI: seeking')
+                    print('AI: exploring')
                 end
                 self:chase(self:find_random_position())
                 return true
@@ -309,7 +311,21 @@ function AI:find_random_position()
             end
         end
 
+        -- Don't go here if we have already explored a spot near here
+        for _, exploredPos in pairs(self.exploredPositions) do
+            if manhattan_distance(pos, exploredPos) <= 15 then
+                ok = false
+                break
+            end
+        end
+
+        -- If this is the last spot left
+        if #positions == 1 then
+            ok = true
+        end
+
         if ok then
+            table.insert(self.exploredPositions, pos)
             return pos
         else
             -- Remove this position from consideration
@@ -598,6 +614,12 @@ function AI:should_follow(target)
 end
 
 function AI:update()
+    -- If we just entered a different room
+    if self.owner.room ~= self.oldRoom then
+        -- Clear the old table of explored areas
+        self.exploredPositions = {}
+    end
+
     -- If we are outside (in a cutscene)
     if self.owner.room == self.owner.room.game.outside then
         -- Don't do any AI
