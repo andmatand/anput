@@ -296,6 +296,9 @@ function RoomFiller:add_required_objects()
                     break
                 end
             end
+
+            -- Remove the object's position from obstacleTiles
+            self:use_obstacle_tile(pos)
         else
             table.insert(unpositionedObjects, obj)
         end
