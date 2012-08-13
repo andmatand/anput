@@ -15,7 +15,20 @@ ITEM_NAME = {'ELIXIR',
              'SWORD',
              'BOW',
              'STAFF',
-             'ANKH'}
+             'ANKH',
+             'EYE OF HORUS',
+             'FEATHER OF MA\'AT'}
+
+--ITEM_TYPE = {elixir = 'ELIXIR',
+--             arrow = 'ARROW',
+--             shinything = 'SHINY THING',
+--             sword = 'SWORD',
+--             bow = 'BOW',
+--             staff = 'STAFF',
+--             ankh = 'ANKH',
+--             eye = 'EYE OF HORUS',
+--             feather = 'FEATHER OF MA\'AT'}
+
 
 function Item:init(itemType)
     if type(itemType) == 'number' then
@@ -25,6 +38,7 @@ function Item:init(itemType)
     end
 
     self.isUsable = false
+    self.isMovable = true
 
     if self.itemType == ITEM_TYPE.elixir then
         self.frames = {{image = elixirImg}}

@@ -75,7 +75,7 @@ end
 
 function Game:generate()
     self.randomSeed = os.time() + math.random(0, 1000)
-    --self.randomSeed = 1343195560
+    --self.randomSeed = 1344820550
     math.randomseed(self.randomSeed)
     print('\nrandom seed for game: ' .. self.randomSeed)
 
@@ -93,21 +93,22 @@ function Game:generate()
     self:move_player_to_start()
     --self.currentRoom:add_object(self.player)
 
-    -- Put the sword near the player
-    for _, tile in pairs(self.currentRoom.midPaths) do
-        local dist = manhattan_distance(tile, self.player:get_position())
-        if dist >= 3 and dist <= 10 then
-            local sword
-            for _, item in pairs(self.currentRoom.items) do
-                if item.itemType == ITEM_TYPE.sword then
-                    sword = item
-                    break
-                end
-            end
-            sword:set_position(tile)
-            print(tile.x, tile.y)
+    -- Put the sword at the first room's midpoint
+    for _, item in pairs(self.currentRoom.items) do
+        if item.itemType == ITEM_TYPE.sword then
+            item:set_position(self.rooms[1].midPoint)
             break
         end
+    end
+
+    --self.demoMode = true -- DEBUG
+    if self.demoMode then
+        self.player.ai = AI(self.player)
+        self.player.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
+        self.player.ai.level.chase = {dist = 20, prob = 10, delay = .1}
+        self.player.ai.level.loot = {dist = 20, prob = 10, delay = .1}
+        self.player.ai.level.explore = {dist = 15, prob = 8, delay = .25}
+        self.player.ai.level.shoot = {dist = 10, prob = 10, delay = .25}
     end
 
     -- Create a status bar

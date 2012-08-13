@@ -6,6 +6,7 @@ function Brick:init(coordinates)
     self.y = coordinates.y
 
     self.isCorporeal = true
+    self.isMovable = false
 end
 
 function Brick:class_name()

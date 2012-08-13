@@ -21,6 +21,7 @@ function Character:init()
     self.flashTimer = 0
     self.team = 1 -- Good guys
     self.isCorporeal = true
+    self.isMovable = true
 
     self.ai = AI(self)
 

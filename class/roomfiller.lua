@@ -10,32 +10,20 @@ RoomFiller = class('RoomFiller')
 function RoomFiller:init(room)
     self.room = room
 
-    -- Make a copy of the room's free tiles for manipulation
-    self.freeTiles = copy_table(self.room.freeTiles)
+    -- Make a table of tiles in which (walkable) items may be placed
+    self.itemTiles = copy_table(self.room.freeTiles)
     
-    -- Make a table of tiles in which non-walkable obstacles may be placed
+    -- Make a table of tiles in which (non-walkable) obstacles may be placed
     self.obstacleTiles = copy_table(self.room.freeTiles)
 
-    -- Remove doorways from freeTiles
+    -- Remove doorway tiles from future use
     for _, e in pairs(self.room.exits) do
         local dw = e:get_doorway()
-        for i, t in pairs(self.freeTiles) do
-            -- If this free tile is a doorway
-            if tiles_overlap(t, dw) then
-                -- Remove it from consideration
-                table.remove(self.freeTiles, i)
-                break
-            end
-        end
+        self:use_tile(dw)
     end
 
-    -- Remove midPoint from freeTiles
-    for i, t in pairs(self.freeTiles) do
-        if tiles_overlap(t, self.room.midPoint) then
-            table.remove(self.freeTiles, i)
-            break
-        end
-    end
+    -- Remove the room's midPoint from future use
+    self:use_tile(self.room.midPoint)
 end
 
 function RoomFiller:fill_next_step()
@@ -203,8 +191,7 @@ function RoomFiller:find_turret_positions(min, max)
 
             srcPos = bricks[brickIndex]:get_position()
 
-            shootableDirs = shootable_directions(srcPos,
-                                                 self.room.freeTiles)
+            shootableDirs = shootable_directions(srcPos, self.room.freeTiles)
 
             if #shootableDirs == 0 or #shootableDirs > 3 then
                 -- Remove this starting position from consideration
@@ -289,16 +276,8 @@ function RoomFiller:add_required_objects()
         if pos.x and pos.y  then
             self.room:add_object(obj)
 
-            -- Remove the object's position from freeTiles
-            for i, t in pairs(self.freeTiles) do
-                if tiles_overlap(t, pos) then
-                    table.remove(self.freeTiles, i)
-                    break
-                end
-            end
-
-            -- Remove the object's position from obstacleTiles
-            self:use_obstacle_tile(pos)
+            -- Remove the object's position from future use
+            self:use_tile(pos)
         else
             table.insert(unpositionedObjects, obj)
         end
@@ -382,14 +361,6 @@ function RoomFiller:add_internal_bricks()
             brick:set_position(position)
             self.room:add_object(brick)
 
-            -- Remove the brick's positions from the room's freeTiles
-            for i, ft in pairs(self.room.freeTiles) do
-                if tiles_overlap(position, ft) then
-                    table.remove(self.room.freeTiles, i)
-                    break
-                end
-            end
-
             previoiusPosition = position
         else
             previoiusPosition = nil
@@ -398,16 +369,6 @@ function RoomFiller:add_internal_bricks()
 
     -- Place bricks in room
     --self:position_objects(someBricks)
-
-    -- Remove the bricks' positions from the room's freeTiles
-    --for _, b in pairs(someBricks) do
-    --    for i, ft in pairs(self.room.freeTiles) do
-    --        if tiles_overlap(b, ft) then
-    --            table.remove(self.room.freeTiles, i)
-    --            break
-    --        end
-    --    end
-    --end
 
     self.addedInternalBricks = true
 
@@ -419,37 +380,19 @@ function RoomFiller:position_objects(objects)
     local ok
 
     for _, o in pairs(objects) do
-        while #self.freeTiles > 0 do
+        while #self.itemTiles > 0 do
             -- Pick a random free tile
-            local tileIndex = math.random(1, #self.freeTiles)
-            local position = self.freeTiles[tileIndex]
+            local tileIndex = math.random(1, #self.itemTiles)
+            local position = self.itemTiles[tileIndex]
 
             -- Remove this tile from future consideration
-            table.remove(self.freeTiles, tileIndex)
-
-            -- If this object cannot overlap with other objects
-            if o.isCorporeal then
-                ok = nil
-
-                -- Make sure the position is not blocking a doorway
-                for _, e in pairs(self.room.exits) do
-                    if tiles_touching(position, e:get_doorway()) then
-                        ok = false
-                        break
-                    end
-                end
-
-                if ok ~= false then
-                   if consecutive_free_neighbors(position,
-                                                 self.room.bricks, 5) then
-                       ok = true
-                   end
-                end
+            if o.isMovable then
+                ok = self:use_tile(position)
             else
-                ok = true
+                ok = self:use_obstacle_tile(position)
             end
 
-            -- If this position is available
+            -- If this position was available
             if ok then
                 -- Set the object's position to that of our chosen tile
                 o:set_position(position)
@@ -460,43 +403,81 @@ function RoomFiller:position_objects(objects)
             end
         end
 
-        if #self.freeTiles == 0 then
+        if DEBUG and #self.itemTiles == 0 then
             print('no more places to position object:', o)
         end
     end
 end
 
-
 function RoomFiller:use_obstacle_tile(tile)
     local tileIsAvailable = false
 
-    -- Ensure the tile is still available
-    for i, t in pairs(self.obstacleTiles) do
+    for _, t in pairs(self.obstacleTiles) do
         if tiles_overlap(tile, t) then
             tileIsAvailable = true
 
-            -- Remove this tile from future use
+            -- Remove the tile from future use by obstacles
             table.remove(self.obstacleTiles, i)
-
-            for j, ft in pairs(self.freeTiles) do
-                if tiles_overlap(tile, ft) then
-                    table.remove(self.freeTiles, j)
-                    break
-                end
-            end
 
             break
         end
     end
 
-    if not tileIsAvailable then
-        return false
+    -- If this tile is still available
+    if tileIsAvailable then
+        local ok = false
+
+        -- If this tile has 5 consecutive free adjacent tiles
+        if consecutive_free_neighbors(tile, self.room:get_obstacles(), 5) then
+            ok = true
+        end
+
+        if ok then
+            -- Make sure the position is not blocking a doorway
+            for _, e in pairs(self.room.exits) do
+                if tiles_touching(tile, e:get_doorway()) then
+                    ok = false
+                    break
+                end
+            end
+        end
+
+        if ok then
+            -- Remove the tile from the room's freeTiles
+            for i, t in pairs(self.room.freeTiles) do
+                if tiles_overlap(tile, t) then
+                    table.remove(self.room.freeTiles, i)
+                    break
+                end
+            end
+
+            return true
+        end
     end
-    
-    -- If this tile has 5 consecutive free adjacent tiles
-    if consecutive_free_neighbors(tile, self.room:get_obstacles(), 5) then
-        return true
-    else
-        return false
+
+    return false
+end
+
+function RoomFiller:use_tile(tile)
+    -- Ensure the tile is still available
+    for i, t in pairs(self.obstacleTiles) do
+        if tiles_overlap(tile, t) then
+            -- Remove this tile from future use by obstacles
+            table.remove(self.obstacleTiles, i)
+
+            -- Remove this tile from future use by items
+            for j, ft in pairs(self.itemTiles) do
+                if tiles_overlap(tile, ft) then
+                    table.remove(self.itemTiles, j)
+                    break
+                end
+            end
+
+            -- Signal that the tile was available
+            return true
+        end
     end
+
+    -- Signal that the tile was not available
+    return false
 end
