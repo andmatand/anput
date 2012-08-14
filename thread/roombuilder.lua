@@ -1,3 +1,4 @@
+require('love.filesystem')
 require('util.oo')
 require('class.exit')
 require('class.roombuilder')
