@@ -8,9 +8,9 @@ function Wrapper:init()
     self.fpsTimer = 0
 
     -- Create a new thread for building rooms in the background
-    roombuilder_thread = love.thread.newThread('roombuilder_thread',
-                                               'thread/roombuilder.lua')
-    roombuilder_thread:start()
+    self.roomBuilderThread = love.thread.newThread('roombuilder_thread',
+                                                   'thread/roombuilder.lua')
+    self.roomBuilderThread:start()
 
     -- Create a game right away, so we can start generating rooms in the
     -- background
@@ -49,7 +49,7 @@ end
 function Wrapper:manage_roombuilder_thread()
     -- Check the brick_layer thread for a message containing a pseudo-room
     -- object
-    local result = roombuilder_thread:get('result')
+    local result = self.roomBuilderThread:get('result')
 
     -- If we got a message
     if result then
@@ -96,7 +96,7 @@ function Wrapper:manage_roombuilder_thread()
     end
 
     -- If the roombuilder thread does not have any input message
-    if not roombuilder_thread:peek('input') then
+    if not self.roomBuilderThread:peek('input') then
         -- Find the next room that is not built or being built
         local nextRoom = nil
         for _, r in pairs(self.game:get_adjacent_rooms()) do
@@ -119,7 +119,7 @@ function Wrapper:manage_roombuilder_thread()
 
             -- Send another pseduo-room message
             local input = serialize_room(nextRoom)
-            roombuilder_thread:set('input', input)
+            self.roomBuilderThread:set('input', input)
         end
     end
 end
