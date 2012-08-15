@@ -21,16 +21,45 @@ function Outro:init(game)
     self.outside.player:set_position({x = 31, y = y})
     self.outside.player.dir = 4
 
+    self.artifact = self.outside.player:get_artifact()
+    if self.artifact then
+        self.state = 'talk win'
+    else
+        self.state = 'talk'
+    end
+
     self.outside:add_dialogue(self:choose_speech())
-    self.state = 'talk'
 end
 
 function Outro:choose_speech()
     local lines = {}
 
     -- If the player has the artifact
-    if self.game.player:has_artifact() then
-    else
+    if self.state == 'talk win' then
+        if self.game.numOutsideVisits >= 20 then
+            lines = {{m = 'YOU ACTUALLY FOUND AN ARTIFACT???'},
+                     {m = 'NOT GONNA LIE; I WAS HOPING YOU WOULDN\'T ' ..
+                          'MAKE IT BACK'},
+                     {m = 'OH WELL'},
+                     {m = 'LET\'S HAVE A LOOK AT IT'}}
+        elseif self.game.numOutsideVisits >= 5 then
+            lines = {{m = 'TOOK YOU LONG ENOUGH'},
+                     {m = 'BRING IT OVER HERE'}}
+        else
+            lines = {{m = 'AT LAST!'},
+                     {m = 'THE ARTIFACT'}}
+        end
+
+        return lines
+    elseif self.state == 'edutain' then
+        if self.artifact.itemType == ITEM_TYPE.ankh then
+            lines = {{p = 'IT IS AN ANKH'},
+                     {p = 'THE ANKH IS AN EGYPTIAN SYMBOL OF LIFE'},
+                     {p = 'IT IS ALSO A HEIROGLYPH'}}
+        end
+
+        return lines
+    elseif self.state == 'talk' then
         local choices = {
             {{m = 'DID YOU FIND AN ARTIFACT YET?'},
              {p = '...'}},
@@ -84,6 +113,10 @@ end
 
 function Outro:draw()
     self.outside:draw()
+
+    if self.artifact and self.artifact.position then
+        self.artifact:draw()
+    end
 end
 
 function Outro:keypressed(key)
@@ -100,17 +133,42 @@ function Outro:update()
     if self.state == 'talk' then
         if not self.outside.room:update_messages() then
             self.state = 'turn'
-            self.outside.player.stepTimer = love.timer.getTime() + .3
+        end
+    elseif self.state == 'talk win' then
+        if not self.outside.room:update_messages() then
+            self.state = 'walk'
+            self.frameTimer = love.timer.getTime() + .2
+        end
+    elseif self.state == 'walk' then
+        if self.outside.player.position.x > 11 then
+            if love.timer.getTime() >= self.frameTimer + .2 then
+                self.outside.player:step(4)
+                self.frameTimer = love.timer.getTime()
+            end
+        else
+            self.state = 'drop'
+        end
+    elseif self.state == 'drop' then
+        self.artifact:set_position({x = self.outside.player.position.x - 1,
+                                    y = self.outside.player.position.y})
+        self.outside.player:drop_item(self.artifact)
+
+        self.frameTimer = love.timer.getTime()
+        self.state = 'edutain'
+        self.outside:add_dialogue(self:choose_speech())
+    elseif self.state == 'edutain' then
+        if love.timer.getTime() >= self.frameTimer + .25 then
+            if not self.outside.room:update_messages() then
+                --self.state = 'next'
+            end
         end
     elseif self.state == 'turn' then
         self.outside.player.dir = 2
         self.state = 'finish'
-        self.finishTimer = love.timer.getTime()
+        self.frameTimer = love.timer.getTime()
     elseif self.state == 'finish' then
-        if love.timer.getTime() >= self.finishTimer + .2 then
-            if self.game.player:has_artifact() then
-                self.state = 'win'
-            elseif self.game.status == 'game over' then
+        if love.timer.getTime() >= self.frameTimer + .2 then
+            if self.game.status == 'game over' then
                 love.event.quit()
             else
                 self.state = 'go back'

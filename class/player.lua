@@ -51,14 +51,12 @@ function Player:drop_payment(price, position)
     self.wantsToTrade = false
 end
 
-function Player:has_artifact()
-    for _, item in pairs(self.inventory) do
+function Player:get_artifact()
+    for _, item in pairs(self.inventory.items) do
         if (item.itemType == ITEM_TYPE.ankh) then
-            return true
+            return item
         end
     end
-
-    return false
 end
 
 function Player:hit(patient)
