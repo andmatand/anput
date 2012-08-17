@@ -514,7 +514,7 @@ end
 function RoomFiller:use_obstacle_tile(tile)
     local tileIsAvailable = false
 
-    for _, t in pairs(self.obstacleTiles) do
+    for i, t in pairs(self.obstacleTiles) do
         if tiles_overlap(tile, t) then
             tileIsAvailable = true
 
