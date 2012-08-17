@@ -11,6 +11,7 @@ function Room:init(args)
     self.bricks = {}
     self.exits = {}
     self.freeTiles = {}
+    self.heiroglyphs = {}
     self.items = {}
     self.sprites = {}
     self.turrets = {}
@@ -197,6 +198,21 @@ function Room:draw_bricks()
 
     --love.graphics.setColor(WHITE)
     love.graphics.draw(self.brickBatch, 0, 0)
+
+    self:draw_heiroglyphs()
+end
+
+function Room:draw_heiroglyphs()
+    for _, h in pairs(self.heiroglyphs) do
+        if tile_in_table(h.position, self.fov) then
+            alpha = LIGHT
+        else
+            alpha = DARK
+        end
+        love.graphics.setColor(255, 255, 255, alpha)
+
+        h:draw()
+    end
 end
 
 function Room:draw_messages()
@@ -236,7 +252,9 @@ function Room:generate_next_piece()
         -- Free up the memory used by the roomBuilder
         --self.roomBuilder = nil
 
-        --print('generated room ' .. self.index)
+        if DEBUG then
+            print('generated room ' .. self.index)
+        end
 
         -- Flag that room is generated
         return true

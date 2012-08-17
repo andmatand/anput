@@ -4,8 +4,8 @@ Outside = class('Outside')
 
 function Outside:init()
     self.museum = {
-        avatar = new_image('museum-avatar.png'),
-        image = new_image('museum.png'),
+        avatar = outsideImg.museum.avatar,
+        image = outsideImg.museum.image,
         position = {x = 3, y = 9}
     }
     self.museum.draw =
@@ -15,7 +15,7 @@ function Outside:init()
         end
 
     self.temple = {
-        image = new_image('temple.png'),
+        image = outsideImg.temple.image,
         position = {x = 14, y = 9}
     }
 

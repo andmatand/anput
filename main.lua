@@ -2,12 +2,6 @@ require('util.oo')
 require('class.sound')
 require('class.wrapper')
 
-function new_image(filename)
-    img = love.graphics.newImage('res/img/' .. filename)
-    --img:setFilter('nearest', 'nearest')
-    return img
-end
-
 function cga_print(text, x, y, options)
     -- Set default options
     options = options or {}
@@ -110,6 +104,12 @@ function love.load()
     FONT_W = 8
     FONT_H = 8
 
+    local function new_image(filename)
+        img = love.graphics.newImage('res/img/' .. filename)
+        --img:setFilter('nearest', 'nearest')
+        return img
+    end
+
     -- Set default image fileter to show ALL the pixels
     love.graphics.setDefaultImageFilter('nearest', 'nearest')
 
@@ -157,6 +157,19 @@ function love.load()
     -- Verbs
     dropImg = new_image('drop.png')
     useImg = new_image('use.png')
+
+    -- Heiroglyphs
+    HEIROGLYPH_IMAGE = {I = new_image('heiroglyphs/I.png'),
+                        NP = new_image('heiroglyphs/NP.png'),
+                        W = new_image('heiroglyphs/W.png'),
+                        T = new_image('heiroglyphs/T.png'),
+                        goddess = new_image('heiroglyphs/goddess.png')}
+
+    -- Outside
+    outsideImg = {}
+    outsideImg.museum = {image = new_image('museum.png'),
+                         avatar = new_image('museum-avatar.png')}
+    outsideImg.temple = {image = new_image('temple.png')}
 
     -- Create image data for a brick (a magenta rectangle)
     local brickImgData = love.image.newImageData(upscale_x(1),

@@ -26,6 +26,7 @@ function Map:generate()
 
     self:add_secret_passages()
     self:add_required_objects()
+    self:add_heiroglyphs()
 
     return self.rooms
 end
@@ -160,6 +161,11 @@ function Map:add_branches(path)
     return branches
 end
 
+function Map:add_heiroglyphs()
+    -- Add INPWT to the first room
+    self.rooms[1].requiredHeiroglyphs = {{'I', 'NP', 'W', 'T', 'goddess'}}
+end
+
 function Map:draw(currentRoom)
     self.display:draw(currentRoom)
 end
@@ -214,6 +220,7 @@ function Map:generate_path()
     -- Plot path from src to dest through obstacles
     pf = PathFinder(src, dest, self.obstacles, nil, {bounds = false})
     path = pf:plot()
+    path[1].firstRoom = true
     path[#path].finalRoom = true
 
     return path

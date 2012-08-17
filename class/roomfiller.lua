@@ -1,3 +1,4 @@
+require('class.heiroglyph')
 require('class.item')
 require('class.monster')
 require('class.turret')
@@ -29,11 +30,13 @@ end
 function RoomFiller:fill_next_step()
     if self:add_required_objects() then
         if self:add_internal_bricks() then
-            if self:add_turrets() then
-                if self:add_monsters() then
-                    if self:add_items() then
-                        -- Flag that room is done being filled
-                        return true
+            if self:add_heiroglyphs() then
+                if self:add_turrets() then
+                    if self:add_monsters() then
+                        if self:add_items() then
+                            -- Flag that room is done being filled
+                            return true
+                        end
                     end
                 end
             end
@@ -42,6 +45,105 @@ function RoomFiller:fill_next_step()
 
     -- Flag that room is not yet done being filled
     return false
+end
+
+function RoomFiller:add_heiroglyphs()
+    if self.addedHeiroglyphs then
+        return true
+    end
+
+    if self.room.requiredHeiroglyphs then
+        for _, rh in pairs(self.room.requiredHeiroglyphs) do
+            self:position_heiroglyph(rh)
+        end
+    end
+
+    self.addedHeiroglyphs = true
+    return false
+end
+
+function RoomFiller:position_heiroglyph(letters)
+    local goodBricks = {}
+    for _, b in pairs(self.room.bricks) do
+        local ok = false
+
+        for _, ft in pairs(self.room.freeTiles) do
+            if ft.x == b.x and ft.y == b.y + 1 then
+                ok = true
+                break
+            end
+        end
+
+        -- If this brick has a freeTile below it
+        if ok then
+            table.insert(goodBricks, b)
+        end
+    end
+
+    -- Find a long enough row of bricks
+    while #goodBricks > 0 do
+        brick = goodBricks[math.random(1, #goodBricks)]
+        print('starting brick: ' .. brick.x, brick.y)
+        local bricksInARow = {brick}
+        local previousBrick = brick
+        local removeBricks = false
+        local dir = 4
+        repeat
+            local foundBrick = false
+            for _, b2 in pairs(goodBricks) do
+                -- If this other brick is 1 over in the direction we are
+                -- searching
+                if tiles_overlap(b2, add_direction(previousBrick, dir)) then
+                    if dir == 4 then
+                        table.insert(bricksInARow, 1, b2)
+                    elseif dir == 2 then
+                        table.insert(bricksInARow, b2)
+                    end
+
+                    foundBrick = true
+                    previousBrick = b2
+                    break
+                end
+            end
+
+            if not foundBrick then
+                if dir == 4 then
+                    -- Switch directions
+                    dir = 2
+                    previousBrick = brick
+                elseif #bricksInARow < #letters then
+                    removeBricks = true
+                end
+            end
+
+            if #bricksInARow == #letters then
+                for i, b in ipairs(bricksInARow) do
+                    table.insert(self.room.heiroglyphs,
+                                 Heiroglyph(b:get_position(), letters[i]))
+                end
+                removeBricks = true
+
+                -- Don't add any more heiroglyphs
+                goodBricks = {}
+                break
+            end
+
+            if removeBricks then
+                -- Remove the bricks we found from future consideration
+                for _, b in pairs(bricksInARow) do
+                    for i, gb in pairs(goodBricks) do
+                        if tiles_overlap(gb, b) then
+                            table.remove(goodBricks, i)
+                            break
+                        end
+                    end
+                end
+                bricksInARow = {}
+
+                break
+            end
+        until #goodBricks == 0
+    end
 end
 
 function RoomFiller:add_items()
