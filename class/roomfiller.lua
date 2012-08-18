@@ -83,7 +83,7 @@ function RoomFiller:position_heiroglyph(letters)
     -- Find a long enough row of bricks
     while #goodBricks > 0 do
         brick = goodBricks[math.random(1, #goodBricks)]
-        print('starting brick: ' .. brick.x, brick.y)
+
         local bricksInARow = {brick}
         local previousBrick = brick
         local removeBricks = false
