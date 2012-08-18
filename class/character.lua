@@ -14,7 +14,7 @@ Character = class('Character', Sprite)
 function Character:init()
     Sprite.init(self)
 
-    self.frame = 1
+    self.frameHoldTimer = {delay = 2, value = 0}
 
     self.health = 100
     self.hurtTimer = love.timer.getTime()
@@ -147,7 +147,7 @@ function Character:direction_to(position)
 end
 
 function Character:draw(pos, rotation)
-    if not self.images then
+    if not self.currentImage then
         return
     end
 
@@ -157,24 +157,6 @@ function Character:draw(pos, rotation)
     else
         position = {x = upscale_x(self.position.x),
                     y = upscale_y(self.position.y)}
-    end
-
-    -- Determine which image of this character to draw
-    if (self.images.moving and
-        (self.ai.path.nodes or self.moved or
-         self.action == AI_ACTION.flee)) then
-        self.currentImage = self.images.moving
-    elseif (self.images.sword and
-            self.armory:get_current_weapon_name() == 'sword') then
-        self.currentImage = self.images.sword
-    elseif (self.images.bow and
-            self.armory:get_current_weapon_name() == 'bow') then
-        self.currentImage = self.images.bow
-    elseif (self.images.staff and
-            self.armory:get_current_weapon_name() == 'staff') then
-        self.currentImage = self.images.staff
-    else
-        self.currentImage = self.images.default
     end
 
     if self.flashTimer == 0 then
@@ -591,6 +573,39 @@ function Character:update()
         -- Flash if hurt
         self.flashTimer = 2
         self.hurt = false
+    end
+
+    self.oldImage = self.currentImage
+
+    -- Determine which image of this character to draw
+    if self.images.step and self.moved then
+        self.currentImage = self.images.step
+    elseif self.images.dodge and self.ai.path.action == AI_ACTION.dodge then
+        self.currentImage = self.images.dodge
+    elseif (self.images.walk and self.ai.path.nodes) then
+        self.currentImage = self.images.walk
+    elseif (self.images.sword and
+            self.armory:get_current_weapon_name() == 'sword') then
+        self.currentImage = self.images.sword
+    elseif (self.images.bow and
+            self.armory:get_current_weapon_name() == 'bow') then
+        self.currentImage = self.images.bow
+    elseif (self.images.staff and
+            self.armory:get_current_weapon_name() == 'staff') then
+        self.currentImage = self.images.staff
+    else
+        -- Hold the frame before going back to the default image
+        if self.frameHoldTimer.value > 0 then
+            self.frameHoldTimer.value = self.frameHoldTimer.value - 1
+        else
+            self.currentImage = self.images.default
+        end
+    end
+
+    -- If we changed images
+    if self.currentImage ~= self.oldImage then
+        -- Start the frame-hold timer
+        self.frameHoldTimer.value = self.frameHoldTimer.delay
     end
 end
 
