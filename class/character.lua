@@ -186,17 +186,9 @@ function Character:draw(pos, rotation)
 
         if not self.stepped then
             if self.dir == 2 then
-                if instanceOf(Monster, self) then
-                    self.mirrored = true
-                else
-                    self.mirrored = false
-                end
+                self.mirrored = false
             elseif self.dir == 4 then
-                if instanceOf(Monster, self) then
-                    self.mirrored = false
-                else
-                    self.mirrored = true
-                end
+                self.mirrored = true
             end
         end
 
