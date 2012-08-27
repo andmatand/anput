@@ -33,6 +33,28 @@ function direction_to(from, to)
     end
 end
 
+function directions_to(from, to)
+    local dirs = {}
+    if to.y < from.y then
+        -- North
+        table.insert(dirs, 1)
+    end
+    if to.x > from.x then
+        -- East
+        table.insert(dirs, 2)
+    end
+    if to.y > from.y then
+        -- South
+        table.insert(dirs, 3)
+    end
+    if to.x < from.x then
+        -- South
+        table.insert(dirs, 4)
+    end
+
+    return dirs
+end
+
 -- Returns a table of adjacent tile positions
 function adjacent_tiles(tile, options)
     local options = options or {}

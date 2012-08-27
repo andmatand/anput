@@ -6,7 +6,7 @@ wizard.images = playerImg
 wizard.color = CYAN
 
 -- AI
-wizard.aiDelay = 1
+wizard.ai.choiceTimer.delay = .5
 wizard.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
 wizard.ai.level.chase = {dist = 2, prob = 10, delay = .1}
 wizard.ai.level.shoot = {dist = 10, prob = 10, delay = .25}

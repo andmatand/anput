@@ -2,11 +2,12 @@ require('util.tile')
 
 AI = class('AI')
 
-AI_ACTION = {dodge = 1,  -- Dodge a sprite (if it's coming at us)
-             flee = 2,   -- Flee from an enemy
-             chase = 3,  -- Chase an enemy
-             explore = 4,   -- Walk around to try to find something interesting
-             shoot = 5}  -- Shoot (if a target is lined up)
+AI_ACTION = {dodge = 'dodge',     -- Dodge a sprite (if it's coming at us)
+             flee = 'flee',       -- Flee from an enemy
+             chase = 'chase',     -- Chase an enemy
+             explore = 'explore', -- Walk around to try to find something
+                                  -- interesting
+             shoot = 'shoot'}     -- Shoot (if a target is lined up)
 
 function AI:init(owner)
     self.owner = owner
@@ -15,12 +16,14 @@ function AI:init(owner)
 
     -- Default AI levels
     self.level = {}
-    self.level.chase = {dist = nil, prob = nil, target = nil, delay = 1}
-    self.level.dodge = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.chase   = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.dodge   = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.explore = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.flee = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.loot = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.shoot = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.flee    = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.loot    = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.shoot   = {dist = nil, prob = nil, target = nil, delay = nil}
+
+    self.choiceTimer = {value = 0, delay = 0}
 
     self.exploredPositions = {}
 end
@@ -54,17 +57,15 @@ function AI:chase(target)
     self.path.target = target
 
     -- Start following the path
-    self:follow_path(true)
+    --self:follow_path()
 end
 
 function AI:choose_action()
     -- Go through each of our actions and roll the dice
     for action, properties in pairs(self.level) do
-        local ok = false
-
         -- If this action is not permanently disabled
         if properties.prob then
-            if math.random(properties.prob, 10) == 10 or force then
+            if math.random(properties.prob, 10) == 10 then
                 if self:do_action(action) then
                     return true
                 end
@@ -76,11 +77,11 @@ function AI:choose_action()
 end
 
 function AI:do_action(action, force)
-    if not force then
-        if not self:waited_to(action) then
-            return false
-        end
-    end
+    --if not force then
+    --    if not self:waited_to(action) then
+    --        return false
+    --    end
+    --end
 
     local target
 
@@ -119,7 +120,7 @@ function AI:do_action(action, force)
             self:dodge(target)
             return true
         end
-    elseif action == 'flee' then
+    elseif action == 'flee' and not self.path.nodes then
         target = self:find_enemy()
         if target and self:target_in_range(target, action) then
             self:flee_from(target)
@@ -129,10 +130,13 @@ function AI:do_action(action, force)
         target = self:find_item()
         if (target and self:target_in_range(target, action) and
             self:should_follow(target)) then
-            self:chase(target)
+            self:plot_path(target:get_position())
+            self.path.action = AI_ACTION.loot
             return true
         end
-    elseif action == 'explore' then
+    elseif action == 'explore' and not self.path.nodes then
+        -- Try to chase or loot first; only explore if there's nothing else to
+        -- do
         if self:do_action('chase', true) then
             return true
         elseif self:do_action('loot', true) then
@@ -141,17 +145,18 @@ function AI:do_action(action, force)
             target = self:find_exit()
 
             if target and self:target_in_range(target, action) then
-                self:chase(target)
-                return true
+                self:plot_path(target:get_position())
             else
                 if self.owner.tag then
                     print('AI: exploring')
                 end
-                self:chase(self:find_random_position())
-                return true
+                self:plot_path(self:find_random_position())
             end
+
+            self.path.action = AI_ACTION.explore
+            return true
         end
-    elseif action == 'shoot' then
+    elseif action == 'shoot' and self:waited_to(action) then
         -- Check if there's an enemy in our sights we should shoot
         for _, c in pairs(self.owner.room:get_characters()) do
             if c.team ~= self.owner.team then
@@ -406,18 +411,35 @@ function AI:get_time()
     return self.owner.room.game.time
 end
 
-function AI:plot_path(dest)
+function AI:plot_path(dest, action)
+    --if self.path.destination then
+    --    if tiles_overlap(dest, self.path.destination) then
+    --        self.path.nodes = nil
+    --        return false
+    --    end
+    --end
+
+    -- Cancel any previous steps this turn
+    self.owner:step()
+
+    self.path.action = action
     if self.owner.tag then
         print('AI: finding path to', dest.x, dest.y)
     end
 
     self.path.nodes = self.owner.room:plot_path(self.owner.position, dest,
                                                 self.owner.team)
+    if not self.path.nodes then
+        return false
+    end
+
     self.path.destination = {x = dest.x, y = dest.y}
 
     if self.owner.tag and self.path.nodes then
         print('AI: new path\'s length: ', #self.path.nodes)
     end
+
+    return true
 end
 
 function AI:find_projectile()
@@ -445,43 +467,71 @@ function AI:find_projectile()
     return closestProjectile
 end
 
-function AI:flee_from(sprite)
-    if not self:waited_to('flee') then
-        return false
-    end
+-- Find a diagonal position away from the threat
+function AI:flee_from(threat)
+    local tiles = copy_table(self.owner.room.freeTiles)
 
-    local currentDistance = manhattan_distance(self.owner.position,
-                                               sprite.position)
-    local neighborTiles = find_neighbor_tiles(self.owner.position,
-                                              self.owner.room.bricks,
-                                              {diagonals = false})
+    -- Find directions that would take us closer to the threat
+    local dirsToThreat = directions_to(self.owner:get_position(),
+                                       threat:get_position())
 
-    -- Iterate through our neighboring tiles
-    for _, n in pairs(neighborTiles) do
-        -- If this tile is not occupied by a brick
-        if not n.occupied then
-            -- If this tile is farther away from the sprite than our current
-            -- position
-            if manhattan_distance(n, sprite.position) > currentDistance then
-                self.owner:step_toward(n)
-                return true
-            end
+    -- Add any directions that wouldn't take us closer to the threat
+    local dirs = {}
+    print('flee: available directions:')
+    for i = 1, 4 do
+        if not value_in_table(i, dirsToThreat) then
+            table.insert(dirs, i)
+            print('  ' .. i)
         end
     end
+
+    -- Pick a random valid direction in which to find a clear straight line
+    local testTile = self.owner:get_position()
+    local prevTile
+    local dist = 0
+    local movements = 0
+    while #dirs > 0 and movements < 2 do
+        local index = math.random(1, #dirs)
+        local dir = dirs[index]
+
+        repeat
+            prevTile = testTile
+            testTile = add_direction(testTile, dir)
+            dist = dist + 1
+
+            if self.owner.monsterType == MONSTER_TYPE.scarab then
+                -- Randomly stop early and shorten the path, to look more
+                -- erratic like a bug
+                if dist >= 3 then
+                    if math.random(1, 4) == 1 then
+                        break
+                    end
+                end
+            end
+        until not self.owner.room:tile_walkable(testTile)
+        dist = dist - 1
+        testTile = prevTile
+
+        -- Remove this direction from further consideration
+        table.remove(dirs, index)
+
+        movements = movements + 1
+    end
+    if dist >= 1 then
+        self:plot_path(prevTile)
+        self.path.action = AI_ACTION.flee
+        return true
+    end
+
+    self.owner:step(dirs[1])
 
     return false
 end
 
 function AI:follow_path(force)
-    if self.path.action == AI_ACTION.chase then
-        if not force then
-            if not self:waited_to('chase') then
-                return false
-            end
-        end
-    elseif self.path.action == AI_ACTION.dodge then
-        if not force then
-            if not self:waited_to('dodge') then
+    if not force then
+        if self.path.action then
+            if not self:waited_to(self.path.action) then
                 return false
             end
         end
@@ -647,7 +697,8 @@ function AI:update()
                     elseif self:do_action('loot', true) then
                         self.choseAction = true
                     else
-                        self:chase(self:find_random_position())
+                        self:plot_path(self:find_random_position())
+                        self.path.action = AI_ACTION.explore
                         self.choseAction = true
                     end
                 --else
@@ -667,7 +718,8 @@ function AI:update()
 
     -- Check if we should dodge a Player on our team walking at us
     for _, s in pairs(self.owner.room.sprites) do
-        if instanceOf(Player, s) and s.team == self.owner.team then
+        --if instanceOf(Player, s) and s.team == self.owner.team then
+        if s.team == self.owner.team then
             if s:will_hit(self.owner) then
                 self:dodge(s)
                 self.choseAction = true
@@ -676,14 +728,21 @@ function AI:update()
     end
 
     if not self.choseAction then
-        self:choose_action()
-        self.choseAction = true
+        if self:waited_to_choose() then
+            self:choose_action()
+            self.choseAction = true
+        end
     end
 
     self:update_timers()
 end
 
 function AI:update_timers()
+    -- Update the choice delay timer
+    if self:get_time() >= self.choiceTimer.value + self.choiceTimer.delay then
+        self.choiceTimer.value = self:get_time()
+    end
+
     -- Update the delay timers for each action
     for action, properties in pairs(self.level) do
         if properties.delay then
@@ -703,6 +762,14 @@ function AI:waited_to(action)
 
     if (self:get_time() >= self.level[action].timer +
                                 self.level[action].delay) then
+        return true
+    else
+        return false
+    end
+end
+
+function AI:waited_to_choose()
+    if self:get_time() >= self.choiceTimer.value + self.choiceTimer.delay then
         return true
     else
         return false

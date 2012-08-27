@@ -14,7 +14,7 @@ Character = class('Character', Sprite)
 function Character:init()
     Sprite.init(self)
 
-    self.frameHoldTimer = {delay = 2, value = 0}
+    self.frameHoldTimer = {delay = 3, value = 0}
 
     self.health = 100
     self.hurtTimer = love.timer.getTime()
@@ -521,11 +521,18 @@ function Character:shoot(dir)
         return false
     else
         self.room:add_object(newProjectile)
+        self.shot = true
         return true
     end
 end
 
 function Character:step(dir)
+    if not dir then
+        self.velocity.x = 0
+        self.velocity.y = 0
+        self.stepped = false
+    end
+
     -- If we just attacked in this direction
     if self.attackedDir == dir then
         return
@@ -563,8 +570,6 @@ function Character:step_toward(dest)
 end
 
 function Character:update()
-    self.stepped = false
-
     if self.flashTimer > 0 then
         self.flashTimer = self.flashTimer - 1
     end
@@ -578,11 +583,11 @@ function Character:update()
     self.oldImage = self.currentImage
 
     -- Determine which image of this character to draw
-    if self.images.step and self.moved then
-        self.currentImage = self.images.step
+    if self.images.shoot and self.shot then
+        self.currentImage = self.images.shoot
     elseif self.images.dodge and self.ai.path.action == AI_ACTION.dodge then
         self.currentImage = self.images.dodge
-    elseif (self.images.walk and self.ai.path.nodes) then
+    elseif (self.images.walk and (self.ai.path.nodes or self.stepped)) then
         self.currentImage = self.images.walk
     elseif (self.images.sword and
             self.armory:get_current_weapon_name() == 'sword') then
@@ -607,6 +612,9 @@ function Character:update()
         -- Start the frame-hold timer
         self.frameHoldTimer.value = self.frameHoldTimer.delay
     end
+
+    self.stepped = false
+    self.shot = false
 end
 
 function Character:visited_room(room)

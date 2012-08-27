@@ -128,7 +128,7 @@ function love.load()
     -- Monsters
     monsterImg = {}
     monsterImg.scarab = {default = new_image('scarab.png'),
-                         step = new_image('scarab-step.png')}
+                         walk = new_image('scarab-walk.png')}
     monsterImg.bird = {default = new_image('bird.png'),
                        dodge = new_image('bird-dodge.png'),
                        walk = new_image('bird-walk.png')}
@@ -136,6 +136,8 @@ function love.load()
                       walk = new_image('cat-walk.png')}
     monsterImg.mummy = {default = new_image('mummy.png'),
                         walk = new_image('mummy-walk.png')}
+    monsterImg.archer = {default = new_image('archer.png'),
+                         shoot = new_image('archer-shoot.png')}
     monsterImg.ghost = {default = new_image('ghost.png')}
 
     -- Projectiles

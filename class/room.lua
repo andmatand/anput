@@ -372,10 +372,10 @@ function Room:plot_path(src, dest, characterTeam)
     pf = PathFinder(src, dest, hotLava, nil, {smooth = true})
     path = pf:plot()
 
-    -- Remove first node from path
-    table.remove(path, 1)
-
     if #path > 0 then
+        -- Remove first node from path
+        table.remove(path, 1)
+
         return path
     else
         return nil
