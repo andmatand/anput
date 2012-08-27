@@ -6,6 +6,7 @@ Weapon = class('Weapon', Item)
 
 -- Weapon templates
 Weapon.static.templates = {
+    claws = {name = 'claws', damage = 15},
     sword = {name = 'sword', order = 1, damage = 15},
     bow = {name = 'bow', order = 2, ammo = 0, cost = 1,
            projectileClass = Arrow},

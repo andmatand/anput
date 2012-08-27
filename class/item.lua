@@ -5,10 +5,11 @@ Item = class('Item')
 ITEM_TYPE = {elixir = 1,
              arrow = 2,
              shinything = 3,
-             sword = 4,
-             bow = 5,
-             staff = 6,
-             ankh = 7}
+             claws = 4,
+             sword = 5,
+             bow = 6,
+             staff = 7,
+             ankh = 8}
 ITEM_NAME = {'ELIXIR',
              'ARROW',
              'SHINY THING',

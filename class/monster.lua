@@ -53,7 +53,9 @@ function Monster:init(monsterType)
         self.images = monsterImg.bird
         self.health = 20
 
-        self:pick_up(Weapon('sword'))
+        local claws = Weapon('claws')
+        claws.damage = 15
+        self:pick_up(claws)
 
         self.ai.choiceTimer.delay = 1
         self.ai.level.dodge = {dist = 5, prob = 5, delay = .5}
@@ -64,28 +66,36 @@ function Monster:init(monsterType)
         self.images = monsterImg.cat
         self.health = 40
 
-        self:pick_up(Weapon('sword'))
+        local claws = Weapon('claws')
+        claws.damage = 10
+        self:pick_up(claws)
 
-        self.ai.choiceTimer.delay = .5
+        self.ai.choiceTimer.delay = .25
         self.ai.level.dodge = {dist = 7, prob = 7, delay = .2}
-        self.ai.level.chase = {dist = 10, prob = 9, delay = .15}
+        self.ai.level.chase = {dist = 10, prob = 9, delay = .1}
         self.ai.level.loot = {dist = 10, prob = 9, delay = .2}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.mummy then
         self.images = monsterImg.mummy
         self.health = 40
 
-        self:pick_up(Weapon('sword'))
+        local claws = Weapon('claws')
+        claws.damage = 20
+        self:pick_up(claws)
 
         self.ai.choiceTimer.delay = 1
         self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
-        self.ai.level.chase = {dist = 20, prob = 8, delay = .3}
+        self.ai.level.chase = {dist = 20, prob = 8, delay = .2}
         self.ai.level.loot = {dist = 20, prob = 6, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
         self.ai.level.shoot = {dist = 15, prob = 8, delay = .2}
     elseif self.monsterType == MONSTER_TYPE.archer then
         self.images = monsterImg.archer
         self.health = 60
+
+        local claws = Weapon('claws')
+        claws.damage = 15
+        self:pick_up(claws)
 
         local bow = Weapon('bow')
         bow:add_ammo(20)
