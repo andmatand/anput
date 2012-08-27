@@ -155,9 +155,7 @@ function RoomFiller:add_items()
 
     if self.room.isSecret then
         -- Add some goodies
-        --local max = #self.room.freeTiles * .05
-        --if max < 1 then max = 1 end
-        local numGoodies = math.random(1, 5)
+        local numGoodies = math.random(3, 8)
         local goodies = {}
 
         for i = 1, numGoodies do
