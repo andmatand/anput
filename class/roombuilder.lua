@@ -74,6 +74,7 @@ function RoomBuilder:init(room)
 
     self.bricks = {}
     self.occupiedTiles = {}
+    self.midPaths = {}
 end
 
 function RoomBuilder:add_occupied_tile(tile)
@@ -123,7 +124,7 @@ function RoomBuilder:finalize()
     self.room.bricks = self.bricks
     self.room.freeTiles = self.freeTiles
     self.room.midPoint = self.midPoint
-    self.room.midPaths = self.occupiedTiles
+    self.room.midPaths = self.midPaths
 
     -- Mark the room as built
     self.room.isBuilt = true
@@ -201,9 +202,11 @@ function RoomBuilder:plot_midpaths()
 
         local tiles = cheap_line(src, self.midPoint)
 
-        -- Append these coordinates to list of illegal coordinates
+        -- Append these tiles to occupiedTiles and midPaths
         for _, t in pairs(tiles) do
             self:add_occupied_tile({x = t.x, y = t.y})
+            table.insert(self.midPaths,
+                         {x = t.x, y = t.y})
         end
 
         --if DEBUG then
@@ -263,13 +266,13 @@ function RoomBuilder:plot_walls()
         local ff = FloodFiller(src, self.occupiedTiles)
         e.freeTiles = ff:flood()
 
-        for k, v in pairs(self.occupiedTiles) do
-            for k2, v2 in pairs(self.occupiedTiles) do
-                if k ~= k2 and v.x == v2.x and v.y == v2.y then
-                    print('* redundant hotLava: ' .. v.x, v.y)
-                end
-            end
-        end
+        --for k, v in pairs(self.occupiedTiles) do
+        --    for k2, v2 in pairs(self.occupiedTiles) do
+        --        if k ~= k2 and v.x == v2.x and v.y == v2.y then
+        --            print('* redundant hotLava: ' .. v.x, v.y)
+        --        end
+        --    end
+        --end
 
         -- Remove dest from freeTiles
         for j, t in pairs(e.freeTiles) do
