@@ -361,9 +361,6 @@ function Game:update(dt)
 
     self:input()
 
-    -- Store which room player was in before this frame
-    local oldRoom = self.player.room
-
     -- Update the current room
     self.currentRoom:update()
 
@@ -392,7 +389,7 @@ function Game:update(dt)
     end
 
     -- If the player entered a different room
-    if self.player.room and self.player.room ~= oldRoom then
+    if self.player.room and self.player.room ~= self.currentRoom then
         -- If the player is outside the temple
         if self.player.room == self.outside then
             -- Add to the total number of times the player has walked outside

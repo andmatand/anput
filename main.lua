@@ -218,6 +218,15 @@ function love.update(dt)
     wrapper:update(dt)
 end
 
+function jump_to_room(index)
+    if index >= 1 and index <= #wrapper.game.rooms then
+        local newRoom = wrapper.game.rooms[index]
+        wrapper.game.player:move_to_room(newRoom)
+        wrapper.game.player:set_position(newRoom.midPoint)
+        wrapper.game:switch_to_room(newRoom)
+    end
+end
+
 function love.keypressed(key, unicode)
     if key == 'n' and (love.keyboard.isDown('lctrl') or
                        love.keyboard.isDown('rctrl')) then
@@ -231,6 +240,10 @@ function love.keypressed(key, unicode)
         love.event.quit()
     elseif key == 'f1' then
         DEBUG = not DEBUG
+    elseif key == 'j' and love.keyboard.isDown('lctrl') then
+        jump_to_room(wrapper.game.currentRoom.index + 1)
+    elseif key == 'k' and love.keyboard.isDown('lctrl') then
+        jump_to_room(wrapper.game.currentRoom.index - 1)
     else
         wrapper:keypressed(key)
     end
@@ -241,6 +254,12 @@ function love.keyreleased(key, unicode)
 end
 
 function love.draw()
+    --if wrapper.game.player then
+    --    sx = ((ROOM_W / 2) - wrapper.game.player.position.x) * .002
+    --    sy = ((ROOM_H / 2) - wrapper.game.player.position.y) * .002
+    --    love.graphics.shear(sx, sy)
+    --end
+
     if false then
         -- DEBUG show map obstacles
         for _,o in pairs(game.map.obstacles) do
