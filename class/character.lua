@@ -18,6 +18,7 @@ function Character:init()
 
     self.health = 100
     self.hurtTimer = love.timer.getTime()
+    self.usedMagicTimer = love.timer.getTime()
     self.flashTimer = 0
     self.team = 1 -- Good guys
     self.isCorporeal = true
@@ -56,6 +57,30 @@ function Character:add_health(amount)
     end
 
     return false
+end
+
+function Character:add_magic(amount)
+    if not self.magic then
+        return false
+    end
+
+    local oldMagic = self.magic
+    self.magic = self.magic + amount
+
+    if self.magic < 0 then self.magic = 0 end
+    if self.magic > 100 then self.magic = 100 end
+
+    -- If the amount changed
+    if oldMagic ~= self.magic then
+        -- If magic was used
+        if amount < 0 then
+            self.usedMagicTimer = self:get_time()
+        end
+
+        return true
+    else
+        return false
+    end
 end
 
 function Character:add_visited_room(room)
@@ -159,7 +184,7 @@ function Character:draw(pos, rotation)
                     y = upscale_y(self.position.y)}
     end
 
-    if self.flashTimer == 0 then
+    if self.flashTimer == 0 or self.room.game.paused then
         if self.color then
             love.graphics.setColor(self.color)
         else
@@ -271,25 +296,73 @@ function Character:drop_item(item)
     if instanceOf(Weapon, item) then
         -- Remove it from our armory
         self.armory:remove(item)
+
+        -- Clear the frame hold timer; we want to appear unarmed right away if
+        -- this was our last weapon
+        self.frameHoldTimer.value = 0
     end
 
     -- Add the item to the room
     self.room:add_object(item)
 end
 
+function Character:get_time()
+    return self.room.game.time
+end
+
 function Character:has_item(itemType, quantity)
     return self.inventory:has_item(itemType, quantity)
+end
+
+function Character:has_melee_weapon()
+    for _, w in pairs(self.armory.weapons) do
+        if w.meleeDamage then
+            return true
+        end
+    end
+
+    return false
+end
+
+function Character:has_ranged_weapon()
+    for _, w in pairs(self.armory.weapons) do
+        if w.projectileClass then
+            return true
+        end
+    end
+
+    return false
+end
+
+function Character:has_usable_weapon(againstCharacter)
+    for _, w in pairs(self.armory.weapons) do
+        if w.meleeDamage or (w.ammoCost and w:get_ammo() >= w.ammoCost) then
+            local ok = true
+
+            if againstCharacter then
+                if not w:is_effective_against(againstCharacter) then
+                    ok = false
+                end
+            end
+
+            if ok then
+                return true
+            end
+        end
+    end
+
+    return false
 end
 
 function Character:hit(patient)
     -- Damage other characters with melee weapons
     if (instanceOf(Character, patient) and -- We hit a character
         self.armory.currentWeapon and -- We have a current weapon
-        self.armory.currentWeapon.damage and -- Our weapon does melee damage
-        self.team ~= patient.team) then -- Patient is on a different team
+        self.armory.currentWeapon.meleeDamage and -- It's a melee weapon
+        self:is_enemies_with(patient)) then -- Patient is an enemy
         -- If the patient receives our hit
         if patient:receive_hit(self) then
-            patient:receive_damage(self.armory.currentWeapon.damage, self)
+            patient:receive_damage(self.armory.currentWeapon.meleeDamage, self)
             self.attackedDir = self.dir
         else
             return false
@@ -322,6 +395,14 @@ function Character:is_audible()
     end
 
     return Character.super.is_audible(self)
+end
+
+function Character:is_enemies_with(character)
+    if character.team ~= self.team then
+        return true
+    else
+        return false
+    end
 end
 
 function Character:pick_up(item)
@@ -401,7 +482,7 @@ function Character:receive_damage(amount, agent)
 
     self.health = self.health - amount
     self.hurt = true
-    self.hurtTimer = love.timer.getTime()
+    self.hurtTimer = self:get_time()
 
     if self.health <= 0 then
         self.health = 0
@@ -467,14 +548,17 @@ function Character:recharge()
     else
         self.rechargeTimer.value = self.rechargeTimer.delay
 
-        -- If we have a staff
-        if self.armory.weapons.staff then
-            -- Recharge it
-            self.armory.weapons.staff:add_ammo(1)
+        -- If we have magic
+        if self.magic then
+            -- If it's been > 2 seconds since we used magic
+            if love.timer.getTime() > self.usedMagicTimer + 2 then
+                -- Recharge magic
+                self:add_magic(1)
+            end
         end
 
         -- If it's been > 2 seconds since we were hurt
-        if love.timer.getTime() > self.hurtTimer + 2 then
+        if self:get_time() > self.hurtTimer + 2 then
             -- Recharge health
             self:add_health(1)
         end
@@ -581,7 +665,19 @@ function Character:update()
     end
 
     self.oldImage = self.currentImage
+    self:update_image()
 
+    -- If we changed images
+    if self.currentImage ~= self.oldImage then
+        -- Start the frame-hold timer
+        self.frameHoldTimer.value = self.frameHoldTimer.delay
+    end
+
+    self.stepped = false
+    self.shot = false
+end
+
+function Character:update_image()
     -- Determine which image of this character to draw
     if self.images.shoot and self.shot then
         self.currentImage = self.images.shoot
@@ -606,15 +702,6 @@ function Character:update()
             self.currentImage = self.images.default
         end
     end
-
-    -- If we changed images
-    if self.currentImage ~= self.oldImage then
-        -- Start the frame-hold timer
-        self.frameHoldTimer.value = self.frameHoldTimer.delay
-    end
-
-    self.stepped = false
-    self.shot = false
 end
 
 function Character:visited_room(room)

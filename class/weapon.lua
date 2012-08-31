@@ -6,12 +6,12 @@ Weapon = class('Weapon', Item)
 
 -- Weapon templates
 Weapon.static.templates = {
-    claws = {name = 'claws', damage = 15},
-    sword = {name = 'sword', order = 1, damage = 15},
-    bow = {name = 'bow', order = 2, ammo = 0, cost = 1,
+    claws = {name = 'claws', meleeDamage = 15},
+    sword = {name = 'sword', order = 1, meleeDamage = 15},
+    bow = {name = 'bow', order = 2, ammo = 0, ammoCost = 1,
            projectileClass = Arrow},
-    staff = {name = 'staff', order = 3, ammo = 100, maxAmmo = 100, cost = 10,
-             damage = 5, projectileClass = Fireball}
+    staff = {name = 'staff', order = 3, isMagic = true, ammoCost = 10,
+             meleeDamage = 5, projectileClass = Fireball}
     }
 
 function Weapon:init(weaponType)
@@ -26,12 +26,8 @@ function Weapon:init(weaponType)
 end
 
 function Weapon:add_ammo(amount)
-    self.ammo = self.ammo + amount
-
-    if self.maxAmmo ~= nil then
-        if self.ammo > self.maxAmmo then
-            self.ammo = self.maxAmmo
-        end
+    if self.ammo then
+        self.ammo = self.ammo + amount
     end
 end
 
@@ -52,20 +48,37 @@ function Weapon:draw(position)
                        0, SCALE_X, SCALE_Y)
 end
 
-function Weapon:set_projectile_class(c)
-    self.projectileClass = c
+function Weapon:is_effective_against(character)
+    -- If we are not a magic weapon
+    if not self.isMagic then
+        if character.monsterType == MONSTER_TYPE.ghost then
+            return false
+        end
+    end
+
+    return true
 end
 
-function Weapon:set_cost(cost)
-    self.cost = cost
+function Weapon:get_ammo()
+    if self.isMagic then
+        if self.owner then
+            return self.owner.magic
+        end
+    else
+        return self.ammo
+    end
+end
+
+function Weapon:set_projectile_class(c)
+    self.projectileClass = c
 end
 
 function Weapon:shoot(dir)
     if self.projectileClass == nil then
         return false
     else
-        if self.ammo >= self.cost then
-            self.ammo = self.ammo - self.cost
+        if self:get_ammo() >= self.ammoCost then
+            self:use_ammo(self.ammoCost)
             return self.projectileClass(self.owner, dir)
         else
             sound.unable:play()
@@ -82,5 +95,15 @@ function Weapon:use()
         return true
     else
         return false
+    end
+end
+
+function Weapon:use_ammo(amount)
+    if self.isMagic then
+        if self.owner then
+            self.owner:add_magic(-amount)
+        end
+    else
+        self.ammo = self.ammo - amount
     end
 end

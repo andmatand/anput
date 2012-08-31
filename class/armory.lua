@@ -28,6 +28,18 @@ function Armory:add(weapon)
     end
 end
 
+function Armory:get_best_melee_weapon()
+    local best = {meleeDamage = -1, weapon = nil}
+    for _, w in pairs(self.weapons) do
+        if w.meleeDamage > best.meleeDamage then
+            best.meleeDamage = w.meleeDamage
+            best.weapon = w
+        end
+    end
+
+    return best.weapon
+end
+
 function Armory:get_current_weapon_name()
     if self.currentWeapon then
         return self.currentWeapon.name

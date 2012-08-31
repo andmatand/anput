@@ -52,7 +52,7 @@ function StatusBar:draw()
 
     -- Display the ammo for the current weapon
     local w = self.owner.armory.currentWeapon
-    if w and w.ammo then
+    if w and w:get_ammo() then
         -- If this weapon shoots projectiles
         if w.projectileClass then
             x = SCREEN_W - 1
@@ -64,11 +64,12 @@ function StatusBar:draw()
             proj:draw()
         end
 
-        -- If this weapon has a maximum ammo
-        if w.maxAmmo then
+        -- If this weapon is magic
+        if w.isMagic then
             x = x - 8
             -- Draw a progress bar
-            draw_progress_bar({num = w.ammo, max = w.maxAmmo, color = CYAN},
+            draw_progress_bar({num = w:get_ammo(), max = 100,
+                               color = CYAN},
                               upscale_x(x) + SCALE_X,
                               upscale_y(y + .5) - SCALE_Y,
                               upscale_x(8) - (SCALE_X * 2),

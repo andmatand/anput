@@ -248,6 +248,9 @@ function InventoryMenu:update()
             self:move_item_toward(self.dropPosition)
         end
     end
+
+    -- Update the owner's frame
+    self.owner:update_image()
 end
 
 function InventoryMenu:move_item_toward(destination)

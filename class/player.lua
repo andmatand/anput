@@ -10,6 +10,7 @@ function Player:init()
 
     self.images = playerImg
     self.team = 1 -- Good guys
+    self.magic = 100
 
     self.wantsToTrade = false
 end

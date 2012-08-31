@@ -57,7 +57,8 @@ function Monster:init(monsterType)
         claws.damage = 15
         self:pick_up(claws)
 
-        self.ai.choiceTimer.delay = 1
+        self.ai.choiceTimer.delay = .5
+        self.ai.level.attack = {dist = 10, prob = 8, delay = .3}
         self.ai.level.dodge = {dist = 5, prob = 5, delay = .5}
         self.ai.level.chase = {dist = 10, prob = 8, delay = .3}
         self.ai.level.loot = {dist = 10, prob = 2, delay = .5}
@@ -71,6 +72,7 @@ function Monster:init(monsterType)
         self:pick_up(claws)
 
         self.ai.choiceTimer.delay = .25
+        self.ai.level.attack = {dist = 20, prob = 9, delay = .1}
         self.ai.level.dodge = {dist = 7, prob = 7, delay = .2}
         self.ai.level.chase = {dist = 10, prob = 9, delay = .1}
         self.ai.level.loot = {dist = 10, prob = 9, delay = .2}
@@ -78,17 +80,18 @@ function Monster:init(monsterType)
     elseif self.monsterType == MONSTER_TYPE.mummy then
         self.images = monsterImg.mummy
         self.health = 40
+        self.magic = 50
 
         local claws = Weapon('claws')
         claws.damage = 20
         self:pick_up(claws)
 
         self.ai.choiceTimer.delay = 1
+        self.ai.level.attack = {dist = 15, prob = 8, delay = .2}
         self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
         self.ai.level.chase = {dist = 20, prob = 8, delay = .2}
         self.ai.level.loot = {dist = 20, prob = 6, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
-        self.ai.level.shoot = {dist = 15, prob = 8, delay = .2}
     elseif self.monsterType == MONSTER_TYPE.archer then
         self.images = monsterImg.archer
         self.health = 60
@@ -102,25 +105,26 @@ function Monster:init(monsterType)
         self:pick_up(bow)
 
         self.ai.choiceTimer.delay = .5
+        self.ai.level.aim = {dist = 15, prob = 9, delay = .1}
+        self.ai.level.attack = {dist = 15, prob = 9, delay = .1}
         self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
-        self.ai.level.chase = {dist = 20, prob = 8, delay = .15}
+        self.ai.level.chase = {dist = 20, prob = 6, delay = .15}
         self.ai.level.loot = {dist = 20, prob = 6, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
-        self.ai.level.shoot = {dist = 15, prob = 9, delay = .1}
     elseif self.monsterType == MONSTER_TYPE.ghost then
         self.images = monsterImg.ghost
         self.health = 80
+        self.magic = 100
         self.isCorporeal = false
 
         local staff = Weapon('staff')
-        staff:add_ammo(20)
         staff:set_projectile_class(Fireball)
-        self:pick_up(staff, false)
+        self:pick_up(staff)
 
-        self.ai.choiceTimer.delay = .5
+        self.ai.choiceTimer.delay = .25
+        self.ai.level.aim = {dist = 20, prob = 8, delay = .1}
+        self.ai.level.attack = {dist = 20, prob = 8, delay = .3}
         self.ai.level.dodge = {dist = 5, prob = 9, delay = .3}
-        self.ai.level.chase = {dist = 20, prob = 5, delay = .3}
-        self.ai.level.shoot = {dist = 10, prob = 7, delay = .3}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     end
 end

@@ -244,6 +244,12 @@ function love.keypressed(key, unicode)
         jump_to_room(wrapper.game.currentRoom.index + 1)
     elseif key == 'k' and love.keyboard.isDown('lctrl') then
         jump_to_room(wrapper.game.currentRoom.index - 1)
+    elseif key == 'g' and love.keyboard.isDown('lctrl') then
+        -- Give the player some goodies!
+        for i = 1, 7 do
+            local item = Item('shinything')
+            wrapper.game.player:pick_up(item)
+        end
     else
         wrapper:keypressed(key)
     end

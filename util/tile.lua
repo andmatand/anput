@@ -1,6 +1,6 @@
 function add_direction(tile, dir, distance)
     -- Distance defauls to 1
-    local dist = 1 or distance
+    local dist = distance or 1
 
     if dir == 1 then
         -- North
