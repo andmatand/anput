@@ -83,7 +83,8 @@ function AI:aim_at(target)
 end
 
 function AI:attack()
-    if self.owner:has_ranged_weapon() then
+    local rangedWeapon = self.owner.armory:get_best_ranged_weapon()
+    if rangedWeapon then
         -- Check if there's an enemy in our sights we should shoot
         for _, c in pairs(self.owner.room:get_characters()) do
             if self.owner:is_enemies_with(c) then
@@ -92,9 +93,11 @@ function AI:attack()
                         print('AI: shooting')
                     end
 
-                    local dir = self.owner:direction_to(c.position)
+                    -- Switch to the ranged weapon
+                    self.owner.armory:set_current_weapon(rangedWeapon)
 
-                    -- If we successfully shoot
+                    -- Try to shoot
+                    local dir = self.owner:direction_to(c.position)
                     if self.owner:shoot(dir) then
                         self:reset_timer(AI_ACTION.attack)
                         return true
@@ -108,9 +111,13 @@ function AI:attack()
         -- Check if there's an enemy next to us who we can hit
         for _, c in pairs(self.owner.room:get_characters()) do
             if tiles_touching(self.owner:get_position(), c:get_position()) then
-                local newWeapon = self.owner.armory:get_best_melee_weapon()
-                self.owner.armory:set_current_weapon(newWeapon)
+                -- Switch to a melee weapon
+                local weapon = self.owner.armory:get_best_melee_weapon()
+                self.owner.armory:set_current_weapon(weapon)
+
+                -- Walk into the enemy
                 self.owner:step_toward(c:get_position())
+
                 self:reset_timer(AI_ACTION.attack)
                 return true
             end

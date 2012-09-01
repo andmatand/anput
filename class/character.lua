@@ -324,16 +324,6 @@ function Character:has_melee_weapon()
     return false
 end
 
-function Character:has_ranged_weapon()
-    for _, w in pairs(self.armory.weapons) do
-        if w.projectileClass then
-            return true
-        end
-    end
-
-    return false
-end
-
 function Character:has_usable_weapon(againstCharacter)
     for _, w in pairs(self.armory.weapons) do
         if w.meleeDamage or (w.ammoCost and w:get_ammo() >= w.ammoCost) then
@@ -571,19 +561,6 @@ function Character:shoot(dir)
         return false
     end
 
-    -- If we are not a Player, and our current weapon is not of the "shooting"
-    -- variety
-    if (not instanceOf(Player, self) and
-        not self.armory.currentWeapon.projectileClass) then
-        -- Switch to a weapon that can shoot
-        for _, w in pairs(self.armory.weapons) do
-            if w.projectileClass then
-                self.armory:set_current_weapon(w)
-                break
-            end
-        end
-    end
-
     -- If we still don't have a weapon that shoots
     if not self.armory.currentWeapon.projectileClass then
         return false
@@ -600,13 +577,14 @@ function Character:shoot(dir)
     -- Try to create a new projectile
     local newProjectile = self.armory.currentWeapon:shoot(dir)
 
-    -- If this weapon did not (or cannot) shoot
-    if newProjectile == false then
-        return false
-    else
+    -- If the weapon created a projectile
+    if newProjectile then
+        -- Add it to the room
         self.room:add_object(newProjectile)
         self.shot = true
         return true
+    else
+        return false
     end
 end
 

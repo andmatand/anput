@@ -42,6 +42,26 @@ function Armory:get_best_melee_weapon()
     return best.weapon
 end
 
+function Armory:get_best_ranged_weapon()
+    local best = {damage = -1, weapon = nil}
+    for _, w in pairs(self.weapons) do
+        if w.projectileClass then
+            -- Create a test projectile to look at the damage
+            local projectile = w.projectileClass(self.owner)
+
+            -- If this projectile's damage is better than the best, and
+            -- it has enough ammo to shoot
+            if projectile.damage > best.damage and
+               w:get_ammo() > w.ammoCost then
+                best.damage = w.damage
+                best.weapon = w
+            end
+        end
+    end
+
+    return best.weapon
+end
+
 function Armory:get_current_weapon_name()
     if self.currentWeapon then
         return self.currentWeapon.name
