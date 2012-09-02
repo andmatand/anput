@@ -47,6 +47,7 @@ function Monster:init(monsterType)
         self.health = 10
 
         self.ai.choiceTimer.delay = .25
+        self.ai.level.attack = {dist = 10, prob = 5, delay = .3}
         self.ai.level.flee = {dist = 15, prob = 9, delay = 0}
         self.ai.level.loot = {dist = 6, prob = 3, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.bird then
@@ -61,6 +62,7 @@ function Monster:init(monsterType)
         self.ai.level.attack = {dist = 10, prob = 8, delay = .3}
         self.ai.level.dodge = {dist = 5, prob = 5, delay = .5}
         self.ai.level.chase = {dist = 10, prob = 8, delay = .3}
+        self.ai.level.flee = {dist = 15, prob = 9, delay = .3}
         self.ai.level.loot = {dist = 10, prob = 2, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.cat then
@@ -73,8 +75,9 @@ function Monster:init(monsterType)
 
         self.ai.choiceTimer.delay = .25
         self.ai.level.attack = {dist = 20, prob = 9, delay = .1}
-        self.ai.level.dodge = {dist = 7, prob = 7, delay = .2}
         self.ai.level.chase = {dist = 10, prob = 9, delay = .1}
+        self.ai.level.dodge = {dist = 7, prob = 7, delay = .2}
+        self.ai.level.flee = {dist = 15, prob = 9, delay = .1}
         self.ai.level.loot = {dist = 10, prob = 9, delay = .2}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.mummy then
@@ -86,10 +89,11 @@ function Monster:init(monsterType)
         claws.damage = 20
         self:pick_up(claws)
 
-        self.ai.choiceTimer.delay = 1
+        self.ai.choiceTimer.delay = .5
         self.ai.level.attack = {dist = 15, prob = 8, delay = .2}
-        self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
         self.ai.level.chase = {dist = 20, prob = 8, delay = .2}
+        self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
+        self.ai.level.flee = {dist = 15, prob = 9, delay = .2}
         self.ai.level.loot = {dist = 20, prob = 6, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.archer then

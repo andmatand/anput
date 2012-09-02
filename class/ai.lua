@@ -149,12 +149,11 @@ function AI:chase(target)
         self.path.destination = copy_table(self.path.nodes[#self.path.nodes])
 
         self.path.target = target
+        return true
     else
         self:delete_path()
         return false
     end
-
-    return true
 end
 
 function AI:choose_action()
@@ -219,7 +218,8 @@ function AI:do_action(action)
         end
 
         if ok then
-            if self:target_in_range(target, action) then
+            if self:target_in_range(target, action) and
+               not self:is_afraid_of(target) then
                 --if self.owner.tag then
                 --    print('AI: found enemy:', target)
                 --end
@@ -234,7 +234,7 @@ function AI:do_action(action)
             self:dodge(target)
             return true
         end
-    elseif action == 'flee' and not self.path.nodes then
+    elseif action == 'flee' and self.path.action ~= AI_ACTION.flee then
         local threat = self:find_threat()
         if threat and self:target_in_range(threat, action) then
             self:flee_from(threat)
@@ -629,6 +629,7 @@ function AI:follow_path(force)
     end
 
     if not self.path.nodes then
+        self:delete_path()
         return false
     end
 
@@ -707,9 +708,16 @@ function AI:is_afraid_of(threat)
         afraid = true
     end
 
-    -- Check if we have a weapon we can use against the threat
-    if self.owner:has_usable_weapon(threat) then
-        afraid = false
+    if afraid then
+        -- Check if we have a weapon we can use against the threat
+        if self.owner:has_usable_weapon(threat) then
+            afraid = false
+        end
+    end
+
+    -- If we have low health and the threat is armed
+    if self.owner.health <= 25 and threat:has_usable_weapon(self.owner) then
+        afraid = true
     end
 
     return afraid
