@@ -1,28 +1,5 @@
 require('class.toast')
-
-local function draw_progress_bar(barInfo, x, y, w, h)
-    bar = {}
-    bar.x = x + SCALE_X
-    bar.y = y + SCALE_Y
-    bar.w = w - (SCALE_X * 2)
-    bar.h = h - (SCALE_Y * 2)
-    
-    -- Draw border
-    love.graphics.setColor(barInfo.borderColor or WHITE)
-    love.graphics.rectangle('fill', x, y, w, h)
-
-    -- Draw black bar inside
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
-
-    -- Set width of bar
-    bar.w = (barInfo.num * bar.w) / barInfo.max
-    bar.w = math.floor(bar.w / SCALE_X) * SCALE_X
-
-    -- Draw progress bar
-    love.graphics.setColor(barInfo.color)
-    love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
-end
+require('util.graphics')
 
 -- A StatusBar is a horizontal line at the bottom of the screen which displays
 -- health, ammo, etc.
@@ -75,18 +52,18 @@ function StatusBar:draw()
                               upscale_x(8) - (SCALE_X * 2),
                               upscale_y(1) / 2)
         else
-            x = x - string.len(w.ammo)
+            x = x - string.len(w:get_ammo())
             textColor = WHITE
 
             -- If the weapon is out of ammo
-            if w.ammo == 0 then
+            if w:get_ammo() == 0 then
                 -- Flash the number
                 if self.flash.state then
                     textColor = BLACK
                 end
             end
 
-            cga_print(tostring(w.ammo), x, y, {color = textColor})
+            cga_print(tostring(w:get_ammo()), x, y, {color = textColor})
         end
     end
 end

@@ -4,6 +4,7 @@ require('class.inventory')
 require('class.log')
 require('class.mouth')
 require('class.sprite')
+require('util.graphics')
 require('util.tile')
 
 --local DEBUG = true
@@ -17,6 +18,7 @@ function Character:init()
     self.frameHoldTimer = {delay = 3, value = 0}
 
     self.health = 100
+    self.maxHealth = 100
     self.hurtTimer = love.timer.getTime()
     self.usedMagicTimer = love.timer.getTime()
     self.flashTimer = 0
@@ -143,9 +145,7 @@ function Character:die()
             -- If we are a not a player
             if not instanceOf(Player, self) then
                 -- If the weapon is claws
-                if item.itemType == ITEM_TYPE.claws or
-                   -- Or the item is a staff and we are not an NPC
-                   (item.itemType == ITEM_TYPE.staff and not self.name) then
+                if item.itemType == ITEM_TYPE.claws then
                     -- Do not drop it
                     ok = false
                 end
@@ -158,7 +158,7 @@ function Character:die()
     end
 
     -- Drop all items in our inventory
-    self:drop(itemsToDrop)
+    self:drop_items(itemsToDrop)
 end
 
 function Character:direction_to(position)
@@ -212,11 +212,18 @@ function Character:draw(pos, rotation)
                            x, position.y,
                            rotation,
                            sx, SCALE_Y)
+
+        if DEBUG and not instanceOf(Player, self) then
+            -- Put a health bar above the character's head
+            draw_progress_bar({num = self:get_health_percentage(),
+                               max = 100, color = MAGENTA},
+                              position.x, position.y - (SCALE_Y * 3),
+                              upscale_x(1), 12)
+        end
     end
 end
 
--- Drops a table of items, choosing good positions for them
-function Character:drop(items)
+function Character:drop_items(items)
     -- If we are not dead
     if not self.dead then
         -- If we are a player
@@ -225,65 +232,100 @@ function Character:drop(items)
         end
     end
 
-    -- Find all neighboring tiles
-    local neighbors = find_neighbor_tiles(self.position)
+    while #items > 0 do
+        -- Create a group of items which will be dropped in the same spot
+        local itemGroup = {}
 
-    -- Assign positions to the items and add them to the room
-    local i = 0
-    for _, item in pairs(items) do
-        i = i + 1
+        -- Find other items of the same type as the first item
+        for i, item in pairs(items) do
+            -- If this item is of the same type as the first item
+            if item.itemType == items[1].itemType then
+                -- Add it to the group
+                table.insert(itemGroup, item)
+            end
+        end
 
-        if i == 1 and self.dead then
-            -- Position the item where we just died
-            item.position = self.position
+        -- Drop the items in a good position
+        self:drop_item_group(itemGroup)
+
+        -- Remove all the items that were dropped from the items table
+        for _, item in pairs(itemGroup) do
+            remove_value_from_table(item, items)
+        end
+    end
+end
+
+-- Drops a table of items, choosing a good position for them
+function Character:drop_item_group(items)
+    local position
+
+    -- Try a good starting position
+    if self.dead then
+        -- Position the items where we just died
+        position = self.position
+    else
+        -- Position the items on the tile we are facing
+        position = add_direction(self:get_position(), self.dir)
+    end
+
+    repeat
+        -- If this position is not empty
+        if self.room:tile_is_droppoint(position, self) then
+            break
         else
+            -- Forget about this position
+            position = nil
+
+            -- Find all neighboring tiles
+            local neighbors = find_neighbor_tiles(self.position)
+
             -- Make a working copy of neighbors
             local tempNeighbors = copy_table(neighbors)
 
             -- Try to find a free neighboring tile
-            while not item.position and #tempNeighbors > 0 do
+            while #tempNeighbors > 0 do
                 -- Choose a random neighboring tile
-                local neighborIndex = math.random(1, #tempNeighbors)
-                local n = tempNeighbors[neighborIndex]
+                local index = math.random(1, #tempNeighbors)
+                local n = tempNeighbors[index]
 
                 -- If the spot is free
                 if self.room:tile_is_droppoint(n) then
-                    -- Use this position
-                    item.position = {x = n.x, y = n.y}
+                    position = {x = n.x, y = n.y}
                     break
                 else
                     -- Remove it from the working copy of neighbors
-                    table.remove(tempNeighbors, neighborIndex)
+                    table.remove(tempNeighbors, index)
                 end
             end
 
-            -- If the item still doesn't have a position
-            if not item.position then
+            -- If we still don't have a position
+            if not position then
                 -- Make a working copy of neighbors
                 local tempNeighbors = copy_table(neighbors)
 
-                -- Find a neighboring tile which is inside the room
-                while not item.position and #tempNeighbors > 0 do
-                    local neighborIndex = math.random(1, #tempNeighbors)
-                    local n = tempNeighbors[neighborIndex]
+                -- Find a neighboring tile which is inside the room, regardless
+                -- of whether or not it already contains an item
+                while #tempNeighbors > 0 do
+                    local index = math.random(1, #tempNeighbors)
+                    local n = tempNeighbors[index]
 
                     if self.room:tile_in_room(n) then
                         -- Use this position
-                        item.position = {x = n.x, y = n.y}
+                        position = {x = n.x, y = n.y}
                         break
                     else
                         -- Remove it from the working copy of neighbors
-                        table.remove(tempNeighbors, neighborIndex)
+                        table.remove(tempNeighbors, index)
                     end
                 end
             end
         end
+    until position
 
+    -- Assign positions to the items and add them to the room
+    for _, item in pairs(items) do
+        item:set_position(position)
         self:drop_item(item)
-
-        if DEBUG then
-            print('dropped item ' .. i)
-        end
     end
 end
 
@@ -304,6 +346,11 @@ function Character:drop_item(item)
 
     -- Add the item to the room
     self.room:add_object(item)
+end
+
+function Character:get_health_percentage()
+    -- Return health as a percentage of maximum health
+    return (self.health / self.maxHealth) * 100
 end
 
 function Character:get_time()
@@ -411,51 +458,12 @@ function Character:pick_up(item)
     if instanceOf(Weapon, item) then
         -- If we already have this type of weapon
         if self:has_item(item.itemType) then
-            -- If the weapon has ammo
-            if item.ammo and item.ammo > 0 then
-                -- Put the ammo in the instance of that weapon type that we are
-                -- holding
-                self.inventory:get_item(item.itemType):add_ammo(item.ammo)
-
-                -- Remove the ammo from the weapon on the ground
-                item.ammo = 0
-
-                return true
-            end
-            
             -- Don't pick it up
             return false
         end
 
         -- Add it to our armory
         self.armory:add(item)
-
-        -- If it's a bow
-        if item.itemType == ITEM_TYPE.bow then
-            -- Apply any arrows
-            local foundArrow
-            repeat
-                foundArrow = false
-                for _, i in pairs(self.inventory.items) do
-                    if i.itemType == ITEM_TYPE.arrow then
-                        i:use()
-                        foundArrow = true
-
-                        -- Break here because Item:use() alters the inventory's
-                        -- items table
-                        break
-                    end
-                end
-            until not foundArrow
-        end
-
-    -- If it's arrows and we have a bow
-    elseif (item.itemType == ITEM_TYPE.arrow and
-            self:has_item(ITEM_TYPE.bow)) then
-        -- Apply arrows to bow instead of putting them in inventory
-        item.owner = self
-        item:use_on(self)
-        return true
     end
 
     -- Add the item to our inventory
@@ -657,8 +665,8 @@ end
 
 function Character:update_image()
     -- Determine which image of this character to draw
-    if self.images.shoot and self.shot then
-        self.currentImage = self.images.shoot
+    if self.images.bow_shoot and self.shot then
+        self.currentImage = self.images.bow_shoot
     elseif self.images.dodge and self.ai.path.action == AI_ACTION.dodge then
         self.currentImage = self.images.dodge
     elseif (self.images.walk and (self.ai.path.nodes or self.stepped)) then

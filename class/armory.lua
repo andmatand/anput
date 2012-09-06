@@ -46,14 +46,15 @@ function Armory:get_best_ranged_weapon()
     local best = {damage = -1, weapon = nil}
     for _, w in pairs(self.weapons) do
         if w.projectileClass then
-            -- Create a test projectile to look at the damage
+            -- Create a test projectile of the sort that shoot forth from this
+            -- weapon
             local projectile = w.projectileClass(self.owner)
 
             -- If this projectile's damage is better than the best, and
             -- it has enough ammo to shoot
             if projectile.damage > best.damage and
                w:get_ammo() > w.ammoCost then
-                best.damage = w.damage
+                best.damage = projectile.damage
                 best.weapon = w
             end
         end
@@ -121,6 +122,17 @@ function Armory:set_current_weapon(weapon)
     self.currentWeapon = weapon
 end
 
+function Armory:switch_to_melee_weapon()
+    local w = self:get_best_melee_weapon()
+
+    if w then
+        self:set_current_weapon(w)
+        return true
+    else
+        return false
+    end
+end
+
 function Armory:switch_to_next_weapon()
     local nextWeapon
     local lowest = 99
@@ -140,6 +152,17 @@ function Armory:switch_to_next_weapon()
     else
         -- Wrap around to the first item
         self:switch_to_weapon_number(1)
+    end
+end
+
+function Armory:switch_to_ranged_weapon()
+    local w = self:get_best_ranged_weapon()
+
+    if w then
+        self:set_current_weapon(w)
+        return true
+    else
+        return false
     end
 end
 

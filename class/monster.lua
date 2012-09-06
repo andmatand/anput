@@ -44,7 +44,7 @@ function Monster:init(monsterType)
     -- Set monster properties
     if self.monsterType == MONSTER_TYPE.scarab then
         self.images = monsterImg.scarab
-        self.health = 10
+        self.maxHealth = 10
 
         self.ai.choiceTimer.delay = .25
         self.ai.level.attack = {dist = 10, prob = 5, delay = .3}
@@ -52,7 +52,7 @@ function Monster:init(monsterType)
         self.ai.level.loot = {dist = 6, prob = 3, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.bird then
         self.images = monsterImg.bird
-        self.health = 20
+        self.maxHealth = 20
 
         local claws = Weapon('claws')
         claws.damage = 15
@@ -67,7 +67,7 @@ function Monster:init(monsterType)
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.cat then
         self.images = monsterImg.cat
-        self.health = 40
+        self.maxHealth = 40
 
         local claws = Weapon('claws')
         claws.damage = 10
@@ -82,7 +82,7 @@ function Monster:init(monsterType)
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.mummy then
         self.images = monsterImg.mummy
-        self.health = 40
+        self.maxHealth = 40
         self.magic = 50
 
         local claws = Weapon('claws')
@@ -94,30 +94,35 @@ function Monster:init(monsterType)
         self.ai.level.chase = {dist = 20, prob = 8, delay = .2}
         self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
         self.ai.level.flee = {dist = 15, prob = 9, delay = .2}
-        self.ai.level.loot = {dist = 20, prob = 6, delay = .5}
+        self.ai.level.heal = {prob = 8, delay = .5}
+        self.ai.level.loot = {dist = 20, prob = 6, delay = .4}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.archer then
         self.images = monsterImg.archer
-        self.health = 60
+        self.maxHealth = 60
 
-        local claws = Weapon('claws')
-        claws.damage = 15
-        self:pick_up(claws)
+        --local claws = Weapon('claws')
+        --claws.damage = 15
+        --self:pick_up(claws)
+        local sword = Weapon('sword')
+        sword.damage = 15
+        self:pick_up(sword)
 
         local bow = Weapon('bow')
-        bow:add_ammo(20)
         self:pick_up(bow)
+        bow:add_ammo(20)
 
         self.ai.choiceTimer.delay = .5
         self.ai.level.aim = {dist = 15, prob = 9, delay = .1}
         self.ai.level.attack = {dist = 15, prob = 9, delay = .1}
-        self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
         self.ai.level.chase = {dist = 20, prob = 6, delay = .15}
+        self.ai.level.dodge = {dist = 7, prob = 8, delay = .1}
+        self.ai.level.heal = {prob = 8, delay = .5}
         self.ai.level.loot = {dist = 20, prob = 6, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == MONSTER_TYPE.ghost then
         self.images = monsterImg.ghost
-        self.health = 80
+        self.maxHealth = 80
         self.magic = 100
         self.isCorporeal = false
 
@@ -131,6 +136,8 @@ function Monster:init(monsterType)
         self.ai.level.dodge = {dist = 5, prob = 9, delay = .3}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     end
+
+    self.health = self.maxHealth
 end
 
 function Monster:die()

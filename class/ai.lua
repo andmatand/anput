@@ -8,6 +8,7 @@ AI_ACTION = {aim = 'aim', -- Get into a shooting position
              dodge = 'dodge', -- Get out of the (straight-line) path of a
                               -- sprite (if it's coming toward us)
              flee = 'flee', -- Move away from an enemy (if they are a threat)
+             heal = 'heal', -- Use an exilir (if we have one and need one)
              explore = 'explore', -- Walk around to try to find something
                                   -- interesting
              loot = 'loot'} -- Move toward an item
@@ -31,6 +32,7 @@ function AI:init(owner)
     self.level.explore = {dist = nil, prob = nil, target = nil, delay = .5}
 
     self.level.flee    = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.heal    = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.loot    = {dist = nil, prob = nil, target = nil, delay = nil}
 
     self.choiceTimer = {value = 0, delay = 0}
@@ -48,16 +50,12 @@ function AI:aim_at(target)
 
     -- Find the farthest (out from the target) eligible position on each of the
     -- four sides of the target
-    print('target position:' .. target:get_position().x,
-                                target:get_position().y)
     for dir = 1, 4 do
         for dist = self.level.attack.dist - 1, 1, -1 do
             local pos = add_direction(target:get_position(), dir, dist)
-            print('  ' .. pos.x, pos.y)
 
             if self.owner.room:tile_walkable(pos) and
                self.owner.room:line_of_sight(pos, target:get_position()) then
-                print('    found potential aim position')
                 table.insert(positions, pos)
                 break
             end
@@ -84,7 +82,7 @@ end
 
 function AI:attack()
     local rangedWeapon = self.owner.armory:get_best_ranged_weapon()
-    if rangedWeapon then
+    if self.owner.armory:switch_to_ranged_weapon() then
         -- Check if there's an enemy in our sights we should shoot
         for _, c in pairs(self.owner.room:get_characters()) do
             if self.owner:is_enemies_with(c) then
@@ -107,13 +105,13 @@ function AI:attack()
         end
     end
 
-    if self.owner:has_melee_weapon() then
+    local meleeWeapon = self.owner.armory:get_best_melee_weapon()
+    if meleeWeapon then
         -- Check if there's an enemy next to us who we can hit
         for _, c in pairs(self.owner.room:get_characters()) do
             if tiles_touching(self.owner:get_position(), c:get_position()) then
-                -- Switch to a melee weapon
-                local weapon = self.owner.armory:get_best_melee_weapon()
-                self.owner.armory:set_current_weapon(weapon)
+                -- Switch to the melee weapon
+                self.owner.armory:set_current_weapon(meleeWeapon)
 
                 -- Walk into the enemy
                 self.owner:step_toward(c:get_position())
@@ -190,8 +188,11 @@ function AI:do_action(action)
         target = self:find_enemy()
 
         if target and self:target_in_range(target, action) then
-            if self:aim_at(target) then
-                return true
+            -- If we successfully switch to a ranged weapon with ammo
+            if self.owner.armory:switch_to_ranged_weapon(true) then
+                if self:aim_at(target) then
+                    return true
+                end
             end
         end
     elseif action == 'attack' and self:waited_to(action) then
@@ -220,12 +221,11 @@ function AI:do_action(action)
         if ok then
             if self:target_in_range(target, action) and
                not self:is_afraid_of(target) then
-                --if self.owner.tag then
-                --    print('AI: found enemy:', target)
-                --end
-
-                self:chase(target)
-                return true
+                -- If we successfully switch to a melee weapon
+                if self.owner.armory:switch_to_melee_weapon() then
+                    self:chase(target)
+                    return true
+                end
             end
         end
     elseif action == 'dodge' then
@@ -238,6 +238,10 @@ function AI:do_action(action)
         local threat = self:find_threat()
         if threat and self:target_in_range(threat, action) then
             self:flee_from(threat)
+            return true
+        end
+    elseif action == 'heal' and self:waited_to(action) then
+        if self:heal() then
             return true
         end
     elseif action == 'loot' then
@@ -700,6 +704,14 @@ function AI:get_distance_to_destination()
     end
 end
 
+function AI:heal()
+    local elixir = self.owner.inventory:get_item(ITEM_TYPE.elixir)
+
+    if elixir and self.owner:get_health_percentage() < 50 then
+        elixir:use()
+    end
+end
+
 function AI:is_afraid_of(threat)
     local afraid = false
 
@@ -716,7 +728,8 @@ function AI:is_afraid_of(threat)
     end
 
     -- If we have low health and the threat is armed
-    if self.owner.health <= 25 and threat:has_usable_weapon(self.owner) then
+    if self.owner:get_health_percentage() <= 25 and
+       threat:has_usable_weapon(self.owner) then
         afraid = true
     end
 

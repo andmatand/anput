@@ -119,10 +119,6 @@ function Inventory:has_room_for(item)
         -- If the new item is of the same type as one of our current ones
         if self:get_item(item.itemType) ~= nil then
             return true
-        -- If the new item is an arrow and we have a bow
-        elseif (item.itemType == ITEM_TYPE.arrow and
-                self:has_item(ITEM_TYPE.bow)) then
-            return true
         end
     end
 

@@ -461,10 +461,24 @@ function Room:tile_contents(tile)
 end
 
 -- Returns true if an item can be safely dropped here
-function Room:tile_is_droppoint(tile)
+function Room:tile_is_droppoint(tile, ignoreCharacter)
+    local characters = self:get_characters()
+
+    -- If a character was specified to ignore
+    if ignoreCharacter then
+        for i, c in pairs(characters) do
+            if c == ignoreCharacter then
+                table.remove(characters, i)
+                break
+            end
+        end
+    end
+
+    -- If the tile is in the room, and it doesn't overlap with any bricks,
+    -- characters, or existing items
     if (self:tile_in_room(tile) and
         not tile_in_table(tile, concat_tables({self.bricks,
-                                               self:get_characters(),
+                                               characters,
                                                self.items}))) then
         return true
     else

@@ -232,7 +232,7 @@ function InventoryMenu:update()
     elseif self.state == 'dropping item' then
         if tiles_overlap(self.selectedItem.position, self.dropPosition) then
             self.selectedItem.position = nil
-            self.owner:drop({self.selectedItem})
+            self.owner:drop_items({self.selectedItem})
             self:post_use_item()
 
             if self.selectedItem then

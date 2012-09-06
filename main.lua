@@ -136,8 +136,9 @@ function love.load()
                       walk = new_image('cat-walk.png')}
     monsterImg.mummy = {default = new_image('mummy.png'),
                         walk = new_image('mummy-walk.png')}
-    monsterImg.archer = {default = new_image('archer.png'),
-                         shoot = new_image('archer-shoot.png')}
+    monsterImg.archer = {bow = new_image('archer-bow.png'),
+                         --bow_shoot = new_image('archer-shoot.png'),
+                         sword = new_image('archer-sword.png')}
     monsterImg.ghost = {default = new_image('ghost.png')}
 
     -- Projectiles

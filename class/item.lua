@@ -138,7 +138,7 @@ function Item:use_on(patient)
             -- Play sound depending on who got health
             if instanceOf(Player, patient) then
                 sound.playerGetHP:play()
-            else
+            elseif patient:is_audible() then
                 sound.monsterGetHP:play()
             end
             

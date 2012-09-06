@@ -193,7 +193,7 @@ function consecutive_free_neighbors(tile, occupiedTiles, numInARow)
 end
 
 function tile_in_table(tile, table)
-    for i,t in pairs(table) do
+    for i, t in pairs(table) do
         if t.position == nil then
             if tile.x == t.x and tile.y == t.y then
                 return true
