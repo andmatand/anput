@@ -1,4 +1,4 @@
-require('class.heiroglyph')
+require('class.hieroglyph')
 require('class.item')
 require('class.monster')
 require('class.turret')
@@ -30,7 +30,7 @@ end
 function RoomFiller:fill_next_step()
     if self:add_required_objects() then
         if self:add_internal_bricks() then
-            if self:add_heiroglyphs() then
+            if self:add_hieroglyphs() then
                 if self:add_turrets() then
                     if self:add_monsters() then
                         if self:add_items() then
@@ -47,22 +47,22 @@ function RoomFiller:fill_next_step()
     return false
 end
 
-function RoomFiller:add_heiroglyphs()
-    if self.addedHeiroglyphs then
+function RoomFiller:add_hieroglyphs()
+    if self.addedHieroglyphs then
         return true
     end
 
-    if self.room.requiredHeiroglyphs then
-        for _, rh in pairs(self.room.requiredHeiroglyphs) do
-            self:position_heiroglyph(rh)
+    if self.room.requiredHieroglyphs then
+        for _, rh in pairs(self.room.requiredHieroglyphs) do
+            self:position_hieroglyph(rh)
         end
     end
 
-    self.addedHeiroglyphs = true
+    self.addedHieroglyphs = true
     return false
 end
 
-function RoomFiller:position_heiroglyph(letters)
+function RoomFiller:position_hieroglyph(letters)
     local goodBricks = {}
     for _, b in pairs(self.room.bricks) do
         local ok = false
@@ -118,12 +118,12 @@ function RoomFiller:position_heiroglyph(letters)
 
             if #bricksInARow == #letters then
                 for i, b in ipairs(bricksInARow) do
-                    table.insert(self.room.heiroglyphs,
-                                 Heiroglyph(b:get_position(), letters[i]))
+                    table.insert(self.room.hieroglyphs,
+                                 Hieroglyph(b:get_position(), letters[i]))
                 end
                 removeBricks = true
 
-                -- Don't add any more heiroglyphs
+                -- Don't add any more hieroglyphs
                 goodBricks = {}
                 break
             end

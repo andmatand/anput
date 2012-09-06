@@ -162,12 +162,12 @@ function love.load()
     dropImg = new_image('drop.png')
     useImg = new_image('use.png')
 
-    -- Heiroglyphs
-    HEIROGLYPH_IMAGE = {I = new_image('heiroglyphs/I.png'),
-                        NP = new_image('heiroglyphs/NP.png'),
-                        W = new_image('heiroglyphs/W.png'),
-                        T = new_image('heiroglyphs/T.png'),
-                        goddess = new_image('heiroglyphs/goddess.png')}
+    -- Hieroglyphs
+    HIEROGLYPH_IMAGE = {I = new_image('hieroglyphs/I.png'),
+                        NP = new_image('hieroglyphs/NP.png'),
+                        W = new_image('hieroglyphs/W.png'),
+                        T = new_image('hieroglyphs/T.png'),
+                        goddess = new_image('hieroglyphs/goddess.png')}
 
     -- Outside
     outsideImg = {}

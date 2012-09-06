@@ -26,7 +26,7 @@ function Map:generate()
 
     self:add_secret_passages()
     self:add_required_objects()
-    self:add_heiroglyphs()
+    self:add_hieroglyphs()
 
     return self.rooms
 end
@@ -161,9 +161,9 @@ function Map:add_branches(path)
     return branches
 end
 
-function Map:add_heiroglyphs()
+function Map:add_hieroglyphs()
     -- Add INPWT to the first room
-    self.rooms[1].requiredHeiroglyphs = {{'I', 'NP', 'W', 'T', 'goddess'}}
+    self.rooms[1].requiredHieroglyphs = {{'I', 'NP', 'W', 'T', 'goddess'}}
 end
 
 function Map:draw(currentRoom)
@@ -366,10 +366,10 @@ function Map:add_required_objects()
     -- And then the ankh
     --table.insert(self.rooms[1].requiredObjects, Item('ankh'))
 
-    -- DEBUG: Put a cat in the starting room
-    --local cat = Monster(MONSTER_TYPE.cat)
-    --cat.tag = true
-    --table.insert(self.rooms[1].requiredObjects, cat)
+    -- DEBUG: Put a thing in the first room
+    --local thing = Monster(MONSTER_TYPE.scarab)
+    --thing.tag = true
+    --table.insert(self.rooms[1].requiredObjects, thing)
 
 
     -- Create a table of the 5 earliest rooms

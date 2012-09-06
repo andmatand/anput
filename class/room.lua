@@ -11,7 +11,7 @@ function Room:init(args)
     self.bricks = {}
     self.exits = {}
     self.freeTiles = {}
-    self.heiroglyphs = {}
+    self.hieroglyphs = {}
     self.items = {}
     self.sprites = {}
     self.turrets = {}
@@ -199,11 +199,11 @@ function Room:draw_bricks()
     --love.graphics.setColor(WHITE)
     love.graphics.draw(self.brickBatch, 0, 0)
 
-    self:draw_heiroglyphs()
+    self:draw_hieroglyphs()
 end
 
-function Room:draw_heiroglyphs()
-    for _, h in pairs(self.heiroglyphs) do
+function Room:draw_hieroglyphs()
+    for _, h in pairs(self.hieroglyphs) do
         if tile_in_table(h.position, self.fov) then
             alpha = LIGHT
         else

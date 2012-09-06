@@ -55,7 +55,7 @@ function Outro:choose_speech()
         if self.artifact.itemType == ITEM_TYPE.ankh then
             lines = {{p = 'IT IS AN ANKH'},
                      {p = 'THE ANKH IS AN EGYPTIAN SYMBOL OF LIFE'},
-                     {p = 'IT IS ALSO A HEIROGLYPH'}}
+                     {p = 'IT IS ALSO A HIEROGLYPH'}}
         end
 
         return lines
