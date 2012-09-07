@@ -215,10 +215,11 @@ function Character:draw(pos, rotation)
 
         if DEBUG and not instanceOf(Player, self) then
             -- Put a health bar above the character's head
+            local h = 3 * SCALE_Y
             draw_progress_bar({num = self:get_health_percentage(),
                                max = 100, color = MAGENTA},
-                              position.x, position.y - (SCALE_Y * 3),
-                              upscale_x(1), 12)
+                              position.x, position.y - h,
+                              upscale_x(1), h)
         end
     end
 end
