@@ -8,7 +8,7 @@ StatusBar = class('StatusBar')
 function StatusBar:init(owner)
     self.owner = owner
 
-    self.position = {x = ROOM_W, y = 2}
+    self.position = {x = ROOM_W, y = ROOM_H}
     self.selectedItemNum = nil
 
     self.healthMeter = {toast = Toast()}
@@ -19,7 +19,7 @@ end
 
 function StatusBar:draw()
     local x = 0
-    local y = ROOM_H
+    local y = self.position.y
 
     -- Display the health meter
     self:draw_health_meter()
@@ -65,6 +65,11 @@ function StatusBar:draw()
 
             cga_print(tostring(w:get_ammo()), x, y, {color = textColor})
         end
+    end
+
+    if self.contextMessage then
+        cga_print(self.contextMessage, ROOM_W / 2, self.position.y,
+                  {center = true})
     end
 end
 
@@ -139,7 +144,13 @@ function StatusBar:draw_newest_item()
     end
 end
 
+function StatusBar:show_context_message(text)
+    self.contextMessage = text
+end
+
 function StatusBar:update()
+    self.contextMessage = nil
+
     -- If the health meter is full
     if self.owner.health >= 100 then
         self.healthMeter.toast:unfreeze()
@@ -166,10 +177,5 @@ function StatusBar:update()
         else
             self.flash.state = true
         end
-    end
-end
-
-function StatusBar:move_cursor(dir)
-    if dir == 'up' then
     end
 end

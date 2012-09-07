@@ -39,6 +39,13 @@ function Trader:find_customer()
         tiles_touching(self.position, player.position)) then
         -- Consider him our customer
         self.customer = player
+
+        -- If we are holding our ware, and the player can trade
+        if self.ware.owner == self and player:can_trade(self.price) then
+            local msg = 'PRESS ENTER TO TRADE'
+            self.room.game.statusBar:show_context_message(msg)
+        end
+
     else
         self.customer = nil
     end

@@ -451,9 +451,11 @@ function Room:tile_contents(tile)
         end
     end
 
-    for _, i in pairs(self.items) do
-        if tiles_overlap(tile, i.position) then
-            table.insert(contents, i)
+    for _, item in pairs(self.items) do
+        if item:get_position() then
+            if tiles_overlap(tile, item:get_position()) then
+                table.insert(contents, item)
+            end
         end
     end
 

@@ -48,8 +48,16 @@ function Player:drop_payment(price, position)
         m.position = position
         self:drop_item(m)
     end
+end
+
+function Player:find_context()
+    if self:is_standing_next_to(Trader) then
+        return 'trade'
+    end
 
     self.wantsToTrade = false
+
+    return nil
 end
 
 function Player:get_artifact()
@@ -69,8 +77,38 @@ function Player:hit(patient)
     return Player.super.hit(self, patient)
 end
 
+function Player:is_standing_next_to(objectClass)
+    for _, tile in pairs(adjacent_tiles(self.position)) do
+        local contents = self.room:tile_contents(tile)
+        if contents then
+            for _, obj in pairs(contents) do
+                if instanceOf(objectClass, obj) then
+                    return true
+                end
+            end
+        end
+    end
+
+    return false
+end
+
+function Player:keypressed(key)
+    -- Get player input for trading
+    if key == 'return' then
+        if self.context == 'trade' then
+            self.wantsToTrade = true
+        end
+    end
+end
+
+function Player:update()
+    Player.super.update(self)
+
+    self.context = self:find_context()
+end
+
 function Player:receive_damage(amount)
-    Character.receive_damage(self, amount)
+    Player.super.receive_damage(self, amount)
 
     if not self.dead then
         sound.playerCry:play()

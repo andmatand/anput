@@ -146,6 +146,8 @@ function Game:input()
 end
 
 function Game:keypressed(key)
+    self.player:keypressed(key)
+
     -- Get player input for switching weapons
     if key == '1' or key == '2' or key == '3' then
         -- Switch to specified weapon number, based on display order
@@ -251,11 +253,6 @@ function Game:keypressed(key)
         self.player:step(3)
     elseif key == 'a' then
         self.player:step(4)
-    end
-
-    -- Get player input for trading
-    if key == 't' then
-        self.player.wantsToTrade = true
     end
 end
 

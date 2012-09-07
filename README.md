@@ -23,7 +23,6 @@ and the LÖVE framework.
 * inventory: i
 * map: m
 * use elixir: e
-* trade with dudes: t
 * fullscreen: f11, Alt + Enter
 * new game: Ctrl + n
 * quit: Ctrl + q, or close the window
