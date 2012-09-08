@@ -14,6 +14,8 @@ function StatusBar:init(owner)
     self.healthMeter = {toast = Toast()}
     self.newestItem = {item = nil, toast = Toast()}
 
+    self.contextMessage = {buttons = {}, text = nil}
+
     self.flash = {timer = 0, state = true}
 end
 
@@ -67,16 +69,28 @@ function StatusBar:draw()
         end
     end
 
-    if self.contextMessage then
-        cga_print("   " .. self.contextMessage, ROOM_W / 2, self.position.y,
-                  {center = true})
+    if self.contextMessage.text then
+        -- Find the total width (in tiles) of the buttons concatenated a space
+        -- and the text
+        local totalWidth = 0
+        for _, key in pairs(self.contextMessage.buttons) do
+            totalWidth = totalWidth + (buttonImg[key]:getWidth() / TILE_W)
+        end
+        totalWidth = totalWidth + 1 + self.contextMessage.text:len()
 
-        local x = (ROOM_W / 2) - (self.contextMessage:len() / 2) - 1
+        local x = (ROOM_W / 2) - (totalWidth / 2)
+
+        -- Draw the buttons
         love.graphics.setColor(WHITE)
-        love.graphics.draw(buttonImg.enter,
-                           upscale_x(x) - buttonImg.enter:getWidth() * SCALE_X,
-                           upscale_y(self.position.y),
-                           0, SCALE_X, SCALE_Y)
+        for _, key in pairs(self.contextMessage.buttons) do
+            love.graphics.draw(buttonImg[key],
+                               upscale_x(x), upscale_y(self.position.y),
+                               0, SCALE_X, SCALE_Y)
+            x = x + (buttonImg[key]:getWidth() / TILE_W)
+        end
+        
+        -- Draw the text
+        cga_print(' ' .. self.contextMessage.text, x, self.position.y)
     end
 end
 
@@ -151,12 +165,12 @@ function StatusBar:draw_newest_item()
     end
 end
 
-function StatusBar:show_context_message(text)
-    self.contextMessage = text
+function StatusBar:show_context_message(buttons, text)
+    self.contextMessage = {buttons = buttons, text = text}
 end
 
 function StatusBar:update()
-    self.contextMessage = nil
+    self.contextMessage.text = nil
 
     -- If the health meter is full
     if self.owner.health >= 100 then

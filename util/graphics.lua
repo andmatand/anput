@@ -33,8 +33,7 @@ function cga_print(text, x, y, options)
         end
 
         -- Draw this line of text
-        love.graphics.printf(line, xPos, y + upscale_y(i),
-                             font:getWidth(line) + 1, 'center')
+        love.graphics.print(line, xPos, y + upscale_y(i))
 
         -- Keep track of which line number we're on
         i = i + 1

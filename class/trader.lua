@@ -42,8 +42,7 @@ function Trader:find_customer()
 
         -- If we are holding our ware, and the player can trade
         if self.ware.owner == self and player:can_trade(self.price) then
-            local msg = 'TRADE'
-            self.room.game.statusBar:show_context_message(msg)
+            self.room.game.statusBar:show_context_message({'enter'}, 'TRADE')
         end
 
     else
