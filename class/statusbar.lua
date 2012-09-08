@@ -68,8 +68,15 @@ function StatusBar:draw()
     end
 
     if self.contextMessage then
-        cga_print(self.contextMessage, ROOM_W / 2, self.position.y,
+        cga_print("   " .. self.contextMessage, ROOM_W / 2, self.position.y,
                   {center = true})
+
+        local x = (ROOM_W / 2) - (self.contextMessage:len() / 2) - 1
+        love.graphics.setColor(WHITE)
+        love.graphics.draw(buttonImg.enter,
+                           upscale_x(x) - buttonImg.enter:getWidth() * SCALE_X,
+                           upscale_y(self.position.y),
+                           0, SCALE_X, SCALE_Y)
     end
 end
 

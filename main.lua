@@ -112,6 +112,9 @@ function love.load()
     dropImg = new_image('drop.png')
     useImg = new_image('use.png')
 
+    -- Buttons
+    buttonImg = {enter = new_image('buttons/enter.png')}
+
     -- Hieroglyphs
     HIEROGLYPH_IMAGE = {I = new_image('hieroglyphs/I.png'),
                         NP = new_image('hieroglyphs/NP.png'),
