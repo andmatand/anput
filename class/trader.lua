@@ -52,6 +52,9 @@ function Trader:find_customer()
     end
 
     if self.customer then
+        -- Look at the customer
+        self.dir = self:direction_to(self.customer:get_position())
+
         return true
     else
         return false
