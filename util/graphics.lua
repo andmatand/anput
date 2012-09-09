@@ -58,7 +58,7 @@ function set_scale(scale)
     SCREEN_H = (love.graphics.getHeight() / upscale_y(1))
 
     -- Load the font at the correct scale
-    font = love.graphics.newFont('res/font/cga.ttf', TILE_W * SCALE_X)
+    font = love.graphics.newFont('res/font/cga.ttf', upscale_x(1))
     love.graphics.setFont(font)
 end
 

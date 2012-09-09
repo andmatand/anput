@@ -4,20 +4,22 @@ MapDisplay = class('MapDisplay')
 function MapDisplay:init(nodes)
     self.nodes = nodes
 
-    -- Place the display in the center of the screen
-    self.nodeSize = 3 * SCALE_X
-
     self.size = {w = 9, h = 9}
-
-    local position = {x = math.floor((SCREEN_W / 2) - (self.size.w / 2)),
-                      y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
-    self.position = {x = upscale_x(position.x),
-                     y = upscale_y(position.y)}
     self.flash = {timer = 0, state = false}
 end
 
 function MapDisplay:draw(currentRoom)
-    if self.mapOffset == nil then
+    -- If the graphics scale changed
+    if self.scale ~= SCALE_X then
+        self.scale = SCALE_X
+
+        -- Place the display in the center of the screen
+        self.nodeSize = 3 * SCALE_X
+        local position = {x = math.floor((SCREEN_W / 2) - (self.size.w / 2)),
+        y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
+        self.position = {x = upscale_x(position.x),
+        y = upscale_y(position.y)}
+
         self:find_map_offset()
     end
 
