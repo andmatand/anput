@@ -109,7 +109,8 @@ function AI:attack()
     if meleeWeapon then
         -- Check if there's an enemy next to us who we can hit
         for _, c in pairs(self.owner.room:get_characters()) do
-            if tiles_touching(self.owner:get_position(), c:get_position()) then
+            if self.owner:is_enemies_with(c) and
+               tiles_touching(self.owner:get_position(), c:get_position()) then
                 -- Switch to the melee weapon
                 self.owner.armory:set_current_weapon(meleeWeapon)
 
