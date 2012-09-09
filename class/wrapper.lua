@@ -139,8 +139,10 @@ function Wrapper:update(dt)
     -- Add to timer to limit FPS
     self.fpsTimer = self.fpsTimer + dt
 
-    -- Add to game time
-    self.game:add_time(dt)
+    if self.state == 'game' then
+        -- Add to game time
+        self.game:add_time(dt)
+    end
 
     -- Change states
     if self.state == 'intro' and self.intro.finished then

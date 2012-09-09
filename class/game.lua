@@ -13,7 +13,7 @@ Game = class('Game')
 function Game:init()
     self.menuState = 'inventory'
     self.paused = false
-    self.time = love.timer.getTime()
+    self.time = 0
     self.playerMoved = false
 
     -- Create the outside "room"
@@ -348,12 +348,11 @@ function Game:update(dt)
 
     self.statusBar:update()
 
-    if not self.playerMoved then
-        if self.player.stepped then
-            self.playerMoved = true
-        else
-            self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
-        end
+    if not self.playerMoved and self.time >= 3 then
+        self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
+    end
+    if self.player.stepped then
+        self.playerMoved = true
     end
 
     if self.paused then
