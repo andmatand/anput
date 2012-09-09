@@ -54,7 +54,11 @@ function RoomFiller:add_hieroglyphs()
 
     if self.room.requiredHieroglyphs then
         for _, rh in pairs(self.room.requiredHieroglyphs) do
-            self:position_hieroglyph(rh)
+            for _, orientation in pairs({'horizontal', 'vertical'}) do
+                if self:position_hieroglyph(rh, orientation) then
+                    break
+                end
+            end
         end
     end
 
@@ -62,19 +66,30 @@ function RoomFiller:add_hieroglyphs()
     return false
 end
 
-function RoomFiller:position_hieroglyph(letters)
+function RoomFiller:position_hieroglyph(letters, orientation)
+    local dirs
+    if orientation == 'horizontal' then
+        dirs = {4, 2}
+    elseif orientation == 'vertical' then
+        dirs = {1, 3}
+    end
+
     local goodBricks = {}
     for _, b in pairs(self.room.bricks) do
         local ok = false
 
-        for _, ft in pairs(self.room.freeTiles) do
-            if ft.x == b.x and ft.y == b.y + 1 then
-                ok = true
-                break
+        if orientation == 'horizontal' then
+            -- If this brick has a freeTile below it
+            for _, ft in pairs(self.room.freeTiles) do
+                if ft.x == b.x and ft.y == b.y + 1 then
+                    ok = true
+                    break
+                end
             end
+        else
+            ok = true
         end
 
-        -- If this brick has a freeTile below it
         if ok then
             table.insert(goodBricks, b)
         end
@@ -87,16 +102,16 @@ function RoomFiller:position_hieroglyph(letters)
         local bricksInARow = {brick}
         local previousBrick = brick
         local removeBricks = false
-        local dir = 4
+        local dir = dirs[1]
         repeat
             local foundBrick = false
             for _, b2 in pairs(goodBricks) do
                 -- If this other brick is 1 over in the direction we are
                 -- searching
                 if tiles_overlap(b2, add_direction(previousBrick, dir)) then
-                    if dir == 4 then
+                    if dir == dirs[1] then
                         table.insert(bricksInARow, 1, b2)
-                    elseif dir == 2 then
+                    elseif dir == dirs[2] then
                         table.insert(bricksInARow, b2)
                     end
 
@@ -107,16 +122,18 @@ function RoomFiller:position_hieroglyph(letters)
             end
 
             if not foundBrick then
-                if dir == 4 then
+                if dir == dirs[1] then
                     -- Switch directions
-                    dir = 2
+                    dir = dirs[2]
                     previousBrick = brick
                 elseif #bricksInARow < #letters then
                     removeBricks = true
                 end
             end
 
+            -- If we found enough bricks for all the letters
             if #bricksInARow == #letters then
+                -- Create the letters over the bricks
                 for i, b in ipairs(bricksInARow) do
                     table.insert(self.room.hieroglyphs,
                                  Hieroglyph(b:get_position(), letters[i]))
@@ -124,8 +141,7 @@ function RoomFiller:position_hieroglyph(letters)
                 removeBricks = true
 
                 -- Don't add any more hieroglyphs
-                goodBricks = {}
-                break
+                return true
             end
 
             if removeBricks then
@@ -144,6 +160,8 @@ function RoomFiller:position_hieroglyph(letters)
             end
         until #goodBricks == 0
     end
+
+    return false
 end
 
 function RoomFiller:add_items()
