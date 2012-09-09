@@ -25,6 +25,14 @@ function Trader:init(args)
     self.delay = 0
 end
 
+function Trader:can_trade()
+    if self.ware.owner == self then
+        return true
+    else
+        return false
+    end
+end
+
 function Trader:drop_ware()
     -- Position the ware in a spot that is 
     self.ware.position = self:find_common_tile()
@@ -39,12 +47,6 @@ function Trader:find_customer()
         tiles_touching(self.position, player.position)) then
         -- Consider him our customer
         self.customer = player
-
-        -- If we are holding our ware, and the player can trade
-        if self.ware.owner == self and player:can_trade(self.price) then
-            self.room.game.statusBar:show_context_message({'enter'}, 'TRADE')
-        end
-
     else
         self.customer = nil
     end
@@ -142,8 +144,14 @@ function Trader:ask_for_payment()
     -- Pick the position where the customer should drop his payment
     self.paymentPosition = self:find_common_tile()
 
-    -- Make the customer drop his payment
-    self.customer:drop_payment(self.price, self.paymentPosition)
+    if self.paymentPosition then
+        -- Make the customer drop his payment
+        self.customer:drop_payment(self.price, self.paymentPosition)
+    elseif self.mouth.speech ~= "THERE'S NO ROOM HERE" or
+           not self.mouth.isSpeaking then
+        self.mouth:set_speech("THERE'S NO ROOM HERE")
+        self.mouth:speak(true)
+    end
 end
 
 function Trader:update()
@@ -166,7 +174,7 @@ function Trader:update()
         self:drop_ware()
 
         -- Say our "here you go" line
-        self.mouth.speech = self.speech.drop
+        self.mouth:set_speech(self.speech.drop)
         self.mouth:shut()
         self.mouth:speak()
 
@@ -182,20 +190,22 @@ function Trader:update()
                 self.delay = 4
             elseif self.customer.moved then
                 -- Give him our sales pitch
-                self.mouth.speech = self.speech.offer
+                self.mouth:set_speech(self.speech.offer)
                 self.mouth:speak()
             end
         elseif self.customer.moved then
-            -- If we've already said our "enjoy" line
-            if self.mouth.speech == self.speech.enjoy then
-                -- From now on, say our "later" line
-                self.mouth.speech = self.speech.later
-            else
+            if self.speech.enjoy then
                 -- Say our "enjoy" line
-                self.mouth.speech = self.speech.enjoy
-            end
+                self.mouth:set_speech(self.speech.enjoy)
+                self.mouth:speak(true)
 
-            self.mouth:speak()
+                -- Don't say it again
+                self.speech.enjoy = nil
+            else
+                -- From now on, say our "later" line
+                self.mouth:set_speech(self.speech.later)
+                self.mouth:speak()
+            end
         end
     end
 

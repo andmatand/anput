@@ -51,11 +51,20 @@ function Player:drop_payment(price, position)
 end
 
 function Player:find_context()
-    if self:is_standing_next_to(Trader) then
-        return 'trade'
+    for _, tile in pairs(adjacent_tiles(self.position)) do
+        local contents = self.room:tile_contents(tile)
+        if contents then
+            for _, obj in pairs(contents) do
+                if instanceOf(Trader, obj) then
+                    -- If the trade has something to trade, and we have enough
+                    -- to buy his ware
+                    if obj:can_trade() and self:can_trade(obj.price) then
+                        return 'trade'
+                    end
+                end
+            end
+        end
     end
-
-    self.wantsToTrade = false
 
     return nil
 end
@@ -77,18 +86,7 @@ function Player:hit(patient)
     return Player.super.hit(self, patient)
 end
 
-function Player:is_standing_next_to(objectClass)
-    for _, tile in pairs(adjacent_tiles(self.position)) do
-        local contents = self.room:tile_contents(tile)
-        if contents then
-            for _, obj in pairs(contents) do
-                if instanceOf(objectClass, obj) then
-                    return true
-                end
-            end
-        end
-    end
-
+function Player:find_adjacent_objects(objectClass)
     return false
 end
 
@@ -104,7 +102,15 @@ end
 function Player:update()
     Player.super.update(self)
 
+    -- Reset all context-related variables
+    self.wantsToTrade = false
+
     self.context = self:find_context()
+
+    if self.context == 'trade' then
+        -- Show a context message in the status bar
+        self.room.game.statusBar:show_context_message({'enter'}, 'TRADE')
+    end
 end
 
 function Player:receive_damage(amount)

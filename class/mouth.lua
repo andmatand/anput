@@ -11,6 +11,11 @@ function Mouth:init(args)
     self.isSpeaking = false
 end
 
+function Mouth:set_speech(text)
+    -- Make a copy of the given text
+    self.speech = '' .. text
+end
+
 function Mouth:should_speak()
     local position
 
