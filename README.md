@@ -25,4 +25,5 @@ and the LÖVE framework.
 * use elixir: e
 * fullscreen: f11, Alt + Enter
 * new game: Ctrl + n
+* increase/decrease graphics scaling: Ctrl +/-
 * quit: Ctrl + q, or close the window

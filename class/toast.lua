@@ -3,10 +3,9 @@
 Toast = class('Toast')
 
 function Toast:init()
-    self.position = {y = upscale_y(ROOM_H)}
-
     -- Begin offscreen
     self.offset = {y = upscale_y(1)}
+    self.visible = false
 
     self.hideTimer = {delay = FPS, value = 0}
     self.frozen = false
@@ -29,6 +28,7 @@ function Toast:is_visible()
 end
 
 function Toast:show()
+    self.visible = true
     self.offset.y = 0
     self.velocity = 1
     self.hideTimer.value = self.hideTimer.delay
@@ -39,8 +39,15 @@ function Toast:unfreeze()
 end
 
 function Toast:update()
+    self.position = {y = upscale_y(ROOM_H)}
+
     if self.frozen then
         return
+    end
+
+    if not self.visible then
+        -- Reset y offset in case the scale changed
+        self.offset.y = upscale_y(1)
     end
 
     -- If the hide-timer is not already set, and We haven't started moving
@@ -55,12 +62,15 @@ function Toast:update()
         self.hideTimer.value = self.hideTimer.value - 1
     end
 
-    -- If the hide-timer's delay period is over, and we are not already
-    -- hidden
-    if self.hideTimer.value == 0 and self.offset.y < upscale_y(1) then
-        -- Move down a little
-        --self.offset.y = self.offset.y + SCALE_Y
-        self.velocity = self.velocity * 1.5
-        self.offset.y = self.offset.y + self.velocity
+    -- If the hide-timer's delay period is over
+    if self.hideTimer.value == 0 then
+        -- If we are not already all the way hidden
+        if self.offset.y < upscale_y(1) then
+            -- Move down a little
+            self.velocity = self.velocity * 1.5
+            self.offset.y = self.offset.y + self.velocity
+        else
+            self.visible = false
+        end
     end
 end

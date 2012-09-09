@@ -40,6 +40,28 @@ function cga_print(text, x, y, options)
     end
 end
 
+function set_scale(scale)
+    if scale < 1 then
+        return
+    end
+
+    -- If the scale changed
+    if scale ~= SCALE_X then
+        SCALE_X = scale
+        SCALE_Y = scale
+
+        love.graphics.setMode(320 * SCALE_X, 200 * SCALE_Y)
+    end
+
+    -- Set the screen width and height in # of tiles
+    SCREEN_W = (love.graphics.getWidth() / upscale_x(1))
+    SCREEN_H = (love.graphics.getHeight() / upscale_y(1))
+
+    -- Load the font at the correct scale
+    font = love.graphics.newFont('res/font/cga.ttf', TILE_W * SCALE_X)
+    love.graphics.setFont(font)
+end
+
 function draw_progress_bar(barInfo, x, y, w, h)
     bar = {}
     bar.x = x + SCALE_X

@@ -30,15 +30,18 @@ function love.load()
     end
     love.mouse.setVisible(false)
 
-    -- These are the tile dimensions in pixels
+    -- These are the tile dimensions in (unscaled) pixels
     TILE_W = 8
     TILE_H = 8
 
     -- These dimensions are in number of tiles (not pixels)
     ROOM_W = 40
     ROOM_H = 24
-    SCREEN_W = (love.graphics.getWidth() / upscale_x(1))
-    SCREEN_H = (love.graphics.getHeight() / upscale_y(1))
+
+    -- Set default image fileter to show ALL the pixels
+    love.graphics.setDefaultImageFilter('nearest', 'nearest')
+
+    set_scale(SCALE_X)
 
     -- Colors
     BLACK = {0, 0, 0}
@@ -59,16 +62,6 @@ function love.load()
         --img:setFilter('nearest', 'nearest')
         return img
     end
-
-    -- Set default image fileter to show ALL the pixels
-    love.graphics.setDefaultImageFilter('nearest', 'nearest')
-
-    -- Load the font
-    --local fontImg = love.graphics.newImage('res/font/cga.png')
-    --local font = love.graphics.newImageFont(fontImg,
-    --             'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:!"')
-    font = love.graphics.newFont('res/font/cga.ttf', TILE_W * SCALE_X)
-    love.graphics.setFont(font)
 
     playerImg = {default = new_image('player.png'),
                  sword = new_image('player-sword.png'),
@@ -134,8 +127,7 @@ function love.load()
     outsideImg.temple = {image = new_image('temple.png')}
 
     -- Create image data for a brick (a magenta rectangle)
-    local brickImgData = love.image.newImageData(upscale_x(1),
-                                                 upscale_y(1))
+    local brickImgData = love.image.newImageData(TILE_W, TILE_H)
     for y = 0, brickImgData:getHeight() - 1 do
         for x = 0, brickImgData:getWidth() - 1 do
             brickImgData:setPixel(x, y,
@@ -187,28 +179,35 @@ function jump_to_room(index)
 end
 
 function love.keypressed(key, unicode)
-    if key == 'n' and (love.keyboard.isDown('lctrl') or
-                       love.keyboard.isDown('rctrl')) then
+    local ctrl
+    if love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl') then
+        ctrl = true
+    end
+
+    if ctrl and key == 'n' then
         wrapper:restart()
     elseif key == 'f11' or
            ((love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))
             and key == 'return') then
         love.graphics.toggleFullscreen()
-    elseif key == 'q' and (love.keyboard.isDown('lctrl') or
-                           love.keyboard.isDown('rctrl')) then
+    elseif ctrl and key == 'q' then
         love.event.quit()
     elseif key == 'f1' then
         DEBUG = not DEBUG
-    elseif key == 'j' and love.keyboard.isDown('lctrl') then
+    elseif ctrl and key == 'j' then
         jump_to_room(wrapper.game.currentRoom.index + 1)
-    elseif key == 'k' and love.keyboard.isDown('lctrl') then
+    elseif ctrl and key == 'k' then
         jump_to_room(wrapper.game.currentRoom.index - 1)
-    elseif key == 'g' and love.keyboard.isDown('lctrl') then
+    elseif ctrl and key == 'g' then
         -- Give the player some goodies!
         for i = 1, 7 do
             local item = Item('shinything')
             wrapper.game.player:pick_up(item)
         end
+    elseif ctrl and (key == '=' or key == '+') then
+        set_scale(SCALE_X + 1)
+    elseif ctrl and key == '-' then
+        set_scale(SCALE_X - 1)
     else
         wrapper:keypressed(key)
     end

@@ -188,7 +188,7 @@ function Room:draw_bricks()
             --if alpha < DARK then alpha = DARK end
 
             self.brickBatch:setColor(255, 255, 255, alpha)
-            self.brickBatch:add(upscale_x(b.x), upscale_y(b.y))
+            self.brickBatch:add(b.x * TILE_W, b.y * TILE_H)
         end
 
         self.brickBatch:unbind()
@@ -197,7 +197,7 @@ function Room:draw_bricks()
     end
 
     --love.graphics.setColor(WHITE)
-    love.graphics.draw(self.brickBatch, 0, 0)
+    love.graphics.draw(self.brickBatch, 0, 0, 0, SCALE_X, SCALE_Y)
 
     self:draw_hieroglyphs()
 end
