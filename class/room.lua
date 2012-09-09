@@ -225,6 +225,9 @@ end
 
 function Room:generate_all()
     if not self.isBuilt then
+        -- Ignore any current build
+        self.isBeingBuilt = false
+
         local roomBuilder = RoomBuilder(self)
         roomBuilder:build()
     end

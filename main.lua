@@ -172,9 +172,9 @@ end
 function jump_to_room(index)
     if index >= 1 and index <= #wrapper.game.rooms then
         local newRoom = wrapper.game.rooms[index]
+        wrapper.game:switch_to_room(newRoom)
         wrapper.game.player:move_to_room(newRoom)
         wrapper.game.player:set_position(newRoom.midPoint)
-        wrapper.game:switch_to_room(newRoom)
     end
 end
 
