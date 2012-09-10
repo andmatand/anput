@@ -153,6 +153,11 @@ function Trader:ask_for_payment()
     elseif self.mouth.speech ~= "THERE'S NO ROOM HERE" or
            not self.mouth.isSpeaking then
         self.mouth:set_speech("THERE'S NO ROOM HERE")
+
+        -- Dodge the customer
+        self.ai:dodge(self.customer,
+                      self.customer:direction_to(self:get_position()))
+
         self.mouth:speak(true)
     end
 end

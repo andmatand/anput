@@ -7,10 +7,10 @@ AI_ACTION = {aim = 'aim', -- Get into a shooting position
              chase = 'chase', -- Move toward an enemy
              dodge = 'dodge', -- Get out of the (straight-line) path of a
                               -- sprite (if it's coming toward us)
-             flee = 'flee', -- Move away from an enemy (if they are a threat)
-             heal = 'heal', -- Use an exilir (if we have one and need one)
              explore = 'explore', -- Walk around to try to find something
                                   -- interesting
+             flee = 'flee', -- Move away from an enemy (if they are a threat)
+             heal = 'heal', -- Use an exilir (if we have one and need one)
              loot = 'loot'} -- Move toward an item
 
 function AI:init(owner)
@@ -289,23 +289,25 @@ function AI:do_action(action)
     return false
 end
 
-function AI:dodge(sprite)
-    -- Determine which direction we should search
-    if sprite.velocity.y == -1 then
-        -- Sprite is moving north, so search north
-        searchDir = 1
-    elseif sprite.velocity.x == 1 then
-        -- Sprite is moving east, so search east
-        searchDir = 2
-    elseif sprite.velocity.y == 1 then
-        -- Sprite is moving south, so search south
-        searchDir = 3
-    elseif sprite.velocity.x == -1 then
-        -- Sprite is moving west, so search west
-        searchDir = 4
-    else
-        -- Sprite is not moving; nothing to dodge
-        return
+function AI:dodge(sprite, searchDir)
+    if not searchDir then
+        -- Determine which direction we should search
+        if sprite.velocity.y == -1 then
+            -- Sprite is moving north, so search north
+            searchDir = 1
+        elseif sprite.velocity.x == 1 then
+            -- Sprite is moving east, so search east
+            searchDir = 2
+        elseif sprite.velocity.y == 1 then
+            -- Sprite is moving south, so search south
+            searchDir = 3
+        elseif sprite.velocity.x == -1 then
+            -- Sprite is moving west, so search west
+            searchDir = 4
+        else
+            -- Sprite is not moving; nothing to dodge
+            return
+        end
     end
 
     -- Find the nearest tile which is out of the path of the projectile
