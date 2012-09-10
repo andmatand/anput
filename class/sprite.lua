@@ -139,21 +139,21 @@ function Sprite:physics()
             -- If we are a player
             if instanceOf(Player, self) then
                 -- Generate the room if it hasn't already been generated
-                if not e.room.isGenerated then
-                    e.room:generate_all()
+                if not e.targetRoom.isGenerated then
+                    e.targetRoom:generate_all()
                 end
             end
 
             -- If the room it leads to has been generated
-            if e.room.isGenerated then
+            if e.targetRoom.isGenerated then
                 local oldRoom = test.room
 
                 -- Move test object to new room
-                test.room = e.room
+                test.room = e.targetRoom
 
                 -- Move the test coordinates to the doorway of the
                 -- corresponding exit
-                local newExit = test.room:get_exit({room = oldRoom})
+                local newExit = test.room:get_exit({targetRoom = oldRoom})
                 test.position = newExit:get_doorway()
 
                 break

@@ -166,6 +166,9 @@ function AI:choose_action()
         if properties.prob then
             if math.random(properties.prob, 10) == 10 then
                 if self:do_action(action) then
+                    if self.owner.tag then
+                        print('  chose action ' .. action)
+                    end
                     --return true
                 end
             end
@@ -200,7 +203,8 @@ function AI:do_action(action)
         if self:attack() then
             return true
         end
-    elseif action == 'chase' then
+    elseif action == 'chase' and
+           (not self.path.nodes or self.path.action == AI_ACTION.explore) then
         target = self:find_enemy()
 
         local ok = false
@@ -245,7 +249,8 @@ function AI:do_action(action)
         if self:heal() then
             return true
         end
-    elseif action == 'loot' then
+    elseif action == 'loot' and
+           (not self.path.nodes or self.path.action == AI_ACTION.explore) then
         target = self:find_item()
         if (target and self:target_in_range(target, action) and
             self:should_follow(target)) then
@@ -269,15 +274,12 @@ function AI:do_action(action)
             target = self:find_exit()
 
             if target and self:target_in_range(target, action) then
-                self:plot_path(target:get_position())
+                print('    exploring toward exit')
+                self:plot_path(target:get_position(), AI_ACTION.explore)
             else
-                if self.owner.tag then
-                    print('AI: exploring')
-                end
-                self:plot_path(self:find_random_position())
+                self:plot_path(self:find_random_position(), AI_ACTION.explore)
             end
 
-            self.path.action = AI_ACTION.explore
             return true
         end
     elseif action == 'wander' then
@@ -427,9 +429,9 @@ function AI:find_exit()
         elseif exit:is_hidden() then
             ok = false
         -- If the exit leads to outside
-        elseif exit.room == self.owner.room.game.outside then
+        elseif exit.targetRoom == self.owner.room.game.outside then
             ok = false
-        elseif self.owner:visited_room(exit.room) then
+        elseif self.owner:visited_room(exit.targetRoom) then
             ok = false
             table.insert(visitedExits, exit)
         end
@@ -552,7 +554,6 @@ function AI:find_random_position()
         end
 
         if ok then
-            table.insert(self.exploredPositions, pos)
             return pos
         else
             -- Remove this position from consideration
@@ -655,7 +656,7 @@ function AI:follow_path(force)
                 print('AI: target left the room')
             end
             -- Find the exit through which we can follow the target
-            local exit = self.owner.room:get_exit({room =
+            local exit = self.owner.room:get_exit({targetRoom =
                                                    self.path.target.room})
 
             if exit then
@@ -766,6 +767,12 @@ function AI:path_obsolete()
 end
 
 function AI:plot_path(dest, action)
+    if self.owner.tag then
+        print('  AI:plot_path()')
+        print('    dest: ' .. dest.x .. ',' .. dest.y)
+        print('    action: ', action)
+    end
+
     --if self.path.destination then
     --    if tiles_overlap(dest, self.path.destination) then
     --        self.path.nodes = nil
@@ -860,6 +867,12 @@ function AI:target_in_range(target, action)
     return false
 end
 
+function AI:add_to_explored_positions(position)
+    if not tile_in_table(position, self.exploredPositions) then
+        table.insert(self.exploredPositions, pos)
+    end
+end
+
 function AI:update()
     -- If we just entered a different room
     if self.owner.room ~= self.oldRoom then
@@ -877,6 +890,10 @@ function AI:update()
 
     -- Continue to follow our current path (if we have one)
     local followedPath = self:follow_path()
+
+    if followedPath then
+        self:add_to_explored_positions(self.owner:get_position())
+    end
     
     if not self.path.nodes and not followedPath then
         -- Check if we are standing in a doorway

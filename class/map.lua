@@ -61,13 +61,13 @@ function Map:add_temple_exit()
     end
 
     -- Add an exit to the first room which leads outside
-    local newExit = Exit({x = x, y = y})
-    newExit.room = self.game.outside
+    local newExit = Exit({x = x, y = y, room = self.rooms[1]})
+    newExit.targetRoom = self.game.outside
     table.insert(self.rooms[1].exits, newExit)
 
     -- Ad an exit to the outside room which leads inside
-    local exitToInside = Exit({x = 30, y = 15})
-    exitToInside.room = self.rooms[1]
+    local exitToInside = Exit({x = -1, y = 10, room = self.game.outside})
+    exitToInside.targetRoom = self.rooms[1]
     table.insert(self.game.outside.exits, exitToInside)
 end
 
@@ -234,7 +234,7 @@ function Map:generate_rooms()
     local rooms = {}
     for i, node in ipairs(self.nodes) do
         -- Add the new room and attach it to this node
-        local r = Room({exits = exits, index = #rooms + 1, game = self.game})
+        local r = Room({index = #rooms + 1, game = self.game})
         r.distanceFromStart = manhattan_distance(node, self.path[1])
         table.insert(rooms, r)
         node.room = r
@@ -279,13 +279,13 @@ function Map:generate_rooms()
                     end
                 end
 
-                newExit = Exit({x = x, y = y})
+                newExit = Exit({x = x, y = y, room = node.room})
                 if linkedExit ~= nil then
-                    linkedExit.roomIndex = #rooms
-                    linkedExit.room = node.room
+                    --linkedExit.roomIndex = #rooms
+                    linkedExit.targetRoom = node.room
 
-                    newExit.roomIndex = n.room.index
-                    newExit.room = n.room
+                    --newExit.roomIndex = n.room.index
+                    newExit.targetRoom = n.room
                 end
                 --print('new exit:', newExit.x, newExit.y, newExit.roomIndex)
 
@@ -430,8 +430,8 @@ function Map:add_secret_passages()
         -- If this room has only 1 exit
         if r.distanceFromStart > 0 and #r.exits == 1 then
             -- Put a false brick in front of the exit that leads to this room
-            local adjacentRoom = r.exits[1].room
-            local adjacentExit = adjacentRoom:get_exit({room = r})
+            local adjacentRoom = r.exits[1].targetRoom
+            local adjacentExit = adjacentRoom:get_exit({targetRoom = r})
             local falseBrick = FalseBrick(adjacentExit:get_doorway())
             table.insert(adjacentRoom.requiredObjects, falseBrick)
 

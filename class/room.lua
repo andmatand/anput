@@ -281,11 +281,11 @@ function Room:get_characters()
 end
 
 function Room:get_exit(search)
-    for i,e in pairs(self.exits) do
+    for i, e in pairs(self.exits) do
         if (e.x ~= nil and e.x == search.x) or
            (e.y ~= nil and e.y == search.y) or
-           (e.roomIndex ~= nil and e.roomIndex == search.roomIndex) or
-           (e.room ~= nil and e.room == search.room) then
+           --(e.roomIndex ~= nil and e.roomIndex == search.roomIndex) or
+           (e.targetRoom ~= nil and e.targetRoom == search.targetRoom) then
             return e
         end
     end

@@ -113,7 +113,7 @@ function Game:get_adjacent_rooms()
     local rooms = {}
 
     for _, e in pairs(self.currentRoom.exits) do
-        table.insert(rooms, e.room)
+        table.insert(rooms, e.targetRoom)
     end
 
     return rooms
@@ -271,7 +271,7 @@ function Game:move_player_to_start()
     self.player:move_to_room(room)
 
     -- Put the player at the temple exit
-    local templeExit = room:get_exit({room = self.outside})
+    local templeExit = room:get_exit({targetRoom = self.outside})
     self.player:set_position(templeExit:get_doorway())
 
     -- Face the player toward the room's midpoint (left/right only)
@@ -401,10 +401,10 @@ function Game:update(dt)
         end
     end
 
-    if self.previousRoom then
-        -- Update the previous room
-        self.previousRoom:update()
-    end
+    --if self.previousRoom then
+    --    -- Update the previous room
+    --    self.previousRoom:update()
+    --end
 
     -- If the player entered a different room
     if self.player.room and self.player.room ~= self.currentRoom then
