@@ -126,7 +126,7 @@ end
 
 
 function Wrapper:restart()
-    self.game = Game()
+    self.game = Game(self)
     self.intro = Intro()
     self.state = 'boot'
 end

@@ -10,7 +10,9 @@ require('util.tile')
 -- A Game handles a collection of rooms
 Game = class('Game')
 
-function Game:init()
+function Game:init(wrapper)
+    self.wrapper = wrapper
+
     self.menuState = 'inventory'
     self.paused = false
     self.time = 0
@@ -137,6 +139,12 @@ function Game:input()
 end
 
 function Game:keypressed(key)
+    if self.player.dead then
+        if key == 'return' then
+            self.wrapper:restart()
+        end
+    end
+
     self.player:keypressed(key)
 
     -- Get player input for switching weapons
@@ -360,6 +368,16 @@ function Game:update(dt)
     end
 
     self.statusBar:update()
+
+    if self.player.dead then
+        if not self.playerDeadTimer then
+            self.playerDeadTimer = self.time
+        end
+
+        if self.time >= self.playerDeadTimer + 3 then
+            self.statusBar:show_context_message({'enter'}, 'NEW GAME')
+        end
+    end
 
     if not self.playerMoved and self.time >= 3 then
         self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
