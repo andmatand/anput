@@ -209,8 +209,8 @@ function love.keypressed(key, unicode)
     elseif ctrl and key == '-' then
         set_scale(SCALE_X - 1)
     elseif ctrl and key == 'd' then
-        wrapper.game.demoMode = not wrapper.game.demoMode
-        print('demo mode ', wrapper.game.demoMode)
+        wrapper.game:set_demo_mode(not wrapper.game.demoMode)
+        print('demo mode: ', wrapper.game.demoMode)
     elseif ctrl and key == 'f' then
         for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
             if c.name then

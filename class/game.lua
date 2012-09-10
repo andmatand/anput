@@ -102,16 +102,6 @@ function Game:generate()
         end
     end
 
-    --self.demoMode = true -- DEBUG
-    if self.demoMode then
-        self.player.ai = AI(self.player)
-        self.player.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
-        self.player.ai.level.chase = {dist = 20, prob = 10, delay = .1}
-        self.player.ai.level.loot = {dist = 20, prob = 10, delay = .1}
-        self.player.ai.level.explore = {dist = 15, prob = 8, delay = .25}
-        self.player.ai.level.shoot = {dist = 10, prob = 10, delay = .25}
-    end
-
     -- Create a status bar
     self.statusBar = StatusBar(self.player)
 
@@ -303,13 +293,36 @@ function Game:pause()
     end
 end
 
+function Game:set_demo_mode(tf)
+    self.demoMode = tf
+
+    if self.demoMode then
+        if not self.player.ai then
+            self.player.tag = true
+            self.player.ai = AI(self.player)
+            self.player.ai.choiceTimer.delay = .1
+            self.player.ai.level.aim = {dist = 20, prob = 10, delay = .05}
+            self.player.ai.level.attack = {dist = 20, prob = 10, delay = .1}
+            self.player.ai.level.chase = {dist = 20, prob = 9, delay = .05}
+            self.player.ai.level.dodge = {dist = 20, prob = 10, delay = .05}
+            self.player.ai.level.explore = {dist = 20, prob = 9, delay = .05}
+            self.player.ai.level.flee = {dist = 20, prob = 10, delay = .05}
+            self.player.ai.level.heal = {dist = 20, prob = 10, delay = .05}
+            self.player.ai.level.loot = {dist = 20, prob = 9, delay = .05}
+            print('gave AI to player')
+        end
+    else
+        self.player.ai = nil
+    end
+end
+
 function Game:switch_to_room(room)
-    if DEBUG then
+    --if DEBUG then
         print('switching to room ' .. room.index)
         print('  random seed: ' .. room.randomSeed)
         print('  distance from start: ' .. room.distanceFromStart)
         print('  difficulty: ' .. room.difficulty)
-    end
+    --end
 
     self.previousRoom = self.currentRoom
 
