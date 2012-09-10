@@ -10,10 +10,10 @@ wizard.ai.choiceTimer.delay = .5
 wizard.ai.level.aim = {dist = 4, prob = 10, delay = .1}
 wizard.ai.level.attack = {dist = 10, prob = 10, delay = .25}
 wizard.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
-wizard.ai.level.flee = {prob = 10, delay = .25}
+wizard.ai.level.flee = {dist = 10, prob = 10, delay = .25}
 wizard.ai.level.heal = {prob = 10, delay = .5}
 --wizard.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
---wizard.ai.level.chase = {dist = 20, prob = 10, delay = .1}
+wizard.ai.level.chase = {delay = .1}
 --wizard.ai.level.loot = {dist = 20, prob = 10, delay = .1}
 --wizard.ai.level.explore = {dist = 15, prob = 8, delay = 1}
 --wizard.ai.level.shoot = {dist = 10, prob = 10, delay = .25}
