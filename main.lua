@@ -179,9 +179,12 @@ function jump_to_room(index)
 end
 
 function love.keypressed(key, unicode)
-    local ctrl
+    local ctrl, shift
     if love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl') then
         ctrl = true
+    end
+    if love.keyboard.isDown('lshift') or love.keyboard.isDown('rshift') then
+        shift = true
     end
 
     if ctrl and key == 'n' then
@@ -192,29 +195,39 @@ function love.keypressed(key, unicode)
         love.graphics.toggleFullscreen()
     elseif ctrl and key == 'q' then
         love.event.quit()
-    elseif key == 'f1' then
-        DEBUG = not DEBUG
-    elseif ctrl and key == 'j' then
-        jump_to_room(wrapper.game.currentRoom.index + 1)
-    elseif ctrl and key == 'k' then
-        jump_to_room(wrapper.game.currentRoom.index - 1)
-    elseif ctrl and key == 'g' then
-        -- Give the player some goodies!
-        for i = 1, 7 do
-            local item = Item('shinything')
-            wrapper.game.player:pick_up(item)
-        end
     elseif ctrl and (key == '=' or key == '+') then
         set_scale(SCALE_X + 1)
     elseif ctrl and key == '-' then
         set_scale(SCALE_X - 1)
-    elseif ctrl and key == 'd' then
-        wrapper.game:set_demo_mode(not wrapper.game.demoMode)
-        print('demo mode: ', wrapper.game.demoMode)
-    elseif ctrl and key == 'f' then
-        for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
-            if c.name then
-                c.ai:chase(wrapper.game.player)
+
+    -- DEBUG commands
+    elseif ctrl and shift then
+        if key == 'f1' then
+            DEBUG = not DEBUG
+        elseif key == 'j' then
+            jump_to_room(wrapper.game.currentRoom.index + 1)
+        elseif key == 'k' then
+            jump_to_room(wrapper.game.currentRoom.index - 1)
+        elseif key == 'g' then
+            -- Give the player some goodies!
+            for i = 1, 7 do
+                local item = Item('shinything')
+                wrapper.game.player:pick_up(item)
+            end
+        elseif key == 'd' then
+            wrapper.game:set_demo_mode(not wrapper.game.demoMode)
+            print('demo mode: ', wrapper.game.demoMode)
+        elseif key == 'f' then
+            for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
+                if c.name then
+                    c.ai:chase(wrapper.game.player)
+                end
+            end
+        elseif key == 'b' then
+            if not wrapper.game.player.armory[bow] then
+                local bow = Weapon('bow')
+                wrapper.game.player:pick_up(bow)
+                bow:add_ammo(20)
             end
         end
     else

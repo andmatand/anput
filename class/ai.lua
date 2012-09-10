@@ -274,7 +274,9 @@ function AI:do_action(action)
             target = self:find_exit()
 
             if target and self:target_in_range(target, action) then
-                print('    exploring toward exit')
+                if self.owner.tag then
+                    print('    exploring toward exit')
+                end
                 self:plot_path(target:get_position(), AI_ACTION.explore)
             else
                 self:plot_path(self:find_random_position(), AI_ACTION.explore)
