@@ -352,7 +352,8 @@ function Game:switch_to_room(room)
     -- Update the new current room
     self.currentRoom.fov = nil
     self.currentRoom.bricksDirty = true
-    self.currentRoom:update()
+    --self.currentRoom:update()
+    self.currentRoom:sweep()
 end
 
 function Game:unpause()
@@ -402,7 +403,7 @@ function Game:update(dt)
 
     -- Check if we need to update the adjacent rooms
     for _, room in pairs(self:get_adjacent_rooms()) do
-        if room.isGenerated and room ~= self.previousRoom then
+        if room.isGenerated then --and room ~= self.previousRoom then
             --local needsToUpdate = false
 
             ---- Check if there are any projectiles

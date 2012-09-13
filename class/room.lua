@@ -6,6 +6,7 @@ Room = class('Room')
 
 function Room:init(args)
     self.isGenerated = false
+    self.isSecret = false
     self.visited = false
     self.bricksDirty = true
     self.bricks = {}
@@ -360,20 +361,34 @@ function Room:line_of_sight(a, b)
 end
 
 function Room:plot_path(src, dest, characterTeam)
-    -- Create a table of the room's occupied nodes
-    hotLava = {}
-    for _, b in pairs(self.bricks) do
-        table.insert(hotLava, {x = b.x, y = b.y})
-    end
-    for _, c in pairs(self:get_characters()) do
-        -- If this character is on the team of the one who called this function
-        if c.team == characterTeam then
-            table.insert(hotLava, {x = c.position.x, y = c.position.y})
+    local addCharacters = true
+    local path
+
+    while true do
+        -- Create a table of the room's occupied nodes
+        local hotLava = {}
+        for _, b in pairs(self.bricks) do
+            table.insert(hotLava, {x = b.x, y = b.y})
+        end
+        if addCharacters then
+            for _, c in pairs(self:get_characters()) do
+                -- If this character is on the team of the one who called this
+                -- function
+                --if c.team == characterTeam then
+                table.insert(hotLava, {x = c.position.x, y = c.position.y})
+                --end
+            end
+        end
+
+        local pf = PathFinder(src, dest, hotLava, nil, {smooth = true})
+        path = pf:plot()
+
+        if #path == 0 and addCharacters then
+            addCharacters = false
+        else
+            break
         end
     end
-
-    pf = PathFinder(src, dest, hotLava, nil, {smooth = true})
-    path = pf:plot()
 
     -- Remove first node from path
     table.remove(path, 1)
@@ -587,28 +602,30 @@ function Room:update()
     self:sweep()
 
     -- Iterate through the room objects which can have mouths
-    --for _, o in pairs(self.sprites) do
-    --  -- If this object has a mouth which should speak
-    --  if o.mouth and o:should_speak() then
-    --      o.mouth:speak()
-    --  end
-    --end
+    for _, o in pairs(self.sprites) do
+        -- If this object has a mouth which should speak
+        if o.mouth and o.mouth:should_speak() then
+            if type(o.mouth.speech) == 'string' then
+                o.mouth:speak()
+            end
+        end
+    end
 
     -- Update messages
     self:update_messages()
 
     -- If this is the game's current room
     if self.game.currentRoom == self then
-        if (self.game.player.moved and
-            self:tile_in_room(self.game.player.position)) then
+        if self.game.player.moved then
+            --and self:tile_in_room(self.game.player.position)) then
             self:update_fov()
         end
 
         -- If the player moved
-        if self.game.player.moved then
-            -- Flag the bricks for a redraw
-            --self.bricksDirty = true
-        end
+        --if self.game.player.moved then
+        --    -- Flag the bricks for a redraw
+        --    --self.bricksDirty = true
+        --end
     end
 end
 

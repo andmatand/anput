@@ -324,28 +324,60 @@ function Map:generate_rooms()
     return rooms
 end
 
-function Map:get_early_rooms(num)
-    local earlyRooms = {}
+function Map:get_random_room(filters)
+    local rooms = copy_table(self.rooms)
 
-    for distance = 1, 100 do
-        for _, r in pairs(self.rooms) do
-            if r.distanceFromStart == distance then
-                table.insert(earlyRooms, r)
-
-                if #earlyRooms == num then
-                    return earlyRooms
-                end
-            end
+    if filters.distance then
+        for _, r in pairs(rooms) do
+            table.remove()
         end
     end
 end
 
-function Map:get_rooms_below_difficulty(diff)
+function Map:get_rooms_by_distance(min, max, filters)
+    local rooms = {}
+
+    for distance = min, max do
+        for _, r in pairs(self.rooms) do
+            local ok = true
+            if filters then
+                for k, v in pairs(filters) do
+                    if r[k] ~= v then
+                        ok = false
+                        break
+                    end
+                end
+            end
+
+            if ok then
+                if r.distanceFromStart == distance then
+                    table.insert(rooms, r)
+                end
+            end
+        end
+    end
+
+    return rooms
+end
+
+function Map:get_rooms_by_difficulty(min, max, filters)
     local rooms = {}
 
     for _, r in pairs(self.rooms) do
-        if r.difficulty < diff then
-            table.insert(rooms, r)
+        local ok = true
+        if filters then
+            for k, v in pairs(filters) do
+                if r[k] ~= v then
+                    ok = false
+                    break
+                end
+            end
+        end
+
+        if ok then
+            if r.difficulty >= min and r.difficulty <= max then
+                table.insert(rooms, r)
+            end
         end
     end
 
@@ -372,32 +404,21 @@ function Map:add_required_objects()
     --table.insert(self.rooms[1].requiredObjects, thing)
 
 
-    -- Create a table of the 5 earliest rooms
-    local earlyRooms = self:get_early_rooms(5)
-
     -- Put the wizard in one of the 5 earliest rooms
-    local chunk = love.filesystem.load('npc/wizard.lua')
-    local wizard = chunk()
-    --wizard.tag = true
-    while #earlyRooms > 0 do
-        local roomNum = math.random(1, #earlyRooms)
-
-        -- If this is a secret room
-        if earlyRooms[roomNum].isSecret then
-            -- Remove it from consideration
-            table.remove(earlyRooms, roomNum)
-        else
-            table.insert(earlyRooms[roomNum].requiredObjects, wizard)
-            earlyRooms[roomNum].needsRoomForNPC = true
-            break
-        end
-    end
-
+    local wizard = load_npc('wizard')
+    local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
+    add_npc_to_room(wizard, rooms[math.random(1, #rooms)])
+    
+    -- Put the camel in a mid-difficulty room
+    local camel = load_npc('camel')
+    local rooms = self:get_rooms_by_difficulty(40, 60, {isSecret = false})
+    add_npc_to_room(camel, rooms[math.random(1, #rooms)])
 
     -- Create a table of the rooms lower than the difficulty at which ghosts
     -- would spawn
-    local easyRooms = self:get_rooms_below_difficulty(
-                      MONSTER_DIFFICULTY[MONSTER_TYPE.ghost])
+    local easyRooms = self:get_rooms_by_difficulty(0,
+                           MONSTER_DIFFICULTY[MONSTER_TYPE.ghost] - 1,
+                           {isSecret = false})
     local easyRoomsCopy = copy_table(easyRooms)
     local numShinyThings = 0
     while numShinyThings < 7 do
@@ -451,3 +472,16 @@ function Map:update()
     self.display:update()
 end
 
+
+-- Non-Class Functions
+function add_npc_to_room(npc, room)
+    table.insert(room.requiredObjects, npc)
+    room.needsRoomForNPC = true
+end
+
+function load_npc(name)
+    local chunk = love.filesystem.load('npc/' .. name .. '.lua')
+    local npc = chunk()
+
+    return npc
+end

@@ -84,6 +84,10 @@ function love.load()
                          sword = new_image('archer-sword.png')}
     monsterImg.ghost = {default = new_image('ghost.png')}
 
+    -- NPCs
+    camelImg = {default = new_image('camel.png'),
+                step = new_image('camel-step.png')}
+
     -- Projectiles
     projectileImg = {}
     projectileImg.arrow = {new_image('arrow.png')}
@@ -178,6 +182,44 @@ function jump_to_room(index)
     end
 end
 
+function translate_direction(direction)
+    if type(direction) == 'string' then
+        if direction == 'up' then
+            return 1
+        elseif direction == 'right' then
+            return 2
+        elseif direction == 'down' then
+            return 3
+        elseif direction == 'left' then
+            return 4
+        end
+    end
+end
+
+function jump_to_room_in_direction(direction)
+    local currentNode
+
+    -- Find the current room's map node
+    for _, n in pairs(wrapper.game.map.nodes) do
+        if n.room == wrapper.game.currentRoom then
+            currentNode = n
+            break
+        end
+    end
+
+    -- Find the target position
+    local dir = translate_direction(direction)
+    local targetPos = add_direction(currentNode, dir)
+
+    -- Find the node that overlaps with the target position
+    for _, n in pairs(wrapper.game.map.nodes) do
+        if tiles_overlap(n, targetPos) then
+            jump_to_room(n.room.index)
+            return
+        end
+    end
+end
+
 function love.keypressed(key, unicode)
     local ctrl, shift
     if love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl') then
@@ -208,6 +250,9 @@ function love.keypressed(key, unicode)
             jump_to_room(wrapper.game.currentRoom.index + 1)
         elseif key == 'k' then
             jump_to_room(wrapper.game.currentRoom.index - 1)
+        elseif key == 'up' or key == 'right' or key == 'down' or
+               key == 'left' then
+            jump_to_room_in_direction(key)
         elseif key == 'g' then
             -- Give the player some goodies!
             for i = 1, 7 do

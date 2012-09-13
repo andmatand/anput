@@ -159,6 +159,12 @@ function Character:die()
 
     -- Drop all items in our inventory
     self:drop_items(itemsToDrop)
+
+    if not instanceOf(Player, self) then
+        if self:is_audible() then
+            sound.monsterDie:play()
+        end
+    end
 end
 
 function Character:direction_to(position)
@@ -394,16 +400,25 @@ end
 
 function Character:hit(patient)
     -- Damage other characters with melee weapons
-    if (instanceOf(Character, patient) and -- We hit a character
-        self.armory.currentWeapon and -- We have a current weapon
-        self.armory.currentWeapon.meleeDamage and -- It's a melee weapon
-        self:is_enemies_with(patient)) then -- Patient is an enemy
-        -- If the patient receives our hit
-        if patient:receive_hit(self) then
-            patient:receive_damage(self.armory.currentWeapon.meleeDamage, self)
-            self.attackedDir = self.dir
-        else
-            return false
+    if instanceOf(Character, patient) then
+        if self:is_enemies_with(patient) then -- Patient is an enemy
+            -- If our current weapon is a melee weapon
+            if (self.armory.currentWeapon and
+                self.armory.currentWeapon.meleeDamage) then 
+                -- If the patient receives our hit
+                if patient:receive_hit(self) then
+                    patient:receive_damage(
+                            self.armory.currentWeapon.meleeDamage, self)
+                    self.attackedDir = self.dir
+                else
+                    return false
+                end
+            end
+        -- If patient is not an enemy, and has AI
+        elseif patient.ai then
+            -- Tell our teammate to dodge us
+            patient.ai:dodge(self)
+            --return false
         end
     end
 
@@ -670,6 +685,9 @@ function Character:update_image()
         self.currentImage = self.images.bow_shoot
     elseif self.images.dodge and self.ai.path.action == AI_ACTION.dodge then
         self.currentImage = self.images.dodge
+    elseif (self.images.step and self.stepped) then
+        self.currentImage = self.images.step
+        self.frameHoldTimer.delay = 1
     elseif (self.images.walk and (self.ai.path.nodes or self.stepped)) then
         self.currentImage = self.images.walk
     elseif (self.images.sword and

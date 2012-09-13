@@ -26,7 +26,7 @@ function Mouth:should_speak()
     -- If we are attached to a sprite
     if self.sprite then
         -- Set our position and room to those of the sprite
-        position = self.sprite.position
+        position = self.sprite:get_position()
         self.room = self.sprite.room
     end
 

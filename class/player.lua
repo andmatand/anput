@@ -61,6 +61,8 @@ function Player:find_context()
                     if obj:can_trade() and self:can_trade(obj.price) then
                         return 'trade'
                     end
+                elseif obj.name == 'CAMEL' then
+                    return 'grab'
                 end
             end
         end
@@ -95,6 +97,8 @@ function Player:keypressed(key)
     if key == 'return' then
         if self.context == 'trade' then
             self.wantsToTrade = true
+        elseif self.context == 'grab' then
+            self.isGrabbing = true
         end
     end
 end
@@ -104,12 +108,19 @@ function Player:update()
 
     -- Reset all context-related variables
     self.wantsToTrade = false
+    self.isGrabbing = false
 
     self.context = self:find_context()
 
+    -- Show a context messages in the status bar
+    local contextAction
     if self.context == 'trade' then
-        -- Show a context message in the status bar
-        self.room.game.statusBar:show_context_message({'enter'}, 'TRADE')
+        contextAction = 'TRADE'
+    elseif self.context == 'grab' then
+        contextAction = 'GRAB'
+    end
+    if contextAction then
+        self.room.game.statusBar:show_context_message({'enter'}, contextAction)
     end
 end
 

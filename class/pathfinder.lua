@@ -79,9 +79,8 @@ function PathFinder:AStar(src, dest)
         
         if best == nil then
             print('A*: no path exists!')
-            --love.timer.sleep(1000)
-            -- No path exists
-            break
+            return {}
+            --break
         end
 
         -- Remove the best node from openNodes and add it to closedNodes

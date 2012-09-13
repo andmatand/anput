@@ -10,6 +10,7 @@ AI_ACTION = {aim = 'aim', -- Get into a shooting position
              explore = 'explore', -- Walk around to try to find something
                                   -- interesting
              flee = 'flee', -- Move away from an enemy (if they are a threat)
+             globetrot = 'globetrot', -- Move constantly from room to room
              heal = 'heal', -- Use an exilir (if we have one and need one)
              loot = 'loot'} -- Move toward an item
 
@@ -22,18 +23,19 @@ function AI:init(owner)
     self.level = {}
     -- Aim distance is how close an enemy must be before we bother aiming at
     -- him
-    self.level.aim     = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.aim       = {dist = nil, prob = nil, target = nil, delay = nil}
 
-    self.level.attack  = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.chase   = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.dodge   = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.attack    = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.chase     = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.dodge     = {dist = nil, prob = nil, target = nil, delay = .5}
 
     -- Give explore a default delay so any level of AI can get out of doorways
-    self.level.explore = {dist = nil, prob = nil, target = nil, delay = .5}
+    self.level.explore   = {dist = nil, prob = nil, target = nil, delay = .5}
 
-    self.level.flee    = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.heal    = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.loot    = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.flee      = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.globetrot = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.heal      = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.loot      = {dist = nil, prob = nil, target = nil, delay = nil}
 
     self.choiceTimer = {value = 0, delay = 0}
 
@@ -243,6 +245,12 @@ function AI:do_action(action)
         local threat = self:find_threat()
         if threat and self:target_in_range(threat, action) then
             self:flee_from(threat)
+            return true
+        end
+    elseif action == 'globetrot' and
+           (not self.path.nodes or
+            self.path.action ~= AI_ACTION.globetrot) then
+        if self:globetrot() then
             return true
         end
     elseif action == 'heal' and self:waited_to(action) then
@@ -710,6 +718,31 @@ function AI:get_distance_to_destination()
     end
 end
 
+function AI:globetrot()
+    -- Make a copy of the room's exits
+    local exits = copy_table(self.owner.room.exits)
+
+    while #exits > 0 do
+        local index = math.random(1, #exits)
+        local e = exits[index]
+
+        if not e:is_hidden() then
+            -- If this exit would not take us to the room where we just were,
+            -- or this is the last exit left in consideration
+            if e.targetRoom ~= self.oldRoom or #exits == 1 then
+                -- Choose this exit
+                self:plot_path(e:get_position(), AI_ACTION.globetrot)
+                break
+            end
+        end
+
+        -- Remove this exit from future consideration
+        table.remove(exits, index)
+    end
+
+    return true
+end
+
 function AI:heal()
     local elixir = self.owner.inventory:get_item(ITEM_TYPE.elixir)
 
@@ -744,7 +777,9 @@ end
 
 function AI:is_aimed_at(target)
     if (self:target_in_range(target, AI_ACTION.attack) and
-        self.owner:line_of_sight(target)) then
+        self.owner:line_of_sight(target) and
+        not tiles_overlap(self.owner:get_position(),
+                          target:get_position())) then
         return true
     else
         return false
@@ -876,6 +911,10 @@ function AI:add_to_explored_positions(position)
 end
 
 function AI:update()
+    if self.owner.tag then
+        print('AI:update()')
+    end
+
     -- If we just entered a different room
     if self.owner.room ~= self.oldRoom then
         -- Clear the old table of explored areas
@@ -895,6 +934,7 @@ function AI:update()
 
     if followedPath then
         self:add_to_explored_positions(self.owner:get_position())
+        self.choseAction = true
     end
     
     if not self.path.nodes and not followedPath then
@@ -927,26 +967,26 @@ function AI:update()
         end
     end
 
-    -- If we just entered a different room
-    if self.owner.room ~= self.oldRoom then
-        self.oldRoom = self.owner.room
-    end
-
-    -- Check if we should dodge a Player on our team walking at us
-    for _, s in pairs(self.owner.room.sprites) do
-        --if instanceOf(Player, s) and s.team == self.owner.team then
-        if s.team == self.owner.team then
-            if s:will_hit(self.owner) then
-                self:dodge(s)
-                self.choseAction = true
-            end
-        end
-    end
+    -- Check if we should dodge a character on our team walking at us
+    --for _, s in pairs(self.owner.room.sprites) do
+    --    --if instanceOf(Player, s) and s.team == self.owner.team then
+    --    if s.team == self.owner.team then
+    --        if s:will_hit(self.owner) then
+    --            self:dodge(s)
+    --            self.choseAction = true
+    --        end
+    --    end
+    --end
 
     if not self.choseAction then
         if self:waited_to_choose() then
             self:choose_action()
             self.choseAction = true
+
+            -- If we just entered a different room
+            if self.owner.room ~= self.oldRoom then
+                self.oldRoom = self.owner.room
+            end
         end
     end
 

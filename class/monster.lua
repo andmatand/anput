@@ -135,18 +135,19 @@ function Monster:init(monsterType)
         self.ai.level.attack = {dist = 20, prob = 8, delay = .3}
         self.ai.level.dodge = {dist = 5, prob = 9, delay = .3}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
+        self.ai.level.flee = {dist = 10, prob = 8, delay = .3}
     end
 
     self.health = self.maxHealth
 end
 
-function Monster:die()
-    Character.die(self)
-
-    if self:is_audible() then
-        sound.monsterDie:play()
-    end
-end
+--function Monster:die()
+--    Character.die(self)
+--
+--    if self:is_audible() then
+--        sound.monsterDie:play()
+--    end
+--end
 
 function Monster:hit(patient)
     if self.monsterType == MONSTER_TYPE.ghost then
