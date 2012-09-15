@@ -2,61 +2,43 @@
 -- a Character's inventory
 Item = class('Item')
 
-ITEM_TYPE = {elixir = 1,
-             arrow = 2,
-             shinything = 3,
-             claws = 4,
-             sword = 5,
-             bow = 6,
-             staff = 7,
-             ankh = 8}
-ITEM_NAME = {'ELIXIR',
-             'ARROW',
-             'SHINY THING',
-             '',
-             'SWORD',
-             'BOW',
-             'STAFF',
-             'ANKH',
-             'EYE OF HORUS',
-             'FEATHER OF MA\'AT'}
+             
+ITEM_NAME = {
+    -- Normal items
+    elixir = 'ELIXIR',
+    arrow = 'ARROW',
+    shinything = 'SHINY THING',
 
---ITEM_TYPE = {elixir = 'ELIXIR',
---             arrow = 'ARROW',
---             shinything = 'SHINY THING',
---             sword = 'SWORD',
---             bow = 'BOW',
---             staff = 'STAFF',
---             ankh = 'ANKH',
---             eye = 'EYE OF HORUS',
---             feather = 'FEATHER OF MA\'AT'}
+    -- Weapons
+    sword = 'SWORD',
+    bow = 'BOW',
+    firestaff = 'FIRE STAFF',
+    thunderstaff = 'THUNDER STAFF',
+
+    -- Artifacts
+    ankh = 'ANKH',
+    eye = 'EYE OF HORUS',
+    feather = 'FEATHER OF MA\'AT'}
 
 
 function Item:init(itemType)
-    if type(itemType) == 'number' then
-        self.itemType = itemType
-    elseif type(itemType) == 'string' then
-        self.itemType = ITEM_TYPE[itemType]
-    end
+    self.itemType = itemType
 
-    self.isUsable = false
     self.isMovable = true
 
-    if self.itemType == ITEM_TYPE.elixir then
-        self.frames = {{image = elixirImg}}
+    if self.itemType == 'elixir' then
         self.isUsable = true
-    elseif self.itemType == ITEM_TYPE.arrow then
-        self.frames = {{image = arrowImg}}
-        --self.frames = {{image = projectileImg.arrow}}
-    elseif self.itemType == ITEM_TYPE.shinything then
+    end
+
+    if self.itemType == 'shinything' then
         self.frames = {
-            {image = shinyThingImg[1], delay = 8},
-            {image = shinyThingImg[2], delay = 2},
-            {image = shinyThingImg[3], delay = 2},
-            {image = shinyThingImg[2], delay = 2},
-            {image = shinyThingImg[3], delay = 2}}
-    elseif self.itemType == ITEM_TYPE.ankh then
-        self.frames = {{image = ankhImg}}
+            {image = image.shinything[1], delay = 8},
+            {image = image.shinything[2], delay = 2},
+            {image = image.shinything[3], delay = 2},
+            {image = image.shinything[2], delay = 2},
+            {image = image.shinything[3], delay = 2}}
+    elseif image[self.itemType] then
+        self.frames = {{image = image[self.itemType]}}
     else
         self.frames = nil
     end
@@ -130,7 +112,7 @@ function Item:use()
 end
 
 function Item:use_on(patient)
-    if self.itemType == ITEM_TYPE.elixir then
+    if self.itemType == 'elixir' then
         -- Health elixir
         if patient:add_health(20) then
             print('used elixir')
@@ -147,7 +129,7 @@ function Item:use_on(patient)
             sound.unable:play()
             return false
         end
-    elseif self.itemType == ITEM_TYPE.arrow then
+    elseif self.itemType == 'arrow' then
         -- Arrows
         -- If the patient has a bow
         if patient.armory.weapons.bow then

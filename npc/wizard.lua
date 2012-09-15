@@ -1,9 +1,8 @@
-local wizard = Trader({ware = Weapon('staff')})
+local wizard = Trader({ware = Weapon('firestaff')})
 
 -- Appearance
 wizard.name = 'WIZARD'
 wizard.images = playerImg
-wizard.color = CYAN
 
 -- AI
 wizard.ai.choiceTimer.delay = .5
@@ -32,22 +31,5 @@ elseif whichLine == 2 then
 elseif whichLine == 3 then
     wizard.speech.later = "SHINY! SHINY! SHINY!"
 end
-
---wizard.update =
---function(self)
---  Character.update(self)
---
---  if self.weapons.staff and
---      self.room.game.player:has_item(ITEM_TYPE.shinything, 7) and
---      tiles_touching(self.position, self.room.game.player.position)
---      then
---          self.room.game.player:drop({shinyThings})
---          wizard.mouth.speech = 'HERE YOU GO'
---          wizard.mouth:speak()
---          wizard.mouth.speech = 'THANKS FOR THE SHINY THINGS'
---          self:drop({self.weapons.staff:get_item()})
---          self.weapons.staff = nil
---      end
---  end
 
 return wizard

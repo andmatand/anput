@@ -5,7 +5,7 @@ function Trader:init(args)
     Character.init(self)
     self.magic = 100
 
-    self.price = {currency = ITEM_TYPE.shinything,
+    self.price = {currency = 'shinything',
                   quantity = 99}
     self.ware = args.ware
 

@@ -171,14 +171,16 @@ function RoomFiller:add_items()
 
     local addedElixir = false
 
+    local itemTypes = {'elixir', 'arrow', 'shinything'}
+
     if self.room.isSecret then
         -- Add some goodies
         local numGoodies = math.random(3, 8)
         local goodies = {}
 
         for i = 1, numGoodies do
-            -- Choose a random item type including shiny things
-            local itemType = math.random(1, 3)
+            -- Choose a random item type
+            local itemType = itemTypes[math.random(1, #itemTypes)]
 
             table.insert(goodies, Item(itemType))
         end
@@ -194,13 +196,18 @@ function RoomFiller:add_items()
                 -- If we already added an elixir to this room
                 if addedElixir then
                     -- Do not allow adding any more
-                    minItemType = 2
+                    for i, itemType in pairs(itemTypes) do
+                        if itemType == 'elixir' then
+                            table.remove(itemTypes, i)
+                            break
+                        end
+                    end
                 end
 
                 -- Choose a random item type
-                local itemType = math.random(minItemType, 2)
+                local itemType = itemTypes[math.random(1, #itemTypes)]
 
-                if itemType == ITEM_TYPE.elixir then
+                if itemType == 'elixir' then
                     addedElixir = true
                 end
 

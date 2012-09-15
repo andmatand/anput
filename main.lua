@@ -66,7 +66,8 @@ function love.load()
     playerImg = {default = new_image('player.png'),
                  sword = new_image('player-sword.png'),
                  bow = new_image('player-bow.png'),
-                 staff = new_image('player-staff.png')}
+                 firestaff = new_image('player-firestaff.png'),
+                 thunderstaff = new_image('player-thunderstaff.png')}
 
     -- Monsters
     monsterImg = {}
@@ -90,20 +91,22 @@ function love.load()
 
     -- Projectiles
     projectileImg = {}
-    projectileImg.arrow = {new_image('arrow.png')}
+    projectileImg.arrow = {new_image('item/arrow.png')}
     projectileImg.fireball = {new_image('fireball1.png'),
                               new_image('fireball2.png')}
 
     -- Items
-    elixirImg = new_image('elixir.png')
-    arrowImg = new_image('arrow.png')
-    shinyThingImg = {new_image('shiny1.png'),
-                     new_image('shiny2.png'),
-                     new_image('shiny3.png')}
-    swordImg = new_image('sword.png')
-    bowImg = new_image('bow.png')
-    staffImg = new_image('staff.png')
-    ankhImg = new_image('ankh.png')
+    image = {}
+    image.ankh = new_image('item/ankh.png')
+    image.elixir = new_image('item/elixir.png')
+    image.arrow = new_image('item/arrow.png')
+    image.shinything = {new_image('item/shiny-1.png'),
+                        new_image('item/shiny-2.png'),
+                        new_image('item/shiny-3.png')}
+    image.sword = new_image('weapon/sword.png')
+    image.bow = new_image('weapon/bow.png')
+    image.firestaff = new_image('weapon/firestaff.png')
+    image.thunderstaff = new_image('weapon/thunderstaff.png')
 
     -- Verbs
     dropImg = new_image('drop.png')
@@ -111,18 +114,18 @@ function love.load()
 
     -- Buttons
     buttonImg = {
-        w = new_image('buttons/w.png'),
-        a = new_image('buttons/a.png'),
-        s = new_image('buttons/s.png'),
-        d = new_image('buttons/d.png'),
-        enter = new_image('buttons/enter.png')}
+        w = new_image('button/w.png'),
+        a = new_image('button/a.png'),
+        s = new_image('button/s.png'),
+        d = new_image('button/d.png'),
+        enter = new_image('button/enter.png')}
 
     -- Hieroglyphs
-    HIEROGLYPH_IMAGE = {I = new_image('hieroglyphs/I.png'),
-                        NP = new_image('hieroglyphs/NP.png'),
-                        W = new_image('hieroglyphs/W.png'),
-                        T = new_image('hieroglyphs/T.png'),
-                        goddess = new_image('hieroglyphs/goddess.png')}
+    HIEROGLYPH_IMAGE = {I = new_image('hieroglyph/I.png'),
+                        NP = new_image('hieroglyph/NP.png'),
+                        W = new_image('hieroglyph/W.png'),
+                        T = new_image('hieroglyph/T.png'),
+                        goddess = new_image('hieroglyph/goddess.png')}
 
     -- Outside
     outsideImg = {}
@@ -274,6 +277,8 @@ function love.keypressed(key, unicode)
                 wrapper.game.player:pick_up(bow)
                 bow:add_ammo(20)
             end
+        elseif key == 'h' then
+            wrapper.game.player:add_health(100)
         end
     else
         wrapper:keypressed(key)

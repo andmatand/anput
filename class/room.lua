@@ -9,16 +9,20 @@ function Room:init(args)
     self.isSecret = false
     self.visited = false
     self.bricksDirty = true
+
+    -- Drawables
     self.bricks = {}
-    self.exits = {}
-    self.freeTiles = {}
     self.hieroglyphs = {}
     self.items = {}
+    self.thunderbolts = {}
     self.sprites = {}
-    self.turrets = {}
-    self.requiredObjects = {}
+
+    self.exits = {}
+    self.freeTiles = {}
     self.fovCache = {}
     self.messages = {}
+    self.requiredObjects = {}
+    self.turrets = {}
 
     if args then
         self.game = args.game
@@ -43,6 +47,8 @@ function Room:add_object(obj)
 
         -- Re-enable animation
         obj.animationEnabled = true
+    elseif instanceOf(Thunderbolt, obj) then
+        table.insert(self.thunderbolts, obj)
     elseif instanceOf(Brick, obj) then
         table.insert(self.bricks, obj)
     else
@@ -120,9 +126,15 @@ function Room:draw()
 
     -- Draw sprites
     for _, s in pairs(self.sprites) do
-        if tile_in_table(s.position, self.fov) or DEBUG then
+        if tile_in_table(s.position, self.fov) or s.isThundershocked or
+           DEBUG then
             s:draw()
         end
+    end
+
+    -- Draw thunderbolts
+    for _, tb in pairs(self.thunderbolts) do
+        tb:draw()
     end
 
     self:draw_messages()
@@ -438,6 +450,9 @@ function Room:sweep()
     -- Remove dead turrets
     self.turrets = remove_dead_objects(self.turrets)
 
+    -- Remove dead thunderbolts
+    self.thunderbolts = remove_dead_objects(self.thunderbolts)
+
     -- Keep only items with a position and no owner
     local items = {}
     for _, item in pairs(self.items) do
@@ -560,6 +575,14 @@ function Room:update()
     -- Get monsters' directional input
     self:character_input()
 
+    -- Let characters shoot projectile weapons
+    for _, c in pairs(self:get_characters()) do
+        if c.shootDir and c.armory.currentWeapon.projectileClass then
+            c:shoot(c.shootDir)
+            c.shootDir = nil
+        end
+    end
+
     -- Update turrets
     for _, t in pairs(self.turrets) do
         t:update()
@@ -596,17 +619,33 @@ function Room:update()
     end
     for _, s in pairs(self.sprites) do
         s:post_physics()
+        s.isThundershocked = false
+    end
+
+    -- Let characters shoot any remaining weapons
+    for _, c in pairs(self:get_characters()) do
+        if c.shootDir then
+            c:shoot(c.shootDir)
+            c.shootDir = nil
+        end
     end
 
     -- Clean up dead objects
     self:sweep()
 
-    -- Iterate through the room objects which can have mouths
-    for _, o in pairs(self.sprites) do
-        -- If this object has a mouth which should speak
-        if o.mouth and o.mouth:should_speak() then
-            if type(o.mouth.speech) == 'string' then
-                o.mouth:speak()
+    -- Mark all thunderbolts as dead so they will be swept up next time
+    for _, tb in pairs(self.thunderbolts) do
+        tb.dead = true
+    end
+
+    if self.game.player.moved and not self.game.player.dead then
+        -- Iterate through the room objects which can have mouths
+        for _, o in pairs(self.sprites) do
+            -- If this object has a mouth which should speak
+            if o.mouth and o.mouth:should_speak() then
+                if type(o.mouth.speech) == 'string' then
+                    o.mouth:speak()
+                end
             end
         end
     end

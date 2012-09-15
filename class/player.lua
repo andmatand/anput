@@ -9,6 +9,7 @@ function Player:init()
     self.ai = nil
 
     self.images = playerImg
+    self.color = WHITE
     self.team = 1 -- Good guys
     self.magic = 100
 
@@ -61,7 +62,7 @@ function Player:find_context()
                     if obj:can_trade() and self:can_trade(obj.price) then
                         return 'trade'
                     end
-                elseif obj.name == 'CAMEL' then
+                elseif obj.name == 'CAMEL' and not obj.isCaught then
                     return 'grab'
                 end
             end
@@ -73,7 +74,7 @@ end
 
 function Player:get_artifact()
     for _, item in pairs(self.inventory.items) do
-        if (item.itemType == ITEM_TYPE.ankh) then
+        if (item.itemType == 'ankh') then
             return item
         end
     end

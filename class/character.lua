@@ -15,6 +15,7 @@ Character = class('Character', Sprite)
 function Character:init()
     Sprite.init(self)
 
+    self.color = CYAN
     self.frameHoldTimer = {delay = 3, value = 0}
 
     self.health = 100
@@ -145,7 +146,7 @@ function Character:die()
             -- If we are a not a player
             if not instanceOf(Player, self) then
                 -- If the weapon is claws
-                if item.itemType == ITEM_TYPE.claws then
+                if item.itemType == 'claws' then
                     -- Do not drop it
                     ok = false
                 end
@@ -190,8 +191,13 @@ function Character:draw(pos, rotation)
                     y = upscale_y(self.position.y)}
     end
 
-    if self.flashTimer == 0 or self.room.game.paused then
-        if self.color then
+    if self.flashTimer == 0 or self.isThundershocked or
+       self.room.game.paused then
+        love.graphics.setColorMode('modulate')
+
+        if self.isThundershocked then
+            love.graphics.setColor(WHITE)
+        elseif self.color then
             love.graphics.setColor(self.color)
         else
             love.graphics.setColor(255, 255, 255)
@@ -219,14 +225,15 @@ function Character:draw(pos, rotation)
                            rotation,
                            sx, SCALE_Y)
 
-        if DEBUG and not instanceOf(Player, self) then
-            -- Put a health bar above the character's head
-            local h = 3 * SCALE_Y
-            draw_progress_bar({num = self:get_health_percentage(),
-                               max = 100, color = MAGENTA},
-                              position.x, position.y - h,
-                              upscale_x(1), h)
-        end
+    end
+
+    if DEBUG and not instanceOf(Player, self) then
+        -- Put a health bar above the character's head
+        local h = 3 * SCALE_Y
+        draw_progress_bar({num = self:get_health_percentage(), max = 100,
+                           color = MAGENTA},
+                          position.x, position.y - h,
+                          upscale_x(1), h)
     end
 end
 
@@ -531,23 +538,23 @@ end
 function Character:receive_hit(agent)
     -- If we are not a player (since players make their own decisions about
     -- what team they're on)
-    if not instanceOf(Player, self) then
-        -- If the agent is a projectile
-        if instanceOf(Projectile, agent) then
-            -- If it has an owner
-            if agent.owner then
-                -- If the owner is on our team
-                if agent.owner.team == self.team then
-                    -- Turn against him
-                    if self.mouth then
-                        self.mouth.speech = "THAT WAS NOT VERY NICE"
-                        self.mouth:speak(true)
-                    end
-                    self.team = 3
-                end
-            end
-        end
-    end
+    --if not instanceOf(Player, self) then
+    --    -- If the agent is a projectile
+    --    if instanceOf(Projectile, agent) then
+    --        -- If it has an owner
+    --        if agent.owner then
+    --            -- If the owner is on our team
+    --            if agent.owner.team == self.team then
+    --                -- Turn against him
+    --                if self.mouth then
+    --                    self.mouth.speech = "THAT WAS NOT VERY NICE"
+    --                    self.mouth:speak(true)
+    --                end
+    --                self.team = 3
+    --            end
+    --        end
+    --    end
+    --end
 
     return Character.super.receive_hit(self)
 end
@@ -585,26 +592,18 @@ function Character:shoot(dir)
         return false
     end
 
-    -- If we still don't have a weapon that shoots
-    if not self.armory.currentWeapon.projectileClass then
-        return false
-    end
-
-    -- Check if we are trying to shoot into a brick
-    for _,b in pairs(self.room.bricks) do
-        if tiles_overlap(add_direction(self.position, dir), b) then
-            -- Save ourself the ammo
-            return false
+    -- If we have a weapon that shoots projectiles
+    if self.armory.currentWeapon.projectileClass then
+        -- Check if we are trying to shoot into a brick
+        for _,b in pairs(self.room.bricks) do
+            if tiles_overlap(add_direction(self:get_position(), dir), b) then
+                -- Save ourself the ammo
+                return false
+            end
         end
     end
 
-    -- Try to create a new projectile
-    local newProjectile = self.armory.currentWeapon:shoot(dir)
-
-    -- If the weapon created a projectile
-    if newProjectile then
-        -- Add it to the room
-        self.room:add_object(newProjectile)
+    if self.armory.currentWeapon:shoot(dir) then
         self.shot = true
         return true
     else
@@ -662,7 +661,7 @@ function Character:update()
 
     if self.hurt then
         -- Flash if hurt
-        self.flashTimer = 2
+        self.flashTimer = 1
         self.hurt = false
     end
 
@@ -691,14 +690,17 @@ function Character:update_image()
     elseif (self.images.walk and (self.ai.path.nodes or self.stepped)) then
         self.currentImage = self.images.walk
     elseif (self.images.sword and
-            self.armory:get_current_weapon_name() == 'sword') then
+            self.armory:get_current_weapon_type() == 'sword') then
         self.currentImage = self.images.sword
     elseif (self.images.bow and
-            self.armory:get_current_weapon_name() == 'bow') then
+            self.armory:get_current_weapon_type() == 'bow') then
         self.currentImage = self.images.bow
-    elseif (self.images.staff and
-            self.armory:get_current_weapon_name() == 'staff') then
-        self.currentImage = self.images.staff
+    elseif (self.images.firestaff and
+            self.armory:get_current_weapon_type() == 'firestaff') then
+        self.currentImage = self.images.firestaff
+    elseif (self.images.thunderstaff and
+            self.armory:get_current_weapon_type() == 'thunderstaff') then
+        self.currentImage = self.images.thunderstaff
     else
         -- Hold the frame before going back to the default image
         if self.frameHoldTimer.value > 0 then

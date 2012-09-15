@@ -7,6 +7,7 @@ function Fireball:init(owner, dir)
 
     self.damage = 20
     self.images = projectileImg.fireball
+    self.isMagic = true
 end
 
 function Fireball:hit(patient)

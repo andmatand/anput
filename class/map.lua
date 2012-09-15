@@ -1,5 +1,6 @@
 require('class.falsebrick')
 require('class.exit')
+require('class.thunderstaff')
 require('class.mapdisplay')
 require('class.pathfinder')
 require('class.room')
@@ -399,8 +400,10 @@ function Map:add_required_objects()
     --table.insert(self.rooms[1].requiredObjects, Item('ankh'))
 
     -- DEBUG: Put a thing in the first room
-    --local thing = Monster(MONSTER_TYPE.scarab)
-    --thing.tag = true
+    --local thing = ThunderStaff()
+    --table.insert(self.rooms[1].requiredObjects, thing)
+
+    --local thing = Weapon('firestaff')
     --table.insert(self.rooms[1].requiredObjects, thing)
 
 

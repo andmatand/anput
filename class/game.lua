@@ -98,7 +98,7 @@ function Game:generate()
 
     -- Put the sword at the first room's midpoint
     for _, item in pairs(self.currentRoom.items) do
-        if item.itemType == ITEM_TYPE.sword then
+        if item.itemType == 'sword' then
             item:set_position(self.rooms[1].midPoint)
             break
         end
@@ -136,6 +136,15 @@ function Game:input()
     elseif love.keyboard.isDown('a') then
         self.player:step(4)
     end
+
+    if self.player.armory:get_current_weapon_type() == 'thunderstaff' then
+        if love.keyboard.isDown('up') or
+           love.keyboard.isDown('right') or 
+           love.keyboard.isDown('down') or 
+           love.keyboard.isDown('left') then
+            self.player.shootDir = 1
+        end
+    end
 end
 
 function Game:keypressed(key)
@@ -159,8 +168,8 @@ function Game:keypressed(key)
     -- Get player input for using items
     if key == 'e' then
         -- Take an elixir
-        if self.player:has_item(ITEM_TYPE.elixir) then
-            self.player.inventory:get_item(ITEM_TYPE.elixir):use()
+        if self.player:has_item('elixir') then
+            self.player.inventory:get_item('elixir'):use()
         end
     end
 
@@ -228,18 +237,14 @@ function Game:keypressed(key)
 
 
     -- Get player input for shooting arrows
-    shootDir = nil
     if key == 'up' then
-        shootDir = 1
+        self.player.shootDir = 1
     elseif key == 'right' then
-        shootDir = 2
+        self.player.shootDir = 2
     elseif key == 'down' then
-        shootDir = 3
+        self.player.shootDir = 3
     elseif key == 'left' then
-        shootDir = 4
-    end
-    if shootDir ~= nil then
-        self.player:shoot(shootDir, self.currentRoom)
+        self.player.shootDir = 4
     end
 
     -- Get player input for moving when isDown in the input() method didn't see

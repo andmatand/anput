@@ -52,7 +52,7 @@ function Outro:choose_speech()
 
         return lines
     elseif self.state == 'edutain' then
-        if self.artifact.itemType == ITEM_TYPE.ankh then
+        if self.artifact.itemType == 'ankh' then
             lines = {{p = 'IT IS AN ANKH'},
                      {p = 'THE ANKH IS AN EGYPTIAN SYMBOL OF LIFE'},
                      {p = 'IT IS ALSO A HIEROGLYPH'}}

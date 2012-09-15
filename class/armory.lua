@@ -18,8 +18,8 @@ function Armory:add(weapon)
         firstWeapon = false
     end
 
-    -- Add it to our weapons table, keyed by the weapon name
-    self.weapons[weapon.name] = weapon
+    -- Add it to our weapons table, keyed by the weapon type
+    self.weapons[weapon.weaponType] = weapon
     weapon.owner = self.owner
 
     if firstWeapon then
@@ -63,11 +63,9 @@ function Armory:get_best_ranged_weapon()
     return best.weapon
 end
 
-function Armory:get_current_weapon_name()
+function Armory:get_current_weapon_type()
     if self.currentWeapon then
-        return self.currentWeapon.name
-    else
-        return nil
+        return self.currentWeapon.weaponType
     end
 end
 
@@ -81,7 +79,7 @@ end
 
 function Armory:remove(weapon)
     -- If the weapon is in our weapons table
-    if self.weapons[weapon.name] then
+    if self.weapons[weapon.weaponType] then
         -- If the weapon is our current weapon
         if weapon == self.currentWeapon then
             -- Clear our current weapon
@@ -89,7 +87,7 @@ function Armory:remove(weapon)
         end
 
         -- Remove the weapon from our weapons table
-        self.weapons[weapon.name] = nil
+        self.weapons[weapon.weaponType] = nil
     end
 end
 
@@ -166,8 +164,8 @@ function Armory:switch_to_ranged_weapon()
     end
 end
 
--- Switches to the specified weapon number, numbering based on the order they
--- are displayed in the inventory display
+-- Switches to the specified weapon number, numbering based on their intrinsic
+-- order
 function Armory:switch_to_weapon_number(number)
     local numWeapons = self:get_num_weapons()
 
@@ -175,10 +173,14 @@ function Armory:switch_to_weapon_number(number)
         return
     end
 
-    for orderNum = number, number + numWeapons - 1 do
-        -- Look for a weapon with the current orderNum
+    local n = 0
+    for order = 1, 9 do
         for _, w in pairs(self.weapons) do
-            if w.order == orderNum then
+            if w.order == order then
+                n = n + 1
+            end
+
+            if n == number then
                 self:set_current_weapon(w)
                 return
             end

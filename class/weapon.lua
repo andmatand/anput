@@ -1,25 +1,48 @@
 require('class.arrow')
 require('class.fireball')
+require('class.item')
 
 -- A weapon is an Item that can also hurt other Characters or shoot Projectiles
 Weapon = class('Weapon', Item)
 
 -- Weapon templates
-Weapon.static.templates = {
-    claws = {name = 'claws', meleeDamage = 15},
-    sword = {name = 'sword', order = 1, meleeDamage = 15},
-    bow = {name = 'bow', order = 2, ammoCost = 1, ammoItem = ITEM_TYPE.arrow,
-           projectileClass = Arrow},
-    staff = {name = 'staff', order = 3, isMagic = true, ammoCost = 10,
-             meleeDamage = 5, projectileClass = Fireball}
+WEAPON_TYPE = {
+    claws        = {meleeDamage = 15},
+
+    sword        = {order = 1,
+                    meleeDamage = 15},
+
+    bow          = {order = 2,
+                    ammoCost = 1,
+                    ammoItem = 'arrow',
+                    projectileClass = Arrow},
+
+    firestaff    = {order = 3,
+                    meleeDamage = 5,
+                    isMagic = true,
+                    ammoCost = 10,
+                    projectileClass = Fireball},
+
+    thunderstaff = {order = 4,
+                    meleeDamage = 5,
+                    isMagic = true,
+                    ammoCost = 4}
     }
 
 function Weapon:init(weaponType)
     Weapon.super.init(self, weaponType)
 
+    -- Save a reference to the weapon name
+    self.weaponType = weaponType
+
     -- Copy the weapon template for the specified type to create a new weapon
-    for k, v in pairs(Weapon.static.templates[weaponType]) do
+    for k, v in pairs(WEAPON_TYPE[weaponType]) do
         self[k] = v
+    end
+
+    -- Assign the image of the same name
+    if image[self.weaponType] then
+        self.image = image[self.weaponType]
     end
 
     self.isUsable = true
@@ -40,16 +63,8 @@ end
 function Weapon:draw(position)
     position = position or self.position
 
-    if self.name == 'sword' then
-        img = swordImg
-    elseif self.name == 'bow' then
-        img = bowImg
-    elseif self.name == 'staff' then
-        img = staffImg
-    end
-
     love.graphics.setColor(255, 255, 255)
-    love.graphics.draw(img,
+    love.graphics.draw(self.image,
                        upscale_x(position.x), upscale_y(position.y),
                        0, SCALE_X, SCALE_Y)
 end
@@ -81,16 +96,19 @@ function Weapon:get_ammo()
     end
 end
 
-function Weapon:set_projectile_class(c)
-    self.projectileClass = c
-end
-
 function Weapon:shoot(dir)
-    if self.owner then
+    if self.owner and self.ammoCost then
         if self:get_ammo() >= self.ammoCost then
             self:use_ammo(self.ammoCost)
 
-            return self.projectileClass(self.owner, dir)
+            if self.projectileClass then
+                -- Create a new projectile
+                local newProjectile = self.projectileClass(self.owner, dir)
+
+                -- Add it to the room
+                self.owner.room:add_object(newProjectile)
+                return true
+            end
         else
             sound.unable:play()
         end

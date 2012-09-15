@@ -126,8 +126,7 @@ function Monster:init(monsterType)
         self.magic = 100
         self.isCorporeal = false
 
-        local staff = Weapon('staff')
-        staff:set_projectile_class(Fireball)
+        local staff = Weapon('firestaff')
         self:pick_up(staff)
 
         self.ai.choiceTimer.delay = .25
@@ -160,7 +159,7 @@ end
 function Monster:receive_hit(agent)
     if self.monsterType == MONSTER_TYPE.ghost then
         -- Only magic hits ghosts
-        if instanceOf(Fireball, agent) then
+        if agent.isMagic then
             return true
         else
             return false
