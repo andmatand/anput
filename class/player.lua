@@ -107,10 +107,6 @@ end
 function Player:update()
     Player.super.update(self)
 
-    -- Reset all context-related variables
-    self.wantsToTrade = false
-    self.isGrabbing = false
-
     self.context = self:find_context()
 
     -- Show a context messages in the status bar

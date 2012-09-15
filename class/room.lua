@@ -619,7 +619,11 @@ function Room:update()
     end
     for _, s in pairs(self.sprites) do
         s:post_physics()
+
+        -- Reset all one-frame variables
         s.isThundershocked = false
+        self.wantsToTrade = false
+        self.isGrabbing = false
     end
 
     -- Let characters shoot any remaining weapons

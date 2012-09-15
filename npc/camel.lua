@@ -4,8 +4,8 @@ local camel = Character()
 camel.name = 'CAMEL'
 camel.images = camelImg
 
--- Give him a thunderstaff
-camel:pick_up(ThunderStaff())
+-- Give him a thunderstaff as an item only (not a weapon)
+camel.inventory:add(ThunderStaff())
 
 -- AI
 camel.ai.choiceTimer.delay = 0
@@ -59,6 +59,7 @@ camel.update =
                         self.mouth.speech = nil
 
                         -- Stop running around
+                        self:step()
                         self.ai:delete_path()
                         self.ai.level.globetrot.prob = nil
                         break
