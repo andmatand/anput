@@ -141,13 +141,16 @@ function AI:chase(target)
 
     -- Set path to destination
     if self:plot_path(pos, AI_ACTION.chase) and #self.path.nodes > 1 then
-        -- Remove the last node so our destination is standing next to the
-        -- target instead of bumping the target (chasing is distinct from
-        -- attacking)
-        table.remove(self.path.nodes, #self.path.nodes)
+        if not instanceOf(Exit, target) then
+            -- Remove the last node so our destination is standing next to the
+            -- target instead of bumping the target (chasing is distinct from
+            -- attacking)
+            table.remove(self.path.nodes, #self.path.nodes)
 
-        -- Set the new last node as the new destination
-        self.path.destination = copy_table(self.path.nodes[#self.path.nodes])
+            -- Set the new last node as the new destination
+            self.path.destination = self.path.nodes[#self.path.nodes]
+        end
+
 
         self.path.target = target
         return true
