@@ -92,9 +92,7 @@ function Game:generate()
     self.player = Player()
 
     -- Switch to the first room
-    self:switch_to_room(self.rooms[1])
     self:move_player_to_start()
-    --self.currentRoom:add_object(self.player)
 
     -- Put the sword at the first room's midpoint
     for _, item in pairs(self.currentRoom.items) do
@@ -281,6 +279,8 @@ end
 function Game:move_player_to_start()
     local room = self.rooms[1]
 
+    self:switch_to_room(room)
+
     self.player:move_to_room(room)
 
     -- Put the player at the temple exit
@@ -354,10 +354,10 @@ function Game:switch_to_room(room)
         self.currentRoom:generate_all()
     end
 
-    -- Update the new current room
+    -- Force the new current room to update its FOV
     self.currentRoom.fov = nil
-    self.currentRoom.bricksDirty = true
-    --self.currentRoom:update()
+
+    -- Clear any dead objects
     self.currentRoom:sweep()
 end
 
