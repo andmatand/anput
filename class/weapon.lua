@@ -41,8 +41,8 @@ function Weapon:init(weaponType)
     end
 
     -- Assign the image of the same name
-    if image[self.weaponType] then
-        self.image = image[self.weaponType]
+    if images[self.weaponType] then
+        self.image = images[self.weaponType]
     end
 
     self.isUsable = true

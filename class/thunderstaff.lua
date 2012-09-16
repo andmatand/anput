@@ -75,7 +75,7 @@ function ThunderStaff:shoot()
                     if tiles_overlap(s:get_position(), n) then
                         -- If the sprite has a receive_damage function
                         if s.receive_damage then
-                            s:receive_damage(self.damage)
+                            s:receive_damage(self.damage, self)
 
                             if math.random(1, 3) ~= 1 then
                                 s.isThundershocked = true

@@ -63,6 +63,16 @@ function love.load()
         return img
     end
 
+    local function load_images(directory, names)
+        local images = {}
+        for _, n in pairs(names) do
+            images[n] = new_image(directory .. n .. '.png')
+        end
+
+        return images
+    end
+
+    images = {}
     playerImg = {default = new_image('player.png'),
                  sword = new_image('player-sword.png'),
                  bow = new_image('player-bow.png'),
@@ -96,17 +106,16 @@ function love.load()
                               new_image('fireball2.png')}
 
     -- Items
-    image = {}
-    image.ankh = new_image('item/ankh.png')
-    image.elixir = new_image('item/elixir.png')
-    image.arrow = new_image('item/arrow.png')
-    image.shinything = {new_image('item/shiny-1.png'),
-                        new_image('item/shiny-2.png'),
-                        new_image('item/shiny-3.png')}
-    image.sword = new_image('weapon/sword.png')
-    image.bow = new_image('weapon/bow.png')
-    image.firestaff = new_image('weapon/firestaff.png')
-    image.thunderstaff = new_image('weapon/thunderstaff.png')
+    images.ankh = new_image('item/ankh.png')
+    images.elixir = new_image('item/elixir.png')
+    images.arrow = new_image('item/arrow.png')
+    images.shinything = {new_image('item/shiny-1.png'),
+                         new_image('item/shiny-2.png'),
+                         new_image('item/shiny-3.png')}
+    images.sword = new_image('weapon/sword.png')
+    images.bow = new_image('weapon/bow.png')
+    images.firestaff = new_image('weapon/firestaff.png')
+    images.thunderstaff = new_image('weapon/thunderstaff.png')
 
     -- Verbs
     dropImg = new_image('drop.png')
@@ -121,11 +130,9 @@ function love.load()
         enter = new_image('button/enter.png')}
 
     -- Hieroglyphs
-    HIEROGLYPH_IMAGE = {I = new_image('hieroglyph/I.png'),
-                        NP = new_image('hieroglyph/NP.png'),
-                        W = new_image('hieroglyph/W.png'),
-                        T = new_image('hieroglyph/T.png'),
-                        goddess = new_image('hieroglyph/goddess.png')}
+    images.hieroglyphs = load_images('hieroglyph/',
+                                     {'h', 'i', 'ka', 'n_p', 's', 't', 't_sh',
+                                      'w', 'y', 'book', 'god', 'goddess'})
 
     -- Outside
     outsideImg = {}
@@ -277,6 +284,9 @@ function love.keypressed(key, unicode)
                 wrapper.game.player:pick_up(bow)
                 bow:add_ammo(20)
             end
+        elseif key == 't' then
+            local thunderstaff = ThunderStaff()
+            wrapper.game.player:pick_up(thunderstaff)
         elseif key == 'h' then
             wrapper.game.player:add_health(100)
         end

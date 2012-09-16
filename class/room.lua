@@ -577,7 +577,8 @@ function Room:update()
 
     -- Let characters shoot projectile weapons
     for _, c in pairs(self:get_characters()) do
-        if c.shootDir and c.armory.currentWeapon.projectileClass then
+        if c.shootDir and c.armory.currentWeapon and
+           c.armory.currentWeapon.projectileClass then
             c:shoot(c.shootDir)
             c.shootDir = nil
         end

@@ -4,7 +4,7 @@ function Hieroglyph:init(position, letter)
     self.position = position
     self.letter = letter
 
-    self.image = HIEROGLYPH_IMAGE[self.letter]
+    self.image = images.hieroglyphs[self.letter]
 end
 
 function Hieroglyph:draw()

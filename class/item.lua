@@ -32,13 +32,13 @@ function Item:init(itemType)
 
     if self.itemType == 'shinything' then
         self.frames = {
-            {image = image.shinything[1], delay = 8},
-            {image = image.shinything[2], delay = 2},
-            {image = image.shinything[3], delay = 2},
-            {image = image.shinything[2], delay = 2},
-            {image = image.shinything[3], delay = 2}}
-    elseif image[self.itemType] then
-        self.frames = {{image = image[self.itemType]}}
+            {image = images.shinything[1], delay = 8},
+            {image = images.shinything[2], delay = 2},
+            {image = images.shinything[3], delay = 2},
+            {image = images.shinything[2], delay = 2},
+            {image = images.shinything[3], delay = 2}}
+    elseif images[self.itemType] then
+        self.frames = {{image = images[self.itemType]}}
     else
         self.frames = nil
     end

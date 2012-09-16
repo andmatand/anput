@@ -163,8 +163,11 @@ function Map:add_branches(path)
 end
 
 function Map:add_hieroglyphs()
-    -- Add INPWT to the first room
-    self.rooms[1].requiredHieroglyphs = {{'I', 'NP', 'W', 'T', 'goddess'}}
+    -- Add inpwt "Anput" to the first room
+    self.rooms[1].requiredHieroglyphs = {{'i', 'n_p', 'w', 't', 'goddess'}}
+
+    -- DEBUG
+    --self.rooms[2].requiredHieroglyphs = {{'s', 'tsh'}}
 end
 
 function Map:draw(currentRoom)
@@ -401,17 +404,19 @@ function Map:add_required_objects()
 
     -- DEBUG: Put a thing in the first room
     --local thing = ThunderStaff()
+    --thing.tag = true
     --table.insert(self.rooms[1].requiredObjects, thing)
-
-    --local thing = Weapon('firestaff')
-    --table.insert(self.rooms[1].requiredObjects, thing)
-
 
     -- Put the wizard in one of the 5 earliest rooms
     local wizard = load_npc('wizard')
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
-    add_npc_to_room(wizard, rooms[math.random(1, #rooms)])
+    local wizardRoom = rooms[math.random(1, #rooms)]
+    add_npc_to_room(wizard, wizardRoom)
+
+    -- Add hkay "magician" to the wizard's room
+    wizardRoom.requiredHieroglyphs = {{'h', 'ka', 'y', 'book', 'god'}}
     
+
     -- Put the camel in a mid-difficulty room
     local camel = load_npc('camel')
     local rooms = self:get_rooms_by_difficulty(40, 60, {isSecret = false})
