@@ -94,10 +94,22 @@ function Game:generate()
     -- Switch to the first room
     self:move_player_to_start()
 
-    -- Put the sword at the first room's midpoint
+    -- Put the sword close to the entrance of the first room
+    local swordPos
+    local freeTiles = copy_table(self.currentRoom.freeTiles)
+    while #freeTiles > 0 do
+        local index = math.random(1, #freeTiles)
+        if manhattan_distance(freeTiles[index],
+                              self.player:get_position()) <= 7 then
+            swordPos = freeTiles[index]
+            break
+        else
+            table.remove(freeTiles, index)
+        end
+    end
     for _, item in pairs(self.currentRoom.items) do
         if item.itemType == 'sword' then
-            item:set_position(self.rooms[1].midPoint)
+            item:set_position(swordPos)
             break
         end
     end
