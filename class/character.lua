@@ -532,6 +532,15 @@ function Character:receive_damage(amount, agent)
         return false
     end
 
+    -- Find out who was ultimately responsible for this damage (e.g. if it was
+    -- an arrow, get the owner (character) of the owner (bow) of the arrow)
+    local perpetrator = get_ultimate_owner(agent)
+
+    if perpetrator and perpetrator.log then
+        -- Give the perp credit for the hit
+        perpetrator.log:add_hit(self)
+    end
+
     self.health = self.health - amount
     self.hurt = true
     self.hurtTimer = self:get_time()
@@ -539,19 +548,9 @@ function Character:receive_damage(amount, agent)
     if self.health <= 0 then
         self.health = 0
 
-        -- If an agent was given
-        if agent then
-            -- Find who was ultimately responsible for this kill, if this was
-            -- e.g. an arrow
-            local topAgent = agent
-            while topAgent.owner do
-                topAgent = topAgent.owner
-            end
-
-            if topAgent.log then
-                -- Give the agent credit for the kill
-                topAgent.log:add_kill(self)
-            end
+        if perpetrator and perpetrator.log then
+            -- Give the perp credit for the kill
+            perpetrator.log:add_kill(self)
         end
 
         self:die()
@@ -749,4 +748,12 @@ end
 
 function Character:visited_room(room)
     return value_in_table(room, self.visitedRooms)
+end
+
+function get_ultimate_owner(obj)
+    while obj.owner do
+        obj = obj.owner
+    end
+
+    return obj
 end
