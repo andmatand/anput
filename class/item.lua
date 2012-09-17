@@ -2,7 +2,6 @@
 -- a Character's inventory
 Item = class('Item')
 
-             
 ITEM_NAME = {
     -- Normal items
     arrow = 'ARROW',

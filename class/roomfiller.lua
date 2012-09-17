@@ -171,7 +171,10 @@ function RoomFiller:add_items()
 
     local addedElixir = false
 
-    local itemTypes = {'elixir', 'arrow'}
+    local itemTypes = {'elixir'}
+    if self.room.difficulty >= MONSTER_DIFFICULTY[MONSTER_TYPE.archer] / 2 then
+        table.insert(itemTypes, 'arrow')
+    end
     if self.room.difficulty >= 50 then
         table.insert(itemTypes, 'potion')
     end
@@ -181,10 +184,7 @@ function RoomFiller:add_items()
         -- Add some goodies
         local numGoodies = math.random(3, 8)
         local goodies = {}
-
-        -- Include the possiblity of shiny things
-        local itemTypes = copy_table(itemTypes)
-        table.insert(itemTypes, 'shinything')
+        local itemTypes = {'arrow', 'elixir', 'shinything', 'potion'}
 
         for i = 1, numGoodies do
             -- Choose a random item type
@@ -198,25 +198,17 @@ function RoomFiller:add_items()
     else
         -- Give items to the monsters
         for _, m in pairs(self.room:get_monsters()) do
+            if #itemTypes == 0 then
+                break
+            end
+
             if math.random(m.difficulty, 100) >= 20 then
-                local minItemType = 1
-
-                -- If we already added an elixir to this room
-                if addedElixir then
-                    -- Do not allow adding any more
-                    for i, itemType in pairs(itemTypes) do
-                        if itemType == 'elixir' then
-                            table.remove(itemTypes, i)
-                            break
-                        end
-                    end
-                end
-
                 -- Choose a random item type
                 local itemType = itemTypes[math.random(1, #itemTypes)]
 
                 if itemType == 'elixir' then
-                    addedElixir = true
+                    -- Do not allow adding any more elixirs to this room
+                    remove_value_from_table('elixir', itemTypes)
                 end
 
                 local newItem = Item(itemType)
