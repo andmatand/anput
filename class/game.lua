@@ -181,6 +181,11 @@ function Game:keypressed(key)
         if self.player:has_item('elixir') then
             self.player.inventory:get_item('elixir'):use()
         end
+    elseif key == 'p' then
+        -- Take a potion
+        if self.player:has_item('potion') then
+            self.player.inventory:get_item('potion'):use()
+        end
     end
 
     -- Toggle pause

@@ -23,6 +23,7 @@ and the LÖVE framework.
 * inventory: i
 * map: m
 * use elixir: e
+* use potion: p
 * fullscreen: f11, Alt + Enter
 * new game: Ctrl + n
 * increase/decrease graphics scaling: Ctrl +/-
