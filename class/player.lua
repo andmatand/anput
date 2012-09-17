@@ -24,12 +24,6 @@ function Player:can_trade(price)
     end
 end
 
-function Player:die()
-    Character.die(self)
-
-    sound.playerDie:play()
-end
-
 -- Drops the payment when paying a Trader
 function Player:drop_payment(price, position)
     -- Create a table of items that are acting as payment
@@ -118,14 +112,6 @@ function Player:update()
     end
     if contextAction then
         self.room.game.statusBar:show_context_message({'enter'}, contextAction)
-    end
-end
-
-function Player:receive_damage(amount)
-    Player.super.receive_damage(self, amount)
-
-    if not self.dead then
-        sound.playerCry:play()
     end
 end
 

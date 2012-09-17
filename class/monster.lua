@@ -140,14 +140,6 @@ function Monster:init(monsterType)
     self.health = self.maxHealth
 end
 
---function Monster:die()
---    Character.die(self)
---
---    if self:is_audible() then
---        sound.monsterDie:play()
---    end
---end
-
 function Monster:hit(patient)
     if self.monsterType == MONSTER_TYPE.ghost then
         return false

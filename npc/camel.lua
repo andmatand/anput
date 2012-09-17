@@ -51,6 +51,9 @@ camel.update =
                         -- We are caught
                         self.isCaught = true
 
+                        -- Play a sound
+                        sounds.camel.caught:play()
+
                         -- Say a thing
                         self.mouth.speech = 'YOU CAUGHT ME'
                         self.mouth:speak(true)
@@ -68,7 +71,14 @@ camel.update =
                 -- If we are very close to a player
                 elseif instanceOf(Player, c) and
                        manhattan_distance(c:get_position(),
-                                          self:get_position()) <= 4 then
+                                          self:get_position()) <= 7 then
+                    -- Play a sound
+                    if not self.runSoundTimer or
+                       self:get_time() > self.runSoundTimer + 5 then
+                       sounds.camel.run:play()
+                       self.runSoundTimer = self:get_time()
+                   end
+
                     -- Yell something funny
                     camel.mouth.speech = 'AAAAHHH I AM A CAMEL'
                     self.mouth:speak()

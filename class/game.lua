@@ -201,7 +201,7 @@ function Game:keypressed(key)
             if not self.paused then
                 self:pause()
             else
-                sound.menuSelect:play()
+                sounds.menuSelect:play()
             end
 
             self.menuState = 'inventory'
@@ -216,7 +216,7 @@ function Game:keypressed(key)
             if not self.paused then
                 self:pause()
             else
-                sound.menuSelect:play()
+                sounds.menuSelect:play()
             end
         end
 
@@ -309,7 +309,7 @@ end
 
 function Game:pause()
     if not self.paused then
-        sound.pause:play()
+        sounds.pause:play()
 
         -- Reset inventory menu to initial view
         self.inventoryMenu:reset()
@@ -381,7 +381,7 @@ end
 
 function Game:update(dt)
     if not self.playedTheme then
-        sound.theme:play()
+        sounds.theme:play()
         self.playedTheme = true
     end
 

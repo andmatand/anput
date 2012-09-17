@@ -47,14 +47,17 @@ function Character:add_health(amount)
             self.health = 100
         end
 
-        -- Play sound depending on who gained health
-        --if instanceOf(Player, patient) then
-        --    sound.playerGetHP:play()
-        --else
-        --    if self:is_audible() then
-        --        sound.monsterGetHP:play()
-        --    end
-        --end
+        -- If this was not auto regeneration
+        if amount > 1 then
+            if self:is_audible() then
+                -- Play a sound
+                if instanceOf(Player, self) then
+                    sounds.player.getHP:play()
+                else
+                    sounds.monster.getHP:play()
+                end
+            end
+        end
 
         return true
     end
@@ -78,6 +81,18 @@ function Character:add_magic(amount)
         -- If magic was used
         if amount < 0 then
             self.usedMagicTimer = self:get_time()
+        else
+            -- If this was not auto regeneration
+            if amount > 1 then
+                if self:is_audible() then
+                    -- Play a sound
+                    if instanceOf(Player, self) then
+                        sounds.player.getMagic:play()
+                    else
+                        sounds.monster.getMagic:play()
+                    end
+                end
+            end
         end
 
         return true
@@ -116,12 +131,12 @@ function Character:check_for_items()
                     -- room, and it is the game's current room, or we are a
                     -- player
                     if (not pickedSomethingUp) then
-                        -- Play a pick-up sound depending on who we are
-                        if instanceOf(Player, self) then
-                            sound.playerGetItem:play()
-                        else
-                            if self:is_audible() then
-                                sound.monsterGetItem:play()
+                        if self:is_audible() then
+                            -- Play a sound
+                            if instanceOf(Player, self) then
+                                sounds.player.getItem:play()
+                            else
+                                sounds.monster.getItem:play()
                             end
                         end
                     end
@@ -161,9 +176,12 @@ function Character:die()
     -- Drop all items in our inventory
     self:drop_items(itemsToDrop)
 
-    if not instanceOf(Player, self) then
-        if self:is_audible() then
-            sound.monsterDie:play()
+    if self:is_audible() then
+        -- Play a sound
+        if instanceOf(Player, self) then
+            sounds.player.die:play()
+        else
+            sounds.monster.die:play()
         end
     end
 end
@@ -240,9 +258,13 @@ end
 function Character:drop_items(items)
     -- If we are not dead
     if not self.dead then
-        -- If we are a player
-        if instanceOf(Player, self) then
-            sound.playerDropItem:play()
+        if self:is_audible() then
+            -- Play a sound
+            if instanceOf(Player, self) then
+                sounds.player.dropItem:play()
+            else
+                sounds.monster.dropItem:play()
+            end
         end
     end
 
@@ -445,16 +467,25 @@ function Character:input()
 end
 
 function Character:is_audible()
-    if self.room then
-        local playerKills = self.room.game.player.log:get_kills()
+    if Character.super.is_audible(self) then
+        return true
+    end
 
+    if self.room then
         -- If the player just killed us
-        if playerKills[#playerKills] == self then
+        local kills = self.room.game.player.log:get_kills()
+        if kills[#kills] == self then
+            return true
+        end
+
+        -- If the player just hit us
+        local hits = self.room.game.player.log:get_hits()
+        if hits[#hits] == self then
             return true
         end
     end
 
-    return Character.super.is_audible(self)
+    return false
 end
 
 function Character:is_enemies_with(character)
@@ -526,9 +557,14 @@ function Character:receive_damage(amount, agent)
         self:die()
     end
 
-    if not instanceOf(Player, self) and not self.dead then
+    if not self.dead then
         if self:is_audible() then
-            sound.monsterCry:play()
+            -- Play a sound
+            if instanceOf(Player, self) then
+                sounds.player.cry:play()
+            else
+                sounds.monster.cry:play()
+            end
         end
     end
 

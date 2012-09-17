@@ -30,7 +30,7 @@ end
 function Arrow:update()
     if not self.playedSound then
         if self:is_audible() then
-            sound.shootArrow:play()
+            sounds.shootArrow:play()
         end
 
         self.playedSound = true

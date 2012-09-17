@@ -106,16 +106,12 @@ function love.load()
                               new_image('fireball2.png')}
 
     -- Items
-    images.ankh = new_image('item/ankh.png')
-    images.elixir = new_image('item/elixir.png')
-    images.arrow = new_image('item/arrow.png')
-    images.shinything = {new_image('item/shiny-1.png'),
-                         new_image('item/shiny-2.png'),
-                         new_image('item/shiny-3.png')}
-    images.sword = new_image('weapon/sword.png')
-    images.bow = new_image('weapon/bow.png')
-    images.firestaff = new_image('weapon/firestaff.png')
-    images.thunderstaff = new_image('weapon/thunderstaff.png')
+    images.items = load_images('item/',
+                               {'ankh', 'arrow', 'bow', 'firestaff', 'flask',
+                               'sword', 'thunderstaff'})
+    images.items.shinything = {new_image('item/shiny-1.png'),
+                               new_image('item/shiny-2.png'),
+                               new_image('item/shiny-3.png')}
 
     -- Verbs
     dropImg = new_image('drop.png')
@@ -153,23 +149,28 @@ function love.load()
 
 
     -- Sounds
-    sound = {}
-    sound.theme = Sound('res/sfx/theme.wav')
-    sound.playerCry = Sound('res/sfx/player-cry.wav')
-    sound.playerGetItem = Sound('res/sfx/player-get-item.wav')
-    sound.playerDropItem = Sound('res/sfx/player-drop-item.wav')
-    sound.playerGetHP = Sound('res/sfx/player-get-hp.wav')
-    sound.monsterCry = Sound('res/sfx/monster-cry.wav')
-    sound.monsterGetItem = Sound('res/sfx/monster-get-item.wav')
-    sound.monsterGetHP = Sound('res/sfx/monster-get-hp.wav')
-    sound.monsterDie = Sound('res/sfx/monster-die.wav')
-    sound.playerDie = Sound('res/sfx/player-die.wav')
-    sound.shootArrow = Sound('res/sfx/shoot-arrow.wav')
-    sound.unable = Sound('res/sfx/unable.wav')
-    sound.pause = Sound('res/sfx/pause.wav')
-    sound.menuSelect = Sound('res/sfx/menu-select.wav')
-    sound.secret = Sound('res/sfx/secret.wav')
-    sound.trap = Sound('res/sfx/trap.wav')
+    sounds = {}
+    sounds.theme = Sound('res/sfx/theme.wav')
+    sounds.player = {cry = Sound('res/sfx/player-cry.wav'),
+                     die = Sound('res/sfx/player-die.wav'),
+                     getItem = Sound('res/sfx/player-get-item.wav'),
+                     dropItem = Sound('res/sfx/player-drop-item.wav'),
+                     getHP = Sound('res/sfx/player-get-hp.wav'),
+                     getMagic = Sound('res/sfx/player-get-magic.wav')}
+    sounds.monster = {cry = Sound('res/sfx/monster-cry.wav'),
+                      die = Sound('res/sfx/monster-die.wav'),
+                      getItem = Sound('res/sfx/monster-get-item.wav'),
+                      dropItem = Sound('res/sfx/monster-drop-item.wav'),
+                      getHP = Sound('res/sfx/monster-get-hp.wav'),
+                      getMagic = Sound('res/sfx/monster-get-magic.wav')}
+    sounds.camel = {run = Sound('res/sfx/camel-run.wav'),
+                    caught = Sound('res/sfx/camel-caught.wav')}
+    sounds.shootArrow = Sound('res/sfx/shoot-arrow.wav')
+    sounds.unable = Sound('res/sfx/unable.wav')
+    sounds.pause = Sound('res/sfx/pause.wav')
+    sounds.menuSelect = Sound('res/sfx/menu-select.wav')
+    sounds.secret = Sound('res/sfx/secret.wav')
+    sounds.trap = Sound('res/sfx/trap.wav')
 
     showDebug = false
 

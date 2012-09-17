@@ -18,8 +18,8 @@ function FalseBrick:receive_hit(agent)
     self.room.bricksDirty = true
 
     if self:is_audible() then
-        sound.monsterDie:play()
-        sound.secret:play()
+        sounds.monster.die:play()
+        sounds.secret:play()
     end
 
     return FalseBrick.super.receive_hit(self, agent)

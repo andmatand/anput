@@ -5,8 +5,9 @@ Item = class('Item')
              
 ITEM_NAME = {
     -- Normal items
-    elixir = 'ELIXIR',
     arrow = 'ARROW',
+    elixir = 'ELIXIR',
+    potion = 'POTION',
     shinything = 'SHINY THING',
 
     -- Weapons
@@ -26,19 +27,27 @@ function Item:init(itemType)
 
     self.isMovable = true
 
-    if self.itemType == 'elixir' then
+    if self.itemType == 'elixir' or self.itemType == 'potion' then
         self.isUsable = true
-    end
 
-    if self.itemType == 'shinything' then
+        -- Elixir and potion both use the flask image...
+        self.frames = {{image = images.items['flask']}}
+
+        -- ...but different colors
+        if self.itemType == 'elixir' then
+            self.color = MAGENTA
+        elseif self.itemType == 'potion' then
+            self.color = CYAN
+        end
+    elseif self.itemType == 'shinything' then
         self.frames = {
-            {image = images.shinything[1], delay = 8},
-            {image = images.shinything[2], delay = 2},
-            {image = images.shinything[3], delay = 2},
-            {image = images.shinything[2], delay = 2},
-            {image = images.shinything[3], delay = 2}}
-    elseif images[self.itemType] then
-        self.frames = {{image = images[self.itemType]}}
+            {image = images.items.shinything[1], delay = 8},
+            {image = images.items.shinything[2], delay = 2},
+            {image = images.items.shinything[3], delay = 2},
+            {image = images.items.shinything[2], delay = 2},
+            {image = images.items.shinything[3], delay = 2}}
+    elseif images.items[self.itemType] then
+        self.frames = {{image = images.items[self.itemType]}}
     else
         self.frames = nil
     end
@@ -77,7 +86,13 @@ function Item:draw(manualPosition)
     local position = manualPosition or {x = upscale_x(self.position.x),
                                         y = upscale_y(self.position.y)}
     if self.frames then
-        love.graphics.setColor(255, 255, 255)
+        love.graphics.setColorMode('modulate')
+        if self.color then
+            love.graphics.setColor(self.color)
+        else
+            love.graphics.setColor(255, 255, 255)
+        end
+
         love.graphics.draw(self.frames[self.currentFrame].image,
                            position.x, position.y,
                            0, SCALE_X, SCALE_Y)
@@ -112,31 +127,23 @@ function Item:use()
 end
 
 function Item:use_on(patient)
+    --if self.itemType == 'arrow' then
+    --    -- Arrows
+    --    -- If the patient has a bow
+    --    if patient.armory.weapons.bow then
+    --        patient.armory.weapons.bow:add_ammo(1)
+    --        return true
+    --    end
     if self.itemType == 'elixir' then
-        -- Health elixir
         if patient:add_health(20) then
-            print('used elixir')
-
-            -- Play sound depending on who got health
-            if instanceOf(Player, patient) then
-                sound.playerGetHP:play()
-            elseif patient:is_audible() then
-                sound.monsterGetHP:play()
-            end
-            
             return true
-        else
-            sound.unable:play()
-            return false
         end
-    elseif self.itemType == 'arrow' then
-        -- Arrows
-        -- If the patient has a bow
-        if patient.armory.weapons.bow then
-            patient.armory.weapons.bow:add_ammo(1)
+    elseif self.itemType == 'potion' then
+        if patient:add_magic(20) then
             return true
         end
     end
 
+    sounds.unable:play()
     return false
 end

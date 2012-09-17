@@ -97,7 +97,7 @@ function Armory:set_current_weapon(weapon)
         -- If our owner is a player
         if instanceOf(Player, self.owner) then
             -- Play a cool sound
-            sound.menuSelect:play()
+            sounds.menuSelect:play()
         end
 
         -- Swap the new weapon and old currentWeapon in the inventory (so they

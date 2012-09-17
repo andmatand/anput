@@ -13,6 +13,10 @@ function Log:add_kill(character)
     table.insert(self.kills, character)
 end
 
+function Log:get_hits()
+    return self.hits
+end
+
 function Log:get_kills()
     return self.kills
 end

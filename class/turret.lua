@@ -80,7 +80,7 @@ function Turret:sense()
             if not self.room.playedTrapSound and instanceOf(Player, c) then
                 -- Play the trap sound
                 self.room.playedTrapSound = true
-                sound.trap:play()
+                sounds.trap:play()
             end
             return true
         end

@@ -41,8 +41,8 @@ function Weapon:init(weaponType)
     end
 
     -- Assign the image of the same name
-    if images[self.weaponType] then
-        self.image = images[self.weaponType]
+    if images.items[self.weaponType] then
+        self.image = images.items[self.weaponType]
     end
 
     self.isUsable = true
@@ -110,7 +110,7 @@ function Weapon:shoot(dir)
                 return true
             end
         else
-            sound.unable:play()
+            sounds.unable:play()
         end
     end
 

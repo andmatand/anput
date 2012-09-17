@@ -172,6 +172,9 @@ function RoomFiller:add_items()
     local addedElixir = false
 
     local itemTypes = {'elixir', 'arrow', 'shinything'}
+    if self.room.difficulty >= 50 then
+        table.insert(itemTypes, 'potion')
+    end
 
     if self.room.isSecret then
         -- Add some goodies

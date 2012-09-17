@@ -4,7 +4,7 @@
 
 PLAY "mb t130 l40"
 
-SELECT CASE 18 '' Change this number to hear different sounds
+SELECT CASE 13 '' Change this number to hear different sounds
 CASE 1
     '' theme
     PLAY "l10 o3  cde-b >c <b a- g c."
@@ -18,67 +18,89 @@ CASE 3
     PLAY "o1  baa-a-geeedd-c+ccccc"
 
 CASE 4
-    '' player get HP
-    PLAY "o3  ceg"
-
-CASE 5
     '' player get item
     PLAY "o2  g >c"
 
+CASE 5
+    '' player get HP
+    PLAY "o3  ceg"
+
 CASE 6
+    '' player get magic
+    PLAY "o3  cgg+"
+
+CASE 7
     '' player drop item
     PLAY "o2  b g+"
 
-CASE 7
+CASE 8
     '' monster cry
     PLAY "o1  d+d"
 
-CASE 8
+CASE 9
     '' monster die
     PLAY "o1  gfdccc <bff"
-
-CASE 9
-    '' monster get HP
-    PLAY "o2  ceg"
 
 CASE 10
     ''monster get item
     PLAY "o1  g >c"
 
 CASE 11
+    '' monster get HP
+    PLAY "o2  ceg"
+
+CASE 12
+    '' monster get magic
+    PLAY "o2  cgg+"
+
+CASE 13
+    '' monster drop item
+    PLAY "o1  b g+"
+
+CASE 14
     '' no ammo
     PLAY "o0  b"
 
-CASE 12
-    '' scary
+CASE 15
+    '' scary enemy
     PLAY "o2  bb-bb-bb-bb- dd-dd-dd-dd-"
 
-CASE 13
+CASE 16
     '' pause
     PLAY "o2  gg+"
 
-CASE 15
+CASE 17
     '' menu select
     PLAY "o2  b"
 
-CASE 16
+CASE 18
     '' secret find
     PLAY "l10 o3  cfecd-."
 
-CASE 17
+CASE 19
     '' trap
     PLAY "l25 o2  g >c <b g+"
 
-CASE 18
+CASE 20
     '' get special item
     PLAY "l10 o3  cc+ g+g >c."
 
-CASE 19
+CASE 21
     '' shoot arrow
     PLAY "l64 o4  bb-"
 
-CASE 20
+CASE 22
     '' hit wall
     PLAY "o1  e-<c"
+
+CASE 23
+    '' Camel run around!
+    'PLAY "o2 fff bbb fff bbb"
+    'PLAY "o2 f+f+f+ ccc f+f+f+ ccc"
+    PLAY "o2 ccc f+f+f+ ccc f+f+f+"
+    'PLAY "o2 ff cc bbb"
+CASE 24
+    '' Catch camel
+    PLAY "o2 ggg > ccc < ccc"
 END SELECT
 

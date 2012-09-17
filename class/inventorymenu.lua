@@ -321,7 +321,7 @@ function InventoryMenu:keypressed(key)
     if dir then
         if self.state == 'inventory' or self.state == 'deselecting item' then
             if self.items and self.items[dir] then
-                sound.menuSelect:play()
+                sounds.menuSelect:play()
                 self.selectedItemIndex = dir
                 self.selectedItem = self.items[dir]
                 self.state = 'selecting item'

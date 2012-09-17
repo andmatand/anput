@@ -22,7 +22,7 @@ end
 
 function ThunderStaff:shoot()
     if self:get_ammo() < self.ammoCost then
-        sound.unable:play()
+        sounds.unable:play()
         return
     end
 
@@ -86,6 +86,6 @@ function ThunderStaff:shoot()
             end
         end
     else
-        sound.unable:play()
+        sounds.unable:play()
     end
 end
