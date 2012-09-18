@@ -82,6 +82,16 @@ function Game:generate()
     math.randomseed(self.randomSeed)
     print('\nrandom seed for game: ' .. self.randomSeed)
 
+    -- Load NPCs
+    function load_npc(name)
+        local chunk = love.filesystem.load('npc/' .. name .. '.lua')
+        local npc = chunk()
+
+        return npc
+    end
+    self.wizard = load_npc('wizard')
+    self.camel = load_npc('camel')
+
     -- Generate a new map
     self.map = Map({game = self})
     self.rooms = self.map:generate()
@@ -99,8 +109,9 @@ function Game:generate()
     local freeTiles = copy_table(self.currentRoom.freeTiles)
     while #freeTiles > 0 do
         local index = math.random(1, #freeTiles)
-        if manhattan_distance(freeTiles[index],
-                              self.player:get_position()) <= 7 then
+        local dist = manhattan_distance(freeTiles[index],
+                                        self.player:get_position())
+        if dist > 1 and dist <= 7 then
             swordPos = freeTiles[index]
             break
         else
@@ -339,6 +350,7 @@ function Game:set_demo_mode(tf)
             self.player.ai.level.flee = {dist = 20, prob = 10, delay = .05}
             self.player.ai.level.heal = {dist = 20, prob = 10, delay = .05}
             self.player.ai.level.loot = {dist = 20, prob = 9, delay = .05}
+
             print('gave AI to player')
         end
     else

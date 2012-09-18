@@ -9,7 +9,6 @@ camel.inventory:add(ThunderStaff())
 
 -- AI
 camel.ai.choiceTimer.delay = 0
-camel.team = 2
 camel.ai.level.globetrot = {prob = 10, delay = 0}
 camel.ai.level.chase = {delay = .1}
 camel.ai.level.dodge = {dist = 5, prob = 10, delay = 0}

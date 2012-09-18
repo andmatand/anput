@@ -405,12 +405,12 @@ function AI:dodge(sprite, searchDir)
 end
 
 function AI:find_enemy()
-    -- Find the closest character on other team
+    -- Find the closest enemy
     local closestEnemy
     local closestDist = 999
     for _, s in pairs(self.owner.room.sprites) do
-        -- If this is a character on the other team
-        if instanceOf(Character, s) and s.team ~= self.owner.team then
+        -- If this is a character we see as an enemy
+        if instanceOf(Character, s) and self.owner:is_enemies_with(s) then
             dist = manhattan_distance(s.position, self.owner.position)
 
             -- If it's closer than the current closest
@@ -831,8 +831,7 @@ function AI:plot_path(dest, action)
         print('AI: finding path to', dest.x, dest.y)
     end
 
-    self.path.nodes = self.owner.room:plot_path(self.owner.position, dest,
-                                                self.owner.team)
+    self.path.nodes = self.owner.room:plot_path(self.owner.position, dest)
     if not self.path.nodes then
         return false
     end
@@ -844,6 +843,9 @@ function AI:plot_path(dest, action)
     end
 
     return true
+end
+
+function AI:receive_damage(amount, agent)
 end
 
 function AI:reset_timer(action)
@@ -970,10 +972,9 @@ function AI:update()
         end
     end
 
-    -- Check if we should dodge a character on our team walking at us
+    -- Check if we should dodge a non-enemy character walking at us
     for _, s in pairs(self.owner.room.sprites) do
-        --if instanceOf(Player, s) and s.team == self.owner.team then
-        if s.team == self.owner.team then
+        if not self.owner:is_enemies_with(s) then
             if s:will_hit(self.owner) then
                 self:dodge(s)
                 self.choseAction = true

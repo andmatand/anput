@@ -1,4 +1,5 @@
 require('class.character')
+require('class.player')
 
 MONSTER_TYPE = {scarab = 1,
                 bird = 2,
@@ -29,14 +30,15 @@ MONSTER_DIFFICULTY = {
 --    archer = {difficulty = 40, images = monsterImg.archer},
 --    ghost  = {difficulty = 60, images = monsterImg.ghost}}
 
-function Monster:init(monsterType)
+function Monster:init(game, monsterType)
     Character.init(self)
 
-    Monster.static.numMonsterTypes = 5
+    self.game = game
 
     self.monsterType = monsterType
 
-    self.team = 2 -- Bad guys
+    self:add_enemy_class(Player)
+    self:add_enemy(self.game.wizard)
 
     -- Copy monster difficulty level
     self.difficulty = MONSTER_DIFFICULTY[monsterType]

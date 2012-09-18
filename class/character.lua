@@ -20,12 +20,14 @@ function Character:init()
 
     self.health = 100
     self.maxHealth = 100
-    self.hurtTimer = love.timer.getTime()
-    self.usedMagicTimer = love.timer.getTime()
+    self.hurtTimer = 0
+    self.usedMagicTimer = 0
     self.flashTimer = 0
-    self.team = 1 -- Good guys
+    self.rechargeTimer = {delay = 4, value = 0}
     self.isCorporeal = true
     self.isMovable = true
+
+    self.enemies = {characters = {}, classes = {}}
 
     self.ai = AI(self)
 
@@ -33,6 +35,14 @@ function Character:init()
     self.armory = Armory(self)
     self.log = Log()
     self.visitedRooms = {}
+end
+
+function Character:add_enemy(character)
+    table.insert(self.enemies.characters, character)
+end
+
+function Character:add_enemy_class(class)
+    table.insert(self.enemies.classes, class)
 end
 
 function Character:add_health(amount)
@@ -444,9 +454,9 @@ function Character:hit(patient)
                 end
             end
         -- If patient is not an enemy, and has AI
-        elseif patient.ai then
-            -- Tell our teammate to dodge us
-            patient.ai:dodge(self)
+        --elseif patient.ai then
+        --    -- Tell our teammate to dodge us
+        --    patient.ai:dodge(self)
             --return false
         end
     end
@@ -489,11 +499,29 @@ function Character:is_audible()
 end
 
 function Character:is_enemies_with(character)
-    if character.team ~= self.team then
+    if value_in_table(character, self.enemies.characters) then
         return true
-    else
-        return false
     end
+
+    local DEBUG
+    if instanceOf(Player, character) then
+        --DEBUG = true
+    end
+
+    if DEBUG then
+        print('enemy classes:')
+    end
+    for _, c in pairs(self.enemies.classes) do
+        if DEBUG then
+            print('  ', c)
+            print('    instance:', instanceOf(c,character))
+        end
+        if instanceOf(c, character) then
+            return true
+        end
+    end
+
+    return false
 end
 
 function Character:pick_up(item)
@@ -567,56 +595,36 @@ function Character:receive_damage(amount, agent)
         end
     end
 
+    if self.ai then
+        self.ai:receive_damage(amount, agent)
+    end
+
     return true
 end
 
-function Character:receive_hit(agent)
-    -- If we are not a player (since players make their own decisions about
-    -- what team they're on)
-    --if not instanceOf(Player, self) then
-    --    -- If the agent is a projectile
-    --    if instanceOf(Projectile, agent) then
-    --        -- If it has an owner
-    --        if agent.owner then
-    --            -- If the owner is on our team
-    --            if agent.owner.team == self.team then
-    --                -- Turn against him
-    --                if self.mouth then
-    --                    self.mouth.speech = "THAT WAS NOT VERY NICE"
-    --                    self.mouth:speak(true)
-    --                end
-    --                self.team = 3
-    --            end
-    --        end
-    --    end
-    --end
-
-    return Character.super.receive_hit(self)
-end
-
-function Character:recharge()
-    if not self.rechargeTimer then
-        self.rechargeTimer = {delay = 4, value = 0}
+function Character:recharge_health()
+    if self.rechargeTimer.value > 0 then
+        return
     end
 
+    -- If it's been > 2 seconds since we were hurt
+    if self:get_time() > self.hurtTimer + 2 then
+        -- Recharge health
+        self:add_health(1)
+    end
+end
+
+function Character:recharge_magic()
     if self.rechargeTimer.value > 0 then
-        self.rechargeTimer.value = self.rechargeTimer.value - 1
-    else
-        self.rechargeTimer.value = self.rechargeTimer.delay
+        return
+    end
 
-        -- If we have magic
-        if self.magic then
-            -- If it's been > 2 seconds since we used magic
-            if love.timer.getTime() > self.usedMagicTimer + 2 then
-                -- Recharge magic
-                self:add_magic(1)
-            end
-        end
-
-        -- If it's been > 2 seconds since we were hurt
-        if self:get_time() > self.hurtTimer + 2 then
-            -- Recharge health
-            self:add_health(1)
+    -- If we have magic
+    if self.magic then
+        -- If it's been > 2 seconds since we used magic
+        if self:get_time() > self.usedMagicTimer + 2 then
+            -- Recharge magic
+            self:add_magic(1)
         end
     end
 end
@@ -690,6 +698,14 @@ function Character:step_toward(dest)
 end
 
 function Character:update()
+    -- Update the health/magic recharging timer
+    if self.rechargeTimer.value > 0 then
+        self.rechargeTimer.value = self.rechargeTimer.value - 1
+    else
+        self.rechargeTimer.value = self.rechargeTimer.delay
+    end
+
+
     if self.flashTimer > 0 then
         self.flashTimer = self.flashTimer - 1
     end
@@ -748,12 +764,4 @@ end
 
 function Character:visited_room(room)
     return value_in_table(room, self.visitedRooms)
-end
-
-function get_ultimate_owner(obj)
-    while obj.owner do
-        obj = obj.owner
-    end
-
-    return obj
 end

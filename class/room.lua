@@ -372,7 +372,7 @@ function Room:line_of_sight(a, b)
     end
 end
 
-function Room:plot_path(src, dest, characterTeam)
+function Room:plot_path(src, dest)
     local addCharacters = true
     local path
 
@@ -384,11 +384,7 @@ function Room:plot_path(src, dest, characterTeam)
         end
         if addCharacters then
             for _, c in pairs(self:get_characters()) do
-                -- If this character is on the team of the one who called this
-                -- function
-                --if c.team == characterTeam then
                 table.insert(hotLava, {x = c.position.x, y = c.position.y})
-                --end
             end
         end
 
@@ -595,13 +591,14 @@ function Room:update()
     end
 
     -- Update sprites
-    for _, s in pairs(self.sprites) do
-        -- If this is a character on the good-guy team
-        if instanceOf(Character, s) and s.team == 1 then
-            -- Recharge HP/ammo
-            s:recharge()
+    for _, s in pairs(self:get_characters()) do
+        -- If this is a player or an NPC
+        if instanceOf(Player, s) or s.name then
+            -- Regenerate health
+            s:recharge_health()
         end
 
+        s:recharge_magic()
         s:update()
     end
 

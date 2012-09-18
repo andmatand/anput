@@ -2,9 +2,9 @@ require('class.falsebrick')
 require('class.exit')
 require('class.thunderstaff')
 require('class.mapdisplay')
+require('class.monster')
 require('class.pathfinder')
 require('class.room')
-require('class.trader')
 require('class.trader')
 require('class.weapon')
 require('util.tables')
@@ -403,24 +403,22 @@ function Map:add_required_objects()
     --table.insert(self.rooms[1].requiredObjects, Item('ankh'))
 
     -- DEBUG: Put a thing in the first room
-    --local thing = ThunderStaff()
+    --local thing = Item('potion')
     --thing.tag = true
     --table.insert(self.rooms[1].requiredObjects, thing)
 
     -- Put the wizard in one of the 5 earliest rooms
-    local wizard = load_npc('wizard')
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
     local wizardRoom = rooms[math.random(1, #rooms)]
-    add_npc_to_room(wizard, wizardRoom)
+    add_npc_to_room(self.game.wizard, wizardRoom)
 
     -- Add hkay "magician" to the wizard's room
     wizardRoom.requiredHieroglyphs = {{'h', 'ka', 'y', 'book', 'god'}}
     
 
     -- Put the camel in a mid-difficulty room
-    local camel = load_npc('camel')
     local rooms = self:get_rooms_by_difficulty(40, 60, {isSecret = false})
-    add_npc_to_room(camel, rooms[math.random(1, #rooms)])
+    add_npc_to_room(self.game.camel, rooms[math.random(1, #rooms)])
 
     -- Create a table of the rooms lower than the difficulty at which ghosts
     -- would spawn
@@ -485,11 +483,4 @@ end
 function add_npc_to_room(npc, room)
     table.insert(room.requiredObjects, npc)
     room.needsRoomForNPC = true
-end
-
-function load_npc(name)
-    local chunk = love.filesystem.load('npc/' .. name .. '.lua')
-    local npc = chunk()
-
-    return npc
 end

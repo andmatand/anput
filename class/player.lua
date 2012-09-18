@@ -5,12 +5,13 @@ Player = class('Player', Character)
 function Player:init()
     Player.super.init(self)
 
+    self:add_enemy_class(Monster)
+
     -- Remove AI in favor of just I
     self.ai = nil
 
     self.images = playerImg
     self.color = WHITE
-    self.team = 1 -- Good guys
     self.magic = 100
 
     self.wantsToTrade = false

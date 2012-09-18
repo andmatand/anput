@@ -4,6 +4,9 @@ local wizard = Trader({ware = Weapon('firestaff')})
 wizard.name = 'WIZARD'
 wizard.images = playerImg
 
+-- See monsters as enemies
+wizard:add_enemy_class(Monster)
+
 -- AI
 wizard.ai.choiceTimer.delay = .5
 wizard.ai.level.aim = {dist = 4, prob = 10, delay = .1}
@@ -31,5 +34,22 @@ elseif whichLine == 2 then
 elseif whichLine == 3 then
     wizard.speech.later = "SHINY! SHINY! SHINY!"
 end
+
+wizard.receive_damage =
+    function(self, amount, agent)
+        if wizard.class.super.receive_damage(self, amount, agent) then
+            local perpetrator = get_ultimate_owner(agent)
+
+            -- If the dude that hit us is not currently an enemy
+            if not self:is_enemies_with(perpetrator) then
+                -- Make him an enemy
+                self:add_enemy(perpetrator)
+            end
+
+            return true
+        else
+            return false
+        end
+    end
 
 return wizard

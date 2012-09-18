@@ -249,7 +249,7 @@ function RoomFiller:add_monsters()
         end
 
         totalDifficulty = totalDifficulty + hardest
-        table.insert(monsters, Monster(monsterType))
+        table.insert(monsters, Monster(self.room.game, monsterType))
     end
 
     -- DEBUG

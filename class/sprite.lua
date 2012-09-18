@@ -285,3 +285,13 @@ function Sprite:will_hit(patient)
         return false
     end
 end
+
+
+-- Non-Class Functions
+function get_ultimate_owner(obj)
+    while obj.owner do
+        obj = obj.owner
+    end
+
+    return obj
+end
