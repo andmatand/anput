@@ -172,7 +172,7 @@ function RoomFiller:add_items()
     local addedElixir = false
 
     local itemTypes = {'elixir'}
-    if self.room.difficulty >= MONSTER_DIFFICULTY[MONSTER_TYPE.archer] / 2 then
+    if self.room.difficulty >= MONSTER_DIFFICULTY['archer'] / 2 then
         table.insert(itemTypes, 'arrow')
     end
     if self.room.difficulty >= 50 then
@@ -202,7 +202,7 @@ function RoomFiller:add_items()
                 break
             end
 
-            if math.random(m.difficulty, 100) >= 20 then
+            if math.random(1, 3) == 1 then
                 -- Choose a random item type
                 local itemType = itemTypes[math.random(1, #itemTypes)]
 
@@ -226,9 +226,28 @@ end
 function RoomFiller:add_monsters()
     local max = #self.room.freeTiles * .04
 
-    if self.addedMonsters or self.room.isSecret then
+    if self.addedMonsters then
         -- Flag that this step was already completed
         return true
+    end
+
+    if self.room.isSecret then
+        if math.random(1, 4) == 1 then
+            -- Make this a snake pit
+            local numSnakes = math.random(#self.room.freeTiles * .1,
+                                          #self.room.freeTiles * .2)
+
+            local snakes = {}
+            for i = 1, numSnakes do
+                table.insert(snakes, Monster(self.room.game, 'snake'))
+            end
+            self:position_objects(snakes)
+
+            self.addedMonsters = true
+            return false
+        else
+            return true
+        end
     end
 
     -- Create a table of monsters with difficulties as high as possible in
@@ -240,16 +259,21 @@ function RoomFiller:add_monsters()
         -- Find the hardest monster diffculty we still have room for
         local hardest = 0
         local monsterType = nil
-        for mt, diff in ipairs(MONSTER_DIFFICULTY) do
-            if diff + totalDifficulty > self.room.difficulty then
-                break
+        for mt, diff in pairs(MONSTER_DIFFICULTY) do
+            if diff then
+                if diff + totalDifficulty <= self.room.difficulty then
+                    if diff > hardest then
+                        hardest = diff
+                        monsterType = mt
+                    end
+                end
             end
-            hardest = diff
-            monsterType = mt
         end
 
-        totalDifficulty = totalDifficulty + hardest
-        table.insert(monsters, Monster(self.room.game, monsterType))
+        if monsterType then
+            totalDifficulty = totalDifficulty + hardest
+            table.insert(monsters, Monster(self.room.game, monsterType))
+        end
     end
 
     -- DEBUG

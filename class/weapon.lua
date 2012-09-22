@@ -72,7 +72,7 @@ end
 function Weapon:is_effective_against(character)
     -- If we are not a magic weapon
     if not self.isMagic then
-        if character.monsterType == MONSTER_TYPE.ghost then
+        if character.monsterType == 'ghost' then
             return false
         end
     end

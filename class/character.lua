@@ -449,6 +449,7 @@ function Character:hit(patient)
                     patient:receive_damage(
                             self.armory.currentWeapon.meleeDamage, self)
                     self.attackedDir = self.dir
+                    self.attacked = true
                 else
                     return false
                 end
@@ -725,13 +726,16 @@ function Character:update()
         self.frameHoldTimer.value = self.frameHoldTimer.delay
     end
 
-    self.stepped = false
+    self.attacked = false
     self.shot = false
+    self.stepped = false
 end
 
 function Character:update_image()
     -- Determine which image of this character to draw
-    if self.images.bow_shoot and self.shot then
+    if self.images.attack and self.attacked then
+        self.currentImage = self.images.attack
+    elseif self.images.bow_shoot and self.shot then
         self.currentImage = self.images.bow_shoot
     elseif self.images.dodge and self.ai.path.action == AI_ACTION.dodge then
         self.currentImage = self.images.dodge

@@ -242,7 +242,7 @@ function AI:do_action(action)
         end
     elseif action == 'dodge' then
         target = self:find_projectile()
-        if target then
+        if target and self:target_in_range(target, action) then
             self:dodge(target)
             return true
         end
@@ -607,7 +607,7 @@ function AI:flee_from(threat)
             testTile = add_direction(testTile, dir)
             dist = dist + 1
 
-            if self.owner.monsterType == MONSTER_TYPE.scarab then
+            if self.owner.monsterType == 'scarab' then
                 -- Randomly stop early and shorten the path, to look more
                 -- erratic like a bug
                 if dist >= 3 then
@@ -880,7 +880,7 @@ end
 function AI:should_dodge(sprite)
     if instanceOf(Arrow, sprite) then
         -- Ghosts are not afraid of arrows
-        if self.owner.monsterType == MONSTER_TYPE.ghost then
+        if self.owner.monsterType == 'ghost' then
             return false
         end
     end
@@ -998,10 +998,10 @@ function AI:update()
     end
 
     -- Check if we should dodge a non-enemy character walking at us
-    for _, s in pairs(self.owner.room.sprites) do
-        if not self.owner:is_enemies_with(s) then
-            if s:will_hit(self.owner) then
-                self:dodge(s)
+    for _, c in pairs(self.owner.room:get_characters()) do
+        if not self.owner:is_enemies_with(c) then
+            if c:will_hit(self.owner) then
+                self:dodge(c)
                 self.choseAction = true
             end
         end

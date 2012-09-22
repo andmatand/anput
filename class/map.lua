@@ -423,7 +423,7 @@ function Map:add_required_objects()
     -- Create a table of the rooms lower than the difficulty at which ghosts
     -- would spawn
     local easyRooms = self:get_rooms_by_difficulty(0,
-                           MONSTER_DIFFICULTY[MONSTER_TYPE.ghost] - 1,
+                           MONSTER_DIFFICULTY['ghost'] - 1,
                            {isSecret = false})
     local easyRoomsCopy = copy_table(easyRooms)
     local numShinyThings = 0

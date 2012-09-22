@@ -86,6 +86,9 @@ function love.load()
     monsterImg.bird = {default = new_image('bird.png'),
                        dodge = new_image('bird-dodge.png'),
                        walk = new_image('bird-walk.png')}
+    monsterImg.snake = {default = new_image('snake.png'),
+                        step = new_image('snake-step.png'),
+                        attack = new_image('snake-attack.png')}
     monsterImg.cat = {default = new_image('cat.png'),
                       walk = new_image('cat-walk.png')}
     monsterImg.mummy = {default = new_image('mummy.png'),
