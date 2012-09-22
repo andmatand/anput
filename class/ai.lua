@@ -37,6 +37,8 @@ function AI:init(owner)
     self.level.heal      = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.loot      = {dist = nil, prob = nil, target = nil, delay = nil}
 
+    self.reactions = {avenge = false}
+
     self.choiceTimer = {value = 0, delay = 0}
 
     self.exploredPositions = {}
@@ -846,6 +848,29 @@ function AI:plot_path(dest, action)
 end
 
 function AI:receive_damage(amount, agent)
+    if amount <= 0 then
+        return
+    end
+
+    local perpetrator = get_ultimate_owner(agent)
+
+    -- If the dude that hit us is not currently an enemy
+    if not self.owner:is_enemies_with(perpetrator) then
+        if self.reactions.avenge then
+            -- See him as an enemy now
+            self.owner:add_enemy(perpetrator)
+
+            -- If the owner has an avenge() function
+            if self.owner.avenge then
+                self.owner:avenge()
+            end
+        else
+            -- If the owner has a forgive() function
+            if self.owner.forgive then
+                self.owner:forgive()
+            end
+        end
+    end
 end
 
 function AI:reset_timer(action)

@@ -8,6 +8,7 @@ function Trader:init(args)
     self.price = {currency = 'shinything',
                   quantity = 99}
     self.ware = args.ware
+    self.paymentItems = {}
 
     -- If we have a ware
     if self.ware then
@@ -17,7 +18,8 @@ function Trader:init(args)
 
     -- Create a mouth.  Speaking is important for commerce, man.
     self.mouth = Mouth({sprite = self})
-    self.speech = {offer = '', -- What we say to advertise what we're selling
+    self.speech = {offer = '',  -- What we say to advertise what we're selling
+                   enemy = '',  -- What we say to an enemy player
                    drop = '',   -- What we say upon droping our ware
                    enjoy = '',  -- What we say when the customer picks up ware
                    later = ''}  -- What we say when approached after the sale
@@ -45,8 +47,12 @@ function Trader:find_customer()
     -- If the player is touching us
     if (player.room == self.room and not player.dead and
         tiles_touching(self.position, player.position)) then
-        -- Consider him our customer
-        self.customer = player
+        if self:is_enemies_with(player) then
+            self.mouth:set_speech(self.speech.enemy)
+        else
+            -- Consider him our customer
+            self.customer = player
+        end
     else
         self.customer = nil
     end
@@ -125,9 +131,11 @@ function Trader:pick_up(item)
     if pickedUpItem then
         -- If we are waiting to recieve payment
         if self.receivedPayment == false then
+            self.paymentItems = self.inventory:get_items(self.price.currency,
+                                                         self.price.quantity)
+
             -- Check if we have the full price
-            if self:has_item(self.price.currency,
-                self.price.quantity) then
+            if #self.paymentItems == self.price.quantity then
                 self.receivedPayment = true
                 self.paymentPosition = nil
             end
@@ -167,6 +175,14 @@ function Trader:update()
         return
     end
 
+    -- If we are holding anything other than our ware or payment
+    for _, item in pairs(self.inventory.items) do
+        if item ~= self.ware and
+           not value_in_table(item, self.paymentItems) then
+            self:drop_items({item})
+        end
+    end
+
     -- If we can see a payment nearby
     if self:find_payment() then
         -- Stop talking
@@ -189,7 +205,7 @@ function Trader:update()
     -- If we have a customer nearby
     elseif self:find_customer() then
         -- If we still have our ware
-        if self.ware.owner == self then
+        if self:can_trade() then
             -- If the customer is both willing and able to trade
             if (self.customer:wants_to_trade() and
                 self.customer:can_trade(self.price)) then
@@ -217,5 +233,5 @@ function Trader:update()
         end
     end
 
-    Character.update(self)
+    Trader.super.update(self)
 end

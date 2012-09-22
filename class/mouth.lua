@@ -12,8 +12,13 @@ function Mouth:init(args)
 end
 
 function Mouth:set_speech(text)
-    -- Make a copy of the given text
-    self.speech = '' .. text
+    if type(text) == 'string' then
+        -- Make a copy of the given text
+        self.speech = '' .. text
+    elseif type(text) == 'table' then
+        -- Ranomly choose one of the given lines of text
+        self.speech = text[math.random(1, #text)]
+    end
 end
 
 function Mouth:should_speak()

@@ -16,16 +16,15 @@ camel.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
 -- Mouth
 camel.mouth = Mouth({sprite = camel})
 
-camel.receive_damage =
-    function(self, amount, agent)
-        if instanceOf(Player, agent) or
-           (agent.owner and instanceOf(Player, agent.owner)) then
-            local lines = {'OUCH!', 'OW!'}
-            self.mouth.speech = lines[math.random(1, #lines)]
-            self.mouth:speak(true)
-        end
+camel.forgive =
+    function(self)
+        self.mouth:set_speech({'OUCH!',
+                               'OW!',
+                               'THAT HURTS'})
+        self.mouth:speak(true)
 
-        camel.class.receive_damage(self, amount, agent)
+        -- Begin fleeing
+        self.ai.level.flee = {dist = 5, prob = 9, delay = 0}
     end
 
 camel.update =
