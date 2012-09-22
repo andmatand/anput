@@ -127,7 +127,7 @@ function Room:draw()
     -- Draw sprites
     for _, s in pairs(self.sprites) do
         if tile_in_table(s.position, self.fov) or s.isThundershocked or
-           DEBUG then
+           instanceOf(Fireball, s) or DEBUG then
             s:draw()
         end
     end
@@ -591,14 +591,17 @@ function Room:update()
     end
 
     -- Update sprites
-    for _, s in pairs(self:get_characters()) do
-        -- If this is a player or an NPC
-        if instanceOf(Player, s) or s.name then
-            -- Regenerate health
-            s:recharge_health()
+    for _, s in pairs(self.sprites) do
+        if instanceOf(Character, s) then
+            -- If this is a player or an NPC
+            if instanceOf(Player, s) or s.name then
+                -- Regenerate health
+                s:recharge_health()
+            end
+
+            s:recharge_magic()
         end
 
-        s:recharge_magic()
         s:update()
     end
 

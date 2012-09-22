@@ -111,7 +111,7 @@ function love.load()
     -- Items
     images.items = load_images('item/',
                                {'ankh', 'arrow', 'bow', 'firestaff', 'flask',
-                               'sword', 'thunderstaff'})
+                                'sword', 'thunderstaff'})
     images.items.shinything = {new_image('item/shiny-1.png'),
                                new_image('item/shiny-2.png'),
                                new_image('item/shiny-3.png')}
@@ -276,7 +276,7 @@ function love.keypressed(key, unicode)
         elseif key == 'd' then
             wrapper.game:set_demo_mode(not wrapper.game.demoMode)
             print('demo mode: ', wrapper.game.demoMode)
-        elseif key == 'f' then
+        elseif key == 'c' then
             for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
                 if c.name then
                     c.ai:chase(wrapper.game.player)
@@ -288,6 +288,9 @@ function love.keypressed(key, unicode)
                 wrapper.game.player:pick_up(bow)
                 bow:add_ammo(20)
             end
+        elseif key == 'f' then
+            local firestaff = Weapon('firestaff')
+            wrapper.game.player:pick_up(firestaff)
         elseif key == 't' then
             local thunderstaff = ThunderStaff()
             wrapper.game.player:pick_up(thunderstaff)
