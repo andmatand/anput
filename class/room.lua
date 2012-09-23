@@ -623,8 +623,8 @@ function Room:update()
 
         -- Reset all one-frame variables
         s.isThundershocked = false
-        self.wantsToTrade = false
-        self.isGrabbing = false
+        s.wantsToTrade = false
+        s.isGrabbing = false
     end
 
     -- Let characters shoot any remaining weapons
