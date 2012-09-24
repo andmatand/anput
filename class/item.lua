@@ -1,3 +1,5 @@
+require('class.animation')
+
 -- An Item is an object that can exist in either a room (it has no physics) and
 -- a Character's inventory
 Item = class('Item')
@@ -26,11 +28,12 @@ function Item:init(itemType)
 
     self.isMovable = true
 
+    local frames
     if self.itemType == 'elixir' or self.itemType == 'potion' then
         self.isUsable = true
 
         -- Elixir and potion both use the flask image...
-        self.frames = {{image = images.items['flask']}}
+        self.image = images.items['flask']
 
         -- ...but different colors
         if self.itemType == 'elixir' then
@@ -39,60 +42,43 @@ function Item:init(itemType)
             self.color = CYAN
         end
     elseif self.itemType == 'shinything' then
-        self.frames = {
-            {image = images.items.shinything[1], delay = 8},
-            {image = images.items.shinything[2], delay = 2},
-            {image = images.items.shinything[3], delay = 2},
-            {image = images.items.shinything[2], delay = 2},
-            {image = images.items.shinything[3], delay = 2}}
+        frames = {{image = images.items.shinything[1], delay = 8},
+                  {image = images.items.shinything[2], delay = 2},
+                  {image = images.items.shinything[3], delay = 2},
+                  {image = images.items.shinything[2], delay = 2},
+                  {image = images.items.shinything[3], delay = 2}}
     elseif images.items[self.itemType] then
-        self.frames = {{image = images.items[self.itemType]}}
-    else
-        self.frames = nil
+        self.image = images.items[self.itemType]
     end
 
-    self.currentFrame = 1
-    self.animateTimer = 0
-    self.animationEnabled = true
+    if frames then
+        self.animation = Animation(frames)
+    end
 
     self.name = ITEM_NAME[self.itemType]
     self.owner = nil
     self.position = {}
 end
 
-function Item:animate()
-    -- If there's nothing to animate
-    if (self.frames == nil or #self.frames < 2 or
-        self.animationEnabled == false) then
-        -- Go away
-        return
-    end
-
-    self.animateTimer = self.animateTimer + 1
-
-    if self.animateTimer >= self.frames[self.currentFrame].delay then
-        self.animateTimer = 0
-        self.currentFrame = self.currentFrame + 1
-
-        -- Loop back around to the first frame
-        if self.currentFrame > #self.frames then
-            self.currentFrame = 1
-        end
-    end
-end
-
 function Item:draw(manualPosition)
     local position = manualPosition or {x = upscale_x(self.position.x),
                                         y = upscale_y(self.position.y)}
-    if self.frames then
-        love.graphics.setColorMode('modulate')
-        if self.color then
-            love.graphics.setColor(self.color)
-        else
-            love.graphics.setColor(255, 255, 255)
-        end
+    love.graphics.setColorMode('modulate')
+    if self.color then
+        love.graphics.setColor(self.color)
+    else
+        love.graphics.setColor(255, 255, 255)
+    end
 
-        love.graphics.draw(self.frames[self.currentFrame].image,
+    local drawable
+    if self.animation then
+        drawable = self.animation:get_drawable()
+    else
+        drawable = self.image
+    end
+
+    if drawable then
+        love.graphics.draw(drawable,
                            position.x, position.y,
                            0, SCALE_X, SCALE_Y)
     end
@@ -109,7 +95,9 @@ function Item:set_position(position)
 end
 
 function Item:update()
-    self:animate()
+    if self.animation then
+        self.animation:update()
+    end
 end
 
 function Item:use()

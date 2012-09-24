@@ -113,7 +113,7 @@ function InventoryMenu:draw()
             end
 
             -- Draw the USE verb
-            love.graphics.draw(useImg,
+            love.graphics.draw(images.verbs.use,
                                upscale_x(self.slotPositions[2].x),
                                upscale_y(self.slotPositions[2].y),
                                0, SCALE_X, SCALE_Y)
@@ -128,7 +128,7 @@ function InventoryMenu:draw()
             end
 
             -- Draw the USE verb
-            love.graphics.draw(dropImg,
+            love.graphics.draw(images.verbs.drop,
                                upscale_x(self.slotPositions[4].x),
                                upscale_y(self.slotPositions[4].y),
                                0, SCALE_X, SCALE_Y)

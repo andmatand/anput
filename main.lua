@@ -80,23 +80,22 @@ function love.load()
                  thunderstaff = new_image('player-thunderstaff.png')}
 
     -- Monsters
-    monsterImg = {}
-    monsterImg.scarab = {default = new_image('scarab.png'),
-                         walk = new_image('scarab-walk.png')}
-    monsterImg.bird = {default = new_image('bird.png'),
-                       dodge = new_image('bird-dodge.png'),
-                       walk = new_image('bird-walk.png')}
-    monsterImg.snake = {default = new_image('snake.png'),
-                        step = new_image('snake-step.png'),
-                        attack = new_image('snake-attack.png')}
-    monsterImg.cat = {default = new_image('cat.png'),
-                      walk = new_image('cat-walk.png')}
-    monsterImg.mummy = {default = new_image('mummy.png'),
-                        walk = new_image('mummy-walk.png')}
-    monsterImg.archer = {bow = new_image('archer-bow.png'),
-                         --bow_shoot = new_image('archer-shoot.png'),
-                         sword = new_image('archer-sword.png')}
-    monsterImg.ghost = {default = new_image('ghost.png')}
+    images.monsters = {}
+    images.monsters.scarab = {default = new_image('scarab.png'),
+                              step = new_image('scarab-step.png')}
+    images.monsters.bird = {default = new_image('bird.png'),
+                            dodge = new_image('bird-dodge.png'),
+                            step = new_image('bird-step.png')}
+    images.monsters.cat = {default = new_image('cat.png'),
+                           walk = new_image('cat-walk.png')}
+    images.monsters.snake = {default = new_image('snake.png'),
+                             step = new_image('snake-step.png'),
+                             attack = new_image('snake-attack.png')}
+    images.monsters.mummy = {default = new_image('mummy.png'),
+                             walk = new_image('mummy-walk.png')}
+    images.monsters.archer = {bow = new_image('archer-bow.png'),
+                              sword = new_image('archer-sword.png')}
+    images.monsters.ghost = {default = new_image('ghost.png')}
 
     -- NPCs
     camelImg = {default = new_image('camel.png'),
@@ -117,8 +116,7 @@ function love.load()
                                new_image('item/shiny-3.png')}
 
     -- Verbs
-    dropImg = new_image('drop.png')
-    useImg = new_image('use.png')
+    images.verbs = load_images('', {'drop', 'use'})
 
     -- Buttons
     buttonImg = {
@@ -170,6 +168,7 @@ function love.load()
                     caught = Sound('res/sfx/camel-caught.wav')}
     sounds.shootArrow = Sound('res/sfx/shoot-arrow.wav')
     sounds.unable = Sound('res/sfx/unable.wav')
+    sounds.thud = Sound('res/sfx/thud.wav')
     sounds.pause = Sound('res/sfx/pause.wav')
     sounds.menuSelect = Sound('res/sfx/menu-select.wav')
     sounds.secret = Sound('res/sfx/secret.wav')

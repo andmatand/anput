@@ -26,7 +26,7 @@ function Monster:init(game, monsterType)
 
     -- Set monster properties
     if self.monsterType == 'scarab' then
-        self.images = monsterImg.scarab
+        self.images = images.monsters.scarab
         self.maxHealth = 10
 
         self.ai.choiceTimer.delay = .25
@@ -34,7 +34,7 @@ function Monster:init(game, monsterType)
         self.ai.level.flee = {dist = 15, prob = 9, delay = 0}
         self.ai.level.loot = {dist = 6, prob = 3, delay = .5}
     elseif self.monsterType == 'bird' then
-        self.images = monsterImg.bird
+        self.images = images.monsters.bird
         self.maxHealth = 20
 
         local claws = Weapon('claws')
@@ -49,7 +49,7 @@ function Monster:init(game, monsterType)
         self.ai.level.loot = {dist = 10, prob = 2, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == 'cat' then
-        self.images = monsterImg.cat
+        self.images = images.monsters.cat
         self.maxHealth = 40
 
         local claws = Weapon('claws')
@@ -64,7 +64,7 @@ function Monster:init(game, monsterType)
         self.ai.level.loot = {dist = 10, prob = 9, delay = .2}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == 'snake' then
-        self.images = monsterImg.snake
+        self.images = images.monsters.snake
         self.maxHealth = 30
 
         local claws = Weapon('claws')
@@ -78,7 +78,7 @@ function Monster:init(game, monsterType)
         self.ai.level.flee = {dist = 15, prob = 9, delay = .1}
         self.ai.level.loot = {dist = 2, prob = 4, delay = .2}
     elseif self.monsterType == 'mummy' then
-        self.images = monsterImg.mummy
+        self.images = images.monsters.mummy
         self.maxHealth = 40
         self.magic = 50
 
@@ -95,7 +95,7 @@ function Monster:init(game, monsterType)
         self.ai.level.loot = {dist = 20, prob = 6, delay = .4}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == 'archer' then
-        self.images = monsterImg.archer
+        self.images = images.monsters.archer
         self.maxHealth = 60
 
         --local claws = Weapon('claws')
@@ -118,7 +118,7 @@ function Monster:init(game, monsterType)
         self.ai.level.loot = {dist = 20, prob = 6, delay = .5}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
     elseif self.monsterType == 'ghost' then
-        self.images = monsterImg.ghost
+        self.images = images.monsters.ghost
         self.maxHealth = 80
         self.magic = 100
         self.isCorporeal = false

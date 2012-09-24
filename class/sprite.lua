@@ -53,11 +53,21 @@ function Sprite:hit(patient)
             -- Don't stop if the patient did not receive the hit
             return false
         end
+
+        if not self.hitSomethingLastFrame then
+            if instanceOf(Brick, patient) then
+                if self:is_audible() then
+                    sounds.thud:play()
+                end
+            end
+        end
     end
 
     -- Stop
     self.velocity.x = 0
     self.velocity.y = 0
+
+    self.hitSomething = true
 
     -- Valid hit
     return true
@@ -86,6 +96,8 @@ function Sprite:physics()
 
     self.oldPosition = {x = self.position.x, y = self.position.y}
     self.moved = false
+    self.hitSomethingLastFrame = self.hitSomething
+    self.hitSomething = false
 
     -- Do nothing if the sprite is not moving
     if self.velocity.x == 0 and self.velocity.y == 0 then

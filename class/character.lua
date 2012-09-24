@@ -1,4 +1,5 @@
 require('class.ai')
+require('class.animation')
 require('class.armory')
 require('class.inventory')
 require('class.log')
@@ -208,7 +209,7 @@ end
 
 function Character:draw(pos, rotation)
     if not self.currentImage then
-        return
+        self:update_image()
     end
 
     local position
@@ -239,17 +240,43 @@ function Character:draw(pos, rotation)
             end
         end
 
-        local x, sx
+        local drawable
+        if instanceOf(Animation, self.currentImage) then
+            drawable = self.currentImage:get_drawable()
+        else
+            drawable = self.currentImage
+        end
+
+        local x, y, sx
+        x = position.x
+        y = position.y
+
         if self.mirrored then 
-            x = position.x + (self.currentImage:getWidth() * SCALE_X)
+            x = position.x + (drawable:getWidth() * SCALE_X)
             sx = -SCALE_X
         else
-            x = position.x
             sx = SCALE_X
         end
 
-        love.graphics.draw(self.currentImage,
-                           x, position.y,
+        local offsetDir
+        if self.hitSomething and not self.hitSomethingLastFrame then
+            offsetDir = self.dir
+        end
+
+        if offsetDir then
+            if offsetDir == 1 then
+                y = y - SCALE_Y
+            elseif offsetDir == 2 then
+                x = x + SCALE_X
+            elseif offsetDir == 3 then
+                y = y + SCALE_Y
+            elseif offsetDir == 4 then
+                x = x - SCALE_X
+            end
+        end
+
+        love.graphics.draw(drawable,
+                           x, y,
                            rotation,
                            sx, SCALE_Y)
 
@@ -720,10 +747,22 @@ function Character:update()
     self.oldImage = self.currentImage
     self:update_image()
 
+    -- If our current image is an animation
+    if instanceOf(Animation, self.currentImage) then
+        -- Update the animation
+        self.currentImage:update()
+    end
+
     -- If we changed images
     if self.currentImage ~= self.oldImage then
         -- Start the frame-hold timer
         self.frameHoldTimer.value = self.frameHoldTimer.delay
+
+        -- If the current image is an animation
+        if instanceOf(Animation, self.currentImage) then
+            -- Reset it to frame one
+            self.currentImage:advance_to_frame(1)
+        end
     end
 
     self.attacked = false
@@ -732,6 +771,17 @@ function Character:update()
 end
 
 function Character:update_image()
+    if not self.convertedAnimations then
+        -- Find any images that are tables and convert them to animation
+        -- objects
+        for key, image in pairs(self.images) do
+            if type(image) == 'table' and not instanceOf(Animation, image) then
+                self.images[key] = Animation(copy_table(image))
+            end
+        end
+        self.convertedAnimations = true
+    end
+
     -- Determine which image of this character to draw
     if self.images.attack and self.attacked then
         self.currentImage = self.images.attack
@@ -739,11 +789,22 @@ function Character:update_image()
         self.currentImage = self.images.bow_shoot
     elseif self.images.dodge and self.ai.path.action == AI_ACTION.dodge then
         self.currentImage = self.images.dodge
-    elseif (self.images.step and self.stepped) then
-        self.currentImage = self.images.step
-        self.frameHoldTimer.delay = 1
-    elseif (self.images.walk and (self.ai.path.nodes or self.stepped)) then
+    elseif self.images.step and self.stepped then
+        if self.currentImage == self.images.step then
+            self.currentImage = self.images.default
+        else
+            self.currentImage = self.images.step
+        end
+    elseif self.images.walk and (self.ai.path.nodes or self.stepped) then
         self.currentImage = self.images.walk
+
+        --if instanceOf(Animation, self.currentImage) then
+        --    self.currentImage.loop = false
+
+        --    if self.stepped and self.currentImage:is_stopped() then
+        --        self.currentImage:advance_to_frame(1)
+        --    end
+        --end
     elseif (self.images.sword and
             self.armory:get_current_weapon_type() == 'sword') then
         self.currentImage = self.images.sword
