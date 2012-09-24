@@ -15,8 +15,7 @@ function Message:init(args)
     self.avatar = args.avatar
 
     -- Delay is the number of seconds to keep the message onscreen once all the
-    -- letters have finished appearing
-    -- finished appearing onscreen
+    -- letters have finished appearing onscreen
     self.delay = args.delay or 1
 
     self.cursor = 0 -- Last character currently visible (when unfurling text)

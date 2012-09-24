@@ -711,6 +711,13 @@ function Room:update_messages()
         if self.messages[1].finished then
             -- Remove it from the queue
             table.remove(self.messages, 1)
+
+        -- If the message's mouth is no longer in the room
+        elseif self.messages[1].mouth and self.messages[1].mouth.sprite and
+           self.messages[1].mouth.sprite.room ~= self then
+            -- Move the message to the new room
+            self.messages[1].mouth.sprite.room:add_message(self.messages[1])
+            table.remove(self.messages, 1)
         end
 
         return true
