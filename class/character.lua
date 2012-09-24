@@ -747,12 +747,6 @@ function Character:update()
     self.oldImage = self.currentImage
     self:update_image()
 
-    -- If our current image is an animation
-    if instanceOf(Animation, self.currentImage) then
-        -- Update the animation
-        self.currentImage:update()
-    end
-
     -- If we changed images
     if self.currentImage ~= self.oldImage then
         -- Start the frame-hold timer
@@ -763,6 +757,12 @@ function Character:update()
             -- Reset it to frame one
             self.currentImage:advance_to_frame(1)
         end
+    end
+
+    -- If our current image is an animation
+    if instanceOf(Animation, self.currentImage) then
+        -- Update the animation
+        self.currentImage:update()
     end
 
     self.attacked = false
@@ -795,16 +795,17 @@ function Character:update_image()
         else
             self.currentImage = self.images.step
         end
-    elseif self.images.walk and (self.ai.path.nodes or self.stepped) then
+    elseif self.images.walk and ((self.ai and self.ai.path.nodes) or
+                                 self.stepped) then
         self.currentImage = self.images.walk
 
-        --if instanceOf(Animation, self.currentImage) then
-        --    self.currentImage.loop = false
+        if instanceOf(Animation, self.currentImage) then
+            self.currentImage.loop = false
 
-        --    if self.stepped and self.currentImage:is_stopped() then
-        --        self.currentImage:advance_to_frame(1)
-        --    end
-        --end
+            if self.stepped and self.currentImage:is_stopped() then
+                self.currentImage:advance_to_frame(1)
+            end
+        end
     elseif (self.images.sword and
             self.armory:get_current_weapon_type() == 'sword') then
         self.currentImage = self.images.sword

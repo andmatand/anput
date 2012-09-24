@@ -43,7 +43,7 @@ function Animation:update()
                 -- Wrap around to the first frame
                 self:advance_to_frame(1)
             else
-                self.stopped = true
+                self.isStopped = true
             end
         end
     end
