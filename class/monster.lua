@@ -6,7 +6,7 @@ Monster = class('Monster', Character)
 MONSTER_DIFFICULTY = {scarab = 1,
                       bird = 5,
                       cat = 20,
-                      snake = nil,
+                      cobra = nil,
                       mummy = 30,
                       archer = 40,
                       ghost = 60}
@@ -63,8 +63,8 @@ function Monster:init(game, monsterType)
         self.ai.level.flee = {dist = 15, prob = 9, delay = .1}
         self.ai.level.loot = {dist = 10, prob = 9, delay = .2}
         self.ai.level.explore = {dist = 15, prob = 8, delay = .5}
-    elseif self.monsterType == 'snake' then
-        self.images = images.monsters.snake
+    elseif self.monsterType == 'cobra' then
+        self.images = images.monsters.cobra
         self.maxHealth = 30
 
         local claws = Weapon('claws')
@@ -73,8 +73,8 @@ function Monster:init(game, monsterType)
 
         self.ai.choiceTimer.delay = .1
         self.ai.level.attack = {dist = 20, prob = 10, delay = .5}
-        self.ai.level.chase = {dist = 2, prob = 5, delay = .1}
-        self.ai.level.dodge = {dist = 7, prob = 7, delay = .6}
+        self.ai.level.chase = {dist = 3, prob = 5, delay = .1}
+        self.ai.level.dodge = {dist = 7, prob = 7, delay = .2}
         self.ai.level.flee = {dist = 15, prob = 9, delay = .1}
         self.ai.level.loot = {dist = 2, prob = 4, delay = .2}
     elseif self.monsterType == 'mummy' then

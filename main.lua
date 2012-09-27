@@ -87,10 +87,14 @@ function love.load()
                             dodge = new_image('bird-dodge.png'),
                             step = new_image('bird-step.png')}
     images.monsters.cat = {default = new_image('cat.png'),
-                           walk = new_image('cat-walk.png')}
-    images.monsters.snake = {default = new_image('snake.png'),
-                             step = new_image('snake-step.png'),
-                             attack = new_image('snake-attack.png')}
+                           walk = new_image('cat-walk.png'),
+                           attack = new_image('cat-attack.png')}
+    images.monsters.cobra = {default = new_image('cobra.png'),
+                             walk = {{image = new_image('cobra-walk1.png'),
+                                      delay = 2},
+                                     {image = new_image('cobra-walk2.png'),
+                                      delay = 2}},
+                             attack = new_image('cobra-attack.png')}
     images.monsters.mummy = {default = new_image('mummy.png'),
                              walk = new_image('mummy-walk.png')}
     images.monsters.archer = {bow = new_image('archer-bow.png'),

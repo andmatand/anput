@@ -233,13 +233,13 @@ function RoomFiller:add_monsters()
 
     if self.room.isSecret then
         if math.random(1, 4) == 1 then
-            -- Make this a snake pit
+            -- Make this a snake den
             local numSnakes = math.random(#self.room.freeTiles * .1,
                                           #self.room.freeTiles * .2)
 
             local snakes = {}
             for i = 1, numSnakes do
-                table.insert(snakes, Monster(self.room.game, 'snake'))
+                table.insert(snakes, Monster(self.room.game, 'cobra'))
             end
             self:position_objects(snakes)
 
