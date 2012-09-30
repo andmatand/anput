@@ -64,7 +64,7 @@ function PathFinder:AStar(src, dest)
 
     -- Add source to self.openNodes
     table.insert(self.openNodes, {x = src.x, y = src.y, g = 0,
-                             h = manhattan_distance(src, dest)})
+                                  h = manhattan_distance(src, dest)})
 
     while reachedDest == false do
         -- Find best next openNode to use

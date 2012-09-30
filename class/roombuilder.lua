@@ -1,67 +1,11 @@
 require('class.brick')
+require('class.cheappathfinder')
 require('class.navigator')
 require('class.floodfiller')
 require('util.tables')
 require('util.tile')
 
 --local DEBUG = true
-
-local function cheap_line(src, dest)
-    local nodes = {}
-    local pos = {x = src.x, y = src.y}
-
-    if DEBUG then
-        --print('finding cheap line')
-        --print('  src: ' .. src.x .. ', ' .. src.y)
-        --print('  dest: ' .. dest.x .. ', ' .. dest.y)
-        --print()
-    end
-
-    -- Add the src position
-    table.insert(nodes, {x = pos.x, y = pos.y})
-
-    repeat
-        local moveX = false
-        local moveY = false
-
-        if pos.x ~= dest.x and (math.random(0, 1) == 0 or
-                                pos.y == dest.y) then
-            moveX = true
-        else
-            moveY = true
-        end
-
-        -- If we are on the room border, move in by one tile
-        if pos.x == 0 or pos.x == ROOM_W - 1 then
-            moveX = true
-            moveY = false
-        elseif pos.y == 0 or pos.y == ROOM_H - 1 then
-            moveX = false
-            moveY = true
-        end
-
-        if moveX then
-            if pos.x < dest.x then
-                pos.x = pos.x + 1
-            elseif pos.x > dest.x then
-                pos.x = pos.x - 1
-            end
-        elseif moveY then
-            if pos.y < dest.y then
-                pos.y = pos.y + 1
-            elseif pos.y > dest.y then
-                pos.y = pos.y - 1
-            end
-        end
-
-        --print('  pos:' .. pos.x .. ', ' .. pos.y)
-
-        -- Add the current position
-        table.insert(nodes, {x = pos.x, y = pos.y})
-    until tiles_overlap(pos, dest)
-
-    return nodes
-end
 
 -- A RoomBuilder places bricks inside a room
 RoomBuilder = class('RoomBuilder')
@@ -200,7 +144,10 @@ function RoomBuilder:plot_midpaths()
             src.x = src.x + 1
         end
 
-        local tiles = cheap_line(src, self.midPoint)
+        local cpf = CheapPathFinder(src, self.midPoint,
+                                    {x1 = 0, y1 = 0,
+                                     x2 = ROOM_W - 1, y2 = ROOM_H - 1})
+        local tiles = cpf:plot()
 
         -- Append these tiles to occupiedTiles and midPaths
         for _, t in pairs(tiles) do
