@@ -35,6 +35,8 @@ function cga_print(text, x, y, options)
     -- Set default options
     options = options or {}
 
+    local text = tostring(text)
+
     -- If an actual pixel position is given
     if options.position then
         x = options.position.x
