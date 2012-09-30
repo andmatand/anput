@@ -1,9 +1,10 @@
 -- A MapDisplay draws a visual representation of the map
 MapDisplay = class('MapDisplay')
 
-function MapDisplay:init(nodes)
-    self.nodes = nodes
+function MapDisplay:init(map)
+    self.map = map
 
+    self.nodes = self.map.nodes
     self.size = {w = 9, h = 9}
     self.flash = {timer = 0, state = false}
 end
@@ -20,8 +21,10 @@ function MapDisplay:draw(currentRoom)
         self.position = {x = upscale_x(position.x),
         y = upscale_y(position.y)}
 
-        self:find_map_offset()
+        --self:find_map_offset()
     end
+    self:find_map_offset()
+
 
     -- Draw a border
     love.graphics.setColor(WHITE)
@@ -45,7 +48,7 @@ function MapDisplay:draw(currentRoom)
         if n.room.visited or DEBUG then
             if n.room == currentRoom and self.flash.state then
                 love.graphics.setColor(MAGENTA)
-            elseif n.finalRoom then
+            elseif n.room == self.map.artifactRoom then
                 love.graphics.setColor(CYAN)
             elseif n.room:contains_npc() then
                 love.graphics.setColor(CYAN)
@@ -61,30 +64,46 @@ function MapDisplay:draw(currentRoom)
         end
     end
 
+    if DEBUG then
+        -- Draw hotLava
+        love.graphics.setColor(255, 0, 255, math.random(100, 200))
+        for _, n in pairs(self.map.hotLava) do
+            love.graphics.rectangle('fill',
+                                    n.x * self.nodeSize, n.y * self.nodeSize,
+                                    self.nodeSize, self.nodeSize)
+        end
+    end
+
     -- Undo the graphics translation
     love.graphics.pop()
+
+    if DEBUG then
+        -- Display the path length
+        cga_print('PATH LENGTH: ' .. #self.map.path, 1, 1)
+        cga_print('DIST. TO LAST ROOM: ' ..
+                  self.map.artifactRoom.distanceFromStart, 1, 2)
+    end
 end
 
 -- Find offset necessary to center the map onscreen
 function MapDisplay:find_map_offset()
     -- Find the furthest outside positions in the cardinal directions
-    local n = 0
-    local e = 0
-    local s = 0
-    local w = 0
+    local n, e, s, w
 
-    for _,j in pairs(self.nodes) do
-        if j.y < n then
-            n = j.y
-        end
-        if j.x > e then
-            e = j.x
-        end
-        if j.y > s then
-            s = j.y
-        end
-        if j.x < w then
-            w = j.x
+    for _, node in pairs(self.nodes) do
+        if node.room.visited or DEBUG then
+            if not n or node.y < n then
+                n = node.y
+            end
+            if not e or node.x > e then
+                e = node.x
+            end
+            if not s or node.y > s then
+                s = node.y
+            end
+            if not w or node.x < w then
+                w = node.x
+            end
         end
     end
 

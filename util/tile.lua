@@ -192,6 +192,24 @@ function consecutive_free_neighbors(tile, occupiedTiles, numInARow)
     return false
 end
 
+function remove_duplicate_tiles(tiles)
+    local newTiles = {}
+    for _, t in pairs(tiles) do
+        local ok = true
+        for _, t2 in pairs(newTiles) do
+            if tiles_overlap(t, t2) then
+                ok = false
+            end
+        end
+
+        if ok then
+            table.insert(newTiles, t)
+        end
+    end
+
+    return newTiles
+end
+
 function tile_in_table(tile, table)
     for i, t in pairs(table) do
         if t.position == nil then

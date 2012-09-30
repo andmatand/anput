@@ -18,9 +18,8 @@ function Map:init(args)
 end
 
 function Map:generate()
-    self.path = self:generate_path()
-    self.branches = self:add_branches(self.path)
-    self.display = nil
+    self:generate_path()
+    self:add_branches()
 
     self.rooms = self:generate_rooms()
     self:add_temple_exit()
@@ -28,6 +27,9 @@ function Map:generate()
     self:add_secret_passages()
     self:add_required_objects()
     self:add_hieroglyphs()
+
+    -- Create a display of this map
+    self.display = MapDisplay(self)
 
     return self.rooms
 end
@@ -90,19 +92,38 @@ function move_random(node)
     end
 end
 
-function find_empty_neighbors(node, otherNodesTables)
-    -- Combine all tables in otherNodesTables
-    allOtherNodes = concat_tables(otherNodesTables)
+function Map:find_branch_neighbors(src)
+    local allOtherNodes = concat_tables({self.path, self.branches})
 
-    neighbors = find_neighbor_tiles(node, allOtherNodes, {diagonals = false})
+    local neighbors = find_neighbor_tiles(src, allOtherNodes,
+                                          {diagonals = false})
 
-    -- Keep only empty neighbors
-    temp = {}
-    for j,n in pairs(neighbors) do
-        ok = true
+    -- Keep only neighbors that are empty and not touching any other tile
+    local temp = {}
+    for _, n in pairs(neighbors) do
+        local ok = true
 
-        if n.occupied == true then
+        if n.occupied then
             ok = false
+
+        -- Don't let any branch tile touch the first room
+        elseif tiles_touching(n, self.path[1]) then
+            ok = false
+
+        -- Don't go outside the canvas
+        elseif n.x < self.canvas.x1 or n.y < self.canvas.y1 or
+           n.x > self.canvas.x2 or n.y > self.canvas.y2 then
+            ok = false
+        end
+
+        for _, n2 in pairs(allOtherNodes) do
+            -- If this is not the starting node
+            if not tiles_overlap(n2, src) then
+                if tiles_touching(n, n2) then
+                    ok = false
+                    break
+                end
+            end
         end
 
         if ok then
@@ -111,55 +132,54 @@ function find_empty_neighbors(node, otherNodesTables)
     end
     neighbors = temp
 
-    --print('empty neighbors:')
-    --for j,n in pairs(neighbors) do
-    --  print(n.x, n.y)
-    --end
-
     return neighbors
 end
 
-function Map:add_branches(path)
-    local branches = {}
-    for i, p in pairs(path) do
-        -- Don't branch off from the first room or the final room
-        if not (i == 1 or p.finalRoom) then
-            --print('\npath node ' .. i .. ':', p.x, p.y)
+function Map:add_branches()
+    self.branches = {}
+    --if self.branches then return end
 
-            local neighbors = find_empty_neighbors(p, {path, branches})
+    --local startingTiles = concat_tables({self.path, self.branches})
+    local startingTiles = copy_table(self.path)
 
-            for j, n in pairs(neighbors) do
-                if (math.random(0, 2) == 0 and
-                    not tiles_touching(n, path[1])) then
-                    -- Form a branch starting from this neighbor
-                    table.insert(branches, n)
+    local numBranches = 0
+    while (numBranches < 10 or #self.branches < 40) and #startingTiles > 0 do
+        -- Choose a random starting positon on the main path
+        local start = table.remove(startingTiles,
+                                   math.random(1, #startingTiles))
+        local neighbors = self:find_branch_neighbors(start)
 
-                    local maxLength = math.random(1, 6)
-                    local branchLength = 1
-                    local tile = n
-                    while branchLength < maxLength do
-                        possibleMoves = find_empty_neighbors(tile,
-                                                             {path, branches})
+        while #neighbors > 0 do
+            -- Choose a random neighbor position and remove it from future use
+            local pos = table.remove(neighbors, math.random(1, #neighbors))
+            pos.distanceFromStart = start.distanceFromStart + 1
 
-                        if #possibleMoves > 0 then
-                            -- Move randomly to one of the open neighbors
-                            tile = possibleMoves[math.random(1,
-                                                             #possibleMoves)]
-                            if tiles_touching(tile, path[1]) then
-                                break
-                            end
-                            branchLength = branchLength + 1
-                            table.insert(branches, tile)
-                        else
-                            break
-                        end
-                    end
+            -- Form a branch starting from this position
+            local newBranch = {}
+            table.insert(newBranch, pos)
+            numBranches = numBranches + 1
+
+            local maxLength = 10--math.random(4, 10)
+            while #newBranch < maxLength do
+                local possibleMoves = self:find_branch_neighbors(pos)
+
+                if #possibleMoves > 0 then
+                    -- Move randomly to one of the open neighbors
+                    pos = possibleMoves[math.random(1, #possibleMoves)]
+                    pos.distanceFromStart =
+                        newBranch[#newBranch].distanceFromStart + 1
+                    table.insert(newBranch, pos)
+                else
+                    break
                 end
             end
-        end
-    end
 
-    return branches
+            -- Add the new branch to the main table of branches
+            self.branches = concat_tables({self.branches, newBranch})
+        end
+
+        self.branches = remove_duplicate_tiles(self.branches)
+    end
 end
 
 function Map:add_hieroglyphs()
@@ -175,59 +195,101 @@ function Map:draw(currentRoom)
 end
 
 function Map:generate_path()
-    src = {x = 0, y = 0}
+    -- Define the maximum available area for the map
+    canvas = {}
+    canvas.width = 15--23
+    canvas.height = canvas.width
+    canvas.x1 = 0
+    canvas.y1 = 0
+    canvas.x2 = canvas.width - 1
+    canvas.y2 = canvas.height - 1
+    canvas.center = {x = math.floor((canvas.x2 - canvas.x1) / 2),
+                     y = math.floor((canvas.y2 - canvas.y1) / 2)}
 
-    -- Pick random location for the final room
-    breadth = 15
-    distance = {}
-    distance.x = math.random(-breadth, breadth)
-    distance.y = breadth - math.abs(distance.x)
-    if math.random(0, 1) == 0 then
-        distance.y = -distance.y
+    -- Define the radius for each ring
+    local rings = {}
+    --rings[1] = {radius = math.floor((canvas.width / 2) - 2)}
+    --rings[2] = {radius = math.floor((canvas.width / 2) - 5)}
+    --rings[3] = {radius = math.floor((canvas.width / 2) - 9)}
+    rings[1] = {radius = math.floor((canvas.width / 2) * .9)}
+    rings[2] = {radius = math.floor((canvas.width / 2) * .5)}
+    --rings[3] = {radius = math.floor((canvas.width / 2) - 9)}
+
+    -- Position the source somewhere outside ring 1
+    local x = math.random(canvas.x1, canvas.x2)
+    local y = math.random(canvas.y1, canvas.y2)
+    local dir = math.random(1, 4)
+    if dir == 1 then
+        y = 0
+    elseif dir == 2 then
+        x = canvas.x2
+    elseif dir == 3 then
+        y = canvas.y2
+    elseif dir == 4 then
+        x = 0
     end
-    dest = {x = src.x + distance.x, y = src.y + distance.y}
+    local src = {x = x, y = y}
 
-    -- Find the rectangle of space between the two points
-    rect = {}
-    if src.x <= dest.x then
-        rect.x1 = src.x
-        rect.x2 = dest.x
-    else
-        rect.x1 = dest.x
-        rect.x2 = src.x
+    -- Position the destination in the center
+    local dest = {x = canvas.center.x, y = canvas.center.y}
+
+    -- Starting with the path source position, choose sides of the rings on
+    -- which to place a gap, always using the opposite side from the previous
+    -- position
+    local dir
+    if src.y == canvas.y1 then
+        dir = 1
+    elseif src.x == canvas.x2 then
+        dir = 2
+    elseif src.y == canvas.y2 then
+        dir = 3
+    elseif src.x == canvas.x1 then
+        dir = 4
     end
-    if src.y <= dest.y then
-        rect.y1 = src.y
-        rect.y2 = dest.y
-    else
-        rect.y1 = dest.y
-        rect.y2 = src.y
+    for i = 1, #rings do
+        dir = opposite_direction(dir)
+        rings[i].gap = {side = dir}
     end
 
-    -- Place some obstacles in between the rooms
-    self.obstacles = {}
-    for i = 1,(breadth * 3) do
-        x = math.random(rect.x1, rect.x2)
-        y = math.random(rect.y1, rect.y2)
+    -- Make hotLava nodes along each ring
+    self.hotLava = {}
+    for i, ring in pairs(rings) do
+        local nodes = plot_circle(canvas.center, ring.radius)
 
-        ok = true
-        if (x == src.x and y == src.y) or
-           (x == dest.x and y == dest.y) then
-           ok = false
+        -- Choose a random gap position that is close to the middle node on
+        -- the ring's gap.side
+        local tmpNodes = copy_table(nodes)
+        while #tmpNodes > 0 do
+            local n = table.remove(tmpNodes, math.random(1, #tmpNodes))
+
+            if manhattan_distance(n, nodes[ring.gap.side]) <= ring.radius then
+                ring.gap.x = n.x
+                ring.gap.y = n.y
+                break
+            end
         end
 
-        if ok then
-            table.insert(self.obstacles, {x = x, y = y})
+        for _, n in pairs(nodes) do
+            if tiles_overlap(n, ring.gap) then
+                -- Gap
+            else
+                table.insert(self.hotLava, n)
+            end
         end
     end
 
     -- Plot path from src to dest through obstacles
-    pf = PathFinder(src, dest, self.obstacles, nil, {bounds = false})
-    path = pf:plot()
-    path[1].firstRoom = true
-    path[#path].finalRoom = true
+    --local pf = PathFinder(src, dest, self.hotLava, nil, {bounds = false})
+    local pf = PathFinder(src, dest, self.hotLava)
+    self.path = pf:plot()
 
-    return path
+    -- Mark each room with its distance from the first room
+    for i, n in pairs(self.path) do
+        n.distanceFromStart = i - 1
+    end
+
+    -- Make the canvas accessible to other methods
+    self.canvas = canvas
 end
 
 function Map:generate_rooms()
@@ -239,7 +301,7 @@ function Map:generate_rooms()
     for i, node in ipairs(self.nodes) do
         -- Add the new room and attach it to this node
         local r = Room({index = #rooms + 1, game = self.game})
-        r.distanceFromStart = manhattan_distance(node, self.path[1])
+        r.distanceFromStart = node.distanceFromStart
         table.insert(rooms, r)
         node.room = r
 
@@ -302,12 +364,14 @@ function Map:generate_rooms()
     end
 
     -- Find the room that's farthest away from the first room, and set it as
-    -- the last room
+    -- the artifact room
     local farthestDistance = 0
     for _, r in pairs(rooms) do
-        if r.distanceFromStart > farthestDistance then
+        if --r.distanceFromStart >= 60 and
+           r.distanceFromStart > farthestDistance and
+           #r.exits == 1 then
             farthestDistance = r.distanceFromStart
-            self.lastRoom = r
+            self.artifactRoom = r
         end
     end
 
@@ -317,13 +381,10 @@ function Map:generate_rooms()
                                    math.random(1, 1000))
 
         -- Assign difficulty to each room based on distance from first room
-        -- compared to last room
+        -- compared to artifact room
         r.difficulty = math.floor((r.distanceFromStart /
-                                    self.lastRoom.distanceFromStart) * 100)
+                                   self.artifactRoom.distanceFromStart) * 100)
     end
-
-    -- Create a display of this map
-    self.display = MapDisplay(self.nodes)
 
     return rooms
 end
@@ -393,15 +454,6 @@ function Map:add_required_objects()
     local sword = Weapon('sword')
     table.insert(self.rooms[1].requiredObjects, sword)
 
-    -- DEBUG: Put a bunch of items in the starting room to fill up the
-    -- inventory
-    --table.insert(self.rooms[1].requiredObjects, Item('elixir'))
-    --table.insert(self.rooms[1].requiredObjects, Item('shinything'))
-    --table.insert(self.rooms[1].requiredObjects, Weapon('bow'))
-    --table.insert(self.rooms[1].requiredObjects, Weapon('staff'))
-    -- And then the ankh
-    --table.insert(self.rooms[1].requiredObjects, Item('ankh'))
-
     -- DEBUG: Put a thing in the first room
     --local thing = Item('potion')
     --thing.tag = true
@@ -419,6 +471,7 @@ function Map:add_required_objects()
     -- Put the camel in a mid-difficulty room
     local rooms = self:get_rooms_by_difficulty(40, 60, {isSecret = false})
     add_npc_to_room(self.game.camel, rooms[math.random(1, #rooms)])
+    --self.game.camel.ai.level.globetrot = nil
 
     -- Create a table of the rooms lower than the difficulty at which ghosts
     -- would spawn
@@ -448,14 +501,16 @@ function Map:add_required_objects()
         end
     end
 
-    -- Put the ankh in the last room
-    table.insert(self.lastRoom.requiredObjects, Item('ankh'))
+    -- Put the ankh in the artifact room
+    table.insert(self.artifactRoom.requiredObjects, Item('ankh'))
 end
 
 function Map:add_secret_passages()
     for _, r in pairs(self.rooms) do
-        -- If this room has only 1 exit
-        if r.distanceFromStart > 0 and #r.exits == 1 then
+        -- If this room has only 1 exit and is not the first room or the
+        -- artifact room
+        if #r.exits == 1 and r.distanceFromStart > 0 and not r.artifactRoom and
+           math.random(0, 1) == 0 then -- Also mix in some randomness
             -- Put a false brick in front of the exit that leads to this room
             local adjacentRoom = r.exits[1].targetRoom
             local adjacentExit = adjacentRoom:get_exit({targetRoom = r})
@@ -483,4 +538,45 @@ end
 function add_npc_to_room(npc, room)
     table.insert(room.requiredObjects, npc)
     room.needsRoomForNPC = true
+end
+
+function plot_circle(position, radius)
+    local x0 = position.x
+    local y0 = position.y
+
+    local nodes = {}
+    local f = 1 - radius
+    local ddf_x = 1
+    local ddf_y = -2 * radius
+    local x = 0
+    local y = radius
+    table.insert(nodes, {x = x0, y = y0 - radius}) -- North
+    table.insert(nodes, {x = x0 + radius, y = y0}) -- East
+    table.insert(nodes, {x = x0, y = y0 + radius}) -- South
+    table.insert(nodes, {x = x0 - radius, y = y0}) -- West
+
+    while x < y do
+        if f >= 0 then
+            y = y - 1
+            ddf_y = ddf_y + 2
+            f = f + ddf_y
+        end
+
+        x = x + 1
+        ddf_x = ddf_x + 2
+        f = f + ddf_x
+
+        table.insert(nodes, {x = x0 + x, y = y0 + y})
+        table.insert(nodes, {x = x0 - x, y = y0 + y})
+        table.insert(nodes, {x = x0 + x, y = y0 - y})
+        table.insert(nodes, {x = x0 - x, y = y0 - y})
+        table.insert(nodes, {x = x0 + y, y = y0 + x})
+        table.insert(nodes, {x = x0 - y, y = y0 + x})
+        table.insert(nodes, {x = x0 + y, y = y0 - x})
+        table.insert(nodes, {x = x0 - y, y = y0 - x})
+    end
+
+    nodes = remove_duplicate_tiles(nodes)
+
+    return nodes
 end
