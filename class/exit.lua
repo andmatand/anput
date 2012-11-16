@@ -8,6 +8,18 @@ function Exit:init(args)
     self.targetRoom = nil -- The room to which this exit leads
 end
 
+function Exit:get_direction()
+    if self.y == -1 then
+        return 1 -- North
+    elseif self.x == ROOM_W then
+        return 2 -- East
+    elseif self.y == ROOM_H then
+        return 3 -- South
+    elseif self.x == -1 then
+        return 4 -- West
+    end
+end
+
 function Exit:get_doorframes()
     local x1, y1, x2, y2
 
@@ -37,7 +49,7 @@ function Exit:get_doorframes()
         y2 = self.y - 1
     end
 
-    return {x1 = x1, y1 = y1, x2 = x2, y2 = y2}
+    return {{x = x1, y = y1}, {x = x2, y = y2}}
 end
 
 function Exit:get_doorway()
@@ -65,20 +77,16 @@ function Exit:get_doorway()
     return {x = x, y = y}
 end
 
-function Exit:get_position()
-    return {x = self.x, y = self.y}
+function Exit:get_linked_exit()
+    for _, e in pairs(self.targetRoom.exits) do
+        if e.targetRoom == self.room then
+            return e
+        end
+    end
 end
 
-function Exit:get_direction()
-    if self.y == -1 then
-        return 1 -- North
-    elseif self.x == ROOM_W then
-        return 2 -- East
-    elseif self.y == ROOM_H then
-        return 3 -- South
-    elseif self.x == -1 then
-        return 4 -- West
-    end
+function Exit:get_position()
+    return {x = self.x, y = self.y}
 end
 
 function Exit:is_hidden()

@@ -64,15 +64,31 @@ function Game:draw_metadata()
 
     if self.player.dead then
         local visitedRooms = 0
-        for _,r in pairs(self.rooms) do
+        for _, r in pairs(self.rooms) do
             if r.visited then
                 visitedRooms = visitedRooms + 1
             end
         end
 
-        cga_print("KILLED " .. #self.player.log:get_kills() .. " MONSTERS\n" ..
-                  "DISCOVERED " .. visitedRooms .. " ROOMS",
-                  1, 1)
+        --cga_print("KILLED " .. #self.player.log:get_kills() .. " MONSTERS\n" ..
+        --          "DISCOVERED " .. visitedRooms .. " ROOMS",
+        --          1, 1)
+
+        cga_print("YOU KILLED:", 1, 1)
+
+        local x = 12
+        local y = 1
+        for _, k in pairs(self.player.log:get_kills()) do
+            k.flashTimer = 0
+
+            k:draw({x = upscale_x(x), y = upscale_y(y)})
+
+            x = x + 1
+            if x == SCREEN_W - 1 then
+                x = 1
+                y = y + 1
+            end
+        end
     end
 end
 

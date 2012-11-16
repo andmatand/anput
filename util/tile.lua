@@ -17,6 +17,10 @@ function add_direction(tile, dir, distance)
     end
 end
 
+function box_area(box)
+    return ((box.x2 - box.x1) + 1) * ((box.y2 - box.y1) + 1)
+end
+
 function direction_to(from, to)
     if to.y < from.y then
         -- North
@@ -53,6 +57,41 @@ function directions_to(from, to)
     end
 
     return dirs
+end
+
+function extend_to_lava(src, dirs, hotLava)
+    local tiles = {}
+    table.insert(tiles, src)
+
+    for _, dir in pairs(dirs) do
+        local pos = src
+
+        while true do
+            pos = add_direction(pos, dir)
+
+            local ok = true
+
+            for _, hl in pairs(hotLava) do
+                if tiles_overlap(pos, hl) then
+                    ok = false
+                    break
+                end
+            end
+
+            if pos.x < 0 or pos.y < 0 or
+               pos.x > ROOM_W - 1 or pos.y > ROOM_H - 1 then
+                ok = false
+            end
+
+            if ok then
+                table.insert(tiles, pos)
+            else
+                break
+            end
+        end
+    end
+
+    return tiles
 end
 
 -- Returns a table of adjacent tile positions
@@ -141,6 +180,10 @@ function find_neighbor_tiles(node, occupiedNodes, options)
     return neighbors
 end
 
+function is_corner_tile(tile, otherTiles)
+    return consecutive_free_neighbors(tile, otherTiles, 4)
+end
+
 function manhattan_distance(a, b)
     return math.abs(b.x - a.x) + math.abs(b.y - a.y)
 end
@@ -208,6 +251,46 @@ function remove_duplicate_tiles(tiles)
     end
 
     return newTiles
+end
+
+function remove_tiles_from_table(tiles, fromTable)
+    local newTable = {}
+    for _, t in pairs(fromTable) do
+        local ok = true
+        for _, t2 in pairs(tiles) do
+            if tiles_overlap(t, t2) then
+                ok = false
+                break
+            end
+        end
+
+        if ok then
+            table.insert(newTable, t)
+        end
+    end
+
+    return newTable
+end
+
+function find_box_surrounding(tiles)
+    local x1, y1, x2, y2
+
+    for _, tile in pairs(tiles) do
+        if not y1 or tile.y < y1 then
+            y1 = tile.y
+        end
+        if not x1 or tile.x < x1 then
+            x1 = tile.x
+        end
+        if not y2 or tile.y > y2 then
+            y2 = tile.y
+        end
+        if not x2 or tile.x > x2 then
+            x2 = tile.x
+        end
+    end
+
+    return {x1 = x1, y1 = y1, x2 = x2, y2 = y2}
 end
 
 function tile_in_table(tile, table)
@@ -282,4 +365,45 @@ function perpendicular_directions(dir)
         -- Return north and south
         return {1, 3}
     end
+end
+
+function plot_circle(position, radius)
+    local x0 = position.x
+    local y0 = position.y
+
+    local nodes = {}
+    local f = 1 - radius
+    local ddf_x = 1
+    local ddf_y = -2 * radius
+    local x = 0
+    local y = radius
+    table.insert(nodes, {x = x0, y = y0 - radius}) -- North
+    table.insert(nodes, {x = x0 + radius, y = y0}) -- East
+    table.insert(nodes, {x = x0, y = y0 + radius}) -- South
+    table.insert(nodes, {x = x0 - radius, y = y0}) -- West
+
+    while x < y do
+        if f >= 0 then
+            y = y - 1
+            ddf_y = ddf_y + 2
+            f = f + ddf_y
+        end
+
+        x = x + 1
+        ddf_x = ddf_x + 2
+        f = f + ddf_x
+
+        table.insert(nodes, {x = x0 + x, y = y0 + y})
+        table.insert(nodes, {x = x0 - x, y = y0 + y})
+        table.insert(nodes, {x = x0 + x, y = y0 - y})
+        table.insert(nodes, {x = x0 - x, y = y0 - y})
+        table.insert(nodes, {x = x0 + y, y = y0 + x})
+        table.insert(nodes, {x = x0 - y, y = y0 + x})
+        table.insert(nodes, {x = x0 + y, y = y0 - x})
+        table.insert(nodes, {x = x0 - y, y = y0 - x})
+    end
+
+    nodes = remove_duplicate_tiles(nodes)
+
+    return nodes
 end

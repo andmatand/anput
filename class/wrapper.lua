@@ -2,6 +2,55 @@ require('class.game')
 require('class.intro')
 require('class.outro')
 
+-- Local functions
+local function serialize_table(tbl)
+    local str = '{'
+    local i = 0
+    for k, v in pairs(tbl) do
+        i = i + 1
+        if i > 1 then
+            str = str .. ', '
+        end
+
+        str = str .. k .. ' = '
+
+        if type(v) == 'string' then
+            str = str .. "'" .. v .. "'"
+        elseif type(v) == 'number' then
+            str = str .. v
+        elseif type(v) == 'table' then
+            str = str .. serialize_table(v)
+        end
+    end
+    str = str .. '}'
+
+    return str
+end
+
+local function serialize_room(room)
+    local msg = ''
+    msg = msg .. 'local room = {}\n'
+    msg = msg .. 'room.randomSeed = ' .. room.randomSeed .. '\n'
+    msg = msg .. 'room.index = ' .. room.index .. '\n'
+    if room.requiredZone then
+        msg = msg .. 'room.requiredZone = ' ..
+                     serialize_table(room.requiredZone)
+        msg = msg .. '\n'
+    end
+
+    msg = msg .. 'room.exits = {}\n'
+    for _, e in pairs(room.exits) do
+        msg = msg .. 'table.insert(room.exits, Exit({x = ' .. e.x .. ', ' ..
+                                                    'y = ' .. e.y .. '}))'
+        msg = msg .. '\n'
+    end
+    msg = msg .. 'return room'
+
+    return msg
+end
+
+
+-- Start of Class
 Wrapper = class('Wrapper')
 
 function Wrapper:init()
@@ -11,6 +60,10 @@ function Wrapper:init()
     self.roomBuilderThread = love.thread.newThread('roombuilder_thread',
                                                    'thread/roombuilder.lua')
     self.roomBuilderThread:start()
+
+    --local chunk = love.filesystem.load('thread/roombuilder.lua')
+    --local result, er = chunk()
+    --print(er)
 
     -- Create a game right away, so we can start generating rooms in the
     -- background
@@ -67,15 +120,15 @@ function Wrapper:manage_roombuilder_thread()
             if room.randomSeed ~= realRoom.randomSeed then
                 -- Room-specific random seed does not match
                 roomIsFromThisGame = false
-            else
-                for i, e in ipairs(room.exits) do
-                    if not tiles_overlap(e:get_position(),
-                                         realRoom.exits[i]:get_position()) then
-                        -- All exits do not match
-                        roomIsFromThisGame = false
-                        break
-                    end
-                end
+            --else
+                --for i, e in ipairs(room.exits) do
+                --    if not tiles_overlap(e:get_position(),
+                --                         realRoom.exits[i]:get_position()) then
+                --        -- All exits do not match
+                --        roomIsFromThisGame = false
+                --        break
+                --    end
+                --end
             end
         else
             roomIsFromThisGame = false

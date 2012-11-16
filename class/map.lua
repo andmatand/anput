@@ -19,12 +19,13 @@ end
 
 function Map:generate()
     self:generate_path()
+    self:add_roadblocks()
     self:add_branches()
 
     self.rooms = self:generate_rooms()
     self:add_temple_exit()
 
-    self:add_secret_passages()
+    self:add_secret_rooms()
     self:add_required_objects()
     self:add_hieroglyphs()
 
@@ -98,6 +99,12 @@ function Map:find_branch_neighbors(src)
     local neighbors = find_neighbor_tiles(src, allOtherNodes,
                                           {diagonals = false})
 
+    -- If this node will contain a roadblock
+    if src.roadblock then
+        -- Don't allow any branches from it
+        return {}
+    end
+
     -- Keep only neighbors that are empty and not touching any other tile
     local temp = {}
     for _, n in pairs(neighbors) do
@@ -106,8 +113,9 @@ function Map:find_branch_neighbors(src)
         if n.occupied then
             ok = false
 
-        -- Don't let any branch tile touch the first room
-        elseif tiles_touching(n, self.path[1]) then
+        -- Don't let any branch tile touch the first or last rooms
+        elseif tiles_touching(n, self.path[1]) or
+               tiles_touching(n, self.path[#self.path]) then
             ok = false
 
         -- Don't go outside the canvas
@@ -304,7 +312,7 @@ function Map:generate_rooms()
         r.distanceFromStart = node.distanceFromStart
         table.insert(rooms, r)
         node.room = r
-
+        node.room.roadblock = node.roadblock
         local neighbors = find_neighbor_tiles(node, self.nodes,
                                               {diagonals = false})
 
@@ -365,15 +373,18 @@ function Map:generate_rooms()
 
     -- Find the room that's farthest away from the first room, and set it as
     -- the artifact room
-    local farthestDistance = 0
-    for _, r in pairs(rooms) do
-        if --r.distanceFromStart >= 60 and
-           r.distanceFromStart > farthestDistance and
-           #r.exits == 1 then
-            farthestDistance = r.distanceFromStart
-            self.artifactRoom = r
-        end
-    end
+    --local farthestDistance = 0
+    --for _, r in pairs(rooms) do
+    --    if --r.distanceFromStart >= 60 and
+    --       r.distanceFromStart > farthestDistance and
+    --       #r.exits == 1 then
+    --        farthestDistance = r.distanceFromStart
+    --        self.artifactRoom = r
+    --    end
+    --end
+
+    -- Set the last room on the main path as the artifact room
+    self.artifactRoom = self.path[#self.path].room
 
     for _, r in pairs(rooms) do
         -- Give the room a specifc random seed
@@ -384,6 +395,25 @@ function Map:generate_rooms()
         -- compared to artifact room
         r.difficulty = math.floor((r.distanceFromStart /
                                    self.artifactRoom.distanceFromStart) * 100)
+
+        if r.roadblock == 'lake' then
+            -- Make sure the exits aren't too close together
+            make_sure_exits_are_not_too_close(r.exits[1], r.exits[2])
+
+            -- Find the exit that should be blocked
+            local blockedExit = r.exits[1]
+            for _, exit in pairs(r.exits) do
+                -- If the room to which this exit leads is farther from the
+                -- first room
+                if exit.targetRoom.distanceFromStart >
+                   blockedExit.targetRoom.distanceFromStart then
+                    blockedExit = exit
+                end
+            end
+
+            r.requiredZone = {name = 'lake',
+                              dir = blockedExit:get_direction()}
+        end
     end
 
     return rooms
@@ -412,6 +442,10 @@ function Map:get_rooms_by_distance(min, max, filters)
                         break
                     end
                 end
+
+                if r.roadblock then
+                    ok = false
+                end
             end
 
             if ok then
@@ -435,6 +469,10 @@ function Map:get_rooms_by_difficulty(min, max, filters)
                 if r[k] ~= v then
                     ok = false
                     break
+                end
+
+                if r.roadblock then
+                    ok = false
                 end
             end
         end
@@ -505,7 +543,42 @@ function Map:add_required_objects()
     table.insert(self.artifactRoom.requiredObjects, Item('ankh'))
 end
 
-function Map:add_secret_passages()
+function Map:add_roadblocks()
+    local numRoadblocks = 1
+
+    local roadblockTypes = {'lake'}
+
+    -- Pick which roadblocks to use
+    local roadblocks = {}
+    for i = 1, numRoadblocks do
+        roadblocks[i] = table.remove(roadblockTypes,
+                                     math.random(1, #roadblockTypes))
+    end
+
+    -- Find positions on the main path for the roadblocks
+    local r = 1 -- Keep track of which roadblock number we are on
+    for _, node in pairs(self.path) do
+        local targetDistance = math.floor(#self.path *
+                                          ((1 / (#roadblocks + 1)) * r))
+
+        -- If this node is the correct percentage distance from the first room
+        -- to the last room in the path
+        if node.distanceFromStart == targetDistance then
+            -- Add the next roadblock to this room
+            node.roadblock = roadblocks[r]
+            r = r + 1
+
+            if r > #roadblocks then
+                break
+            end
+        end
+    end
+
+    -- DEBUG: put a lake in the second room
+    --self.path[2].roadblock = 'lake'
+end
+
+function Map:add_secret_rooms()
     for _, r in pairs(self.rooms) do
         -- If this room has only 1 exit and is not the first room or the
         -- artifact room
@@ -537,46 +610,51 @@ end
 -- Non-Class Functions
 function add_npc_to_room(npc, room)
     table.insert(room.requiredObjects, npc)
-    room.needsRoomForNPC = true
+    if room.requiredZone then
+        print('OOPS: room already has requiredZone ' .. room.requiredZone ..
+              ' but we are trying to set it to npc')
+        love.event.quit()
+    end
+    room.requiredZone = {name = 'npc'}
 end
 
-function plot_circle(position, radius)
-    local x0 = position.x
-    local y0 = position.y
 
-    local nodes = {}
-    local f = 1 - radius
-    local ddf_x = 1
-    local ddf_y = -2 * radius
-    local x = 0
-    local y = radius
-    table.insert(nodes, {x = x0, y = y0 - radius}) -- North
-    table.insert(nodes, {x = x0 + radius, y = y0}) -- East
-    table.insert(nodes, {x = x0, y = y0 + radius}) -- South
-    table.insert(nodes, {x = x0 - radius, y = y0}) -- West
+function make_sure_exits_are_not_too_close(exit1, exit2)
+    if math.abs(exit2.y - exit1.y) < 6 then
+        print('exits are too close on y axis; moving them')
+        -- Find the exit that is able to be moved on the y axis (i.e.
+        -- it is on the east or west wall)
+        for _, exit in pairs({exit1, exit2}) do
+            if exit:get_direction() == 2 or exit:get_direction() == 4 then
+                if exit.y < 10 then
+                    exit.y = exit.y + 10
+                else
+                    exit.y = exit.y - 10
+                end
 
-    while x < y do
-        if f >= 0 then
-            y = y - 1
-            ddf_y = ddf_y + 2
-            f = f + ddf_y
+                -- Also move the exit to which this one leads
+                exit:get_linked_exit().y = exit.y
+
+                break
+            end
         end
+    elseif math.abs(exit2.x - exit1.x) < 6 then
+        print('exits are too close on x axis; moving them')
+        -- Find the exit that is able to be moved on the x axis (i.e. it is on
+        -- the north or south wall)
+        for _, exit in pairs({exit1, exit2}) do
+            if exit:get_direction() == 1 or exit:get_direction() == 3 then
+                if exit.x < 10 then
+                    exit.x = exit.x + 10
+                else
+                    exit.x = exit.x - 10
+                end
 
-        x = x + 1
-        ddf_x = ddf_x + 2
-        f = f + ddf_x
+                -- Also move the exit to which this one leads
+                exit:get_linked_exit().x = exit.x
 
-        table.insert(nodes, {x = x0 + x, y = y0 + y})
-        table.insert(nodes, {x = x0 - x, y = y0 + y})
-        table.insert(nodes, {x = x0 + x, y = y0 - y})
-        table.insert(nodes, {x = x0 - x, y = y0 - y})
-        table.insert(nodes, {x = x0 + y, y = y0 + x})
-        table.insert(nodes, {x = x0 - y, y = y0 + x})
-        table.insert(nodes, {x = x0 + y, y = y0 - x})
-        table.insert(nodes, {x = x0 - y, y = y0 - x})
+                break
+            end
+        end
     end
-
-    nodes = remove_duplicate_tiles(nodes)
-
-    return nodes
 end

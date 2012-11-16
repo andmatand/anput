@@ -28,14 +28,21 @@ function RoomFiller:init(room)
 end
 
 function RoomFiller:fill_next_step()
-    if self:add_required_objects() then
-        if self:add_internal_bricks() then
-            if self:add_hieroglyphs() then
-                if self:add_turrets() then
-                    if self:add_monsters() then
-                        if self:add_items() then
-                            -- Flag that room is done being filled
-                            return true
+    -- If this road is supposed to contain a roadblock
+    if self.room.roadblock then
+        if self:add_roadblock() then
+            return true
+        end
+    else
+        if self:add_required_objects() then
+            if self:add_internal_bricks() then
+                if self:add_hieroglyphs() then
+                    if self:add_turrets() then
+                        if self:add_monsters() then
+                            if self:add_items() then
+                                -- Flag that room is done being filled
+                                return true
+                            end
                         end
                     end
                 end
@@ -63,6 +70,23 @@ function RoomFiller:add_hieroglyphs()
     end
 
     self.addedHieroglyphs = true
+    return false
+end
+
+function RoomFiller:add_roadblock()
+    if self.addedRoadblock then
+        return true
+    end
+
+    --if self.room.roadblock == 'lake' then
+    --    -- Create a lake from the water tiles
+    --    local lake = Lake(self.room.zoneTiles)
+
+    --    -- Add the lake to the room
+    --    self.room:add_object(lake)
+    --end
+
+    self.addedRoadblock = true
     return false
 end
 

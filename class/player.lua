@@ -13,6 +13,7 @@ function Player:init()
     self.images = playerImg
     self.color = WHITE
     self.magic = 100
+    self.mouth = Mouth({sprite = self})
 
     self.wantsToTrade = false
 end

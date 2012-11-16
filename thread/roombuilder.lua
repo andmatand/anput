@@ -25,23 +25,34 @@ function serialize_room(room)
     msg = msg .. 'room.randomSeed = ' .. room.randomSeed .. '\n'
     msg = msg .. 'room.index = ' .. room.index .. '\n'
 
-    msg = msg .. 'room.exits = {}\n'
-    for _, e in pairs(room.exits) do
-        msg = msg .. 'table.insert(room.exits, Exit({x = ' .. e.x .. ', ' ..
-                                                    'y = ' .. e.y .. '}))'
-        msg = msg .. '\n'
-    end
+    --msg = msg .. 'room.exits = {}\n'
+    --for _, e in pairs(room.exits) do
+    --    msg = msg .. 'table.insert(room.exits, Exit({x = ' .. e.x .. ', ' ..
+    --                                                'y = ' .. e.y .. '}))'
+    --    msg = msg .. '\n'
+    --end
 
     msg = msg .. 'room.bricks = {}\n'
+
     for _, b in pairs(room.bricks) do
-        msg = msg .. 'table.insert(room.bricks, Brick({x = ' .. b.x .. ', ' ..
-                                                      'y = ' .. b.y .. '}))'
-        msg = msg .. '\n'
+        msg = msg .. 'local newBrick = Brick({x = ' .. b.x .. ', ' ..
+                                             'y = ' .. b.y .. '})' .. '\n'
+        if b.fromWall then
+            msg = msg .. 'newBrick.fromWall = ' .. b.fromWall .. '\n'
+        end
+        msg = msg .. 'table.insert(room.bricks, newBrick)' .. '\n'
     end
 
     msg = msg .. 'room.freeTiles = {}\n'
     for _, t in pairs(room.freeTiles) do
         msg = msg .. 'table.insert(room.freeTiles, {x = ' .. t.x .. ', ' ..
+                                                   'y = ' .. t.y .. '})'
+        msg = msg .. '\n'
+    end
+
+    msg = msg .. 'room.zoneTiles = {}\n'
+    for _, t in pairs(room.zoneTiles) do
+        msg = msg .. 'table.insert(room.zoneTiles, {x = ' .. t.x .. ', ' ..
                                                    'y = ' .. t.y .. '})'
         msg = msg .. '\n'
     end
@@ -54,6 +65,17 @@ function serialize_room(room)
         msg = msg .. 'table.insert(room.midPaths, {x = ' .. t.x .. ', ' ..
                                                   'y = ' .. t.y .. '})'
         msg = msg .. '\n'
+    end
+
+    msg = msg .. 'room.lakes = {}\n'
+    for _, lake in pairs(room.lakes) do
+        msg = msg .. 'local tiles = {}\n'
+        for _, t in pairs(lake.tiles) do
+            msg = msg .. 'table.insert(tiles, {x = ' .. t.x .. ', ' ..
+                                              'y = ' .. t.y .. '})\n'
+        end
+
+        msg = msg .. 'table.insert(room.lakes, Lake(tiles))\n'
     end
 
     msg = msg .. 'return room'
@@ -70,15 +92,12 @@ while true do
     
     -- Create a roombuilder object
     local roomBuilder = RoomBuilder(room)
+    roomBuilder.isInThread = true
 
     -- Try buidling the room
     if roomBuilder:build() then
-        -- Create a roomfiller object
-        --local roomFiller = RoomFiller(room)
-        --roomFiller:add_turrets()
-
         -- Convert the pseudo room object to a string of Lua code, and set it
-        -- as -- our message
+        -- as our message
         local output = serialize_room(room)
         thread:set('result', output)
     end

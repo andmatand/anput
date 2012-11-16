@@ -24,13 +24,15 @@ function CheapPathFinder:plot()
             moveY = true
         end
 
-        -- If we are on the border of our bounds, move in
-        if pos.x == self.bounds.x1 or pos.x == self.bounds.x2 then
-            moveX = true
-            moveY = false
-        elseif pos.y == self.bounds.y1 or pos.y == self.bounds.y2 then
-            moveX = false
-            moveY = true
+        if self.bounds then
+            -- If we are on the border of our bounds, move in
+            if pos.x == self.bounds.x1 or pos.x == self.bounds.x2 then
+                moveX = true
+                moveY = false
+            elseif pos.y == self.bounds.y1 or pos.y == self.bounds.y2 then
+                moveX = false
+                moveY = true
+            end
         end
 
         if moveX then

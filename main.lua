@@ -3,26 +3,6 @@ require('class.sound')
 require('class.wrapper')
 require('util.graphics')
 
-function serialize_room(room)
-    local msg = ''
-    msg = msg .. 'local room = {}\n'
-    msg = msg .. 'room.randomSeed = ' .. room.randomSeed .. '\n'
-    msg = msg .. 'room.index = ' .. room.index .. '\n'
-    if room.needsSpaceForNPC then
-        msg = msg .. 'room.needsSpaceForNPC = true\n'
-    end
-
-    msg = msg .. 'room.exits = {}\n'
-    for _, e in pairs(room.exits) do
-        msg = msg .. 'table.insert(room.exits, Exit({x = ' .. e.x .. ', ' ..
-                                                    'y = ' .. e.y .. '}))'
-        msg = msg .. '\n'
-    end
-    msg = msg .. 'return room'
-
-    return msg
-end
-
 function love.load()
     love.graphics.setCaption('TEMPLE OF ANPUT')
     if love.graphics.isCreated() == false then
@@ -140,6 +120,13 @@ function love.load()
     outsideImg.museum = {image = new_image('museum.png'),
                          avatar = new_image('museum-avatar.png')}
     outsideImg.temple = {image = new_image('temple.png')}
+
+
+    -- Water
+    images.water = {new_image('water1.png'),
+                    new_image('water2.png'),
+                    new_image('water3.png')}
+    table.insert(images.water, images.water[2])
 
     -- Create image data for a brick (a magenta rectangle)
     local brickImgData = love.image.newImageData(TILE_W, TILE_H)

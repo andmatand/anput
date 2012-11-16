@@ -126,7 +126,7 @@ function Sprite:physics()
     test.position.y = test.position.y + self.velocity.y
     
     -- Check for collision with bricks
-    for i,b in pairs(test.room.bricks) do
+    for _, b in pairs(test.room.bricks) do
         if tiles_overlap(test.position, b) then
             if self:hit(b) then
                 -- Registered as a hit; done with physics
@@ -209,6 +209,22 @@ function Sprite:physics()
 
                 -- Register a hit for us
                 if self:hit(s) then
+                    return
+                end
+            end
+        end
+    end
+
+    -- Check for collision with water tiles
+    for _, lake in pairs(test.room.lakes) do
+        for _, tile in pairs(lake.tiles) do
+            if tiles_overlap(test.position, tile) then
+                if self:hit(tile) then
+                    if instanceOf(Player, self) then
+                        self.mouth.speech = 'LOOKS LIKE THIS AREA IS FLOODED'
+                        self.mouth:speak()
+                    end
+
                     return
                 end
             end

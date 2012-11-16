@@ -14,8 +14,9 @@ function Room:init(args)
     self.bricks = {}
     self.hieroglyphs = {}
     self.items = {}
-    self.thunderbolts = {}
+    self.lakes = {}
     self.sprites = {}
+    self.thunderbolts = {}
 
     self.exits = {}
     self.freeTiles = {}
@@ -94,28 +95,13 @@ function Room:draw()
         self:update_fov()
     end
 
-    if DEBUG then
-        -- Show freeTiles
-        for _, t in pairs(self.freeTiles) do
-            love.graphics.setColor(0, 255, 0, 100)
-            if tiles_overlap(t, self.midPoint) then
-                love.graphics.setColor(255, 0, 0, 100)
-            end
-            love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
-                                    upscale_x(1), upscale_y(1))
-        end
-
-        -- Show midPaths
-        for _, tile in pairs(self.midPaths) do
-            love.graphics.setColor(150, 0, 200)
-            love.graphics.rectangle('fill',
-                                    upscale_x(tile.x), upscale_y(tile.y),
-                                    upscale_x(1), upscale_y(1))
-        end
-    end
-
     -- Draw bricks
     self:draw_bricks()
+
+    -- Draw lakes
+    for _, lake in pairs(self.lakes) do
+        lake:draw(self.fov)
+    end
     
     -- Draw items
     for _, i in pairs(self.items) do
@@ -140,6 +126,33 @@ function Room:draw()
     self:draw_messages()
 
     if DEBUG then
+        -- Show freeTiles
+        for _, t in pairs(self.freeTiles) do
+            love.graphics.setColor(0, 255, 0, 100)
+            love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+
+        -- Show midPaths
+        for _, tile in pairs(self.midPaths) do
+            if tiles_overlap(tile, self.midPoint) then
+                love.graphics.setColor(255, 0, 0, 255)
+            else
+                love.graphics.setColor(100, 100, 100, 200)
+            end
+            love.graphics.rectangle('fill',
+                                    upscale_x(tile.x), upscale_y(tile.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+
+        -- Show zone tiles
+        for _, tile in pairs(self.zoneTiles) do
+            love.graphics.setColor(255, 243, 48, 180)
+            love.graphics.rectangle('fill',
+                                    upscale_x(tile.x), upscale_y(tile.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+
         -- Show tiles in FOV
         for _, tile in pairs(self.fov) do
             love.graphics.setColor(0, 255, 0)
@@ -192,7 +205,7 @@ function Room:draw_bricks()
         local dist
         for _, b in pairs(self.bricks) do
             --dist = manhattan_distance(b, self.game.player.position)
-            if tile_in_table(b, self.fov) then
+            if tile_in_table(b, self.fov) or DEBUG then
                 --alpha = LIGHT - ((2 ^ dist) * .05)
                 alpha = LIGHT
             else
@@ -588,6 +601,11 @@ function Room:update()
     -- Update items
     for _, i in pairs(self.items) do
         i:update()
+    end
+
+    -- Update lakes
+    for _, lake in pairs(self.lakes) do
+        lake:update()
     end
 
     -- Update sprites

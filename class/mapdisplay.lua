@@ -52,8 +52,10 @@ function MapDisplay:draw(currentRoom)
                 love.graphics.setColor(CYAN)
             elseif n.room:contains_npc() then
                 love.graphics.setColor(CYAN)
-            elseif DEBUG and n.room.isSecret then
+            elseif DEBUG and n.room.roadblock then
                 love.graphics.setColor(255, 0, 0)
+            elseif DEBUG and n.room.isSecret then
+                love.graphics.setColor(255, 243, 48)
             else
                 love.graphics.setColor(WHITE)
             end
@@ -66,7 +68,7 @@ function MapDisplay:draw(currentRoom)
 
     if DEBUG then
         -- Draw hotLava
-        love.graphics.setColor(255, 0, 255, math.random(100, 200))
+        love.graphics.setColor(255, 0, 255, math.random(0, 200))
         for _, n in pairs(self.map.hotLava) do
             love.graphics.rectangle('fill',
                                     n.x * self.nodeSize, n.y * self.nodeSize,
