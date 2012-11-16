@@ -612,10 +612,10 @@ function Room:update()
     for _, s in pairs(self.sprites) do
         if instanceOf(Character, s) then
             -- If this is a player or an NPC
-            if instanceOf(Player, s) or s.name then
-                -- Regenerate health
-                s:recharge_health()
-            end
+            --if instanceOf(Player, s) or s.name then
+            --    -- Regenerate health
+            --    s:recharge_health()
+            --end
 
             s:recharge_magic()
         end
