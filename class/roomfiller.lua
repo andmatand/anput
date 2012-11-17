@@ -214,7 +214,12 @@ function RoomFiller:add_items()
             -- Choose a random item type
             local itemType = itemTypes[math.random(1, #itemTypes)]
 
-            table.insert(goodies, Item(itemType))
+            -- If the type name is the name of a weapon type
+            if WEAPON_TYPE[itemType] then
+                table.insert(goodies, Weapon(itemType))
+            else
+                table.insert(goodies, Item(itemType))
+            end
         end
 
         -- Place the goodies in the room
