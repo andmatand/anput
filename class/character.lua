@@ -47,7 +47,7 @@ function Character:add_enemy_class(class)
 end
 
 function Character:add_health(amount)
-    if self.dead then
+    if self.isDead then
         return false
     end
 
@@ -127,7 +127,7 @@ function Character:check_for_items()
     local pickedSomethingUp = false
 
     -- Don't pick things up if we're dead
-    if self.dead then
+    if self.isDead then
         return
     end
 
@@ -232,7 +232,7 @@ function Character:draw(pos, rotation)
             love.graphics.setColor(255, 255, 255)
         end
 
-        if not self.stepped then
+        if not self.stepped or self.isDead then
             if self.dir == 2 then
                 self.mirrored = false
             elseif self.dir == 4 then
@@ -294,7 +294,7 @@ end
 
 function Character:drop_items(items)
     -- If we are not dead
-    if not self.dead then
+    if not self.isDead then
         if self:is_audible() then
             -- Play a sound
             if instanceOf(Player, self) then
@@ -333,7 +333,7 @@ function Character:drop_item_group(items)
     local position
 
     -- Try a good starting position
-    if self.dead then
+    if self.isDead then
         -- Position the items where we just died
         position = self.position
     else
@@ -583,7 +583,7 @@ function Character:pick_up(item)
 end
 
 function Character:receive_damage(amount, agent)
-    if self.dead then
+    if self.isDead then
         -- Do not receive any damage
         return false
     end
@@ -612,7 +612,7 @@ function Character:receive_damage(amount, agent)
         self:die()
     end
 
-    if not self.dead then
+    if not self.isDead then
         if self:is_audible() then
             -- Play a sound
             if instanceOf(Player, self) then
@@ -659,7 +659,7 @@ end
 
 function Character:shoot(dir)
     -- If we don't have a weapon, or we are dead
-    if not self.armory.currentWeapon or self.dead then
+    if not self.armory.currentWeapon or self.isDead then
         return false
     end
 

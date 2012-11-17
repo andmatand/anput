@@ -36,7 +36,7 @@ function Turret:init(position, dir)
 end
 
 function Turret:die()
-    self.dead = true
+    self.isDead = true
 end
 
 function Turret:find_max_distance()

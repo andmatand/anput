@@ -424,7 +424,7 @@ end
 local function remove_dead_objects(objects)
     local temp = {}
     for _, o in pairs(objects) do
-        if not o.dead then
+        if not o.isDead then
             table.insert(temp, o)
         end
     end
@@ -658,10 +658,10 @@ function Room:update()
 
     -- Mark all thunderbolts as dead so they will be swept up next time
     for _, tb in pairs(self.thunderbolts) do
-        tb.dead = true
+        tb.isDead = true
     end
 
-    if self.game.player.moved and not self.game.player.dead then
+    if self.game.player.moved and not self.game.player.isDead then
         -- Iterate through the room objects which can have mouths
         for _, o in pairs(self.sprites) do
             -- If this object has a mouth which should speak

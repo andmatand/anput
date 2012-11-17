@@ -45,7 +45,7 @@ function Trader:find_customer()
     local player = self.room.game.player
 
     -- If the player is touching us
-    if (player.room == self.room and not player.dead and
+    if (player.room == self.room and not player.isDead and
         tiles_touching(self.position, player.position)) then
         if self:is_enemies_with(player) then
             self.mouth:set_speech(self.speech.enemy)

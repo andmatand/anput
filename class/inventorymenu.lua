@@ -79,7 +79,7 @@ function InventoryMenu:draw()
         local pos, rotation
         pos = {x = upscale_x(self.center.x), y = upscale_y(self.center.y)}
 
-        if self.owner.dead then
+        if self.owner.isDead then
             rotation = math.rad(-90)
             self.owner.dir = 2
             pos.y = pos.y + upscale_y(1)

@@ -62,7 +62,7 @@ function Game:draw_metadata()
 
     self.statusBar:draw()
 
-    if self.player.dead then
+    if self.player.isDead then
         local visitedRooms = 0
         for _, r in pairs(self.rooms) do
             if r.visited then
@@ -185,7 +185,7 @@ function Game:input()
 end
 
 function Game:keypressed(key)
-    if self.player.dead then
+    if self.player.isDead then
         if key == 'return' then
             self.wrapper:restart()
         end
@@ -420,7 +420,7 @@ function Game:update(dt)
 
     self.statusBar:update()
 
-    if self.player.dead then
+    if self.player.isDead then
         if not self.playerDeadTimer then
             self.playerDeadTimer = self.time
         end

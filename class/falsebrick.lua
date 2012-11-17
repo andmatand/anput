@@ -9,7 +9,7 @@ end
 
 function FalseBrick:receive_hit(agent)
     -- Die when we are hit
-    self.dead = true
+    self.isDead = true
 
     -- Stop agent from moving until direction is pressed again
     agent.attackedDir = agent.dir

@@ -16,7 +16,7 @@ function Sprite:init()
 end
 
 function Sprite:die()
-    self.dead = true
+    self.isDead = true
 end
 
 function Sprite:get_position()
