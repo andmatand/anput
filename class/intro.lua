@@ -18,28 +18,36 @@ function Intro:choose_speech()
     -- required: EGYPT and ARTIFACT
     -- optional: ARCHAEOLOGY/IST
     local choices = {
+        {{m = 'PLEASE RETRIEVE AN ARTIFACT FROM EGYPT.'},
+         {p = 'I WILL DO IT.'}},
+
         {{m = 'GO FIND AN ARTIFACT IN THE ANCIENT TEMPLE OF EGYPT'},
          {p = 'RIGHT AWAY, BOSS'}},
+
         {{m = 'GO DO ARCHAEOLOGY ON THE TEMPLE OF ANPUT, GODDESS OF EGYPT'},
          {p = 'I SHALL RETRIEVE AN ARTIFACT'}},
-        {{m = 'THE MUSEUM NEEDS AN EGYPTIAN ARTIFACT. DO ARCHAEOLOGY.'},
-         {p = 'I AM AN ARCHAEOLOGIST'}},
+
+        {{m = 'THE MUSEUM NEEDS AN EGYPTIAN ARTIFACT'},
+         {m = 'DO ARCHAEOLOGY'},
+         {p = 'I WILL DO THE ARCHAEOLOGY IN THIS TEMPLE.'}},
+
         {{m = 'FIND A NEW ARTIFACT OF EGYPT'},
          {p = 'IT WILL BE AN ARCHAEOLOGY ADVENTURE'}},
-        {{m = 'GO ARCHAEOLOGIST'},
-         {m = 'DO YOUR STUFF'},
-         {p = 'I SPECIALIZE IN ARTIFACTS OF EGYPT'}},
-        {{m = 'LOOK A TEMPLE. INVESTIGATE'},
+
+        {{m = 'LOOK A TEMPLE'},
+         {m = 'INVESTIGATE'},
          {p = 'MAYBE I WILL DISCOVER AN EGYPT ARTIFACT'}},
+
         {{m = 'THE MUSEUM IS IN NEED OF AN EGYPT EXHIBIT'},
          {m = 'FIND AN ARTIFACT'},
          {p = 'I WILL CHECK OVER HERE'}},
-        {{m = 'HEY LOOK AN EGYPT'},
-         {p = 'I WILL FIND AN ARTIFACT'}},
+
         {{m = 'IF YOU FIND AN ARTIFACT, YOU WILL GET A PROMOTION'},
          {p = 'I WILL GO TO EGYPT'}},
+
         {{m = 'THE MUSEUM\'S EGYPT EXHIBIT HAS NO ARTIFACTS'},
          {p = 'I WILL FIND ONE'}},
+
         {{m = 'THE MUSEUM NEEDS MORE PATRONS'},
          {m = 'A NEW ARTIFACT WILL DRIVE TICKET SALES'},
          {p = 'I WILL FIND AN ARTIFACT IN EGYPT'}}
