@@ -208,7 +208,7 @@ function RoomFiller:add_items()
         -- Add some goodies
         local numGoodies = math.random(3, 8)
         local goodies = {}
-        local itemTypes = {'arrow', 'elixir', 'shinything', 'potion'}
+        local itemTypes = {'bow', 'arrow', 'elixir', 'shinything', 'potion'}
 
         for i = 1, numGoodies do
             -- Choose a random item type
