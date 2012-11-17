@@ -108,7 +108,17 @@ function Wrapper:manage_roombuilder_thread()
     if result then
         --print('got result from thread!')
         -- Execute the string as Lua code
-        local chunk = loadstring(result)
+        local chunk, errorMsg = loadstring(result)
+
+        if errorMsg then
+            print('\nresult:\n' .. result .. '\n')
+            local f = io.open('thread_result_error.txt', 'w')
+            f:write(result)
+            f:close()
+            print('error in thread result code: ' .. errorMsg)
+            return
+        end
+
         local room = chunk()
 
         local roomIsFromThisGame = true

@@ -35,8 +35,8 @@ function serialize_room(room)
     msg = msg .. 'room.bricks = {}\n'
 
     for _, b in pairs(room.bricks) do
-        msg = msg .. 'local newBrick = Brick({x = ' .. b.x .. ', ' ..
-                                             'y = ' .. b.y .. '})' .. '\n'
+        msg = msg .. 'newBrick = Brick({x = ' .. b.x .. ', ' ..
+                                       'y = ' .. b.y .. '})' .. '\n'
         if b.fromWall then
             msg = msg .. 'newBrick.fromWall = ' .. b.fromWall .. '\n'
         end
@@ -69,7 +69,7 @@ function serialize_room(room)
 
     msg = msg .. 'room.lakes = {}\n'
     for _, lake in pairs(room.lakes) do
-        msg = msg .. 'local tiles = {}\n'
+        msg = msg .. 'tiles = {}\n'
         for _, t in pairs(lake.tiles) do
             msg = msg .. 'table.insert(tiles, {x = ' .. t.x .. ', ' ..
                                               'y = ' .. t.y .. '})\n'
