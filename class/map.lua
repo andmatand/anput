@@ -443,7 +443,7 @@ function Map:get_rooms_by_distance(min, max, filters)
                     end
                 end
 
-                if r.roadblock then
+                if r.roadblock or r.requiredZone then
                     ok = false
                 end
             end
@@ -504,12 +504,17 @@ function Map:add_required_objects()
 
     -- Add hkay "magician" to the wizard's room
     wizardRoom.requiredHieroglyphs = {{'h', 'ka', 'y', 'book', 'god'}}
-    
 
-    -- Put the camel in a mid-difficulty room
-    local rooms = self:get_rooms_by_difficulty(40, 60, {isSecret = false})
-    add_npc_to_room(self.game.camel, rooms[math.random(1, #rooms)])
-    --self.game.camel.ai.level.globetrot = nil
+    -- Check for objects that need to be added when certain roadblocks exist
+    for _, room in pairs(self.rooms) do
+        if room.roadblock == 'lake' then
+            -- Put the camel in a room somewhere before the lake
+            local rooms
+            rooms = self:get_rooms_by_distance(2, room.distanceFromStart - 1,
+                                               {isSecret = false})
+            add_npc_to_room(self.game.camel, rooms[math.random(1, #rooms)])
+        end
+    end
 
     -- Create a table of the rooms lower than the difficulty at which ghosts
     -- would spawn
@@ -566,8 +571,8 @@ function Map:add_roadblocks()
         if node.distanceFromStart == targetDistance then
             -- Add the next roadblock to this room
             node.roadblock = roadblocks[r]
-            r = r + 1
 
+            r = r + 1
             if r > #roadblocks then
                 break
             end
@@ -611,8 +616,8 @@ end
 function add_npc_to_room(npc, room)
     table.insert(room.requiredObjects, npc)
     if room.requiredZone then
-        print('OOPS: room already has requiredZone ' .. room.requiredZone ..
-              ' but we are trying to set it to npc')
+        print('OOPS: room already has requiredZone ' ..
+              room.requiredZone.name .. ' but we are trying to set it to npc')
         love.event.quit()
     end
     room.requiredZone = {name = 'npc'}
