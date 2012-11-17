@@ -148,21 +148,8 @@ function InventoryMenu:draw()
         local center = {x = upscale_x(self.center.x + .5) * 2,
                         y = upscale_y(self.center.y + .5) * 2}
 
-        --cga_print('USE', nil, nil,
-        --          {position = {x = center.x,
-        --                       y = center.y - upscale_y(3)},
-        --           center = true})
-
         local num = #self.owner.inventory:get_items(self.selectedItem.itemType)
-        --if num > 1 then
-        --    cga_print(tostring(num), nil, nil,
-        --              {position = {x = center.x,
-        --                           y = center.y - (upscale_y(3))},
-        --               center = true})
-        --end
-
-        local caption = Message({text =
-                                 ITEM_NAME[self.selectedItem.itemType]})
+        local caption = Message({text = ITEM_NAME[self.selectedItem.itemType]})
         if num > 1 then
             caption.text = num .. ' ' .. caption.text
 
@@ -209,6 +196,9 @@ function InventoryMenu:update()
         if self.selectedItem.owner ~= self.owner and
            self.state ~= 'dropping item' then
             self:post_use_item()
+            if not self.selectedItem then
+                self:go_back()
+            end
         end
     end
 
