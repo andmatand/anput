@@ -18,8 +18,9 @@ function Intro:choose_speech()
     -- required: EGYPT and ARTIFACT
     -- optional: ARCHAEOLOGY/IST
     local choices = {
-        {{m = 'PLEASE RETRIEVE AN ARTIFACT FROM EGYPT.'},
-         {p = 'I WILL DO IT.'}},
+        {{m = 'PLEASE RETRIEVE AN ARTIFACT FROM EGYPT'},
+         {p = 'I WILL DO IT'},
+         {p = 'I AM AN ARCHAEOLOGIST'}},
 
         {{m = 'GO FIND AN ARTIFACT IN THE ANCIENT TEMPLE OF EGYPT'},
          {p = 'RIGHT AWAY, BOSS'}},
