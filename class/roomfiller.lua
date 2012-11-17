@@ -208,7 +208,11 @@ function RoomFiller:add_items()
         -- Add some goodies
         local numGoodies = math.random(3, 8)
         local goodies = {}
-        local itemTypes = {'bow', 'arrow', 'elixir', 'shinything', 'potion'}
+        local itemTypes = {'arrow', 'elixir', 'shinything', 'potion'}
+
+        if self.room.difficulty < MONSTER_DIFFICULTY['archer'] then
+            table.insert(itemTypes, 'bow')
+        end
 
         for i = 1, numGoodies do
             -- Choose a random item type
@@ -217,6 +221,9 @@ function RoomFiller:add_items()
             -- If the type name is the name of a weapon type
             if WEAPON_TYPE[itemType] then
                 table.insert(goodies, Weapon(itemType))
+
+                -- Don't put any more of this weapon in this room
+                remove_value_from_table(itemType, itemTypes)
             else
                 table.insert(goodies, Item(itemType))
             end
