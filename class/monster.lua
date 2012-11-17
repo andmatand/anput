@@ -86,7 +86,7 @@ function Monster:init(game, monsterType)
         claws.meleeDamage = 20
         self:pick_up(claws)
 
-        self.ai.choiceTimer.delay = .5
+        self.ai.choiceTimer.delay = .25
         self.ai.level.attack = {dist = 15, prob = 8, delay = .2}
         self.ai.level.chase = {dist = 20, prob = 8, delay = .2}
         self.ai.level.dodge = {dist = 5, prob = 7, delay = .2}
@@ -109,7 +109,7 @@ function Monster:init(game, monsterType)
         self:pick_up(bow)
         bow:add_ammo(20)
 
-        self.ai.choiceTimer.delay = .5
+        self.ai.choiceTimer.delay = .1
         self.ai.level.aim = {dist = 15, prob = 9, delay = .1}
         self.ai.level.attack = {dist = 15, prob = 9, delay = .1}
         self.ai.level.chase = {dist = 20, prob = 6, delay = .15}
