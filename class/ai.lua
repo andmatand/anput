@@ -132,10 +132,14 @@ end
 
 function AI:chase(target)
     if self.owner.tag then
-        print('AI: chasing new target:', target)
+        print('chase: new target:', target)
     end
 
-    if target.room ~= self.owner.room then
+    if target.room and target.room ~= self.owner.room then
+        if self.owner.tag then
+            print('chase: target is in different room')
+        end
+
         target = self:find_exit_toward_target(target)
 
         -- If no exit was found (the target is > 1 room away)
@@ -154,7 +158,8 @@ function AI:chase(target)
 
     -- Set path to destination
     if self:plot_path(pos, AI_ACTION.chase) then
-        if not instanceOf(Exit, target) then
+        if not instanceOf(Exit, target) and
+           not instanceOf(WaterTile, target) then
             if #self.path.nodes < 2 then
                 self:delete_path()
                 return false
@@ -277,7 +282,7 @@ function AI:do_action(action)
            self.level[action].dist or target.room ~= self.owner.room then
             if not self.path.nodes or
                self.path.action == AI_ACTION.explore then
-                -- Follow the player
+                -- Follow the target
                 self:chase(target)
                 self.path.action = AI_ACTION[action]
                 return true

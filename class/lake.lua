@@ -7,7 +7,7 @@ function Lake:init(tiles)
     -- Convert all the given tiles to WaterTiles
     self.tiles = {}
     for _, t in pairs(tiles) do
-        table.insert(self.tiles, WaterTile(t))
+        table.insert(self.tiles, WaterTile(t, self))
     end
 
     self.frames = images.water
@@ -20,39 +20,8 @@ function Lake:init(tiles)
     self.drawBox.x1 = self.drawBox.x1 - 1
     self.drawBox.x2 = self.drawBox.x2 + 1
 
-    -- Make a spritebatch for each frame
-    self.spriteBatches = {}
-    for _, image in pairs(self.frames) do
-        local sb = love.graphics.newSpriteBatch(image, box_area(self.drawBox))
-
-        sb:bind()
-        sb:clear()
-        for y = self.drawBox.y1, self.drawBox.y2 do
-            for x = self.drawBox.x1, self.drawBox.x2 do
-                for _, t in pairs(self.tiles) do
-                    if tiles_touching({x = x, y = y}, t) then
-                        sb:add(x * TILE_W, y * TILE_H)
-                        break
-                    end
-                end
-            end
-        end
-        sb:unbind()
-
-        table.insert(self.spriteBatches, sb)
-    end
-
-    local stencilFunction =
-        function()
-            love.graphics.setColor(255, 255, 255, 255)
-            for _, t in pairs(self.tiles) do
-                love.graphics.rectangle('fill',
-                                        upscale_x(t.x), upscale_y(t.y),
-                                        upscale_x(1), upscale_y(1))
-            end
-        end
-
-    self.stencil = love.graphics.newStencil(stencilFunction)
+    self:refresh_spritebatches()
+    self:refresh_stencil()
 end
 
 function Lake:draw(fov)
@@ -81,6 +50,44 @@ function Lake:draw(fov)
 
     -- Remove the stencil
     love.graphics.setStencil()
+end
+
+function Lake:refresh_spritebatches()
+    -- Make a spritebatch for each frame
+    self.spriteBatches = {}
+    for _, image in pairs(self.frames) do
+        local sb = love.graphics.newSpriteBatch(image, box_area(self.drawBox))
+
+        sb:bind()
+        sb:clear()
+        for y = self.drawBox.y1, self.drawBox.y2 do
+            for x = self.drawBox.x1, self.drawBox.x2 do
+                for _, t in pairs(self.tiles) do
+                    if tiles_touching({x = x, y = y}, t) then
+                        sb:add(x * TILE_W, y * TILE_H)
+                        break
+                    end
+                end
+            end
+        end
+        sb:unbind()
+
+        table.insert(self.spriteBatches, sb)
+    end
+end
+
+function Lake:refresh_stencil()
+    local stencilFunction =
+        function()
+            love.graphics.setColor(255, 255, 255, 255)
+            for _, t in pairs(self.tiles) do
+                love.graphics.rectangle('fill',
+                                        upscale_x(t.x), upscale_y(t.y),
+                                        upscale_x(1), upscale_y(1))
+            end
+        end
+
+    self.stencil = love.graphics.newStencil(stencilFunction)
 end
 
 function Lake:update()

@@ -12,14 +12,15 @@ camel.ai.choiceTimer.delay = 0
 camel.ai.level.globetrot = {prob = 10, delay = 0}
 camel.ai.level.follow = {dist = 5, delay = .1}
 camel.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
+camel.state = 'globetrotting'
 
 -- Mouth
 camel.mouth = Mouth({sprite = camel})
 
 camel.forgive =
     function(self)
-        self.mouth:set_speech({'OUCH!',
-                               'OW!',
+        self.mouth:set_speech({'OUCH',
+                               'OW',
                                'THAT HURTS'})
         self.mouth:speak(true)
 
@@ -31,21 +32,114 @@ camel.update =
     function(self)
         camel.class.update(self)
 
-        if self.isCaught then
+        -- If we have drunk all the water
+        if self.state == 'drunk' then
+            local lines = {'ARE YOU THIRSTY? I\'M NOT.',
+                           'OH MAN I AM SO FULL'}
+            self.mouth:set_speech(lines)
+        -- If we are drinking water
+        elseif self.state == 'drinking' then
+            if self.drinkTimer.value > 0 then
+                self.drinkTimer.value = self.drinkTimer.value - 1
+                return
+            else
+                self.drinkTimer.value = self.drinkTimer.delay
+            end
+
+            -- Take a gulp of watertiles
+            for i = 1, self.gulpAmount do
+                if #self.drinkTiles == 0 then
+                    break
+                end
+
+                -- Drink the first tile in the table
+                table.remove(self.drinkTiles, 1)
+            end
+
+            -- If there are no more watertiles left to drink
+            if #self.drinkTiles == 0 then
+                -- Stop drinking
+                self.state = 'drunk'
+
+                -- Remove the lake from the room
+                remove_value_from_table(self.drinkLake, self.room.lakes)
+            else
+                -- Update the lake so that the tiles we just removed will not
+                -- be visible
+                self.drinkLake:refresh_stencil()
+
+                -- Play a gulp sound
+                --sounds.camel.gulp:play()
+                sounds.monster.getItem:play()
+            end
+        -- If we found water and we are on our way to it
+        elseif self.state == 'going to water' then
+            -- Check if we are touching a WaterTile
+            local touchingTiles = adjacent_tiles(self:get_position())
+            local waterTile
+            for _, lake in pairs(self.room.lakes) do
+                for _, wt in pairs(lake.tiles) do
+                    for _, t in pairs(touchingTiles) do
+                        if tiles_overlap(t, wt) then
+                            waterTile = wt
+                            break
+                        end
+                    end
+                    if waterTile then break end
+                end
+                if waterTile then break end
+            end
+
+            -- If we are touching a WaterTile
+            if waterTile then
+                -- Stop moving
+                self.ai:delete_path()
+                self.ai.level.follow.prob = nil
+
+                -- Start drinking
+                self.state = 'drinking'
+                self.drinkTimer = {delay = 2, value = 0}
+                self.drinkLake = waterTile.lake
+                self.drinkTiles = waterTile.lake.tiles
+                self.gulpAmount = #self.drinkTiles / 10
+                if self.gulpAmount < 1 then
+                    self.gulpAmount = 1
+                end
+            end
+        -- If there is a lake in the room
+        elseif self.state == 'caught' and #self.room.lakes > 0 then
+            -- Get excited
+            local lines = {'YESSSS DRINKS', 'WHAAAAAT', 'WATERRRRR'}
+            self.mouth:set_speech(lines)
+            self.mouth:speak(true)
+
+            -- Locate the source water tile in the lake
+            local target = self.room.lakes[1].tiles[1]
+            target.room = self.room
+
+            -- Run to the water tile
+            self.state = 'going to water'
+            self.ai.level.follow.target = target
+            self.ai.level.follow.delay = 0
+            self.ai.level.follow.dist = 0
+        -- If we have been caught
+        elseif self.state == 'caught' then
             local lines = {'WHAT\'S UP', 'I\'M THIRSTY'}
-            if self.mouth.speech == lines[1] and math.random(1, 3) == 1 then
+            if self.mouth.speech == lines[1] then
                 self.mouth.speech = lines[2]
             else
                 self.mouth.speech = lines[1]
             end
-        else
+        -- If we are running around and haven't been caught yet
+        elseif self.state == 'globetrotting' then
             for _, c in pairs(self.room:get_characters()) do
                 -- If we are right next to a character
                 if tiles_touching(c:get_position(), self:get_position()) then
                     -- If the character is grabbing
                     if c.isGrabbing then
                         -- We are caught
-                        self.isCaught = true
+                        self.isCaught = true -- Used by the Player class
+                        self.state = 'caught'
 
                         -- Play a sound
                         sounds.camel.caught:play()
