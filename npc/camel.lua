@@ -10,7 +10,7 @@ camel.inventory:add(ThunderStaff())
 -- AI
 camel.ai.choiceTimer.delay = 0
 camel.ai.level.globetrot = {prob = 10, delay = 0}
-camel.ai.level.chase = {delay = .1}
+camel.ai.level.follow = {dist = 5, delay = .1}
 camel.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
 
 -- Mouth
@@ -32,14 +32,12 @@ camel.update =
         camel.class.update(self)
 
         if self.isCaught then
-            local lines = {'WHAT\'S UP', 'ARE YOU THIRSTY? I\'M NOT.'}
+            local lines = {'WHAT\'S UP', 'I\'M THIRSTY'}
             if self.mouth.speech == lines[1] and math.random(1, 3) == 1 then
                 self.mouth.speech = lines[2]
             else
                 self.mouth.speech = lines[1]
             end
-
-            self.ai:do_action('chase')
         else
             for _, c in pairs(self.room:get_characters()) do
                 -- If we are right next to a character
@@ -63,6 +61,10 @@ camel.update =
                         self:step()
                         self.ai:delete_path()
                         self.ai.level.globetrot.prob = nil
+
+                        -- Start following the player
+                        self.ai.level.follow.prob = 10
+                        self.ai.level.follow.target = self.room.game.player
                         break
                     end
 

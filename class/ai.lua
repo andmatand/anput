@@ -10,6 +10,7 @@ AI_ACTION = {aim = 'aim', -- Get into a shooting position
              explore = 'explore', -- Walk around to try to find something
                                   -- interesting
              flee = 'flee', -- Move away from an enemy (if they are a threat)
+             follow = 'follow', -- Move toward a specific target
              globetrot = 'globetrot', -- Move constantly from room to room
              heal = 'heal', -- Use an exilir (if we have one and need one)
              loot = 'loot'} -- Move toward an item
@@ -33,6 +34,7 @@ function AI:init(owner)
     self.level.explore   = {dist = nil, prob = nil, target = nil, delay = .5}
 
     self.level.flee      = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.follow    = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.globetrot = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.heal      = {dist = nil, prob = nil, target = nil, delay = nil}
     self.level.loot      = {dist = nil, prob = nil, target = nil, delay = nil}
@@ -133,6 +135,15 @@ function AI:chase(target)
         print('AI: chasing new target:', target)
     end
 
+    if target.room ~= self.owner.room then
+        target = self:find_exit_toward_target(target)
+
+        -- If no exit was found (the target is > 1 room away)
+        if not target then
+            return
+        end
+    end
+
     -- Find the position of the target
     local pos
     if target.get_position then
@@ -142,8 +153,13 @@ function AI:chase(target)
     end
 
     -- Set path to destination
-    if self:plot_path(pos, AI_ACTION.chase) and #self.path.nodes > 1 then
+    if self:plot_path(pos, AI_ACTION.chase) then
         if not instanceOf(Exit, target) then
+            if #self.path.nodes < 2 then
+                self:delete_path()
+                return false
+            end
+
             -- Remove the last node so our destination is standing next to the
             -- target instead of bumping the target (chasing is distinct from
             -- attacking)
@@ -152,7 +168,6 @@ function AI:chase(target)
             -- Set the new last node as the new destination
             self.path.destination = self.path.nodes[#self.path.nodes]
         end
-
 
         self.path.target = target
         return true
@@ -224,7 +239,7 @@ function AI:do_action(action)
             -- If this target is different from our current path's target
             elseif target ~= self.path.target then
                 -- If this target is closer than our current destination
-                if self:should_follow(target) then
+                if self:should_chase(target) then
                     ok = true
                 end
             end
@@ -252,6 +267,22 @@ function AI:do_action(action)
             self:flee_from(threat)
             return true
         end
+    elseif action == 'follow' then
+        target = self.level[action].target
+
+        -- If the player is far enough away from us, or in a different room
+        --if self:target_in_range(target, action) or
+        if manhattan_distance(target:get_position(),
+                              self.owner:get_position()) >=
+           self.level[action].dist or target.room ~= self.owner.room then
+            if not self.path.nodes or
+               self.path.action == AI_ACTION.explore then
+                -- Follow the player
+                self:chase(target)
+                self.path.action = AI_ACTION[action]
+                return true
+            end
+        end
     elseif action == 'globetrot' and
            (not self.path.nodes or
             self.path.action ~= AI_ACTION.globetrot) then
@@ -266,7 +297,7 @@ function AI:do_action(action)
            (not self.path.nodes or self.path.action == AI_ACTION.explore) then
         target = self:find_item()
         if (target and self:target_in_range(target, action) and
-            self:should_follow(target)) then
+            self:should_chase(target)) then
             self:plot_path(target:get_position(), AI_ACTION.loot)
             return true
         end
@@ -466,6 +497,10 @@ function AI:find_exit()
     end
 end
 
+function AI:find_exit_toward_target(target)
+    return self.owner.room:get_exit({targetRoom = target.room})
+end
+
 function AI:find_item()
     -- Find the closest item in the room
     local closestItem
@@ -637,8 +672,12 @@ end
 
 function AI:follow_path(force)
     if self.owner.tag then
-        print('AI: follow_path()')
-        print('  self.path.action: ', self.path.action)
+        if self.path.nodes then
+            print('AI: follow_path()')
+        end
+        if self.path.action then
+            print('  self.path.action: ', self.path.action)
+        end
     end
 
     if not force then
@@ -662,21 +701,20 @@ function AI:follow_path(force)
 
     -- If we have a specific object as our path's target
     if self.path.target then
-        -- If the target is not an exit, and it has a room, and it has entered
-        -- another room
-        if (not instanceOf(Exit, self.path.target) and
-            self.path.target.room and
+        -- If the target is has a room, and it has entered another room
+        if (self.path.target.room and
             self.path.target.room ~= self.owner.room) then
             if self.owner.tag then
                 print('AI: target left the room')
             end
             -- Find the exit through which we can follow the target
-            local exit = self.owner.room:get_exit({targetRoom =
-                                                   self.path.target.room})
+            local exit = self:find_exit_toward_target(self.path.target)
 
             if exit then
                 -- Start a new path toward the exit
+                local pathAction = self.path.action
                 self:chase(exit)
+                self.path.action = pathAction
                 return true
             else
                 self:delete_path()
@@ -812,7 +850,7 @@ end
 function AI:plot_path(dest, action)
     if self.owner.tag then
         print('  AI:plot_path()')
-        print('    dest: ' .. dest.x .. ',' .. dest.y)
+        print('    dest: ' .. dest.x .. ', ' .. dest.y)
         print('    action: ', action)
     end
 
@@ -890,7 +928,7 @@ function AI:should_dodge(sprite)
 end
 
 
-function AI:should_follow(target)
+function AI:should_chase(target)
     -- If we don't currently have a destination
     if not self.path.destination then
         return true
