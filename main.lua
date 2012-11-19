@@ -156,7 +156,8 @@ function love.load()
                       getHP = Sound('res/sfx/monster-get-hp.wav'),
                       getMagic = Sound('res/sfx/monster-get-magic.wav')}
     sounds.camel = {run = Sound('res/sfx/camel-run.wav'),
-                    caught = Sound('res/sfx/camel-caught.wav')}
+                    caught = Sound('res/sfx/camel-caught.wav'),
+                    gulp = Sound('res/sfx/camel-gulp.wav')}
     sounds.shootArrow = Sound('res/sfx/shoot-arrow.wav')
     sounds.unable = Sound('res/sfx/unable.wav')
     sounds.thud = Sound('res/sfx/thud.wav')

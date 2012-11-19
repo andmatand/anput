@@ -69,8 +69,7 @@ camel.update =
                 self.drinkLake:refresh_stencil()
 
                 -- Play a gulp sound
-                --sounds.camel.gulp:play()
-                sounds.monster.getItem:play()
+                sounds.camel.gulp:play()
             end
         -- If we found water and we are on our way to it
         elseif self.state == 'going to water' then
@@ -98,7 +97,7 @@ camel.update =
 
                 -- Start drinking
                 self.state = 'drinking'
-                self.drinkTimer = {delay = 2, value = 0}
+                self.drinkTimer = {delay = 4, value = 0}
                 self.drinkLake = waterTile.lake
                 self.drinkTiles = waterTile.lake.tiles
                 self.gulpAmount = #self.drinkTiles / 10

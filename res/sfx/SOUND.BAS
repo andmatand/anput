@@ -4,7 +4,7 @@
 
 PLAY "mb t130 l40"
 
-SELECT CASE 13 '' Change this number to hear different sounds
+SELECT CASE 25 '' Change this number to hear different sounds
 CASE 1
     '' theme
     PLAY "l10 o3  cde-b >c <b a- g c."
@@ -102,5 +102,9 @@ CASE 23
 CASE 24
     '' Catch camel
     PLAY "o2 ggg > ccc < ccc"
+CASE 25
+    '' Camel gulp
+    PLAY "t255 mb l64 ml"
+    PLAY "o1 p1 d d+ e f f+ g+ a a+ b > c c+ d d+"
 END SELECT
 
