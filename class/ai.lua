@@ -775,7 +775,8 @@ function AI:globetrot()
         local e = exits[index]
 
         if not e:is_hidden() and
-           e.targetRoom ~= self.owner.room.game.outside then
+           e.targetRoom ~= self.owner.room.game.outside and
+           #e.targetRoom.lakes == 0 then
             -- If this exit would not take us to the room where we just were,
             -- or this is the last exit left in consideration
             if e.targetRoom ~= self.oldRoom or #exits == 1 then
