@@ -124,13 +124,35 @@ function Map:find_branch_neighbors(src)
             ok = false
         end
 
-        for _, n2 in pairs(allOtherNodes) do
-            -- If this is not the starting node
-            if not tiles_overlap(n2, src) then
-                if tiles_touching(n, n2) then
+        for _, p in pairs(allOtherNodes) do
+            -- If this neighbor is touching one of the existing nodes
+            if tiles_touching(n, p) then
+                -- If the node has a roadblock
+                if p.roadblock then
                     ok = false
                     break
+                else
+                    -- Check the main path to see if there is a roadblock node
+                    -- between these two
+                    for _, p2 in pairs(self.path) do
+                        if p2.roadblock then
+                            if (p2.distanceFromStart >=
+                                src.sourceNode.distanceFromStart and
+                                p2.distanceFromStart <=
+                                p.sourceNode.distanceFromStart) or
+                               (p2.distanceFromStart >=
+                                p.sourceNode.distanceFromStart and
+                                p2.distanceFromStart <=
+                                src.sourceNode.distanceFromStart) then
+                                ok = false
+                                break
+                            end
+                        end
+                    end
                 end
+            end
+            if not ok then
+                break
             end
         end
 
@@ -155,11 +177,13 @@ function Map:add_branches()
         -- Choose a random starting positon on the main path
         local start = table.remove(startingTiles,
                                    math.random(1, #startingTiles))
+        start.sourceNode = start
         local neighbors = self:find_branch_neighbors(start)
 
         while #neighbors > 0 do
             -- Choose a random neighbor position and remove it from future use
             local pos = table.remove(neighbors, math.random(1, #neighbors))
+            pos.sourceNode = start
             pos.distanceFromStart = start.distanceFromStart + 1
 
             -- Form a branch starting from this position
@@ -174,6 +198,7 @@ function Map:add_branches()
                 if #possibleMoves > 0 then
                     -- Move randomly to one of the open neighbors
                     pos = possibleMoves[math.random(1, #possibleMoves)]
+                    pos.sourceNode = start
                     pos.distanceFromStart =
                         newBranch[#newBranch].distanceFromStart + 1
                     table.insert(newBranch, pos)
@@ -294,6 +319,7 @@ function Map:generate_path()
     -- Mark each room with its distance from the first room
     for i, n in pairs(self.path) do
         n.distanceFromStart = i - 1
+        n.sourceNode = n
     end
 
     -- Make the canvas accessible to other methods
@@ -513,6 +539,10 @@ function Map:add_required_objects()
             rooms = self:get_rooms_by_distance(2, room.distanceFromStart - 1,
                                                {isSecret = false})
             add_npc_to_room(self.game.camel, rooms[math.random(1, #rooms)])
+
+            -- DEBUG: put camel in first room
+            --add_npc_to_room(self.game.camel, self.rooms[1])
+            --break
         end
     end
 
@@ -616,6 +646,7 @@ end
 function add_npc_to_room(npc, room)
     table.insert(room.requiredObjects, npc)
     if room.requiredZone then
+        print(room.index)
         print('OOPS: room already has requiredZone ' ..
               room.requiredZone.name .. ' but we are trying to set it to npc')
         love.event.quit()
