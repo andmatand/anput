@@ -71,7 +71,7 @@ function MapDisplay:draw(currentRoom)
 
     if DEBUG and self.flash.state then
         -- Draw hotLava
-        love.graphics.setColor(255, 0, 255)
+        love.graphics.setColor(255, 0, 100)
         for _, n in pairs(self.map.hotLava) do
             love.graphics.rectangle('fill',
                                     n.x * self.nodeSize, n.y * self.nodeSize,
