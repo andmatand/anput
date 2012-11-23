@@ -34,9 +34,8 @@ camel.update =
 
         -- If we have drunk all the water
         if self.state == 'drunk' then
-            local lines = {'ARE YOU THIRSTY? I\'M NOT.',
-                           'OH MAN I AM SO FULL'}
-            self.mouth:set_speech(lines)
+            self.mouth:set_speech({'OH MAN I AM SO FULL',
+                                   'ARE YOU THIRSTY? I\'M NOT.'})
         -- If we are drinking water
         elseif self.state == 'drinking' then
             if self.drinkTimer.value > 0 then
@@ -108,8 +107,7 @@ camel.update =
         -- If there is a lake in the room
         elseif self.state == 'caught' and #self.room.lakes > 0 then
             -- Get excited
-            local lines = {'YESSSS DRINKS', 'WHAAAAAT', 'WATERRRRR'}
-            self.mouth:set_speech(lines)
+            self.mouth:set_speech({'YESSSS DRINKS', 'WHAAAAAT', 'WATERRRRR'})
             self.mouth:speak(true)
 
             -- Locate the source water tile in the lake
@@ -123,12 +121,7 @@ camel.update =
             self.ai.level.follow.dist = 0
         -- If we have been caught
         elseif self.state == 'caught' then
-            local lines = {'WHAT\'S UP', 'I\'M THIRSTY'}
-            if self.mouth.speech == lines[1] then
-                self.mouth.speech = lines[2]
-            else
-                self.mouth.speech = lines[1]
-            end
+            self.mouth:set_speech({'I AM THIRSTY', 'WHAT\'S UP'})
         -- If we are running around and haven't been caught yet
         elseif self.state == 'globetrotting' then
             for _, c in pairs(self.room:get_characters()) do
@@ -144,11 +137,11 @@ camel.update =
                         sounds.camel.caught:play()
 
                         -- Say a thing
-                        self.mouth.speech = 'YOU CAUGHT ME'
+                        self.mouth:set_speech('YOU CAUGHT ME')
                         self.mouth:speak(true)
 
                         -- Don't say it again
-                        self.mouth.speech = nil
+                        self.mouth:set_speech()
 
                         -- Stop running around
                         self:step()
@@ -173,7 +166,7 @@ camel.update =
                    end
 
                     -- Yell something funny
-                    camel.mouth.speech = 'AAAAHHH I AM A CAMEL'
+                    camel.mouth:set_speech('AAAAHHH I AM A CAMEL')
                     self.mouth:speak()
                 end
             end

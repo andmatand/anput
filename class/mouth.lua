@@ -1,4 +1,5 @@
 require('class.message')
+require('util.tables')
 
 -- A mouth enables something to "speak" (instantiate messages which appear
 -- onscreen)
@@ -11,20 +12,47 @@ function Mouth:init(args)
     self.isSpeaking = false
 end
 
-function Mouth:set_speech(text)
-    if type(text) == 'string' then
-        -- Make a copy of the given text
-        self.speech = '' .. text
-    elseif type(text) == 'table' then
-        -- Ranomly choose one of the given lines of text
-        self.speech = text[math.random(1, #text)]
+function Mouth:get_speech()
+    if not self.lines then
+        return nil
     end
+
+    -- Advance to the next line of dialogue
+    self.lineIndex = self.lineIndex + 1
+    if self.lineIndex > #self.lines then
+        self.lineIndex = 1
+    end
+
+    return self.lines[self.lineIndex]
+end
+
+-- lines: can be a string or a table
+function Mouth:set_speech(speech)
+    if type(speech) == 'string' then
+        -- If the speech is the same as our curent line
+        if self.lines and speech == self.lines[1] then
+            return
+        end
+
+        self.lines = {speech}
+    elseif type(speech) == 'table' then
+        -- If the speech is the same as our curent table of lines
+        if self.lines and tables_have_equal_values(speech, self.lines) then
+            return
+        end
+
+        self.lines = speech
+    else
+        self.lines = nil
+    end
+
+    self.lineIndex = 0
 end
 
 function Mouth:should_speak()
     local position
 
-    if self.isSpeaking then
+    if self.isSpeaking or not self.lines then
         return false
     end
 
@@ -65,9 +93,9 @@ function Mouth:shut()
     end
 end
 
-function Mouth:speak(cancelLastSpeech)
+function Mouth:speak(interruptLastLine)
     if self.isSpeaking then
-        if cancelLastSpeech then
+        if interruptLastLine then
             self:shut()
         else
             return
@@ -86,7 +114,7 @@ function Mouth:speak(cancelLastSpeech)
     if self.room then
         -- Create a new message object
         msg = Message({room = self.room, avatar = self.sprite, mouth = self,
-                       text = self.speech})
+                       text = self:get_speech()})
 
         -- Add the message to our room
         self.room:add_message(msg)

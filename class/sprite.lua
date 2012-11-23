@@ -221,7 +221,7 @@ function Sprite:physics()
             if tiles_overlap(test.position, tile) then
                 if self:hit(tile) then
                     if instanceOf(Player, self) then
-                        self.mouth.speech = 'LOOKS LIKE THIS AREA IS FLOODED'
+                        self.mouth:set_speech('LOOKS LIKE THIS AREA IS FLOODED')
                         self.mouth:speak()
                     end
 

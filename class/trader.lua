@@ -158,8 +158,7 @@ function Trader:ask_for_payment()
     if self.paymentPosition then
         -- Make the customer drop his payment
         self.customer:drop_payment(self.price, self.paymentPosition)
-    elseif self.mouth.speech ~= "THERE'S NO ROOM HERE" or
-           not self.mouth.isSpeaking then
+    elseif self.customer.stepped then
         self.mouth:set_speech("THERE'S NO ROOM HERE")
 
         -- Dodge the customer
@@ -199,8 +198,7 @@ function Trader:update()
 
         -- Say our "here you go" line
         self.mouth:set_speech(self.speech.drop)
-        self.mouth:shut()
-        self.mouth:speak()
+        self.mouth:speak(true)
 
     -- If we have a customer nearby
     elseif self:find_customer() then

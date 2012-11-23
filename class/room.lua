@@ -666,9 +666,7 @@ function Room:update()
         for _, o in pairs(self.sprites) do
             -- If this object has a mouth which should speak
             if o.mouth and o.mouth:should_speak() then
-                if type(o.mouth.speech) == 'string' then
-                    o.mouth:speak()
-                end
+                o.mouth:speak()
             end
         end
     end
