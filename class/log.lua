@@ -3,6 +3,7 @@ Log = class('Log')
 function Log:init()
     self.hits = {}
     self.kills = {}
+    self.wasKilledBy = false
 end
 
 function Log:add_hit(object)

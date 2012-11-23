@@ -25,10 +25,12 @@ function Projectile:init(owner, dir)
     self.animateTimer = 0
 end
 
-function Projectile:draw()
+function Projectile:draw(manualPosition)
     if self.images == nil then
         return
     end
+    local position = manualPosition or {x = upscale_x(self.position.x),
+                                        y = upscale_y(self.position.y)}
 
     if self.new then
         return
@@ -50,10 +52,8 @@ function Projectile:draw()
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(
         self.images[self.frame],
-        upscale_x(self.position.x) + (self.images[self.frame]:getWidth() *
-                                      SCALE_X) / 2,
-        upscale_y(self.position.y) + (self.images[self.frame]:getHeight() *
-                                      SCALE_Y) / 2,
+        position.x + (self.images[self.frame]:getWidth() * SCALE_X) / 2,
+        position.y + (self.images[self.frame]:getHeight() * SCALE_Y) / 2,
         r, sx, sy,
         self.images[self.frame]:getWidth() / 2,
         self.images[self.frame]:getWidth() / 2)

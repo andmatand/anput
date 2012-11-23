@@ -592,7 +592,7 @@ function Character:receive_damage(amount, agent)
     -- an arrow, get the owner (character) of the owner (bow) of the arrow)
     local perpetrator = get_ultimate_owner(agent)
 
-    if perpetrator and perpetrator.log then
+    if perpetrator.log then
         -- Give the perp credit for the hit
         perpetrator.log:add_hit(self)
     end
@@ -604,9 +604,18 @@ function Character:receive_damage(amount, agent)
     if self.health <= 0 then
         self.health = 0
 
-        if perpetrator and perpetrator.log then
+        if perpetrator.log then
             -- Give the perp credit for the kill
             perpetrator.log:add_kill(self)
+        end
+
+        -- If the perpetrator can be drawn
+        if perpetrator.draw then
+            self.log.wasKilledBy = perpetrator
+        else
+            -- The perpetrator cannot be drawn (e.g. it is a turret), so use
+            -- the object that did the actual damage (e.g. an arrow)
+            self.log.wasKilledBy = agent
         end
 
         self:die()

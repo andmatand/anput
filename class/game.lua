@@ -74,19 +74,32 @@ function Game:draw_metadata()
         --          "DISCOVERED " .. visitedRooms .. " ROOMS",
         --          1, 1)
 
-        cga_print("YOU KILLED:", 1, 1)
-
-        local x = 12
+        local x = 1
         local y = 1
-        for _, k in pairs(self.player.log:get_kills()) do
-            k.flashTimer = 0
+        local msg = "YOU WERE KILLED BY "
+        cga_print(msg, x, y)
+        x = x + msg:len()
+        cga_print(" ", x, y)
+        self.player.log.wasKilledBy:draw({x = upscale_x(x), y = upscale_y(y)})
 
-            k:draw({x = upscale_x(x), y = upscale_y(y)})
+        if #self.player.log:get_kills() > 0 then
+            x = 1
+            y = y + 2
+            local msg = "YOU KILLED "
+            cga_print(msg, x, y)
 
-            x = x + 1
-            if x == SCREEN_W - 1 then
-                x = 1
-                y = y + 1
+            x = x + msg:len()
+            for _, k in pairs(self.player.log:get_kills()) do
+                k.flashTimer = 0
+
+                cga_print(" ", x, y)
+                k:draw({x = upscale_x(x), y = upscale_y(y)})
+
+                x = x + 1
+                if x == SCREEN_W - 1 then
+                    x = 1
+                    y = y + 1
+                end
             end
         end
     end
