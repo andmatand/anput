@@ -18,8 +18,8 @@ function InventoryMenu:init(owner)
     self.owner = owner
 
     self.size = {w = 9, h = 9}
-    self.position = {x = math.floor((SCREEN_W / 2) - (self.size.w / 2)),
-                     y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
+    self.position = {x = math.floor((GRID_W / 2) - (self.size.w / 2)),
+                     y = math.floor((GRID_H / 2) - (self.size.h / 2))}
 
     -- Set the center of the box
     local x, y
@@ -50,30 +50,17 @@ function InventoryMenu:draw()
     end
 
     -- Draw a border
-    love.graphics.setColor(WHITE)
-    love.graphics.rectangle('fill',
-                            upscale_x(self.position.x - 1),
-                            upscale_y(self.position.y - 1),
-                            upscale_x(self.size.w + 2),
-                            upscale_y(self.size.h + 2))
-    love.graphics.setColor(BLACK)
-    love.graphics.rectangle('fill',
-                            upscale_x(self.position.x),
-                            upscale_y(self.position.y),
-                            upscale_x(self.size.w),
-                            upscale_y(self.size.h))
+    draw_border(self.position.x, self.position.y, self.size.w, self.size.h)
 
     -- Set only the inside of the box as the drawable area
-    love.graphics.setScissor(upscale_x(self.position.x),
-                             upscale_y(self.position.y),
+    love.graphics.setScissor(SCREEN_X + upscale_x(self.position.x),
+                             SCREEN_Y + upscale_y(self.position.y),
                              upscale_x(self.size.w),
                              upscale_y(self.size.h))
 
     -- Switch to 2x scale
     SCALE_X = SCALE_X * 2
     SCALE_Y = SCALE_Y * 2
-    --love.graphics.push()
-    --love.graphics.scale(2, 2)
 
     if self.state == 'inventory' then
         local pos, rotation
@@ -135,13 +122,12 @@ function InventoryMenu:draw()
         end
     end
 
+    -- Remove the scissor
+    love.graphics.setScissor()
+
     -- Switch back to normal scale
-    --love.graphics.pop()
     SCALE_X = SCALE_X / 2
     SCALE_Y = SCALE_Y / 2
-
-    -- Enable drawing everywhere again
-    love.graphics.setScissor()
 
     if self.state == 'item' and self.selectedItem then
         -- Create a real-pixel-coordinate version of the center

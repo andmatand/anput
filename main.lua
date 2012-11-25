@@ -14,14 +14,18 @@ function love.load()
     TILE_W = 8
     TILE_H = 8
 
+    -- Set the width and height of the tile grid (in # of tiles)
+    GRID_W = BASE_SCREEN_W / TILE_W
+    GRID_H = BASE_SCREEN_H / TILE_H
+
     -- These dimensions are in number of tiles (not pixels)
-    ROOM_W = 40
-    ROOM_H = 24
+    ROOM_W = GRID_W
+    ROOM_H = GRID_H - 1
 
     -- Set default image fileter to show ALL the pixels
     love.graphics.setDefaultImageFilter('nearest', 'nearest')
 
-    set_scale(SCALE_X)
+    set_scale(SCALE_X, nil, false)
 
     -- Colors
     BLACK = {0, 0, 0}
@@ -239,7 +243,7 @@ function love.keypressed(key, unicode)
     elseif key == 'f11' or
            ((love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))
             and key == 'return') then
-        love.graphics.toggleFullscreen()
+        toggle_fullscreen()
     elseif ctrl and key == 'q' then
         love.event.quit()
     elseif ctrl and (key == '=' or key == '+') then
@@ -304,5 +308,6 @@ function love.draw()
     --    love.graphics.shear(sx, sy)
     --end
 
+    love.graphics.translate(SCREEN_X, SCREEN_Y)
     wrapper:draw()
 end

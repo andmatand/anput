@@ -15,7 +15,7 @@ end
 
 function Brick:draw(alpha)
     love.graphics.setColor(255, 0, 255, alpha)
-    love.graphics.rectangle('fill', self.x * TILE_W, self.y * TILE_H,
+    love.graphics.rectangle('fill', upscale_x(self.x), upscale_y(self.y),
                             TILE_W, TILE_H)
 end
 

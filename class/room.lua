@@ -223,7 +223,8 @@ function Room:draw_bricks()
     end
 
     --love.graphics.setColor(WHITE)
-    love.graphics.draw(self.brickBatch, 0, 0, 0, SCALE_X, SCALE_Y)
+    love.graphics.draw(self.brickBatch, upscale_x(0), upscale_y(0),
+                       0, SCALE_X, SCALE_Y)
 
     self:draw_hieroglyphs()
 end

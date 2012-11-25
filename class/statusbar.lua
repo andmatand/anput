@@ -34,7 +34,7 @@ function StatusBar:draw()
     if w and w:get_ammo() then
         -- If this weapon is magic
         if w.isMagic then
-            x = SCREEN_W - 8
+            x = GRID_W - 8
             -- Draw a progress bar
             draw_progress_bar({num = w:get_ammo(), max = 100,
                                color = CYAN},
@@ -43,7 +43,7 @@ function StatusBar:draw()
                               upscale_x(8) - (SCALE_X * 2),
                               upscale_y(1) / 2)
         else
-            x = SCREEN_W - 1
+            x = GRID_W - 1
 
             -- If this weapon shoots projectiles
             if w.projectileClass then

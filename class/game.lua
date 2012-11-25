@@ -96,7 +96,7 @@ function Game:draw_metadata()
                 k:draw({x = upscale_x(x), y = upscale_y(y)})
 
                 x = x + 1
-                if x == SCREEN_W - 1 then
+                if x == GRID_W - 1 then
                     x = 1
                     y = y + 1
                 end

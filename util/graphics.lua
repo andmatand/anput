@@ -75,6 +75,18 @@ function cga_print(text, x, y, options)
     end
 end
 
+-- Parameters refer to the size of the content area, not the actual border
+function draw_border(x, y, w, h)
+    love.graphics.setColor(WHITE)
+    love.graphics.rectangle('fill',
+                            upscale_x(x - 1), upscale_y(y -1),
+                            upscale_x(w + 2), upscale_y(h + 2))
+    love.graphics.setColor(BLACK)
+    love.graphics.rectangle('fill',
+                            upscale_x(x), upscale_y(y),
+                            upscale_x(w), upscale_y(h))
+end
+
 function draw_progress_bar(barInfo, x, y, w, h)
     bar = {}
     bar.x = x + SCALE_X
@@ -100,32 +112,74 @@ function draw_progress_bar(barInfo, x, y, w, h)
     love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
 end
 
-function set_scale(scale)
-    if scale < 1 then
+function toggle_fullscreen()
+    local w, h, fs = love.graphics.getMode()
+
+    -- If we are already in fullscreen
+    if fs then
+        set_scale(3, nil, false)
         return
     end
 
-    -- If the scale changed
-    if scale ~= SCALE_X then
-        SCALE_X = scale
-        SCALE_Y = scale
-
-        love.graphics.setMode(320 * SCALE_X, 200 * SCALE_Y)
+    -- Find the best fullscreen resolution
+    local bestResolution = {width = 0, height = 0}
+    for _, mode in pairs(love.graphics.getModes()) do
+        if mode.width * mode.height >
+           bestResolution.width * bestResolution.height then
+            bestResolution = mode
+        end
     end
 
-    -- Set the screen width and height in # of tiles
-    SCREEN_W = (love.graphics.getWidth() / upscale_x(1))
-    SCREEN_H = (love.graphics.getHeight() / upscale_y(1))
+    -- Find the largest scale that will fit within the target resolution
+    local scale = 1
+    while BASE_SCREEN_W * (scale + 1) <= bestResolution.width and
+          BASE_SCREEN_H * (scale + 1) <= bestResolution.height do
+        scale = scale + 1
+    end
+
+    set_scale(scale, bestResolution, true)
+end
+
+function set_scale(scale, resolution, fullscreen)
+    -- If no resolution was given
+    if not resolution then
+        resolution = {width = BASE_SCREEN_W * scale,
+                      height = BASE_SCREEN_H * scale}
+    end
+
+    -- If an invalid scale or an unsupported screen resolution was given
+    if scale < 1 or
+       not love.graphics.checkMode(resolution.width, resolution.height,
+                                   fullscreen) then
+        print('error: resolution not supported')
+        return
+    end
+
+    SCALE_X = scale
+    SCALE_Y = scale
+
+    -- Find the position at which the game screen should be drawn, in order
+    -- to produce a letterbox effect if the actual screen is wider or
+    -- taller than the game screen
+    SCREEN_X = (resolution.width / 2) - ((BASE_SCREEN_W * SCALE_X) / 2)
+    SCREEN_Y = (resolution.height / 2) - ((BASE_SCREEN_H * SCALE_Y) / 2)
+
+    local w, h, fs = love.graphics.getMode()
+    -- If the given scale or resolution is different than the current mode
+    if resolution.width ~= w or resolution.height ~= h or
+       fullscreen ~= fs then
+        love.graphics.setMode(resolution.width, resolution.height, fullscreen)
+    end
 
     -- Load the font at the correct scale
     font = love.graphics.newFont('res/font/cga.ttf', upscale_x(1))
     love.graphics.setFont(font)
 end
 
-function upscale_x(x)
-    return x * TILE_W * SCALE_X
+function upscale_x(w)
+    return w * TILE_W * SCALE_X
 end
 
-function upscale_y(y)
-    return y * TILE_H * SCALE_Y
+function upscale_y(h)
+    return h * TILE_H * SCALE_Y
 end

@@ -10,35 +10,17 @@ function MapDisplay:init(map)
 end
 
 function MapDisplay:draw(currentRoom)
-    -- If the graphics scale changed
-    if self.scale ~= SCALE_X then
-        self.scale = SCALE_X
-
-        -- Place the display in the center of the screen
-        self.nodeSize = 3 * SCALE_X
-        local position = {x = math.floor((SCREEN_W / 2) - (self.size.w / 2)),
-        y = math.floor((SCREEN_H / 2) - (self.size.h / 2))}
-        self.position = {x = upscale_x(position.x),
-        y = upscale_y(position.y)}
-
-        --self:find_map_offset()
-    end
+    -- Place the display in the center of the screen
+    self.nodeSize = 3 * SCALE_X
+    self.gridPosition = {x = math.floor((GRID_W / 2) - (self.size.w / 2)),
+                         y = math.floor((GRID_H / 2) - (self.size.h / 2))}
+    self.position = {x = upscale_x(self.gridPosition.x),
+                     y = upscale_y(self.gridPosition.y)}
     self:find_map_offset()
 
-
     -- Draw a border
-    love.graphics.setColor(WHITE)
-    love.graphics.rectangle('fill',
-                            self.position.x - upscale_x(1),
-                            self.position.y - upscale_y(1),
-                            upscale_x(self.size.w + 2),
-                            upscale_y(self.size.h + 2))
-    love.graphics.setColor(BLACK)
-    love.graphics.rectangle('fill',
-                            self.position.x,
-                            self.position.y,
-                            upscale_x(self.size.w),
-                            upscale_y(self.size.h))
+    draw_border(self.gridPosition.x, self.gridPosition.y,
+                self.size.w, self.size.h)
 
     love.graphics.push()
     love.graphics.translate(self.position.x + self.mapOffset.x,
