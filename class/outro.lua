@@ -119,8 +119,8 @@ function Outro:draw()
     end
 end
 
-function Outro:keypressed(key)
-    if key == '.' then
+function Outro:key_pressed(key)
+    if key == KEYS.SKIP_DIALOG then
         -- If there is a message on the queue
         if self.outside.room.messages[1] then
             -- Skip it

@@ -1,5 +1,4 @@
 function love.conf(t)
-    t.modules.joystick = false
     t.modules.physics = false
     t.version = '0.8.0'
 
@@ -13,4 +12,49 @@ function love.conf(t)
 
     t.screen.width = BASE_SCREEN_W * SCALE_X
     t.screen.height = BASE_SCREEN_H * SCALE_Y
+
+    -- Keyboard Bindings
+    KEYBOARD = {}
+    KEYBOARD.CONTEXT = 'return'
+    KEYBOARD.ELIXIR = 'e'
+    KEYBOARD.EXIT = 'escape'
+    KEYBOARD.INVENTORY = 'i'
+    KEYBOARD.MAP = 'm'
+    KEYBOARD.PAUSE = ' '
+    KEYBOARD.POTION = 'p'
+    KEYBOARD.SKIP_CUTSCENE = 'escape'
+    KEYBOARD.SKIP_DIALOG = '.'
+    KEYBOARD.SWITCH_MENU = 'tab'
+    KEYBOARD.SWITCH_WEAPON = 'shift'
+    KEYBOARD.SHOOT = {NORTH = 'up',
+                      EAST  = 'right',
+                      SOUTH = 'down',
+                      WEST  = 'left'}
+    KEYBOARD.WALK = {NORTH = 'w',
+                     EAST  = 'd',
+                     SOUTH = 's',
+                     WEST  = 'a'}
+
+    -- Joystick/Gamepad Bindings
+    -- (These are for an original Xbox controller; change them as needed for
+    --  other joysticks/gamepads)
+    JOYSTICK = {}
+    JOYSTICK_NUM = 1 -- Use the first joystick/gamepad
+    JOYSTICK.CONTEXT = 1 -- A
+    JOYSTICK.ELIXIR = 4 -- X
+    JOYSTICK.EXIT = 2 -- B
+    JOYSTICK.INVENTORY = 8 -- Start
+    JOYSTICK.MAP = 7 -- Back
+    JOYSTICK.PAUSE = nil -- Disabled
+    JOYSTICK.POTION = 2 -- B
+    JOYSTICK.SKIP_CUTSCENE = 8 -- Start
+    JOYSTICK.SKIP_DIALOG = 2 -- B
+    JOYSTICK.SWITCH_MENU = nil -- Disabled
+    JOYSTICK.SWITCH_WEAPON = 5 -- Y
+    JOYSTICK.SHOOT_AXIS_X = 4 -- Right stick
+    JOYSTICK.SHOOT_AXIS_Y = 5
+    JOYSTICK.SHOOT_HAT = nil -- Disabled
+    JOYSTICK.WALK_AXIS_X = 1 -- Left stick
+    JOYSTICK.WALK_AXIS_Y = 2
+    JOYSTICK.WALK_HAT = 1 -- D-Pad
 end

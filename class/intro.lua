@@ -62,10 +62,10 @@ function Intro:draw()
     self.outside:draw()
 end
 
-function Intro:keypressed(key)
-    if key == 'escape' then
+function Intro:key_pressed(key)
+    if key == KEYS.SKIP_CUTSCENE then
         self.finished = true
-    elseif key == '.' then
+    elseif key == KEYS.SKIP_DIALOG then
         -- If there is a message on the queue
         if self.outside.room.messages[1] then
             -- Skip it

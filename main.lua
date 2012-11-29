@@ -10,6 +10,26 @@ function love.load()
     end
     love.mouse.setVisible(false)
 
+    KEYS = {CONTEXT = 1,
+            ELIXIR = 2,
+            EXIT = 3,
+            INVENTORY = 4,
+            MAP = 5,
+            PAUSE = 6,
+            POTION = 7,
+            SKIP_CUTSCENE = 8,
+            SKIP_DIALOG = 9,
+            SWITCH_MENU = 10,
+            SWITCH_WEAPON = 11,
+            SHOOT = {NORTH = 12,
+                     EAST = 13,
+                     SOUTH = 14,
+                     WEST = 15},
+            WALK = {NORTH = 16,
+                    EAST = 17,
+                    SOUTH = 18,
+                    WEST = 19}}
+
     -- These are the tile dimensions in (unscaled) pixels
     TILE_W = 8
     TILE_H = 8
@@ -229,6 +249,15 @@ function jump_to_room_in_direction(direction)
     end
 end
 
+function love.joystickpressed(joystick, button)
+    wrapper:joystick_pressed(joystick, button)
+    --joystickButton = button
+end
+
+function love.joystickreleased(joystick, button)
+    wrapper:joystick_released(joystick, button)
+end
+
 function love.keypressed(key, unicode)
     local ctrl, shift
     if love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl') then
@@ -278,11 +307,11 @@ function love.keypressed(key, unicode)
                 end
             end
         elseif key == 'b' then
-            if not wrapper.game.player.armory[bow] then
+            if not wrapper.game.player.armory.weapons.bow then
                 local bow = Weapon('bow')
                 wrapper.game.player:pick_up(bow)
-                bow:add_ammo(20)
             end
+            wrapper.game.player.armory.weapons.bow:add_ammo(20)
         elseif key == 'f' then
             local firestaff = Weapon('firestaff')
             wrapper.game.player:pick_up(firestaff)
@@ -293,12 +322,12 @@ function love.keypressed(key, unicode)
             wrapper.game.player:add_health(100)
         end
     else
-        wrapper:keypressed(key)
+        wrapper:key_pressed(key)
     end
 end
 
 function love.keyreleased(key, unicode)
-    wrapper:keyreleased(key)
+    wrapper:key_released(key)
 end
 
 function love.draw()
@@ -310,4 +339,5 @@ function love.draw()
 
     love.graphics.translate(SCREEN_X, SCREEN_Y)
     wrapper:draw()
+    --cga_print(joystickButton, 1, 1)
 end

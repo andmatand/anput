@@ -264,13 +264,13 @@ function InventoryMenu:move_item_toward(destination)
 end
 
 local function get_direction_input(key)
-    if key == 'up' or key == 'w' then
+    if key == KEYS.WALK.NORTH or key == KEYS.SHOOT.NORTH then
         return 1
-    elseif key == 'right' or key == 'd' then
+    elseif key == KEYS.WALK.EAST or key == KEYS.SHOOT.EAST then
         return 2
-    elseif key == 'down' or key == 's' then
+    elseif key == KEYS.WALK.SOUTH or key == KEYS.SHOOT.SOUTH then
         return 3
-    elseif key == 'left' or key == 'a' then
+    elseif key == KEYS.WALK.WEST or key == KEYS.SHOOT.WEST then
         return 4
     end
 end
@@ -286,10 +286,10 @@ function InventoryMenu:go_back()
     end
 end
 
-function InventoryMenu:keypressed(key)
+function InventoryMenu:key_pressed(key)
     local dir = get_direction_input(key)
 
-    if key == 'escape' then
+    if key == KEYS.EXIT then
         return self:go_back()
     end
 
@@ -326,7 +326,7 @@ function InventoryMenu:keypressed(key)
     end
 end
 
-function InventoryMenu:keyreleased(key)
+function InventoryMenu:key_released(key)
     local dir = get_direction_input(key)
 
     -- Un-push the verb buttons

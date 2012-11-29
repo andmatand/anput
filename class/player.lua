@@ -89,9 +89,9 @@ function Player:find_adjacent_objects(objectClass)
     return false
 end
 
-function Player:keypressed(key)
+function Player:key_pressed(key)
     -- Get player input for trading
-    if key == 'return' then
+    if key == KEYS.CONTEXT then
         if self.context == 'trade' then
             self.wantsToTrade = true
         elseif self.context == 'grab' then

@@ -171,57 +171,61 @@ function Game:get_adjacent_rooms()
     return rooms
 end
 
-function Game:input()
-    if self.paused then
-        return
+function Game:holdable_key_input()
+    -- Check if the walk keys are down
+    for name, key in pairs(self.wrapper.walkKeys) do
+        if key.state > 0 then
+            local dir
+            if name == 'NORTH' then
+                dir = 1
+            elseif name == 'EAST' then
+                dir = 2
+            elseif name == 'SOUTH' then
+                dir = 3
+            elseif name == 'WEST' then
+                dir = 4
+            end
+            self.player:step(dir)
+        end
     end
 
-    -- Get player's directional input
-    if love.keyboard.isDown('w') then
-        self.player:step(1)
-    elseif love.keyboard.isDown('d') then
-        self.player:step(2)
-    elseif love.keyboard.isDown('s') then
-        self.player:step(3)
-    elseif love.keyboard.isDown('a') then
-        self.player:step(4)
-    end
-
+    -- If the player is wielding the thunderstaff
     if self.player.armory:get_current_weapon_type() == 'thunderstaff' then
-        if love.keyboard.isDown('up') or
-           love.keyboard.isDown('right') or 
-           love.keyboard.isDown('down') or 
-           love.keyboard.isDown('left') then
-            self.player.shootDir = 1
+        -- Check if any of the shoot keys are down
+        for name, key in pairs(self.wrapper.shootKeys) do
+            if key.state == 2 then
+                self.player.shootDir = 1
+                break
+            end
         end
     end
 end
 
-function Game:keypressed(key)
+function Game:key_pressed(key)
     if self.player.isDead then
-        if key == 'return' then
+        if key == KEYS.CONTEXT then
             self.wrapper:restart()
         end
     end
 
-    self.player:keypressed(key)
+    self.player:key_pressed(key)
 
     -- Get player input for switching weapons
     if key == '1' or key == '2' or key == '3' then
         -- Switch to specified weapon number, based on display order
         self.player.armory:switch_to_weapon_number(tonumber(key))
-    elseif key == 'lshift' or key == 'rshift' then
+    elseif key == KEYS.SWITCH_WEAPON then
         -- Switch to the next weapon
         self.player.armory:switch_to_next_weapon()
     end
 
     -- Get player input for using items
-    if key == 'e' then
+    if key == KEYS.ELIXIR then
         -- Take an elixir
         if self.player:has_item('elixir') then
             self.player.inventory:get_item('elixir'):use()
         end
-    elseif key == 'p' then
+    elseif key == KEYS.POTION then
         -- Take a potion
         if self.player:has_item('potion') then
             self.player.inventory:get_item('potion'):use()
@@ -229,7 +233,7 @@ function Game:keypressed(key)
     end
 
     -- Toggle pause
-    if key == ' ' then
+    if key == KEYS.PAUSE then
         if self.paused then
             self:unpause()
         else
@@ -238,8 +242,8 @@ function Game:keypressed(key)
     end
 
     -- Toggle inventory menu
-    if key == 'i' or (self.paused and self.menuState == 'map' and
-                      key == 'tab') then
+    if key == KEYS.INVENTORY or (self.paused and self.menuState == 'map' and
+                                 key == KEYS.SWITCH_MENU) then
         if self.paused and self.menuState == 'inventory' then
             self:unpause()
         else
@@ -253,8 +257,8 @@ function Game:keypressed(key)
         end
 
     -- Toggle map
-    elseif key == 'm' or (self.paused and self.menuState == 'inventory' and
-                          key == 'tab') then
+    elseif key == KEYS.MAP or (self.paused and self.menuState == 'inventory' and
+                               key == KEYS.SWITCH_MENU) then
         if self.paused and self.menuState == 'map' then
             self:unpause()
         else
@@ -274,7 +278,7 @@ function Game:keypressed(key)
         -- If the inventory is open
         if self.menuState == 'inventory' then
             -- Route input to inventory menu
-            if self.inventoryMenu:keypressed(key) then
+            if self.inventoryMenu:key_pressed(key) then
                 -- InventoryMenu:keypressed() evaluates to true when the user
                 -- exits the menu
                 self.paused = false
@@ -282,7 +286,7 @@ function Game:keypressed(key)
         end
 
         -- If the map is open and escape was pressed
-        if self.menuState == 'map' and key == 'escape' then
+        if self.menuState == 'map' and key == KEYS.EXIT then
             self.paused = false
         end
 
@@ -290,46 +294,30 @@ function Game:keypressed(key)
         return
     end
 
-
     -- Get player input for shooting arrows
-    if key == 'up' then
+    if key == KEYS.SHOOT.NORTH then
         self.player.shootDir = 1
-    elseif key == 'right' then
+    elseif key == KEYS.SHOOT.EAST then
         self.player.shootDir = 2
-    elseif key == 'down' then
+    elseif key == KEYS.SHOOT.SOUTH then
         self.player.shootDir = 3
-    elseif key == 'left' then
+    elseif key == KEYS.SHOOT.WEST then
         self.player.shootDir = 4
-    end
-
-    -- Get player input for moving when isDown in the input() method didn't see
-    -- it
-    if key == 'w' then
-        self.player:step(1)
-    elseif key == 'd' then
-        self.player:step(2)
-    elseif key == 's' then
-        self.player:step(3)
-    elseif key == 'a' then
-        self.player:step(4)
     end
 end
 
-function Game:keyreleased(key)
-    if self.player.attackedDir == 1 and key == 'w' then
-        self.player.attackedDir = nil
-    elseif self.player.attackedDir == 2 and key == 'd' then
-        self.player.attackedDir = nil
-    elseif self.player.attackedDir == 3 and key == 's' then
-        self.player.attackedDir = nil
-    elseif self.player.attackedDir == 4 and key == 'a' then
+function Game:key_released(key)
+    if (self.player.attackedDir == 1 and key == KEYS.WALK.NORTH) or
+       (self.player.attackedDir == 2 and key == KEYS.WALK.EAST) or
+       (self.player.attackedDir == 3 and key == KEYS.WALK.SOUTH) or
+       (self.player.attackedDir == 4 and key == KEYS.WALK.WEST) then
         self.player.attackedDir = nil
     end
 
     -- If the inventory menu is up
     if self.paused and self.menuState == 'inventory' then
-        -- Pass key to inventoryMenu
-        self.inventoryMenu:keyreleased(key)
+        -- Pass the key to the inventory menu
+        self.inventoryMenu:key_released(key)
     end
 end
 
@@ -443,13 +431,6 @@ function Game:update(dt)
         end
     end
 
-    if not self.playerMoved and self.time >= 3 then
-        self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
-    end
-    if self.player.stepped then
-        self.playerMoved = true
-    end
-
     if self.paused then
         self.inventoryMenu:update()
         if self.menuState == 'map' then
@@ -459,7 +440,16 @@ function Game:update(dt)
         return
     end
 
-    self:input()
+    self:holdable_key_input()
+
+    -- If the player has not moved for the first three seconds of the game
+    if not self.playerMoved and self.time >= 3 then
+        -- Show a contextual help message
+        self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
+    end
+    if self.player.stepped then
+        self.playerMoved = true
+    end
 
     -- Update the current room
     self.currentRoom:update()
