@@ -189,8 +189,9 @@ function manhattan_distance(a, b)
 end
 
 function num_neighbor_tiles(tile, otherTiles)
-    neighbors = find_neighbor_tiles(tile, otherTiles, {countBorders = true})
-    num = 0
+    local neighbors = find_neighbor_tiles(tile, otherTiles,
+                                          {countBorders = true})
+    local num = 0
     for i,n in pairs(neighbors) do
         if n ~= nil then
             num = num + 1

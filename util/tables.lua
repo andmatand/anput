@@ -1,5 +1,5 @@
 function concat_tables(tableList)
-    combined = {}
+    local combined = {}
     for _, t in ipairs(tableList) do
         for _, v in ipairs(t) do
             table.insert(combined, v)
@@ -9,7 +9,7 @@ function concat_tables(tableList)
 end
 
 function copy_table(tbl)
-    new = {}
+    local new = {}
     for k, v in pairs(tbl) do
         new[k] = v
     end
