@@ -181,17 +181,22 @@ function Sprite:physics()
             if tiles_overlap(test.position, s.position) then
                 -- If the other sprite hasn't done its physics yet
                 if s.didPhysics == false and s.owner ~= self then
+                    -- Run its physics
                     s.physics(s)
                 end
 
-                if self:hit(s) then
-                    if test.room ~= self.room then
-                        -- Sweep up in case we killed something
-                        test.room:sweep()
-                    end
+                -- If we are still colliding with the other sprite
+                if tiles_overlap(test.position, s.position) then
+                    -- Hit the sprite
+                    if self:hit(s) then
+                        if test.room ~= self.room then
+                            -- Sweep up in case we killed something
+                            test.room:sweep()
+                        end
 
-                    -- Registered as a hit; done with physics
-                    return
+                        -- Registered as a hit; done with physics
+                        return
+                    end
                 end
             -- If the other sprite hasn't done physics yet, and we would have
             -- hit it if it had already

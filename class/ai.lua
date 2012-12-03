@@ -342,7 +342,12 @@ function AI:do_action(action)
     return false
 end
 
-function AI:dodge(sprite, searchDir)
+function AI:dodge(sprite, searchDir, followPathImmediately)
+    local callFollowPath = true
+    if followPathImmediately ~= nil then
+        callFollowPath = followPathImmediately
+    end
+
     if not searchDir then
         -- Determine which direction we should search
         if sprite.velocity.y == -1 then
@@ -366,7 +371,7 @@ function AI:dodge(sprite, searchDir)
     -- Find the nearest tile which is out of the path of the projectile
     local x = self.owner.position.x
     local y = self.owner.position.y
-    local destination = nil
+    local destination, fallbackDestination
     local switchedDir = false
     local firstLoop = true
     local previousSearchPosition
@@ -382,9 +387,29 @@ function AI:dodge(sprite, searchDir)
             laterals = {{x = x, y = y - 1}, {x = x, y = y + 1}}
         end
 
+        local centerTileIsOccupied = false
+        if not firstLoop then
+            local ok, character
+            ok, character = self.owner.room:tile_walkable({x = x, y = y})
+
+            -- If the center tile is occupied with a character that is not us
+            if character and character ~= self.owner then
+                -- If the character is not our enemy
+                if not self.owner:is_enemies_with(character) then
+                    -- See this tile as unoccupied, since the character can
+                    -- dodge us
+                    ok = true
+                end
+            end
+
+            if not ok or
+               tiles_overlap({x = x, y = y}, sprite:get_position()) then
+               centerTileIsOccupied = true
+            end
+        end
+
         -- If the center tile is occupied
-        if (firstLoop == false and
-            not self.owner.room:tile_walkable({x = x, y = y})) then
+        if centerTileIsOccupied then
             if switchedDir == false then
                 -- We can't get to the lateral tiles, start searching in the
                 -- other direction
@@ -398,8 +423,15 @@ function AI:dodge(sprite, searchDir)
                 y = self.owner.position.y
                 switchedDir = true
             else
-                -- We already tried the other direction; 
-                destination = previousSearchPosition
+                -- We already tried the other direction
+
+                -- If we have a fallbackDestination
+                if fallbackDestination then
+                    destination = fallbackDestination
+                else
+                    destination = previousSearchPosition
+                end
+
                 break
             end
         else
@@ -408,13 +440,23 @@ function AI:dodge(sprite, searchDir)
                 index = math.random(1, #laterals)
                 choice = laterals[index]
 
-                -- If this tile choice is occupied
-                if not self.owner.room:tile_walkable(choice) then
-                    -- Remove this choice from the table
-                    table.remove(laterals, index)
-                else
+                local ok, character = self.owner.room:tile_walkable(choice)
+
+                -- If this tile choice contains a character that is not our
+                -- enemy and thus who can dodge us if we walk into them
+                if character then
+                    if not self.owner:is_enemies_with(character) then
+                        fallbackDestination = choice
+                    end
+                end
+
+                -- If this tile choice is unoccupied
+                if ok then
                     destination = choice
                     break
+                else
+                    -- Remove this choice from the table
+                    table.remove(laterals, index)
                 end
             end
         end
@@ -433,13 +475,16 @@ function AI:dodge(sprite, searchDir)
         firstLoop = false
     end
 
-    if destination ~= nil then
-        -- Set path to destination
-        self:plot_path(destination, AI_ACTION.dodge)
+    if destination ~= nil and
+       not tiles_overlap(destination, self.owner:get_position()) then
+       -- Set path to destination
+       self:plot_path(destination, AI_ACTION.dodge)
 
-        -- Start following the path
-        self:follow_path()
-    end
+       if callFollowPath then
+           -- Start following the path
+           self:follow_path(true)
+       end
+   end
 end
 
 function AI:find_enemy()
@@ -726,6 +771,13 @@ function AI:follow_path(force)
                 return false
             end
         end
+    end
+
+    if self.owner.tag then
+        print('  current position:', self.owner.position.x,
+              self.owner.position.y)
+        print('  next node:       ', self.path.nodes[1].x,
+              self.path.nodes[1].y)
     end
 
     -- If we are adjacent to the next tile of the path
@@ -1038,16 +1090,6 @@ function AI:update()
                 --    self.choseAction = true
                 end
 
-            end
-        end
-    end
-
-    -- Check if we should dodge a non-enemy character walking at us
-    for _, c in pairs(self.owner.room:get_characters()) do
-        if not self.owner:is_enemies_with(c) then
-            if c:will_hit(self.owner) then
-                self:dodge(c)
-                self.choseAction = true
             end
         end
     end

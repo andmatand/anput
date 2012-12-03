@@ -482,10 +482,11 @@ function Character:hit(patient)
                 end
             end
         -- If patient is not an enemy, and has AI
-        --elseif patient.ai then
-        --    -- Tell our teammate to dodge us
-        --    patient.ai:dodge(self)
-            --return false
+        elseif not self:is_enemies_with(patient) and patient.ai then
+            if not patient.isSpawning then
+                -- Tell our teammate to dodge us
+                patient.ai:dodge(self, nil, false)
+            end
         end
     end
 

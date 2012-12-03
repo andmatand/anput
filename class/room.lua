@@ -574,8 +574,10 @@ function Room:tile_walkable(tile)
     end
 
     -- If the tile's position is occupied by that of a collidable sprite
-    if tile_in_table(tile, collidables) then
-        return false
+    for _, c in pairs(collidables) do
+        if tiles_overlap(tile, c:get_position()) then
+            return false, c
+        end
     end
 
     return true
