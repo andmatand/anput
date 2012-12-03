@@ -19,7 +19,7 @@ function Monster:init(game, monsterType)
     self.monsterType = monsterType
 
     self:add_enemy_class(Player)
-    self:add_enemy(self.game.wizard)
+    self:add_enemy_class(Wizard)
 
     -- Copy monster difficulty level
     self.difficulty = MONSTER_DIFFICULTY[monsterType]
@@ -134,15 +134,9 @@ function Monster:init(game, monsterType)
         self.ai.level.flee = {dist = 10, prob = 8, delay = .3}
     end
 
+    self.images = copy_table(self.images)
+
     self.health = self.maxHealth
-end
-
-function Monster:hit(patient)
-    if self.monsterType == 'ghost' then
-        return false
-    end
-
-    return Monster.super.hit(self, patient)
 end
 
 function Monster:receive_hit(agent)

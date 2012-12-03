@@ -111,16 +111,6 @@ function Game:generate()
     math.randomseed(self.randomSeed)
     print('\nrandom seed for game: ' .. self.randomSeed)
 
-    -- Load NPCs
-    function load_npc(name)
-        local chunk = love.filesystem.load('npc/' .. name .. '.lua')
-        local npc = chunk()
-
-        return npc
-    end
-    self.wizard = load_npc('wizard')
-    self.camel = load_npc('camel')
-
     -- Generate a new map
     self.map = Map({game = self})
     self.rooms = self.map:generate()

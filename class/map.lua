@@ -1,3 +1,4 @@
+require('class.camel')
 require('class.falsebrick')
 require('class.exit')
 require('class.thunderstaff')
@@ -7,6 +8,7 @@ require('class.pathfinder')
 require('class.room')
 require('class.trader')
 require('class.weapon')
+require('class.wizard')
 require('util.tables')
 require('util.tile')
 
@@ -526,7 +528,7 @@ function Map:add_required_objects()
     -- Put the wizard in one of the 5 earliest rooms
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
     local wizardRoom = rooms[math.random(1, #rooms)]
-    add_npc_to_room(self.game.wizard, wizardRoom)
+    add_npc_to_room(Wizard(), wizardRoom)
 
     -- Add hkay "magician" to the wizard's room
     wizardRoom.requiredHieroglyphs = {{'h', 'ka', 'y', 'book', 'god'}}
@@ -538,11 +540,7 @@ function Map:add_required_objects()
             local rooms
             rooms = self:get_rooms_by_distance(2, room.distanceFromStart - 1,
                                                {isSecret = false})
-            add_npc_to_room(self.game.camel, rooms[math.random(1, #rooms)])
-
-            -- DEBUG: put camel in first room
-            --add_npc_to_room(self.game.camel, self.rooms[1])
-            --break
+            add_npc_to_room(Camel(), rooms[math.random(1, #rooms)])
         end
     end
 
