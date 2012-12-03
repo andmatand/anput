@@ -587,8 +587,9 @@ function Room:update()
     -- Get monsters' directional input
     self:character_input()
 
-    -- Let characters shoot projectile weapons
+    -- Let characters shoot weapons
     for _, c in pairs(self:get_characters()) do
+        c.isThundershocked = false
         if c.shootDir then
             c:shoot(c.shootDir)
             c.shootDir = nil
@@ -642,7 +643,6 @@ function Room:update()
         s:post_physics()
 
         -- Reset all one-frame variables
-        s.isThundershocked = false
         s.wantsToTrade = false
         s.isGrabbing = false
     end
