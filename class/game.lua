@@ -173,30 +173,9 @@ end
 
 function Game:holdable_key_input()
     -- Check if the walk keys are down
-    for name, key in pairs(self.wrapper.walkKeys) do
+    for _, key in pairs(self.wrapper.holdableKeys) do
         if key.state > 0 then
-            local dir
-            if name == 'NORTH' then
-                dir = 1
-            elseif name == 'EAST' then
-                dir = 2
-            elseif name == 'SOUTH' then
-                dir = 3
-            elseif name == 'WEST' then
-                dir = 4
-            end
-            self.player:step(dir)
-        end
-    end
-
-    -- If the player is wielding the thunderstaff
-    if self.player.armory:get_current_weapon_type() == 'thunderstaff' then
-        -- Check if any of the shoot keys are down
-        for name, key in pairs(self.wrapper.shootKeys) do
-            if key.state == 2 then
-                self.player.shootDir = 1
-                break
-            end
+            self.player:key_held(key.keyValue)
         end
     end
 end
@@ -205,30 +184,6 @@ function Game:key_pressed(key)
     if self.player.isDead then
         if key == KEYS.CONTEXT then
             self.wrapper:restart()
-        end
-    end
-
-    self.player:key_pressed(key)
-
-    -- Get player input for switching weapons
-    if key == '1' or key == '2' or key == '3' then
-        -- Switch to specified weapon number, based on display order
-        self.player.armory:switch_to_weapon_number(tonumber(key))
-    elseif key == KEYS.SWITCH_WEAPON then
-        -- Switch to the next weapon
-        self.player.armory:switch_to_next_weapon()
-    end
-
-    -- Get player input for using items
-    if key == KEYS.ELIXIR then
-        -- Take an elixir
-        if self.player:has_item('elixir') then
-            self.player.inventory:get_item('elixir'):use()
-        end
-    elseif key == KEYS.POTION then
-        -- Take a potion
-        if self.player:has_item('potion') then
-            self.player.inventory:get_item('potion'):use()
         end
     end
 
@@ -294,16 +249,7 @@ function Game:key_pressed(key)
         return
     end
 
-    -- Get player input for shooting arrows
-    if key == KEYS.SHOOT.NORTH then
-        self.player.shootDir = 1
-    elseif key == KEYS.SHOOT.EAST then
-        self.player.shootDir = 2
-    elseif key == KEYS.SHOOT.SOUTH then
-        self.player.shootDir = 3
-    elseif key == KEYS.SHOOT.WEST then
-        self.player.shootDir = 4
-    end
+    self.player:key_pressed(key)
 end
 
 function Game:key_released(key)

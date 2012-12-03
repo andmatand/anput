@@ -89,14 +89,78 @@ function Player:find_adjacent_objects(objectClass)
     return false
 end
 
+function Player:key_held(key)
+    -- Get input for walking
+    local dir
+    if key == KEYS.WALK.NORTH then
+        dir = 1
+    elseif key == KEYS.WALK.EAST then
+        dir = 2
+    elseif key == KEYS.WALK.SOUTH then
+        dir = 3
+    elseif key == KEYS.WALK.WEST then
+        dir = 4
+    end
+    if dir then
+        self:step(dir)
+        return
+    end
+
+    -- If we are wielding the thunderstaff
+    if self.armory:get_current_weapon_type() == 'thunderstaff' then
+        -- If the key is one of the shoot keys
+        if value_in_table(key, KEYS.SHOOT) then
+            self.shootDir = 1
+        end
+    end
+end
+
 function Player:key_pressed(key)
-    -- Get player input for trading
+    -- If the key is one of the walk keys
+    if value_in_table(key, KEYS.WALK) then
+        self:key_held(key)
+    end
+
+    -- Get input for the context button
     if key == KEYS.CONTEXT then
         if self.context == 'trade' then
             self.wantsToTrade = true
         elseif self.context == 'grab' then
             self.isGrabbing = true
         end
+    end
+
+    -- Get input for switching weapons
+    if key == '1' or key == '2' or key == '3' then
+        -- Switch to specified weapon number, based on display order
+        self.armory:switch_to_weapon_number(tonumber(key))
+    elseif key == KEYS.SWITCH_WEAPON then
+        -- Switch to the next weapon
+        self.armory:switch_to_next_weapon()
+    end
+
+    -- Get input for using items
+    if key == KEYS.ELIXIR then
+        -- Take an elixir
+        if self:has_item('elixir') then
+            self.inventory:get_item('elixir'):use()
+        end
+    elseif key == KEYS.POTION then
+        -- Take a potion
+        if self:has_item('potion') then
+            self.inventory:get_item('potion'):use()
+        end
+    end
+
+    -- Get input for shooting
+    if key == KEYS.SHOOT.NORTH then
+        self.shootDir = 1
+    elseif key == KEYS.SHOOT.EAST then
+        self.shootDir = 2
+    elseif key == KEYS.SHOOT.SOUTH then
+        self.shootDir = 3
+    elseif key == KEYS.SHOOT.WEST then
+        self.shootDir = 4
     end
 end
 

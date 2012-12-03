@@ -2,12 +2,14 @@
 -- which may be pressed and held by either a keyboard or a joystick
 HoldableKey = class('HoldableKey')
 
-function HoldableKey:init()
+function HoldableKey:init(wrapper, keyValue)
     -- Key states:
     --   0 not pressed
     --   1 pressed initially
     --   2 held
     self.state = 0
+    self.wrapper = wrapper
+    self.keyValue = keyValue
 end
 
 function HoldableKey:press(source)
@@ -17,11 +19,9 @@ function HoldableKey:press(source)
     if self.state == 0 then
         self.state = 1
 
-        -- Signal that the key has been initially pressed
-        return true
+        self.wrapper:send_keypress(self.keyValue)
     else
         self.state = 2
-        return false
     end
 end
 
@@ -36,9 +36,6 @@ function HoldableKey:release(source)
     if self.state ~= 0 then
         self.state = 0
 
-        -- Signal that they key has been released
-        return true
-    else
-        return false
+        self.wrapper:send_keyrelease(self.keyValue)
     end
 end

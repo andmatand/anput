@@ -66,18 +66,33 @@ function Wrapper:init()
     --local result, er = chunk()
     --print(er)
 
-    self.walkKeys = {NORTH = HoldableKey(),
-                     EAST = HoldableKey(),
-                     SOUTH = HoldableKey(),
-                     WEST = HoldableKey()}
-    self.shootKeys = {NORTH = HoldableKey(),
-                      EAST = HoldableKey(),
-                      SOUTH = HoldableKey(),
-                      WEST = HoldableKey()}
+    self.holdableKeys = {}
+    for _, key in pairs(KEYS.WALK) do
+        self.holdableKeys[key] = HoldableKey(self, key)
+    end
+    for _, key in pairs(KEYS.SHOOT) do
+        self.holdableKeys[key] = HoldableKey(self, key)
+    end
 
     -- Create a game right away, so we can start generating rooms in the
     -- background
     self:restart()
+end
+
+function Wrapper:directional_key_pressed(group, key)
+    for dir, k in pairs(KEYBOARD[group]) do
+        if key == k then
+            self.holdableKeys[KEYS[group][dir]]:press('keyboard')
+        end
+    end
+end
+
+function Wrapper:directional_key_released(group, key)
+    for dir, k in pairs(KEYBOARD[group]) do
+        if key == k then
+            self.holdableKeys[KEYS[group][dir]]:release('keyboard')
+        end
+    end
 end
 
 function Wrapper:draw()
@@ -93,112 +108,39 @@ function Wrapper:draw()
     end
 end
 
-function Wrapper:holdable_key_input()
-    -- Handle keyboard input for walking
-    local walkKeyIsDown = false
-    for name, key in pairs(KEYBOARD.WALK) do
-        if love.keyboard.isDown(key) then
-            if self.walkKeys[name]:press('keyboard') then
-                print(name, key)
-                self:send_keypress(KEYS.WALK[name])
-            end
-
-            walkKeyIsDown = true
-        else
-            if self.walkKeys[name]:release('keyboard') then
-                self:send_keyrelease(KEYS.WALK[name])
-            end
-        end
+function Wrapper:joystick_directional_input(group)
+    -- If there is no joystick detected
+    if love.joystick.getNumJoysticks() < 1 then
+        return
     end
 
     -- Handle joystick input for walking
-    if not walkKeyIsDown then
-        -- If there is a joystick
-        if love.joystick.getNumJoysticks() >= 1 then
-            -- Get joystick input for walking
-            local x = love.joystick.getAxis(1, JOYSTICK.WALK_AXIS_X)
-            local y = love.joystick.getAxis(1, JOYSTICK.WALK_AXIS_Y)
-            local hat
-            if JOYSTICK.WALK_HAT then
-                hat = love.joystick.getHat(1, JOYSTICK.WALK_HAT)
-            end
-
-            local keyName
-            if hat == 'u' or y == -1 then
-                keyName = 'NORTH'
-            elseif hat == 'r' or x == 1 then
-                keyName = 'EAST'
-            elseif hat == 'd' or y == 1 then
-                keyName = 'SOUTH'
-            elseif hat == 'l' or x == -1 then
-                keyName = 'WEST'
-            end
-
-            if keyName then
-                if self.walkKeys[keyName]:press('joystick') then
-                    self:send_keypress(KEYS.WALK[keyName])
-                end
-            else
-                -- Release all the walk keys
-                for name, key in pairs(KEYS.WALK) do
-                    if self.walkKeys[name]:release('joystick') then
-                        self:send_keyrelease(KEYS.WALK[name])
-                    end
-                end
-            end
-        end
+    local x = love.joystick.getAxis(1, JOYSTICK[group .. '_AXIS_X'])
+    local y = love.joystick.getAxis(1, JOYSTICK[group .. '_AXIS_Y'])
+    local hat
+    if JOYSTICK[group .. '_HAT'] then
+        hat = love.joystick.getHat(1, JOYSTICK[group .. '_HAT'])
     end
 
-    -- Handle keyboard input for shooting
-    local shootKeyIsDown = false
-    for name, key in pairs(KEYBOARD.SHOOT) do
-        if love.keyboard.isDown(key) then
-            if self.shootKeys[name]:press('keyboard') then
-                self:send_keypress(KEYS.SHOOT[name])
-            end
-
-            shootKeyIsDown = true
-        else
-            if self.shootKeys[name]:release('keyboard') then
-                self:send_keyrelease(KEYS.SHOOT[name])
-            end
-        end
+    local key
+    if hat == 'u' or y == -1 then
+        key = KEYS[group].NORTH
+    elseif hat == 'r' or x == 1 then
+        key = KEYS[group].EAST
+    elseif hat == 'd' or y == 1 then
+        key = KEYS[group].SOUTH
+    elseif hat == 'l' or x == -1 then
+        key = KEYS[group].WEST
     end
 
-    -- Handle joystick input for shooting
-    if not shootKeyIsDown then
-        -- If there is a joystick
-        if love.joystick.getNumJoysticks() >= 1 then
-            local x = love.joystick.getAxis(1, JOYSTICK.SHOOT_AXIS_X)
-            local y = love.joystick.getAxis(1, JOYSTICK.SHOOT_AXIS_Y)
-            local hat
-            if JOYSTICK.SHOOT_HAT then
-                hat = love.joystick.getHat(1, JOYSTICK.SHOOT_HAT)
-            end
+    if key then
+        self.holdableKeys[key]:press('joystick')
+    end
 
-            local keyName
-            if hat == 'u' or y == -1 then
-                keyName = 'NORTH'
-            elseif hat == 'r' or x == 1 then
-                keyName = 'EAST'
-            elseif hat == 'd' or y == 1 then
-                keyName = 'SOUTH'
-            elseif hat == 'l' or x == -1 then
-                keyName = 'WEST'
-            end
-
-            if keyName then
-                if self.shootKeys[keyName]:press('joystick') then
-                    self:send_keypress(KEYS.SHOOT[keyName])
-                end
-            else
-                -- Release all the shoot keys
-                for name, key in pairs(KEYS.SHOOT) do
-                    if self.shootKeys[name]:release('joystick') then
-                        self:send_keyrelease(KEYS.SHOOT[name])
-                    end
-                end
-            end
+    -- Release all the walk keys that are not pressed
+    for name, k in pairs(KEYS[group]) do
+        if k ~= key then
+            self.holdableKeys[k]:release('joystick')
         end
     end
 end
@@ -244,7 +186,9 @@ function Wrapper:key_pressed(key)
     end
 
     for name, k in pairs(KEYBOARD) do
-        if name ~= 'SHOOT' and name ~= 'WALK' then
+        if name == 'WALK' or name == 'SHOOT' then
+            self:directional_key_pressed(name, key)
+        else
             if key == k then
                 self:send_keypress(KEYS[name])
             end
@@ -264,7 +208,9 @@ end
 
 function Wrapper:key_released(key)
     for name, k in pairs(KEYBOARD) do
-        if name ~= 'SHOOT' and name ~= 'WALK' then
+        if name == 'WALK' or name == 'SHOOT' then
+            self:directional_key_released(name, key)
+        else
             if key == k then
                 self:send_keyrelease(KEYS[name])
             end
@@ -378,7 +324,8 @@ function Wrapper:update(dt)
         return
     end
 
-    self:holdable_key_input()
+    self:joystick_directional_input('WALK')
+    self:joystick_directional_input('SHOOT')
 
     -- Add to timer to limit FPS
     self.fpsTimer = self.fpsTimer + dt
