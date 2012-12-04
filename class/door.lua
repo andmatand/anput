@@ -1,4 +1,4 @@
-Door = class('door')
+Door = class('Door')
 
 function Door:init(position)
     -- Position is one th tile grid
@@ -19,7 +19,7 @@ function Door:draw()
                             upscale_x(1),
                             self.maxHeight * 2 * SCALE_Y)
 
-    -- Draw a the door door
+    -- Draw the door
     love.graphics.setColor(MAGENTA)
     love.graphics.rectangle('fill',
                             upscale_x(self.position.x),
