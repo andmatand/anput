@@ -1,3 +1,5 @@
+require('class.door')
+
 -- Outside is a sort of backdrop with elements of a room which is maniuplated
 -- by the Intro and Outro
 Outside = class('Outside')
@@ -28,7 +30,8 @@ function Outside:init()
     self.room = Room()
     self.player.room = self.room
 
-    self.door = {timer = love.timer.getTime(), height = 0, maxHeight = 5}
+    self.door = Door({x = (2 * self.temple.position.x) + 3,
+                      y = (2 * self.temple.position.y) - 1.25})
 end
 
 function Outside:add_dialogue(lines)
@@ -66,17 +69,12 @@ function Outside:draw()
                        (self.temple.image:getHeight() * SCALE_Y),
                        0, SCALE_X, SCALE_Y)
 
-    -- Draw the door opening
-    love.graphics.setColor(BLACK)
-    love.graphics.rectangle('fill',
-                            upscale_x(self.temple.position.x) + (12 * SCALE_X),
-                            upscale_y(self.temple.position.y) -
-                            self.door.height * SCALE_Y,
-                            upscale_x(.5), self.door.height * SCALE_Y)
-
     -- Switch back to normal scale
     SCALE_X = SCALE_X / 2
     SCALE_Y = SCALE_Y / 2
+
+    -- Draw the door opening
+    self.door:draw()
 
     self.player:draw(nil, 0)
 

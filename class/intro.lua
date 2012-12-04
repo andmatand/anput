@@ -91,13 +91,10 @@ function Intro:update()
             self.outside.player.stepTimer = love.timer.getTime()
         end
     elseif self.state == 'open' then
-        if love.timer.getTime() >= self.outside.door.timer + .2 then
-            if self.outside.door.height < self.outside.door.maxHeight then
-                self.outside.door.height = self.outside.door.height + 1
-            else
-                self.state = 'enter'
-            end
-            self.outside.door.timer = love.timer.getTime()
+        if self.outside.door:get_state() ~= 'open' then
+            self.outside.door:open()
+        else
+            self.state = 'enter'
         end
     elseif self.state == 'enter' then
         self.outside.player:step(2)

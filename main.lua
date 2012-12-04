@@ -166,6 +166,11 @@ function love.load()
 
     -- Sounds
     sounds = {}
+    sounds.door = {open1 = Sound('res/sfx/door-open1.wav'),
+                   open2 = Sound('res/sfx/door-open2.wav'),
+                   open3 = Sound('res/sfx/door-open3.wav'),
+                   open4 = Sound('res/sfx/door-open4.wav'),
+                   open5 = Sound('res/sfx/door-open5.wav')}
     sounds.theme = Sound('res/sfx/theme.wav')
     sounds.player = {cry = Sound('res/sfx/player-cry.wav'),
                      die = Sound('res/sfx/player-die.wav'),

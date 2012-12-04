@@ -9,7 +9,7 @@ function Outro:init(game)
     self.outside = Outside()
 
     -- Start with the temple door open
-    self.outside.door.height = self.outside.door.maxHeight
+    self.outside.door:open(true)
 
     -- Save the y position of the fake outside player
     local y = self.outside.player.position.y
