@@ -28,16 +28,18 @@ function RoomFiller:init(room)
 end
 
 function RoomFiller:fill_next_step()
-    -- If this road is supposed to contain a roadblock
+    -- If this room contains a roadblock
     if self.room.roadblock then
-        if self:add_roadblock() then
-            return true
+        if self:add_required_objects() then
+            if self:position_switches() then
+                return true
+            end
         end
     else
         if self:add_required_objects() then
-            if self:add_internal_bricks() then
-                if self:add_hieroglyphs() then
-                    if self:add_turrets() then
+            if self:add_hieroglyphs() then
+                if self:add_turrets() then
+                    if self:position_switches() then
                         if self:add_monsters() then
                             if self:add_items() then
                                 -- Flag that room is done being filled
@@ -73,20 +75,77 @@ function RoomFiller:add_hieroglyphs()
     return false
 end
 
-function RoomFiller:add_roadblock()
-    if self.addedRoadblock then
+function RoomFiller:position_switches()
+    if self.positionedSwitches then
         return true
     end
 
-    --if self.room.roadblock == 'lake' then
-    --    -- Create a lake from the water tiles
-    --    local lake = Lake(self.room.zoneTiles)
+    local bricks = copy_table(self.room.bricks)
+    local maxDistance = 5
 
-    --    -- Add the lake to the room
-    --    self.room:add_object(lake)
-    --end
+    for _, switch in pairs(self.room.switches) do
+        while #bricks > 0 do
+            local index = math.random(1, #bricks)
+            local brick = bricks[index]
 
-    self.addedRoadblock = true
+            local ok = false
+
+            -- Make sure the brick is within the maximum distance
+            local distance = manhattan_distance(brick:get_position(),
+                                                switch.door:get_position())
+            if distance <= maxDistance then
+                -- Make sure the brick is touching a freetile
+                for _, ft in pairs(self.room.freeTiles) do
+                    if tiles_touching(brick:get_position(), ft) then
+                        ok = true
+
+                        -- Make sure this "freetile" is not actually a door
+                        for _, door in pairs(self.room.doors) do
+                            if tiles_overlap(door:get_position(), ft) then
+                                ok = false
+                                break
+                            end
+                        end
+
+                        if ok then
+                            break
+                        end
+                    end
+                end
+            end
+
+            -- Make sure this position is not overlapping with a hieroglyph
+            if ok then
+                for _, h in pairs(self.room.hieroglyphs) do
+                    if tiles_overlap(brick:get_position(),
+                                     h:get_position()) then
+                        ok = false
+                        break
+                    end
+                end
+            end
+
+            if ok then
+                switch:set_position(brick:get_position())
+                break
+            else
+                -- Remove this brick from future consideration
+                table.remove(bricks, index)
+
+                -- If we have tried all bricks
+                if #bricks == 0 then
+                    -- If the switch still does not have a position
+                    if not switch:get_position().x then
+                        -- Increase the maxDistance and search again
+                        maxDistance = maxDistance * 2
+                        local bricks = copy_table(self.room.bricks)
+                    end
+                end
+            end
+        end
+    end
+
+    self.positionedSwitches = true
     return false
 end
 
@@ -189,18 +248,8 @@ function RoomFiller:position_hieroglyph(letters, orientation)
 end
 
 function RoomFiller:add_items()
-    if self.addedItems then
+    if self.addedItems or self.room.index == 1 then
         return true
-    end
-
-    local addedElixir = false
-
-    local itemTypes = {'elixir'}
-    if self.room.difficulty >= MONSTER_DIFFICULTY['archer'] / 2 then
-        table.insert(itemTypes, 'arrow')
-    end
-    if self.room.difficulty >= 50 then
-        table.insert(itemTypes, 'potion')
     end
 
     -- If this is a secret room
@@ -232,6 +281,14 @@ function RoomFiller:add_items()
         -- Place the goodies in the room
         self:position_objects(goodies)
     else
+        local itemTypes = {'elixir', 'arrow'}
+        --if self.room.difficulty >= MONSTER_DIFFICULTY['archer'] / 2 then
+        --    table.insert(itemTypes, 'arrow')
+        --end
+        if self.room.difficulty >= 50 then
+            table.insert(itemTypes, 'potion')
+        end
+
         -- Give items to the monsters
         for _, m in pairs(self.room:get_monsters()) do
             if #itemTypes == 0 then
@@ -242,15 +299,25 @@ function RoomFiller:add_items()
                 -- Choose a random item type
                 local itemType = itemTypes[math.random(1, #itemTypes)]
 
-                if itemType == 'elixir' then
-                    -- Do not allow adding any more elixirs to this room
-                    remove_value_from_table('elixir', itemTypes)
-                end
-
                 local newItem = Item(itemType)
 
                 -- Pretend the monster picked it up
                 m:pick_up(newItem)
+            end
+        end
+
+        -- Place items in nooks
+        for _, nook in pairs(self.room.nooks) do
+            if math.random(1, 2) == 1 then
+                -- Choose a random item type
+                local itemType = itemTypes[math.random(1, #itemTypes)]
+
+                local newItem = Item(itemType)
+
+                -- Position the item randomly in the nook
+                newItem:set_position(nook[math.random(1, #nook)])
+
+                self.room:add_object(newItem)
             end
         end
     end
@@ -267,7 +334,7 @@ function RoomFiller:add_monsters()
         return true
     end
 
-    if self.room.isSecret then
+    if self.room.isSecret and #self.room.exits == 1 then
         if math.random(1, 4) == 1 then
             -- Make this a snake den
             local numSnakes = math.random(#self.room.freeTiles * .1,
@@ -476,91 +543,6 @@ function RoomFiller:add_required_objects()
     return false
 end
 
-function RoomFiller:add_internal_bricks()
-    if self.addedInternalBricks then
-        -- Flag that internal have already already been added
-        return true
-    end
-
-    local someBricks = {}
-    for _ = 1, math.random(0, #self.room.freeTiles * .07) do
-        table.insert(someBricks, Brick({}))
-    end
-
-    local seedBricks = copy_table(self.room.bricks)
-
-    local previoiusPosition, position, ok
-    for _, brick in pairs(someBricks) do
-        ok = false
-
-        -- If there was no previous brick
-        if not previoiusPosition then
-            -- Pick a random brick in the room
-            while #seedBricks > 0 do
-                local index = math.random(1, #seedBricks)
-                local pos = seedBricks[index]
-
-                if consecutive_free_neighbors(pos, self.room.bricks, 5) then
-                    previoiusPosition = pos
-                    break
-                else
-                    table.remove(seedBricks, index)
-                end
-            end
-        end
-        
-        -- If we have the position of a previous brick
-        if previoiusPosition then
-            -- Find a position adjacent to the previous position
-            local neighbors = adjacent_tiles(previoiusPosition)
-            while #neighbors > 0 do
-                local index = math.random(1, #neighbors)
-                local pos = neighbors[index]
-
-                -- If a brick can fit here
-                if self:use_obstacle_tile(pos) then
-                    position = pos
-                    ok = true
-                    break
-                else
-                    -- Remove this position from consideration
-                    table.remove(neighbors, index)
-                end
-            end
-        else
-            -- Pick a random free position in the room
-            while #self.obstacleTiles > 0 do
-                local index = math.random(1, #self.obstacleTiles)
-                local pos = self.obstacleTiles[index]
-                
-                -- If a brick can fit here
-                if self:use_obstacle_tile(pos) then
-                    position = pos
-                    ok = true
-                    break
-                end
-            end
-        end
-
-        if ok then
-            brick:set_position(position)
-            self.room:add_object(brick)
-
-            previoiusPosition = position
-        else
-            previoiusPosition = nil
-        end
-    end
-
-    -- Place bricks in room
-    --self:position_objects(someBricks)
-
-    self.addedInternalBricks = true
-
-    -- Flag that internal bricks were not already added before now
-    return false
-end
-
 function RoomFiller:position_objects(objects)
     local ok
 
@@ -571,7 +553,7 @@ function RoomFiller:position_objects(objects)
             local position = self.itemTiles[tileIndex]
 
             -- Remove this tile from future consideration
-            if o.isMovable then
+            if o.isWalkable or o.isMovable then
                 ok = self:use_tile(position)
             else
                 ok = self:use_obstacle_tile(position)
@@ -613,7 +595,7 @@ function RoomFiller:use_obstacle_tile(tile)
         local ok = false
 
         -- If this tile has 5 consecutive free adjacent tiles
-        if consecutive_free_neighbors(tile, self.room:get_obstacles(), 5) then
+        if consecutive_free_neighbors(tile, self.room.bricks, 5) then
             ok = true
         end
 

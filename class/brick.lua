@@ -5,8 +5,8 @@ function Brick:init(coordinates)
     self.x = coordinates.x
     self.y = coordinates.y
 
-    self.isCorporeal = true
-    self.isMovable = false
+    self.isCollidable = true
+    self.isFovObstacle = true
 end
 
 function Brick:class_name()

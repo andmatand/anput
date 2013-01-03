@@ -91,9 +91,9 @@ function Intro:update()
             self.outside.player.stepTimer = love.timer.getTime()
         end
     elseif self.state == 'open' then
-        if self.outside.door:get_state() ~= 'open' then
+        if self.outside.door.state == 'closed' then
             self.outside.door:open()
-        else
+        elseif self.outside.door.state == 'open' then
             self.state = 'enter'
         end
     elseif self.state == 'enter' then
@@ -106,6 +106,7 @@ function Intro:update()
         end
     end
 
+    self.outside.door:update()
     self.outside.player:update()
     self.outside.player:physics()
     self.outside.player:post_physics()

@@ -205,7 +205,7 @@ function InventoryMenu:update()
         else
             self:move_item_toward(self.slotPositions[self.selectedItemIndex])
         end
-    elseif self.state == 'dropping item' then
+    elseif self.state == 'dropping item' and self.selectedItem then
         if tiles_overlap(self.selectedItem.position, self.dropPosition) then
             self.selectedItem.position = nil
             self.owner:drop_items({self.selectedItem})
@@ -277,7 +277,8 @@ end
 
 function InventoryMenu:go_back()
     -- Go back to the previous menu
-    if self.state == 'inventory' then
+    if self.state == 'inventory' or self.state == 'deselecting item' then
+        self:reset()
         return true
     elseif not self.selectedItem then
         self.state = 'inventory'
@@ -347,6 +348,7 @@ end
 
 function InventoryMenu:reset()
     self.state = 'inventory'
+    self.selectedItem = nil
     self:update()
 end
 

@@ -22,9 +22,95 @@ function RoomBuilder:init(room)
     self.zoneTiles = {}
     self.midPaths = {}
     self.lakes = {}
+    self.nooks = {}
 
     self.lakeSources = {}
 end
+
+function RoomBuilder:add_branches()
+    local seedBricks = copy_table(self.bricks)
+
+    local previoiusPosition, position
+    local numAddedBricks = 0
+    local maxBricks = #self.bricks * .15
+    while #seedBricks > 0 and numAddedBricks < maxBricks do
+        position = nil
+
+        -- If there was no previous brick
+        if not previoiusPosition then
+            -- Pick a random brick in the room
+            while #seedBricks > 0 do
+                local index = math.random(1, #seedBricks)
+                local pos = seedBricks[index]
+
+                -- Remove this brick from future consideration
+                table.remove(seedBricks, index)
+
+                -- If there is enough clear space around this brick
+                if consecutive_free_neighbors(pos, self.bricks, 5) then
+                    previoiusPosition = pos
+                    break
+                end
+            end
+        end
+        
+        -- If we have the position of a previous brick
+        if previoiusPosition then
+            -- Find a position adjacent to the previous position
+            local neighbors = adjacent_tiles(previoiusPosition)
+            while #neighbors > 0 do
+                local index = math.random(1, #neighbors)
+                local pos = neighbors[index]
+
+                local ok = true
+
+                -- If this tile is not a free tile
+                if not tile_in_table(pos, self.freeTiles) then
+                    ok = false
+                -- If this tile does not have enough consecutive free adjacent
+                -- tiles
+                elseif not consecutive_free_neighbors(pos, self.bricks, 5) then
+                    ok = false
+                else
+                    for _, exit in pairs(self.exits) do
+                        -- If this tile is blocking a doorway
+                        if tiles_touching(pos, exit:get_doorway()) then
+                            ok = false
+                            break
+                        end
+                    end
+                end
+
+                -- If a brick can fit here
+                if ok then
+                    position = pos
+                    break
+                else
+                    -- Remove this position from consideration
+                    table.remove(neighbors, index)
+                end
+            end
+        end
+
+        if position then
+            numAddedBricks = numAddedBricks + 1
+            brick = Brick(position)
+            table.insert(self.bricks, brick)
+            table.insert(seedBricks, brick)
+            self.freeTiles = remove_tiles_from_table({position},
+                                                     self.freeTiles)
+
+            if math.random(1, 5) == 1 then
+                previoiusPosition = nil
+            else
+                previoiusPosition = position
+            end
+        else
+            previoiusPosition = nil
+        end
+    end
+end
+
 
 function RoomBuilder:add_occupied_tile(tile)
     -- Make sure this tile is not already in the table of
@@ -63,7 +149,6 @@ function RoomBuilder:add_required_zone()
         rectangle.center = self.room.requiredZone.exit:get_position()
 
         local orientation = get_orientation_of_exits(self.room.exits)
-        print('room orientation:', orientation)
 
         if orientation == 'horizontal' then
             -- Make a somewhat vertical rectangle
@@ -150,6 +235,8 @@ function RoomBuilder:build()
     self:plot_walls()
     self:cleanup_untouchable_bricks()
     self:add_lakes()
+    self:add_branches()
+    self:find_nooks()
     self:finalize()
 
     if DEBUG and timer then
@@ -158,21 +245,6 @@ function RoomBuilder:build()
     end
 
     return true
-end
-
-function RoomBuilder:finalize()
-    -- Give the room all the stuff we just made
-    self.room.bricks = self.bricks
-    self.room.freeTiles = self.freeTiles
-    self.room.occupiedTiles = self.occupiedTiles
-    self.room.midPoint = self.midPoint
-    self.room.midPaths = self.midPaths
-    self.room.zoneTiles = self.zoneTiles
-    self.room.lakes = self.lakes
-
-    -- Mark the room as built
-    self.room.isBuilt = true
-    self.room.isBeingBuilt = false
 end
 
 function RoomBuilder:cleanup_untouchable_bricks()
@@ -241,6 +313,92 @@ function RoomBuilder:cleanup_untouchable_bricks()
     --end
 end
 
+function RoomBuilder:finalize()
+    -- Give the room all the stuff we just made
+    self.room.bricks = self.bricks
+    self.room.freeTiles = self.freeTiles
+    self.room.occupiedTiles = self.occupiedTiles
+    self.room.midPoint = self.midPoint
+    self.room.midPaths = self.midPaths
+    self.room.zoneTiles = self.zoneTiles
+    self.room.lakes = self.lakes
+    self.room.nooks = self.nooks
+
+    -- Mark the room as built
+    self.room.isBuilt = true
+    self.room.isBeingBuilt = false
+end
+
+function RoomBuilder:find_nooks()
+    for _, tile in pairs(self.freeTiles) do
+        local ok = false
+
+        local searchDirs = {}
+        local neighbors = find_neighbor_tiles(tile, self.bricks,
+                                              {diagonals = false})
+
+        -- If there are bricks directly to the north and south of this tile
+        if neighbors[1].occupied and neighbors[3].occupied then
+            searchDirs = {2, 4}
+        -- If there are bricks directly to the east and west of this tile
+        elseif neighbors[2].occupied and neighbors[4].occupied then
+            searchDirs = {1, 3}
+        end
+
+        for _, dir in pairs(searchDirs) do
+            local src = add_direction(tile, dir)
+            local hotLava = concat_tables({self.bricks, {tile}})
+            local ff = FloodFiller(src, hotLava, {maxSize = 50})
+            local area = ff:flood()
+            table.insert(area, src)
+
+            local areaIsNook = true
+            if #area == 1 then
+                areaIsNook = false
+            else
+                -- Check if this area contains a doorway
+                for _, t in pairs(area) do
+                    for _, exit in pairs(self.exits) do
+                        if tiles_overlap(t, exit:get_doorway()) then
+                            areaIsNook = false
+                            break
+                        end
+                    end
+                end
+            end
+
+            if areaIsNook then
+                --print('new area, src:', src.x, src.y)
+                table.insert(self.nooks, area)
+                break
+            end
+        end
+    end
+
+    -- Consolidate any partially overlapping nooks
+    repeat
+        local overlap = false
+        for i1, nook1 in pairs(self.nooks) do
+            for i2, nook2 in pairs(self.nooks) do
+                if nook2 ~= nook1 and
+                    tables_have_overlapping_tiles(nook1, nook2) then
+                    self.nooks[i1] = combine_tile_tables({nook1, nook2})
+                    table.remove(self.nooks, i2)
+
+                    overlap = true
+                    break
+                end
+            end
+
+            if overlap then break end
+        end
+    until not overlap
+
+    if DEBUG and #self.nooks > 0 then
+        print('room nooks:', #self.nooks)
+    end
+end
+
 function RoomBuilder:plot_midpaths()
     -- Pick a random point in the middle of the room
     self.midPoint = {x = math.random(1, ROOM_W - 2),
@@ -275,8 +433,7 @@ function RoomBuilder:plot_midpaths()
         -- Append these tiles to occupiedTiles and midPaths
         for _, t in pairs(tiles) do
             self:add_occupied_tile({x = t.x, y = t.y})
-            table.insert(self.midPaths,
-                         {x = t.x, y = t.y})
+            table.insert(self.midPaths, {x = t.x, y = t.y})
         end
 
         --if DEBUG then
@@ -324,19 +481,19 @@ function RoomBuilder:plot_walls()
             end
         end
 
-        --local intermediatePoint
-        --intermediatePoint = true
-
         local destinations = {}
-        --if intermediatePoint then
-            -- Find a free tile which is close to an occupied tile
-            for _, t in pairs(exit.freeTiles) do
-                if manhattan_distance(t, self.midPoint) <= 5 then
-                    table.insert(destinations, t)
-                    break
-                end
+        -- Find a free tile which is close to the midpoint
+        while #exit.freeTiles > 0 do
+            local index = math.random(1, #exit.freeTiles)
+            local tile = exit.freeTiles[index]
+
+            if manhattan_distance(tile, self.midPoint) <= 5 then
+                table.insert(destinations, tile)
+                break
+            else
+                table.remove(exit.freeTiles, index)
             end
-        --end
+        end
 
         -- Add dest to end of table of destinations
         table.insert(destinations, dest)
@@ -443,8 +600,6 @@ function RoomBuilder:lake_fill(exit, entrance)
             end
 
             if numTouching < 2 and #row >= 2 then
-                print('only ' .. numTouching .. ' water tiles in this row ' ..
-                      'are accessible from the entrance; rejecting row')
                 row = nil
             end
         end

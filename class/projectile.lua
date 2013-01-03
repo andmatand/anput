@@ -26,7 +26,7 @@ function Projectile:init(owner, dir)
 end
 
 function Projectile:draw(manualPosition)
-    if self.images == nil then
+    if not self.images or not self.position then
         return
     end
     local position = manualPosition or {x = upscale_x(self.position.x),

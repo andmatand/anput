@@ -4,7 +4,7 @@
 
 PLAY "mb t130 l40"
 
-SELECT CASE 25 '' Change this number to hear different sounds
+SELECT CASE 26 '' Change this number to hear different sounds
 CASE 1
     '' theme
     PLAY "l10 o3  cde-b >c <b a- g c."
@@ -87,7 +87,7 @@ CASE 20
 
 CASE 21
     '' shoot arrow
-    PLAY "l64 o4  bb-"
+    PLAY "l64 o3  fe"
 
 CASE 22
     '' hit wall
@@ -105,6 +105,27 @@ CASE 24
 CASE 25
     '' Camel gulp
     PLAY "t255 mb l64 ml"
-    PLAY "o1 p1 d d+ e f f+ g+ a a+ b > c c+ d d+"
+    PLAY "o1 p4 d d+ e f f+ g+ a a+ b > c c+ d d+"
+CASE 26
+    '' Golem spawn
+    'PLAY "l5 o1  ><>e-"
+    'PLAY "l30 o1 e-a g->c <a>e- cg- e-a"
+    'PLAY "l30 o2 ae- g-c e-<a> c<g- ae-"
+    'PLAY "l25 o1 e-a g->c"
+    PLAY "l25 o1 efg-"
+CASE 27
+    '' Door open
+    PLAY "l64 ms o0"
+    PLAY "e-a p15"
+    PLAY "g->c p15"
+    PLAY "<a>e- p15"
+    PLAY "cf+ p15"
+    PLAY "e-a"
+CASE 28
+    '' Fight to the Death
+    PLAY "l20 mn o1 p5 f+d+ fd f+d+ fd"
 END SELECT
+
+PLAY "p3"
+'PLAY "l10 o3 mn cde-b >c <b a- g c."
 

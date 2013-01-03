@@ -19,14 +19,15 @@ function Character:init()
     self.color = CYAN
     self.frameHoldTimer = {delay = 3, value = 0}
 
-    self.health = 100
     self.maxHealth = 100
+    self.health = self.maxHealth
     self.hurtTimer = 0
     self.usedMagicTimer = 0
     self.flashTimer = 0
     self.rechargeTimer = {delay = 4, value = 0}
-    self.isCorporeal = true
+    self.isCollidable = true
     self.isMovable = true
+    self.dir = 1
 
     self.enemies = {characters = {}, classes = {}}
 
@@ -275,6 +276,10 @@ function Character:draw(pos, rotation)
             end
         end
 
+        if self.rug then
+            y = y - (SCALE_Y * self.rug.height)
+        end
+
         love.graphics.draw(drawable,
                            x, y,
                            rotation,
@@ -337,13 +342,14 @@ function Character:drop_item_group(items)
         -- Position the items where we just died
         position = self.position
     else
-        -- Position the items on the tile we are facing
-        position = add_direction(self:get_position(), self.dir)
+        -- Position the items on the tile behind us
+        position = add_direction(self:get_position(),
+                                 opposite_direction(self.dir))
     end
 
     repeat
-        -- If this position is not empty
-        if self.room:tile_is_droppoint(position, self) then
+        -- If this position is available in the room
+        if position and self.room:tile_is_droppoint(position, self) then
             break
         else
             -- Forget about this position
@@ -382,7 +388,8 @@ function Character:drop_item_group(items)
                     local index = math.random(1, #tempNeighbors)
                     local n = tempNeighbors[index]
 
-                    if self.room:tile_in_room(n) then
+                    local roomTile = self.room:get_tile(n)
+                    if roomTile.isInRoom and #roomTile.contents == 0 then
                         -- Use this position
                         position = {x = n.x, y = n.y}
                         break
@@ -467,7 +474,8 @@ end
 function Character:hit(patient)
     -- Damage other characters with melee weapons
     if instanceOf(Character, patient) then
-        if self:is_enemies_with(patient) then -- Patient is an enemy
+        -- If we are enemies with the patient
+        if self:is_enemies_with(patient) then
             -- If our current weapon is a melee weapon
             if (self.armory.currentWeapon and
                 self.armory.currentWeapon.meleeDamage) then 
@@ -482,8 +490,8 @@ function Character:hit(patient)
                 end
             end
         -- If patient is not an enemy, and has AI
-        elseif not self:is_enemies_with(patient) and patient.ai then
-            if not patient.isSpawning then
+        elseif patient.ai then
+            if not patient.isSpawning and not patient.state == 'drinking' then
                 -- Tell our teammate to dodge us
                 patient.ai:dodge(self, nil, false)
             end
@@ -494,6 +502,10 @@ function Character:hit(patient)
 end
 
 function Character:input()
+    if self.isSpawning then
+        return
+    end
+
     -- DEBUG: if we are a player, let the user override our movements
     if instanceOf(Player, self) and self.stepped then
         return
@@ -528,23 +540,17 @@ function Character:is_audible()
 end
 
 function Character:is_enemies_with(character)
+    -- If the character has an owner
+    if character.owner then
+        -- Decide based on whether we are enemies with the owner
+        return self:is_enemies_with(character.owner)
+    end
+
     if value_in_table(character, self.enemies.characters) then
         return true
     end
 
-    local DEBUG
-    if instanceOf(Player, character) then
-        --DEBUG = true
-    end
-
-    if DEBUG then
-        print('enemy classes:')
-    end
     for _, c in pairs(self.enemies.classes) do
-        if DEBUG then
-            print('  ', c)
-            print('    instance:', instanceOf(c,character))
-        end
         if instanceOf(c, character) then
             return true
         end
@@ -675,9 +681,10 @@ function Character:shoot(dir)
 
     -- If we have a weapon that shoots projectiles
     if self.armory.currentWeapon.projectileClass then
-        -- Check if we are trying to shoot into a brick
-        for _,b in pairs(self.room.bricks) do
-            if tiles_overlap(add_direction(self:get_position(), dir), b) then
+        -- Check if we are trying to shoot into a brick or a door
+        local tile = self.room:get_tile(add_direction(self:get_position(), dir))
+        for _, object in pairs(tile.contents) do
+            if instanceOf(Brick, object) or instanceOf(Door, object) then
                 -- Save ourself the ammo
                 return false
             end
@@ -773,6 +780,13 @@ function Character:update()
     if instanceOf(Animation, self.currentImage) then
         -- Update the animation
         self.currentImage:update()
+
+        if self.currentImage == self.images.spawn then
+            self.currentImage.loop = false
+            if self.currentImage:is_stopped() then
+                self.isSpawning = false
+            end
+        end
     end
 
     self.attacked = false
@@ -786,14 +800,16 @@ function Character:update_image()
         -- objects
         for key, image in pairs(self.images) do
             if type(image) == 'table' and not instanceOf(Animation, image) then
-                self.images[key] = Animation(copy_table(image))
+                self.images[key] = Animation(image)
             end
         end
         self.convertedAnimations = true
     end
 
     -- Determine which image of this character to draw
-    if self.images.attack and self.attacked then
+    if self.images[self.armory:get_current_weapon_type()] then
+        self.currentImage = self.images[self.armory:get_current_weapon_type()]
+    elseif self.images.attack and self.attacked then
         self.currentImage = self.images.attack
     elseif self.images.bow_shoot and self.shot then
         self.currentImage = self.images.bow_shoot
@@ -816,18 +832,8 @@ function Character:update_image()
                 self.currentImage:advance_to_frame(1)
             end
         end
-    elseif (self.images.sword and
-            self.armory:get_current_weapon_type() == 'sword') then
-        self.currentImage = self.images.sword
-    elseif (self.images.bow and
-            self.armory:get_current_weapon_type() == 'bow') then
-        self.currentImage = self.images.bow
-    elseif (self.images.firestaff and
-            self.armory:get_current_weapon_type() == 'firestaff') then
-        self.currentImage = self.images.firestaff
-    elseif (self.images.thunderstaff and
-            self.armory:get_current_weapon_type() == 'thunderstaff') then
-        self.currentImage = self.images.thunderstaff
+    elseif self.images.spawn and self.isSpawning then
+        self.currentImage = self.images.spawn
     else
         -- Hold the frame before going back to the default image
         if self.frameHoldTimer.value > 0 then
@@ -840,4 +846,8 @@ end
 
 function Character:visited_room(room)
     return value_in_table(room, self.visitedRooms)
+end
+
+function Character:wants_item(item)
+    return true
 end

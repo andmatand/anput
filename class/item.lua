@@ -15,6 +15,7 @@ ITEM_NAME = {
     sword = 'SWORD',
     bow = 'BOW',
     firestaff = 'FIRE STAFF',
+    horn = 'HORN OF KHNUM',
     thunderstaff = 'THUNDER STAFF',
 
     -- Artifacts
@@ -26,7 +27,7 @@ ITEM_NAME = {
 function Item:init(itemType)
     self.itemType = itemType
 
-    self.isMovable = true
+    self.isWalkable = true
 
     local frames
     if self.itemType == 'elixir' or self.itemType == 'potion' then
@@ -122,7 +123,7 @@ function Item:use_on(patient)
     --        return true
     --    end
     if self.itemType == 'elixir' then
-        if patient:add_health(20) then
+        if patient:add_health(25) then
             return true
         end
     elseif self.itemType == 'potion' then

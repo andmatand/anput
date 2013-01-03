@@ -32,7 +32,13 @@ function PathFinder:legal_position(x, y)
         end
     end
 
-    -- If this tile is surrounded by
+    -- If a table of legal nodes was given
+    if self.options.legalNodes then
+        -- If this tile is not one of the legal nodes
+        if not tile_in_table({x = x, y = y}, self.options.legalNodes) then
+            return false
+        end
+    end
 
     return true
 end
@@ -60,16 +66,18 @@ function PathFinder:AStar(src, dest)
 
     self.openNodes = {}
     self.closedNodes = {}
-    reachedDest = false
+    local reachedDest = false
 
     -- Add source to self.openNodes
     table.insert(self.openNodes, {x = src.x, y = src.y, g = 0,
                                   h = manhattan_distance(src, dest)})
 
-    while reachedDest == false do
+    local currentNode, parent
+    local gPenalty
+    while not reachedDest do
         -- Find best next openNode to use
-        lowestF = 9999
-        best = nil
+        local lowestF = 9999
+        local best = nil
         for i,n in ipairs(self.openNodes) do
             if n.g + n.h < lowestF then
                 lowestF = n.g + n.h
@@ -77,10 +85,9 @@ function PathFinder:AStar(src, dest)
             end
         end
         
-        if best == nil then
+        if not best then
             print('A*: no path exists!')
             return {}
-            --break
         end
 
         -- Remove the best node from openNodes and add it to closedNodes
@@ -88,10 +95,8 @@ function PathFinder:AStar(src, dest)
         table.insert(self.closedNodes, table.remove(self.openNodes, best))
         parent = #self.closedNodes
 
-        --print('currentNode:', currentNode.x, currentNode.y)
-
         -- Add adjacent non-diagonal nodes to self.openNodes
-        for d = 1,4 do
+        for d = 1, 4 do
             gPenalty = 0
             if d == 1 then
                 -- North
@@ -111,31 +116,9 @@ function PathFinder:AStar(src, dest)
                 y = currentNode.y
             end
 
-            --if d == 5 then
-            --  -- NE
-            --  x = currentNode.x + 1
-            --  y = currentNode.y - 1
-            --  gPenalty = 4
-            --elseif d == 6 then
-            --  -- SE
-            --  x = currentNode.x + 1
-            --  y = currentNode.y + 1
-            --  gPenalty = 4
-            --elseif d == 7 then
-            --  -- SW
-            --  x = currentNode.x - 1
-            --  y = currentNode.y + 1
-            --  gPenalty = 4
-            --elseif d == 8 then
-            --  -- NW
-            --  x = currentNode.x - 1
-            --  y = currentNode.y - 1
-            --  gPenalty = 4
-            --end
-
             if self:legal_position(x, y) then
                 alreadyFound = false
-                for i,n in pairs(self.openNodes) do
+                for _, n in pairs(self.openNodes) do
                     if x == n.x and y == n.y then
                         alreadyFound = true
 
@@ -165,10 +148,10 @@ function PathFinder:AStar(src, dest)
                         end
                     end
 
-                    -- Don't overlap other paths unless absolutely necessary
+                    -- Don't overlap other nodes unless absolutely necessary
                     if self.otherNodes ~= nil then
                         for i,n in pairs(self.otherNodes) do
-                            if x == (n.x) and y == (n.y) then
+                            if x == n.x and y == n.y then
                                 gPenalty = 20
                             elseif math.abs(x - n.x) <= 1 and
                                    math.abs(y - n.y) <= 1 then

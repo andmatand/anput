@@ -40,6 +40,7 @@ end
 --   1234 etc.
 function Cone:get_column(colNum)
     local tiles = {}
+    local tileCount = 0
     local x, y, x1, x2, y1, y2
 
     -- Find the x, start y, and end y, based on (column number away from origin
@@ -47,13 +48,6 @@ function Cone:get_column(colNum)
     y1 = x * self.slope1
     y2 = x * self.slope2
     
-    --print()
-    --print('in get_column()')
-    --print('slope1:', self.slope1)
-    --print('x:', x)
-    --print('y1:', y1)
-    --print()
-
     -- Round to nearest tile
     y1 = round(y1)
     y2 = round(y2)
@@ -68,7 +62,8 @@ function Cone:get_column(colNum)
             tile.last = true
         end
 
-        table.insert(tiles, tile)
+        tileCount = tileCount + 1
+        tiles[tileCount] = tile
     end
 
     return tiles
@@ -119,13 +114,15 @@ end
 
 function FOVFinder:add_to_fov(tile)
     -- Make sure this position is not already in the FOV
-    for _, t in pairs(self.fov) do
-        if tiles_overlap(tile, t) then
+    local fovCount = #self.fov
+    local fov = self.fov
+    for i = 1, fovCount do
+        if tiles_overlap(tile, fov[i]) then
             return
         end
     end
 
-    table.insert(self.fov, tile)
+    self.fov[fovCount + 1] = tile
 end
 
 function FOVFinder:shadow_cast()
@@ -179,20 +176,20 @@ function FOVFinder:shadow_cast()
                                slope2 = slope2})
 
             -- Place the first cone on the scan-queue
-            table.insert(queue, {cone = cone, colNum = 1})
+            queue[#queue + 1] = {cone = cone, colNum = 1}
 
             -- DEBUG: draw all columns
             --for colNum = 1, self.radius do
-            --  for _, tile in ipairs(cone:get_column(colNum)) do
-            --      local transTile = cone:translate_octant(tile)
+            --    for _, tile in ipairs(cone:get_column(colNum)) do
+            --        local transTile = cone:translate_octant(tile)
 
-            --      love.graphics.setColor(255, 255, 255)
-            --      love.graphics.setLine(1, 'rough')
-            --      love.graphics.rectangle('line',
-            --                              transTile.x * TILE_W,
-            --                              transTile.y * TILE_H,
-            --                              TILE_W, TILE_H)
-            --  end
+            --        love.graphics.setColor(255, 255, 255)
+            --        love.graphics.setLine(1, 'rough')
+            --        love.graphics.rectangle('line',
+            --                                transTile.x * TILE_W,
+            --                                transTile.y * TILE_H,
+            --                                TILE_W, TILE_H)
+            --    end
             --end
         --end
 
@@ -216,11 +213,20 @@ function FOVFinder:shadow_cast()
             local previousTileWasOccupied = nil
             local newSlope1 = job.cone.slope1
             local newSlope2 = job.cone.slope2
-            for i, tile in ipairs(job.cone:get_column(job.colNum)) do
+            local column = job.cone:get_column(job.colNum)
+            for i = 1, #column do
+                local tile = column[i]
+
                 local transTile = job.cone:translate_octant(tile)
-                local occupied = tile_in_table(transTile,
-                                               self.room:get_obstacles())
-                --local visible = false
+
+                local occupied = false
+                local roomTile = self.room:get_tile(transTile)
+                for j = 1, #roomTile.contents do
+                    if roomTile.contents[j].isFovObstacle then
+                        occupied = true
+                        break
+                    end
+                end
 
                 if DEBUG then
                     print('  tile: ' .. tile.x .. ', ' .. tile.y)
@@ -230,17 +236,14 @@ function FOVFinder:shadow_cast()
                     print('  within radius: ' ..
                           tostring(self:within_radius(transTile)))
                     print('  tile in room: ' .. tostring(
-                          self.room:tile_in_room(transTile,
-                                                 {includeBricks = true})))
+                          self.room:tile_in_room(transTile)))
                 end
 
                 -- If this tile is within the viewing radius and in the room
                 if (self:within_radius(transTile) and
-                    self.room:tile_in_room(transTile,
-                                           {includeBricks = true})) then
+                    self.room:tile_in_room(transTile)) then
                     -- Consider this tile visible
                     self:add_to_fov(transTile)
-                    visible = true
                 else
                     occupied = true
                 end
@@ -267,8 +270,8 @@ function FOVFinder:shadow_cast()
 
                         -- Add another cone to the work queue with a slope2
                         -- of right above this tile
-                        table.insert(queue, {cone = newCone,
-                                             colNum = job.colNum + 1})
+                        queue[#queue + 1] = {cone = newCone,
+                                             colNum = job.colNum + 1}
 
                         if DEBUG then
                             print('    queue add:')
@@ -287,9 +290,6 @@ function FOVFinder:shadow_cast()
                         newSlope1 = slope({x = 0, y = 0},
                                           {x = tile.x + 1, y = tile.y - .1})
                         
-                        -- Reset slope2
-                        --newSlope2 = slope2
-
                         if DEBUG then
                             print('    set newSlope1 to ' .. newSlope1)
                         end
@@ -300,19 +300,6 @@ function FOVFinder:shadow_cast()
 
                 -- If this is the last tile in the column
                 if tile.last then
-                    --if visible and not sawAnyUnoccupied and tile.y == 0 then
-                    --  transTileBelow = job.cone:translate_octant(
-                    --      {x = tile.x, y = tile.y + 1})
-
-                    --  if not tile_in_table(transTileBelow,
-                    --                       self.obstacles) then
-                    --      --print('column ' .. job.colNum ..' special')
-                    --      newSlope1 = 0
-                    --      occupied = false
-                    --      sawAnyUnoccupied = true
-                    --  end
-                    --end
-
                     if not occupied and sawAnyUnoccupied then
                         if DEBUG then
                             print('    last:')
@@ -327,8 +314,8 @@ function FOVFinder:shadow_cast()
                                               slope1 = newSlope1,
                                               slope2 = newSlope2})
 
-                        table.insert(queue, {cone = newCone,
-                                             colNum = job.colNum + 1})
+                        queue[#queue + 1] = {cone = newCone,
+                                             colNum = job.colNum + 1}
                     end
                 end
             end

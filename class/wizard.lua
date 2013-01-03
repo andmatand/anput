@@ -6,9 +6,9 @@ Wizard = class('Wizard', Trader)
 function Wizard:init()
     Wizard.super.init(self, {ware = Weapon('firestaff')})
 
-    -- Appearance
     self.name = 'WIZARD'
     self.images = playerImg
+    self.magic = 100
 
     -- See monsters as enemies
     self:add_enemy_class(Monster)

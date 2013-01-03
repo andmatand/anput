@@ -12,3 +12,7 @@ function Hieroglyph:draw()
                        upscale_x(self.position.x), upscale_y(self.position.y),
                        0, SCALE_X, SCALE_Y)
 end
+
+function Hieroglyph:get_position()
+    return self.position
+end

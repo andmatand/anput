@@ -11,7 +11,7 @@ function Arrow:init(owner, dir)
 end
 
 function Arrow:hit(patient)
-    if patient:receive_hit(self) then
+    if patient.receive_hit and patient:receive_hit(self) then
         -- If we hit a character
         if instanceOf(Character, patient) then
             -- Damage the character

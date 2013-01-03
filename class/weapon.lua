@@ -26,7 +26,12 @@ WEAPON_TYPE = {
     thunderstaff = {order = 4,
                     meleeDamage = 5,
                     isMagic = true,
-                    ammoCost = 4}
+                    ammoCost = 4},
+
+    horn         = {order = 5,
+                    meleeDamage = 5,
+                    isMagic = true,
+                    ammoCost = 10}
     }
 
 function Weapon:init(weaponType)
@@ -109,7 +114,7 @@ function Weapon:shoot(dir)
                 self.owner.room:add_object(newProjectile)
                 return true
             end
-        else
+        elseif instanceOf(Player, self.owner) then
             sounds.unable:play()
         end
     end

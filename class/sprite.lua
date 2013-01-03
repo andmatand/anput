@@ -9,6 +9,7 @@ function Sprite:init()
     self.friction = 1
     self.moved = false
     self.didPhysics = false
+    self.canMove = true
 
     -- Alias x and y for position
     --self.x = function() return self.position.x end
@@ -49,13 +50,13 @@ function Sprite:hit(patient)
         if instanceOf(Projectile, patient) then
             -- Don't stop when hitting a projectile
             return false
-        elseif patient:receive_hit(self) == false then
+        elseif not patient.receive_hit or not patient:receive_hit(self) then
             -- Don't stop if the patient did not receive the hit
             return false
         end
 
         if not self.hitSomethingLastFrame then
-            if instanceOf(Brick, patient) then
+            if instanceOf(Brick, patient) or instanceOf(Door, patient) then
                 if self:is_audible() then
                     sounds.thud:play()
                 end
@@ -88,7 +89,7 @@ function Sprite:move_to_room(room)
 end
 
 function Sprite:physics()
-    if self.didPhysics then
+    if self.didPhysics or not self.room.isGenerated or not self.canMove then
         return
     else
         self.didPhysics = true
@@ -125,24 +126,15 @@ function Sprite:physics()
     test.position.x = test.position.x + self.velocity.x
     test.position.y = test.position.y + self.velocity.y
     
-    -- Check for collision with bricks
-    for _, b in pairs(test.room.bricks) do
-        if tiles_overlap(test.position, b) then
-            if self:hit(b) then
-                -- Registered as a hit; done with physics
-                return
-            end
-            break
+    -- Check for collision with collidable objects
+    local tile = test.room:get_tile(test.position)
+    for i = 1, #tile.contents do
+        local object = tile.contents[i]
+        if self:hit(object) then
+            -- Register this as a hit; we are done with physics
+            return
         end
     end
-
-    -- Check for collision with room edge
-    --if test.position.x < 0 or test.position.x > ROOM_W - 1 or
-    --   test.position.y < 0 or test.position.y > ROOM_H - 1 then
-    --   if self:hit(nil) then
-    --       return
-    --   end
-    --end
 
     -- Iterate through the room's exits
     for _, e in pairs(test.room.exits) do
@@ -176,8 +168,10 @@ function Sprite:physics()
     end
 
     -- Check for collision with other sprites
-    for i,s in pairs(test.room.sprites) do
-        if s ~= self then
+    for i = 1, #test.room.sprites do
+        local s = test.room.sprites[i]
+
+        if s and s ~= self then
             if tiles_overlap(test.position, s.position) then
                 -- If the other sprite hasn't done its physics yet
                 if s.didPhysics == false and s.owner ~= self then
@@ -222,7 +216,9 @@ function Sprite:physics()
 
     -- Check for collision with water tiles
     for _, lake in pairs(test.room.lakes) do
-        for _, tile in pairs(lake.tiles) do
+        for i = 1, #lake.tiles do
+            local tile = lake.tiles[i]
+
             if tiles_overlap(test.position, tile) then
                 if self:hit(tile) then
                     if instanceOf(Player, self) then
@@ -248,11 +244,12 @@ function Sprite:physics()
         self.velocity.y = self.velocity.y - self.friction
     end
 
-    -- If there were no hits, make the move for real
+    -- Since there were no hits, make the move for real
     self.position = {x = test.position.x, y = test.position.y}
     if test.room ~= self.room then
         self:move_to_room(test.room)
     end
+
     self.moved = true
 end
 
@@ -272,6 +269,18 @@ end
 
 function Sprite:update()
 end
+
+--function Sprite:get_direction()
+--    if self.velocity.y == -1 then
+--        return 1
+--    elseif self.velocity.x == 1 then
+--        return 2
+--    elseif self.velocity.y == 1 then
+--        return 3
+--    elseif self.velocity.x == -1 then
+--        return 4
+--    end
+--end
 
 function Sprite:line_of_sight(patient)
     return self.room:line_of_sight(self.position, patient.position)

@@ -23,15 +23,15 @@ function Outside:init()
 
     self.player = Player()
     self.player:set_position({x = 11,
-                              y = 15 + (playerImg.default:getHeight() /
-                                        4)})
+                              y = (2 * self.temple.position.y) - 1})
     
     -- Put the player in a fake room
     self.room = Room()
+    self.room.isGenerated = true
     self.player.room = self.room
 
     self.door = Door({x = (2 * self.temple.position.x) + 3,
-                      y = (2 * self.temple.position.y) - 1.25})
+                      y = (2 * self.temple.position.y) - 1})
 end
 
 function Outside:add_dialogue(lines)
@@ -57,17 +57,22 @@ function Outside:draw()
     SCALE_X = SCALE_X * 2
     SCALE_Y = SCALE_Y * 2
 
+    love.graphics.push()
+    love.graphics.translate(0, -SCALE_Y)
+
     love.graphics.draw(self.museum.image,
                        upscale_x(self.museum.position.x),
                        upscale_y(self.museum.position.y) -
-                       (self.museum.image:getHeight() * SCALE_Y),
+                       ((self.museum.image:getHeight() - 1) * SCALE_Y),
                        0, SCALE_X, SCALE_Y)
 
     love.graphics.draw(self.temple.image,
                        upscale_x(self.temple.position.x),
                        upscale_y(self.temple.position.y) -
-                       (self.temple.image:getHeight() * SCALE_Y),
+                       ((self.temple.image:getHeight() - 1) * SCALE_Y),
                        0, SCALE_X, SCALE_Y)
+
+    love.graphics.pop()
 
     -- Switch back to normal scale
     SCALE_X = SCALE_X / 2

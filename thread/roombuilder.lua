@@ -78,6 +78,17 @@ function serialize_room(room)
         msg = msg .. 'table.insert(room.lakes, Lake(tiles))\n'
     end
 
+    msg = msg .. 'room.nooks = {}\n'
+    for _, nook in pairs(room.nooks) do
+        msg = msg .. 'tiles = {}\n'
+        for _, t in pairs(nook) do
+            msg = msg .. 'table.insert(tiles, {x = ' .. t.x .. ', ' ..
+                                              'y = ' .. t.y .. '})\n'
+        end
+
+        msg = msg .. 'table.insert(room.nooks, tiles)\n'
+    end
+
     msg = msg .. 'return room'
 
     return msg

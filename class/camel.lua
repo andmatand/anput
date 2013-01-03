@@ -7,7 +7,7 @@ function Camel:init()
 
     -- Appearance
     self.name = 'CAMEL'
-    self.images = camelImg
+    self.images = images.npc.camel
 
     -- Give him a thunderstaff as an item only (not a weapon)
     self.inventory:add(ThunderStaff())
@@ -17,10 +17,12 @@ function Camel:init()
     self.ai.level.globetrot = {prob = 10, delay = 0}
     self.ai.level.follow = {dist = 5, delay = .1}
     self.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
-    self.state = 'globetrotting'
+    self.ai.level.drop = {prob = 10, delay = .5}
 
     -- Mouth
     self.mouth = Mouth({sprite = self})
+
+    self.state = 'globetrotting'
 end
 
 function Camel:forgive()
@@ -174,5 +176,13 @@ function Camel:update()
                 self.mouth:speak()
             end
         end
+    end
+end
+
+function Camel:wants_item(item)
+    if item.weaponType == 'thunderstaff' then
+        return true
+    else
+        return false
     end
 end

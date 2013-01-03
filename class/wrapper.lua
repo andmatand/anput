@@ -255,22 +255,13 @@ function Wrapper:manage_roombuilder_thread()
             if room.randomSeed ~= realRoom.randomSeed then
                 -- Room-specific random seed does not match
                 roomIsFromThisGame = false
-            --else
-                --for i, e in ipairs(room.exits) do
-                --    if not tiles_overlap(e:get_position(),
-                --                         realRoom.exits[i]:get_position()) then
-                --        -- All exits do not match
-                --        roomIsFromThisGame = false
-                --        break
-                --    end
-                --end
             end
         else
             roomIsFromThisGame = false
         end
 
         if roomIsFromThisGame then
-            -- Attach psuedo room's member variables to the real room
+            -- Attach the psuedo room's member variables to the real room
             for k, v in pairs(room) do
                 if k ~= 'exits' then
                     realRoom[k] = v

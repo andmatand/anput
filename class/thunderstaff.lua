@@ -16,14 +16,14 @@ function ThunderStaff:plot_path(src, dest)
 
     -- Plot a path from src to dest
     local pf = PathFinder(self.path.src, self.path.dest,
-                          self.owner.room:get_obstacles())
+                          self.owner.room.bricks)
     self.path.nodes = pf:plot()
 end
 
 function ThunderStaff:shoot()
     if self:get_ammo() < self.ammoCost then
         sounds.unable:play()
-        return
+        return false
     end
 
     -- Find the closest enemy sprite
@@ -75,16 +75,18 @@ function ThunderStaff:shoot()
                     if tiles_overlap(s:get_position(), n) then
                         -- If the sprite has a receive_damage function
                         if s.receive_damage then
-                            s:receive_damage(self.damage, self)
-
-                            if math.random(1, 3) ~= 1 then
-                                s.isThundershocked = true
+                            if s:receive_damage(self.damage, self) then
+                                if math.random(1, 3) > 1 then
+                                    -- Make the character light up
+                                    s.isThundershocked = true
+                                end
                             end
                         end
                     end
                 end
             end
         end
+        return true
     else
         sounds.unable:play()
     end

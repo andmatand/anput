@@ -18,26 +18,25 @@ AI_ACTION = {aim = 'aim', -- Get into a shooting position
 function AI:init(owner)
     self.owner = owner
 
-    self.path = {nodes = nil, character = nil, destination = nil}
+    self.path = {nodes = nil, character = nil, destination = nil, retries = 0}
 
     -- Default AI levels
-    self.level = {}
+    -- Each level has:
+    --   {dist = nil, prob = nil, target = nil, delay = nil}
     -- Aim distance is how close an enemy must be before we bother aiming at
     -- him
-    self.level.aim       = {dist = nil, prob = nil, target = nil, delay = nil}
 
-    self.level.attack    = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.chase     = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.dodge     = {dist = nil, prob = nil, target = nil, delay = .5}
+    -- Set the default AI levels
+    self.level = {}
+    for _, action in pairs(AI_ACTION) do
+        self.level[action] = {}
+    end
+
+    -- Give dodge a default delay so we can get out of the way of our teammates
+    self.level.dodge = {delay = .5}
 
     -- Give explore a default delay so any level of AI can get out of doorways
-    self.level.explore   = {dist = nil, prob = nil, target = nil, delay = .5}
-
-    self.level.flee      = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.follow    = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.globetrot = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.heal      = {dist = nil, prob = nil, target = nil, delay = nil}
-    self.level.loot      = {dist = nil, prob = nil, target = nil, delay = nil}
+    self.level.explore = {delay = .5}
 
     self.reactions = {avenge = false}
 
@@ -266,6 +265,10 @@ function AI:do_action(action)
             self:dodge(target)
             return true
         end
+    elseif action == 'drop' and self:waited_to(action) then
+        if self:drop_item() then
+            return true
+        end
     elseif action == 'flee' and self.path.action ~= AI_ACTION.flee then
         local threat = self:find_threat()
         if threat and self:target_in_range(threat, action) then
@@ -487,6 +490,20 @@ function AI:dodge(sprite, searchDir, followPathImmediately)
    end
 end
 
+function AI:drop_item()
+    -- Check if we are holding anything we don't want
+    for _, item in pairs(self.owner.inventory.items) do
+        if not self.owner:wants_item(item) then
+            --self.owner:drop_item_group({item})
+            self.owner:drop_items({item})
+
+            -- Only drop one item at a time, since our items table may have
+            -- changed
+            return true
+        end
+    end
+end
+
 function AI:find_enemy()
     -- Find the closest enemy
     local closestEnemy
@@ -562,7 +579,8 @@ function AI:find_item()
             -- If the item is closer than the current closest, and we can pick
             -- it up
             if (dist < closestDist and
-                self.owner.inventory:can_pick_up(item)) then
+                self.owner.inventory:can_pick_up(item) and
+                self:wants_item(item)) then
                 closestDist = dist
                 closestItem = item
             end
@@ -670,7 +688,7 @@ function AI:flee_from(threat)
     local dirsToThreat = directions_to(self.owner:get_position(),
                                        threat:get_position())
 
-    -- Add any directions that wouldn't take us closer to the threat
+    -- Make a table of directions that wouldn't take us closer to the threat
     local dirs = {}
     for i = 1, 4 do
         if not value_in_table(i, dirsToThreat) then
@@ -797,6 +815,7 @@ function AI:follow_path(force)
                 print('AI: path complete!')
             end
             self:delete_path()
+            self.path.retries = 0
         end
     else
         -- We got off the path somehow; abort
@@ -805,7 +824,23 @@ function AI:follow_path(force)
         if self.owner.tag then
             print('AI: aborted path')
         end
-        return false
+
+        --if self.path.destination and self.path.retries < 3 then
+        --    if self.owner.tag then
+        --        print('AI: got off path; plotting a new path to destination')
+        --    end
+
+        --    local oldPathAction = self.path.action
+        --    self:plot_path(self.path.destination)
+        --    self.path.retries = self.path.retries + 1
+        --    self.path.action = oldPathAction
+        --    return true
+        --else
+        --    self.path.retries = 0
+        --    self:delete_path()
+
+        --    return false
+        --end
     end
 
     return true
@@ -1138,4 +1173,10 @@ function AI:waited_to_choose()
     else
         return false
     end
+end
+
+-- This function should be overridden if needed
+function AI:wants_item(item)
+    -- By default, we want all items
+    return true
 end

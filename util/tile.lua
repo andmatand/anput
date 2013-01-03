@@ -1,3 +1,5 @@
+require('util.tables')
+
 function add_direction(tile, dir, distance)
     -- Distance defauls to 1
     local dist = distance or 1
@@ -19,6 +21,36 @@ end
 
 function box_area(box)
     return ((box.x2 - box.x1) + 1) * ((box.y2 - box.y1) + 1)
+end
+
+function combine_tile_tables(tables)
+    local newTable = {}
+    local count = 0
+
+    for i = 1, #tables do
+        local tbl = tables[i]
+
+        for j = 1, #tbl do
+            local tile = tbl[j]
+
+            local ok = true
+            if i > 1 then
+                for k = 1, count do
+                    -- If this tile has already been added to the new table
+                    if tiles_overlap(tile, newTable[k]) then
+                        ok = false
+                    end
+                end
+            end
+
+            if ok then
+                count = count + 1
+                newTable[count] = tile
+            end
+        end
+    end
+
+    return newTable
 end
 
 function direction_to(from, to)
@@ -294,8 +326,25 @@ function find_box_surrounding(tiles)
     return {x1 = x1, y1 = y1, x2 = x2, y2 = y2}
 end
 
-function tile_in_table(tile, table)
-    for i, t in pairs(table) do
+function tables_have_overlapping_tiles(tbl1, tbl2)
+    for i = 1, #tbl1 do
+        local t1 = tbl1[i]
+
+        for j = 1, #tbl2 do
+            local t2 = tbl2[j]
+
+            if tiles_overlap(t1, t2) then
+                return true
+            end
+        end
+
+    end
+end
+
+function tile_in_table(tile, tbl)
+    for i = 1, #tbl do
+        local t = tbl[i]
+
         if t.position == nil then
             if tile.x == t.x and tile.y == t.y then
                 return true

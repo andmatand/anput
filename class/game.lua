@@ -70,10 +70,6 @@ function Game:draw_metadata()
             end
         end
 
-        --cga_print("KILLED " .. #self.player.log:get_kills() .. " MONSTERS\n" ..
-        --          "DISCOVERED " .. visitedRooms .. " ROOMS",
-        --          1, 1)
-
         local x = 1
         local y = 1
         local msg = "YOU WERE KILLED BY "
@@ -93,6 +89,7 @@ function Game:draw_metadata()
                 k.flashTimer = 0
 
                 cga_print(" ", x, y)
+                print('drawing: ', k)
                 k:draw({x = upscale_x(x), y = upscale_y(y)})
 
                 x = x + 1
@@ -217,7 +214,6 @@ function Game:key_pressed(key)
         self.menuState = 'map'
     end
 
-
     -- If the game is paused
     if self.paused then
         -- If the inventory is open
@@ -234,9 +230,6 @@ function Game:key_pressed(key)
         if self.menuState == 'map' and key == KEYS.EXIT then
             self.paused = false
         end
-
-        -- Don't allow keys below here
-        return
     end
 
     self.player:key_pressed(key)
@@ -280,7 +273,7 @@ function Game:pause()
     if not self.paused then
         sounds.pause:play()
 
-        -- Reset inventory menu to initial view
+        -- Reset the inventory menu to its initial view
         self.inventoryMenu:reset()
 
         self.paused = true
@@ -317,6 +310,7 @@ function Game:switch_to_room(room)
         print('  random seed: ' .. room.randomSeed)
         print('  distance from start: ' .. room.distanceFromStart)
         print('  difficulty: ' .. room.difficulty)
+
     --end
 
     self.previousRoom = self.currentRoom
@@ -341,6 +335,19 @@ function Game:switch_to_room(room)
 
     -- Clear any dead objects
     self.currentRoom:sweep()
+
+    --if DEBUG then
+        if #room.switches > 0 then
+            print('  switches: ')
+            for i, s in pairs(room.switches) do
+                print('    switch ' .. i)
+                print('      position:' , s.position.x, s.position.y)
+                print('      door position:', s.door.position.x,
+                s.door.position.y)
+                print('      door room:', s.door.room.index)
+            end
+        end
+    --end
 end
 
 function Game:unpause()
@@ -351,7 +358,7 @@ end
 
 function Game:update(dt)
     if not self.playedTheme then
-        sounds.theme:play()
+        --sounds.theme:play()
         self.playedTheme = true
     end
 
@@ -390,29 +397,12 @@ function Game:update(dt)
     -- Update the current room
     self.currentRoom:update()
 
-    -- Check if we need to update the adjacent rooms
+    -- Update the adjacent rooms
     for _, room in pairs(self:get_adjacent_rooms()) do
-        if room.isGenerated then --and room ~= self.previousRoom then
-            --local needsToUpdate = false
-
-            ---- Check if there are any projectiles
-            --for _, s in pairs(room.sprites) do
-            --    if instanceOf(Projectile, s) then
-            --        needsToUpdate = true
-            --        break
-            --    end
-            --end
-
-            --if needsToUpdate then
-                room:update()
-            --end
+        if room.isGenerated then
+            room:update()
         end
     end
-
-    --if self.previousRoom then
-    --    -- Update the previous room
-    --    self.previousRoom:update()
-    --end
 
     -- If the player entered a different room
     if self.player.room and self.player.room ~= self.currentRoom then

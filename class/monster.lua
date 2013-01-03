@@ -19,6 +19,7 @@ function Monster:init(game, monsterType)
     self.monsterType = monsterType
 
     self:add_enemy_class(Player)
+    self:add_enemy_class(Golem)
     self:add_enemy_class(Wizard)
 
     -- Copy monster difficulty level
@@ -57,7 +58,7 @@ function Monster:init(game, monsterType)
         self:pick_up(claws)
 
         self.ai.choiceTimer.delay = .25
-        self.ai.level.attack = {dist = 20, prob = 9, delay = .1}
+        self.ai.level.attack = {dist = 20, prob = 9, delay = .2}
         self.ai.level.chase = {dist = 10, prob = 9, delay = .1}
         self.ai.level.dodge = {dist = 7, prob = 7, delay = .2}
         self.ai.level.flee = {dist = 15, prob = 9, delay = .1}
@@ -111,7 +112,7 @@ function Monster:init(game, monsterType)
 
         self.ai.choiceTimer.delay = .1
         self.ai.level.aim = {dist = 15, prob = 9, delay = .1}
-        self.ai.level.attack = {dist = 15, prob = 9, delay = .1}
+        self.ai.level.attack = {dist = 15, prob = 9, delay = .3}
         self.ai.level.chase = {dist = 20, prob = 6, delay = .15}
         self.ai.level.dodge = {dist = 7, prob = 8, delay = .1}
         self.ai.level.heal = {prob = 8, delay = .5}
@@ -121,7 +122,7 @@ function Monster:init(game, monsterType)
         self.images = images.monsters.ghost
         self.maxHealth = 80
         self.magic = 100
-        self.isCorporeal = false
+        self.isCollidable = false
 
         local staff = Weapon('firestaff')
         self:pick_up(staff)

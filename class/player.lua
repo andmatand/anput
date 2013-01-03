@@ -1,4 +1,5 @@
 require('class.character')
+require('class.switch')
 
 Player = class('Player', Character)
 
@@ -6,6 +7,7 @@ function Player:init()
     Player.super.init(self)
 
     self:add_enemy_class(Monster)
+    self:add_enemy_class(Khnum)
 
     -- Remove AI in favor of just I
     self.ai = nil
@@ -48,17 +50,25 @@ function Player:drop_payment(price, position)
 end
 
 function Player:find_context()
-    for _, tile in pairs(adjacent_tiles(self.position)) do
-        local contents = self.room:tile_contents(tile)
-        if contents then
-            for _, obj in pairs(contents) do
-                if instanceOf(Trader, obj) then
+    for _, pos in pairs(adjacent_tiles(self.position)) do
+        local tile = self.room:get_tile(pos)
+        for _, obj in pairs(tile.contents) do
+            if instanceOf(Switch, obj) then
+                if not obj.isActivated then
+                    return obj
+                end
+            end
+        end
+
+        for _, s in pairs(self.room.sprites) do
+            if tiles_overlap(pos, s:get_position()) then
+                if instanceOf(Trader, s) then
                     -- If the trade has something to trade, and we have enough
                     -- to buy his ware
-                    if obj:can_trade() and self:can_trade(obj.price) then
+                    if s:can_trade() and self:can_trade(s.price) then
                         return 'trade'
                     end
-                elseif obj.name == 'CAMEL' and not obj.isCaught then
+                elseif instanceOf(Camel, s) and not s.isCaught then
                     return 'grab'
                 end
             end
@@ -83,10 +93,6 @@ function Player:hit(patient)
     end
 
     return Player.super.hit(self, patient)
-end
-
-function Player:find_adjacent_objects(objectClass)
-    return false
 end
 
 function Player:key_held(key)
@@ -116,20 +122,6 @@ function Player:key_held(key)
 end
 
 function Player:key_pressed(key)
-    -- If the key is one of the walk keys
-    if value_in_table(key, KEYS.WALK) then
-        self:key_held(key)
-    end
-
-    -- Get input for the context button
-    if key == KEYS.CONTEXT then
-        if self.context == 'trade' then
-            self.wantsToTrade = true
-        elseif self.context == 'grab' then
-            self.isGrabbing = true
-        end
-    end
-
     -- Get input for switching weapons
     if key == '1' or key == '2' or key == '3' then
         -- Switch to specified weapon number, based on display order
@@ -149,6 +141,29 @@ function Player:key_pressed(key)
         -- Take a potion
         if self:has_item('potion') then
             self.inventory:get_item('potion'):use()
+        end
+    end
+
+    -- If the game is paused
+    if self.room.game.paused then
+        -- Don't allow input below here
+        return
+    end
+
+
+    -- If the key is one of the walk keys
+    if value_in_table(key, KEYS.WALK) then
+        self:key_held(key)
+    end
+
+    -- Get input for the context button
+    if key == KEYS.CONTEXT then
+        if self.context == 'trade' then
+            self.wantsToTrade = true
+        elseif self.context == 'grab' then
+            self.isGrabbing = true
+        elseif instanceOf(Switch, self.context) then
+            self.context:activate()
         end
     end
 
@@ -175,6 +190,8 @@ function Player:update()
         contextAction = 'TRADE'
     elseif self.context == 'grab' then
         contextAction = 'GRAB'
+    elseif instanceOf(Switch, self.context) then
+        contextAction = 'ACTIVATE'
     end
     if contextAction then
         self.room.game.statusBar:show_context_message({'enter'}, contextAction)

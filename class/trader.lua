@@ -3,7 +3,6 @@ Trader = class('Trader', Character)
 
 function Trader:init(args)
     Character.init(self)
-    self.magic = 100
 
     self.price = {currency = 'shinything',
                   quantity = 99}
@@ -25,6 +24,7 @@ function Trader:init(args)
                    later = ''}  -- What we say when approached after the sale
 
     self.delay = 0
+    self.ai.level.drop = {prob = 10, delay = .5}
 end
 
 function Trader:can_trade()
@@ -58,7 +58,7 @@ function Trader:find_customer()
     end
 
     if self.customer then
-        -- Look at the customer
+        -- Face at the customer
         self.dir = self:direction_to(self.customer:get_position())
 
         return true
@@ -96,17 +96,16 @@ end
 
 function Trader:find_payment()
     if self.paymentPosition then
-        -- Get the contents of the paymentPosition
-        local contents = self.room:tile_contents(self.paymentPosition)
-
-        -- Check if the full payment is there
+        -- Check if the full payment is in the expected position
         local quantity = 0
-        for _, c in pairs(contents) do
-            if c.itemType == self.price.currency then
-                quantity = quantity + 1
+        for _, item in pairs(self.room.items) do
+            if tiles_overlap(self.paymentPosition, item:get_position()) then
+                if item.itemType == self.price.currency then
+                    quantity = quantity + 1
 
-                if quantity == self.price.quantity then
-                    return true
+                    if quantity == self.price.quantity then
+                        return true
+                    end
                 end
             end
         end
@@ -162,8 +161,11 @@ function Trader:ask_for_payment()
         self.mouth:set_speech("THERE'S NO ROOM HERE")
 
         -- Dodge the customer
-        self.ai:dodge(self.customer,
-                      self.customer:direction_to(self:get_position()))
+        --self.ai:dodge(self.customer,
+        --              self.customer:direction_to(self:get_position()))
+
+        -- Go to a random tile in the room
+        self.ai:plot_path(self.room:get_free_tile())
 
         self.mouth:speak(true)
         self.mouth:set_speech()
@@ -173,14 +175,6 @@ end
 function Trader:update()
     if self:is_delaying() then
         return
-    end
-
-    -- If we are holding anything other than our ware or payment
-    for _, item in pairs(self.inventory.items) do
-        if item ~= self.ware and
-           not value_in_table(item, self.paymentItems) then
-            self:drop_items({item})
-        end
     end
 
     -- If we can see a payment nearby
@@ -234,4 +228,13 @@ function Trader:update()
     end
 
     Trader.super.update(self)
+end
+
+function Trader:wants_item(item)
+    -- If the item is our ware or payment
+    if item == self.ware or value_in_table(item, self.paymentItems) then
+        return true
+    else
+        return false
+    end
 end

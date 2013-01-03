@@ -1,11 +1,13 @@
 require('class.camel')
-require('class.falsebrick')
 require('class.exit')
-require('class.thunderstaff')
+require('class.falsebrick')
+require('class.khnum')
 require('class.mapdisplay')
 require('class.monster')
 require('class.pathfinder')
 require('class.room')
+require('class.switch')
+require('class.thunderstaff')
 require('class.trader')
 require('class.weapon')
 require('class.wizard')
@@ -28,6 +30,7 @@ function Map:generate()
     self:add_temple_exit()
 
     self:add_secret_rooms()
+    self:add_doors()
     self:add_required_objects()
     self:add_hieroglyphs()
 
@@ -175,7 +178,8 @@ function Map:add_branches()
     local startingTiles = copy_table(self.path)
 
     local numBranches = 0
-    while (numBranches < 10 or #self.branches < 40) and #startingTiles > 0 do
+    while (numBranches < #self.path * .25 or #self.branches < 40) and
+          #startingTiles > 0 do
         -- Choose a random starting positon on the main path
         local start = table.remove(startingTiles,
                                    math.random(1, #startingTiles))
@@ -243,12 +247,11 @@ function Map:generate_path()
 
     -- Define the radius for each ring
     local rings = {}
-    --rings[1] = {radius = math.floor((canvas.width / 2) - 2)}
-    --rings[2] = {radius = math.floor((canvas.width / 2) - 5)}
-    --rings[3] = {radius = math.floor((canvas.width / 2) - 9)}
-    rings[1] = {radius = math.floor((canvas.width / 2) * .9)}
-    rings[2] = {radius = math.floor((canvas.width / 2) * .5)}
-    --rings[3] = {radius = math.floor((canvas.width / 2) - 9)}
+    --rings[1] = {radius = math.floor((canvas.width / 2) * .9)}
+    --rings[2] = {radius = math.floor((canvas.width / 2) * .5)}
+    rings[1] = {radius = math.random(5, 8)}
+    rings[1] = {radius = 5}
+    rings[2] = {radius = 3}
 
     -- Position the source somewhere outside ring 1
     local x = math.random(canvas.x1, canvas.x2)
@@ -341,6 +344,7 @@ function Map:generate_rooms()
         table.insert(rooms, r)
         node.room = r
         node.room.roadblock = node.roadblock
+        node.room.mapNode = node
         local neighbors = find_neighbor_tiles(node, self.nodes,
                                               {diagonals = false})
 
@@ -535,7 +539,10 @@ function Map:add_required_objects()
 
     -- Check for objects that need to be added when certain roadblocks exist
     for _, room in pairs(self.rooms) do
-        if room.roadblock == 'lake' then
+        if room.roadblock == 'khnum' then
+            -- Put Khnum in this room
+            add_npc_to_room(Khnum(), room)
+        elseif room.roadblock == 'lake' then
             -- Put the camel in a room somewhere before the lake
             local rooms
             rooms = self:get_rooms_by_distance(2, room.distanceFromStart - 1,
@@ -547,28 +554,29 @@ function Map:add_required_objects()
     -- Create a table of the rooms lower than the difficulty at which ghosts
     -- would spawn
     local easyRooms = self:get_rooms_by_difficulty(0,
-                           MONSTER_DIFFICULTY['ghost'] - 1,
+                           MONSTER_DIFFICULTY['ghost'] / 2,
                            {isSecret = false})
-    local easyRoomsCopy = copy_table(easyRooms)
+    --local easyRoomsCopy = copy_table(easyRooms)
     local numShinyThings = 0
     while numShinyThings < 7 do
         -- Pick a random early room
-        local roomNum = math.random(1, #easyRoomsCopy)
+        local roomNum = math.random(1, #easyRooms)
 
-        if easyRoomsCopy[roomNum].index ~= 1 then
+        -- If this is not the first room
+        if easyRooms[roomNum].index ~= 1 then
             -- Add a shiny thing as a required object
             numShinyThings = numShinyThings + 1
-            table.insert(easyRoomsCopy[roomNum].requiredObjects,
-                         Item('shinything'))
+            local item = Item('shinything')
+            table.insert(easyRooms[roomNum].requiredObjects, item)
 
             -- Remove this room from consideration
-            table.remove(easyRoomsCopy, roomNum)
+            --table.remove(easyRoomsCopy, roomNum)
 
             -- If we ran out of easy rooms
-            if #easyRooms == 0 then
-                -- Get the list again
-                easyRoomsCopy = copy_table(easyRooms)
-            end
+            --if #easyRooms == 0 then
+            --    -- Get the list again
+            --    easyRoomsCopy = copy_table(easyRooms)
+            --end
         end
     end
 
@@ -577,9 +585,9 @@ function Map:add_required_objects()
 end
 
 function Map:add_roadblocks()
-    local numRoadblocks = 1
+    local numRoadblocks = 2
 
-    local roadblockTypes = {'lake'}
+    local roadblockTypes = {'khnum', 'lake'}
 
     -- Pick which roadblocks to use
     local roadblocks = {}
@@ -615,8 +623,8 @@ function Map:add_secret_rooms()
     for _, r in pairs(self.rooms) do
         -- If this room has only 1 exit and is not the first room or the
         -- artifact room
-        if #r.exits == 1 and r.distanceFromStart > 0 and not r.artifactRoom and
-           math.random(0, 1) == 0 then -- Also mix in some randomness
+        if #r.exits == 1 and r.distanceFromStart > 0 and not r.artifactRoom then
+           --math.random(0, 1) == 0 then -- Also mix in some randomness
             -- Put a false brick in front of the exit that leads to this room
             local adjacentRoom = r.exits[1].targetRoom
             local adjacentExit = adjacentRoom:get_exit({targetRoom = r})
@@ -633,6 +641,67 @@ function Map:add_secret_rooms()
     ---- Put a false brick in front of the exit that leads to this room
     --local falseBrick = FalseBrick(exit:get_doorway())
     --table.insert(self.rooms[1].requiredObjects, falseBrick)
+end
+
+function Map:add_doors()
+    for _, r in pairs(self.rooms) do
+        -- If this room is not the first room or the artifact room
+        if r.distanceFromStart > 0 and not r.artifactRoom and
+           math.random(1, 1) == 1 and not r.isSecret then
+           -- Choose one of the exits in this room
+           local exits = copy_table(r.exits)
+           local exit = nil
+           while #exits > 0 do
+               local index = math.random(1, #exits)
+               local e = exits[index]
+
+               -- If this exit is already concealed (e.g. by a falsebrick) or
+               -- its linked exit is already concealed, or this exit leads to a
+               -- secret room
+               if e:is_hidden() or e:get_linked_exit():is_hidden() or
+                  e.targetRoom.isSecret then
+                   -- Remove it from future consideration
+                   table.remove(exits, index)
+               else
+                   exit = e
+                   break
+               end
+           end
+           
+           -- If we have chosen an exit
+           if exit then
+               -- Put a door in front of the exit and in front of its linked
+               -- exit
+
+               local insideDoor = Door(exit:get_doorway(),
+                                       exit:get_direction())
+               exit.room:add_object(insideDoor)
+
+               local linkedExit = exit:get_linked_exit()
+               local outsideDoor = Door(linkedExit:get_doorway(),
+                                        linkedExit:get_direction())
+               linkedExit.room:add_object(outsideDoor)
+
+               outsideDoor:set_sister(insideDoor)
+               insideDoor:set_sister(outsideDoor)
+
+               local room1, room2, door1
+               if exit.room.distanceFromStart <
+                  linkedExit.room.distanceFromStart then
+                   room1 = exit.room
+                   room2 = linkedExit.room
+                   door1 = insideDoor
+               else
+                   room1 = linkedExit.room
+                   room2 = exit.room
+                   door1 = outsideDoor
+               end
+
+               local switch = Switch(door1)
+               room1:add_object(switch)
+           end
+       end
+   end
 end
 
 function Map:update()

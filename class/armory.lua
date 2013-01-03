@@ -132,6 +132,10 @@ function Armory:switch_to_melee_weapon()
 end
 
 function Armory:switch_to_next_weapon()
+    if not self.currentWeapon then
+        self:switch_to_weapon_number(1)
+    end
+
     local nextWeapon
     local lowest = 99
     for _, w in pairs(self.weapons) do

@@ -51,7 +51,7 @@ function MapDisplay:draw(currentRoom)
         end
     end
 
-    if DEBUG and self.flash.state then
+    if DEBUG and not self.flash.state then
         -- Draw hotLava
         love.graphics.setColor(255, 0, 100)
         for _, n in pairs(self.map.hotLava) do

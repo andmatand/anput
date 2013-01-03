@@ -20,7 +20,7 @@ function Lake:init(tiles)
     self.drawBox.x1 = self.drawBox.x1 - 1
     self.drawBox.x2 = self.drawBox.x2 + 1
 
-    self:refresh_spritebatches()
+    self.spriteBatches = {}
     self:refresh_stencil()
 end
 
@@ -28,6 +28,10 @@ function Lake:draw(fov)
     -- Enable the stencil
     if not DEBUG then
         love.graphics.setStencil(self.stencil)
+    end
+
+    if not self.spriteBatches[self.frameNumber] then
+        self:create_spritebatch(self.frameNumber)
     end
 
     love.graphics.setColorMode('modulate')
@@ -52,28 +56,28 @@ function Lake:draw(fov)
     love.graphics.setStencil()
 end
 
-function Lake:refresh_spritebatches()
-    -- Make a spritebatch for each frame
-    self.spriteBatches = {}
-    for _, image in pairs(self.frames) do
-        local sb = love.graphics.newSpriteBatch(image, box_area(self.drawBox))
+function Lake:create_spritebatch(frameNumber)
+    print('lake: creating spritebatch for frame ' .. frameNumber)
 
-        sb:bind()
-        sb:clear()
-        for y = self.drawBox.y1, self.drawBox.y2 do
-            for x = self.drawBox.x1, self.drawBox.x2 do
-                for _, t in pairs(self.tiles) do
-                    if tiles_touching({x = x, y = y}, t) then
-                        sb:add(x * TILE_W, y * TILE_H)
-                        break
-                    end
+    -- Make a spritebatch for each frame
+    local image = self.frames[frameNumber]
+    local sb = love.graphics.newSpriteBatch(image, box_area(self.drawBox))
+
+    sb:bind()
+    sb:clear()
+    for y = self.drawBox.y1, self.drawBox.y2 do
+        for x = self.drawBox.x1, self.drawBox.x2 do
+            for _, t in pairs(self.tiles) do
+                if tiles_touching({x = x, y = y}, t) then
+                    sb:add(x * TILE_W, y * TILE_H)
+                    break
                 end
             end
         end
-        sb:unbind()
-
-        table.insert(self.spriteBatches, sb)
     end
+    sb:unbind()
+
+    self.spriteBatches[frameNumber] = sb
 end
 
 function Lake:refresh_stencil()

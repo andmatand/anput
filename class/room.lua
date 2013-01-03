@@ -10,13 +10,17 @@ function Room:init(args)
     self.visited = false
     self.bricksDirty = true
 
+    self.tileCache = {}
+
     -- Drawables
     self.bricks = {}
+    self.doors = {}
     self.hieroglyphs = {}
     self.items = {}
     self.lakes = {}
     self.sprites = {}
     self.thunderbolts = {}
+    self.switches = {}
 
     self.exits = {}
     self.freeTiles = {}
@@ -36,6 +40,7 @@ function Room:add_object(obj)
     if instanceOf(Sprite, obj) then
         -- Add this sprite to the room's sprite table
         table.insert(self.sprites, obj)
+
     elseif instanceOf(Turret, obj) then
         -- Add this turret to the room's turret table
         table.insert(self.turrets, obj)
@@ -52,6 +57,10 @@ function Room:add_object(obj)
         table.insert(self.thunderbolts, obj)
     elseif instanceOf(Brick, obj) then
         table.insert(self.bricks, obj)
+    elseif instanceOf(Door, obj) then
+        table.insert(self.doors, obj)
+    elseif instanceOf(Switch, obj) then
+        table.insert(self.switches, obj)
     else
         return false
     end
@@ -98,6 +107,16 @@ function Room:draw()
     -- Draw bricks
     self:draw_bricks()
 
+    -- Draw doors
+    for _, door in pairs(self.doors) do
+        self:draw_with_fov_alpha(door)
+    end
+
+    -- Draw switches
+    for _, switch in pairs(self.switches) do
+        self:draw_with_fov_alpha(switch)
+    end
+
     -- Draw lakes
     for _, lake in pairs(self.lakes) do
         lake:draw(self.fov)
@@ -112,10 +131,14 @@ function Room:draw()
 
     -- Draw sprites
     for _, s in pairs(self.sprites) do
-        if tile_in_table(s.position, self.fov) or s.isThundershocked or
-           instanceOf(Fireball, s) or DEBUG then
-            s:draw()
-        end
+        --if instanceOf(Crate, s) then
+        --    self:draw_with_fov_alpha(s)
+        --else
+            if tile_in_table(s.position, self.fov) or s.isThundershocked or
+                instanceOf(Fireball, s) or DEBUG then
+                s:draw()
+            end
+        --end
     end
 
     -- Draw thunderbolts
@@ -128,7 +151,7 @@ function Room:draw()
     if DEBUG then
         -- Show freeTiles
         for _, t in pairs(self.freeTiles) do
-            love.graphics.setColor(0, 255, 0, 100)
+            love.graphics.setColor(255, 255, 255, 25)
             love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
                                     upscale_x(1), upscale_y(1))
         end
@@ -146,11 +169,21 @@ function Room:draw()
         end
 
         -- Show zone tiles
-        for _, tile in pairs(self.zoneTiles) do
-            love.graphics.setColor(255, 243, 48, 180)
-            love.graphics.rectangle('fill',
-                                    upscale_x(tile.x), upscale_y(tile.y),
-                                    upscale_x(1), upscale_y(1))
+        --for _, tile in pairs(self.zoneTiles) do
+        --    love.graphics.setColor(255, 243, 48, 180)
+        --    love.graphics.rectangle('fill',
+        --                            upscale_x(tile.x), upscale_y(tile.y),
+        --                            upscale_x(1), upscale_y(1))
+        --end
+
+        -- Show nook tiles
+        for _, nook in pairs(self.nooks) do
+            for _, tile in pairs(nook) do
+                love.graphics.setColor(255, 243, 48, 180)
+                love.graphics.rectangle('fill',
+                                        upscale_x(tile.x), upscale_y(tile.y),
+                                        upscale_x(1), upscale_y(1))
+            end
         end
 
         -- Show tiles in FOV
@@ -250,6 +283,16 @@ function Room:draw_messages()
     end
 end
 
+function Room:draw_with_fov_alpha(object)
+    local alpha
+    if tile_in_table(object:get_position(), self.fov) then
+        alpha = LIGHT
+    else
+        alpha = DARK
+    end
+    object:draw(alpha)
+end
+
 function Room:generate_all()
     if not self.isBuilt then
         -- Ignore any current build
@@ -273,8 +316,11 @@ function Room:generate_next_piece()
 
     -- Continue filling the room with monsters, items, etc.
     if self.roomFiller:fill_next_step() then
-        -- Make a spriteBatch for bricks within the player's FOV
+        -- Make a spriteBatch for drawing bricks
         self.brickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
+
+        -- Update the tile cache with the locations of permanent objects
+        self:update_tile_cache()
 
         -- Mark the generation process as complete
         self.isGenerated = true
@@ -307,6 +353,10 @@ function Room:get_characters()
     return characters
 end
 
+function Room:get_collidable_objects()
+    return concat_tables({self.bricks, self.doors})
+end
+
 function Room:get_exit(search)
     for i, e in pairs(self.exits) do
         if (e.x ~= nil and e.x == search.x) or
@@ -318,8 +368,17 @@ function Room:get_exit(search)
     end
 end
 
-function Room:get_obstacles()
-    return self.bricks
+-- Return a random free position in the room
+function Room:get_free_tile()
+    local freeTiles = copy_table(self.freeTiles)
+    while #freeTiles > 0 do
+        local index = math.random(1, #freeTiles)
+        if self:tile_walkable(freeTiles[index]) then
+            return freeTiles[index]
+        else
+            table.remove(freeTiles, index)
+        end
+    end
 end
 
 -- Returns a table of all monsters in the room
@@ -333,6 +392,19 @@ function Room:get_monsters()
     end
 
     return monsters
+end
+
+-- Returns cached information about a tile
+function Room:get_tile(position)
+    local index = ((ROOM_W + 2) * (position.y + 1)) + (position.x + 1) + 1
+
+    -- If no tile exists in the cache at this index
+    if not self.tileCache[index] then
+        -- Add an empty tile to the cache
+        self.tileCache[index] = {contents = {}, isInRoom = false}
+    end
+
+    return self.tileCache[index]
 end
 
 function Room:is_audible()
@@ -387,30 +459,25 @@ function Room:line_of_sight(a, b)
 end
 
 function Room:plot_path(src, dest)
-    local addCharacters = true
-    local path
-
-    while true do
-        -- Create a table of the room's occupied nodes
-        local hotLava = {}
-        for _, b in pairs(self.bricks) do
-            table.insert(hotLava, {x = b.x, y = b.y})
-        end
-        if addCharacters then
-            for _, c in pairs(self:get_characters()) do
-                table.insert(hotLava, {x = c.position.x, y = c.position.y})
-            end
-        end
-
-        local pf = PathFinder(src, dest, hotLava, nil, {smooth = true})
-        path = pf:plot()
-
-        if #path == 0 and addCharacters then
-            addCharacters = false
-        else
-            break
+    -- Create a table of the room's occupied nodes
+    local hotLava = {}
+    for _, brick in pairs(self.bricks) do
+        table.insert(hotLava, brick:get_position())
+    end
+    for _, door in pairs(self.doors) do
+        if door.state ~= 'open' then
+            table.insert(hotLava, door:get_position())
         end
     end
+
+    local characterPositions = {}
+    for _, c in pairs(self:get_characters()) do
+        table.insert(characterPositions, c:get_position())
+    end
+
+    local pf = PathFinder(src, dest, hotLava, characterPositions,
+                          {smooth = true})
+    local path = pf:plot()
 
     -- Remove first node from path
     table.remove(path, 1)
@@ -422,10 +489,12 @@ function Room:plot_path(src, dest)
     end
 end
 
-local function remove_dead_objects(objects)
+function Room:remove_dead_objects(objects)
     local temp = {}
     for _, o in pairs(objects) do
-        if not o.isDead then
+        if o.isDead then
+            --self:remove_object(o)
+        else
             table.insert(temp, o)
         end
     end
@@ -433,6 +502,12 @@ local function remove_dead_objects(objects)
 end
 
 function Room:remove_object(obj)
+    -- Remove the object from its tile in our tile cache
+    if obj.get_position then
+        local tile = self:get_tile(obj:get_position())
+        remove_value_from_table(obj, tile.contents)
+    end
+
     if instanceOf(Item, obj) then
         for i, item in pairs(self.items) do
             if item == obj then
@@ -441,27 +516,28 @@ function Room:remove_object(obj)
             end
         end
     elseif instanceOf(Sprite, obj) then
-        for i, s in pairs(self.sprites) do
-            if s == obj then
-                table.remove(self.sprites, i)
-                break
-            end
-        end
+        --for i, s in pairs(self.sprites) do
+        --    if s == obj then
+        --        table.remove(self.sprites, i)
+        --        break
+        --    end
+        --end
+        remove_value_from_table(obj, self.sprites)
     end
 end
 
 function Room:sweep()
     -- Remove dead sprites
-    self.sprites = remove_dead_objects(self.sprites)
+    self.sprites = self:remove_dead_objects(self.sprites)
 
     -- Remove dead bricks
-    self.bricks = remove_dead_objects(self.bricks)
+    self.bricks = self:remove_dead_objects(self.bricks)
 
     -- Remove dead turrets
-    self.turrets = remove_dead_objects(self.turrets)
+    self.turrets = self:remove_dead_objects(self.turrets)
 
     -- Remove dead thunderbolts
-    self.thunderbolts = remove_dead_objects(self.thunderbolts)
+    self.thunderbolts = self:remove_dead_objects(self.thunderbolts)
 
     -- Keep only items with a position and no owner
     local items = {}
@@ -473,40 +549,23 @@ function Room:sweep()
     self.items = items
 end
 
--- Returns a table of everything within a specified tile
-function Room:tile_contents(tile)
-    contents = {}
-
-    if tile_offscreen(tile) then
-        return nil
-    end
-
-    for _, b in pairs(self.bricks) do
-        if tiles_overlap(tile, b) then
-            -- Nothing can overlap a brick, so return here
-            return {b}
-        end
-    end
-
-    for _, s in pairs(self.sprites) do
-        if tiles_overlap(tile, s.position) then
-            table.insert(contents, s)
-        end
-    end
-
-    for _, item in pairs(self.items) do
-        if item:get_position() then
-            if tiles_overlap(tile, item:get_position()) then
-                table.insert(contents, item)
-            end
-        end
-    end
-
-    return contents
-end
-
 -- Returns true if an item can be safely dropped here
 function Room:tile_is_droppoint(tile, ignoreCharacter)
+    -- Check if the tile is overlapping with a collidable object in the tile
+    -- cache, or the tile is not in the room
+    local furnitureTile = self:get_tile(tile)
+    if furnitureTile.isExit then
+        return false
+    elseif furnitureTile.isInRoom then
+        for _, object in pairs(furnitureTile.contents) do
+            if object.isCollidable then
+                return false
+            end
+        end
+    else
+        return false
+    end
+
     local characters = self:get_characters()
 
     -- If a character was specified to ignore
@@ -519,56 +578,46 @@ function Room:tile_is_droppoint(tile, ignoreCharacter)
         end
     end
 
-    -- If the tile is in the room, and it doesn't overlap with any bricks,
-    -- characters, or existing items
-    if (self:tile_in_room(tile) and
-        not tile_in_table(tile, concat_tables({self.bricks,
-                                               characters,
-                                               self.items}))) then
+    -- If this tile overlaps with a character or an item
+    if tile_in_table(tile, concat_tables({characters, self.items})) then
+        return false
+    end
+
+    return true
+end
+
+function Room:tile_in_room(tile)
+    local furnitureTile = self:get_tile(tile)
+    if furnitureTile.isInRoom then
         return true
     else
         return false
     end
 end
 
-function Room:tile_in_room(tile, options)
-    if tile_offscreen(tile) then
-        return false
-    end
-
-    if tile_in_table(tile, self.freeTiles) then
-        return true
-    end
-
-    if options and options.includeBricks then
-        if tile_in_table(tile, self.bricks) then
-            return true
-        end
-    end
-
-    return false
-end
-
 -- Return true if tile can be walked on right now (contains no collidable
 -- objects)
 function Room:tile_walkable(tile)
-    -- If the tile is on an exit
-    for _, e in pairs(self.exits) do
-        if tiles_overlap(tile, e:get_position()) then
-            return true
-        end
+    local cachedTile = self:get_tile(tile)
+
+    -- If the tile is not in the room
+    if not cachedTile.isInRoom then
+        return false
     end
 
-    -- If the tile is not inside the room, or the tile is occupied by a brick
-    if not self:tile_in_room(tile) or tile_in_table(tile, self.bricks) then
-        return false
+    -- Check if there is a collidable object in the tile
+    for _, object in pairs(cachedTile.contents) do
+        if object.isCollidable or
+           (instanceOf(Door, object) and object.state ~= 'open') or
+           (instanceOf(Exit, object) and object:is_hidden()) then
+            return false
+        end
     end
 
     -- Create a table of collidable characters
     local collidables = {}
     for _, c in pairs(self:get_characters()) do
-        -- If this character is corporeal (not a ghost)
-        if c.isCorporeal then
+        if c.isCollidable then
             table.insert(collidables, c)
         end
     end
@@ -576,6 +625,8 @@ function Room:tile_walkable(tile)
     -- If the tile's position is occupied by that of a collidable sprite
     for _, c in pairs(collidables) do
         if tiles_overlap(tile, c:get_position()) then
+            -- Return both false and the specific character which is blocking
+            -- this tile
             return false, c
         end
     end
@@ -587,9 +638,14 @@ function Room:update()
     -- Get monsters' directional input
     self:character_input()
 
-    -- Let characters shoot weapons
+    -- Clear some character states
     for _, c in pairs(self:get_characters()) do
         c.isThundershocked = false
+        c.rug = false
+    end
+
+    -- Let characters shoot weapons
+    for _, c in pairs(self:get_characters()) do
         if c.shootDir then
             c:shoot(c.shootDir)
             c.shootDir = nil
@@ -604,6 +660,16 @@ function Room:update()
     -- Update items
     for _, i in pairs(self.items) do
         i:update()
+    end
+
+    -- Update switches
+    for _, switch in pairs(self.switches) do
+        switch:update()
+    end
+
+    -- Update doors
+    for _, door in pairs(self.doors) do
+        door:update()
     end
 
     -- Update lakes
@@ -642,7 +708,7 @@ function Room:update()
     for _, s in pairs(self.sprites) do
         s:post_physics()
 
-        -- Reset all one-frame variables
+        -- Reset one-frame variables
         s.wantsToTrade = false
         s.isGrabbing = false
     end
@@ -664,11 +730,16 @@ function Room:update()
     end
 
     if self.game.player.moved and not self.game.player.isDead then
-        -- Iterate through the room objects which can have mouths
-        for _, o in pairs(self.sprites) do
-            -- If this object has a mouth which should speak
-            if o.mouth and o.mouth:should_speak() then
-                o.mouth:speak()
+        for _, sprite in pairs(self.sprites) do
+            if not instanceOf(Trader, sprite) then
+                -- If this sprite has a mouth which should speak
+                if sprite.mouth and sprite.mouth:should_speak() then
+                    sprite.mouth:speak()
+
+                    -- Face the player
+                    --local dir = sprite:direction_to(self.game.player:get_position())
+                    --sprite.dir = dir
+                end
             end
         end
     end
@@ -742,4 +813,51 @@ function Room:update_messages()
     end
 
     return false
+end
+
+function Room:update_tile_cache()
+    -- Mark all tiles as emtpy
+    self.tileCache = {}
+    --local i = 0
+    --for y = -1, ROOM_H do
+    --    for x = -1, ROOM_W do
+    --        i = i + 1
+    --        self.tileCache[i] = {contents = {}, isInRoom = false}
+    --    end
+    --end
+
+    -- Add bricks
+    for _, brick in pairs(self.bricks) do
+        local tile = self:get_tile(brick:get_position())
+        tile.contents = {brick}
+        tile.isInRoom = true
+    end
+
+    -- Add freeTiles
+    for _, ft in pairs(self.freeTiles) do
+        local tile = self:get_tile(ft)
+        tile.isInRoom = true
+    end
+
+    -- Add exits
+    for _, exit in pairs(self.exits) do
+        local tile = self:get_tile(exit:get_position())
+        tile.contents = {exit}
+        tile.isInRoom = true
+        tile.isExit = true
+    end
+
+    -- Add doors
+    for _, door in pairs(self.doors) do
+        local tile = self:get_tile(door:get_position())
+        tile.contents = {door}
+        tile.isInRoom = true
+    end
+
+    -- Add switches
+    for _, switch in pairs(self.switches) do
+        local tile = self:get_tile(switch:get_position())
+        table.insert(tile.contents, switch)
+        tile.isInRoom = true
+    end
 end

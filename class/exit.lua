@@ -90,7 +90,7 @@ function Exit:get_position()
 end
 
 function Exit:is_hidden()
-    if not self.room or not self.room.bricks then
+    if not self.room then
         return false
     end
 
@@ -98,6 +98,14 @@ function Exit:is_hidden()
     for _, b in pairs(self.room.bricks) do
         if instanceOf(FalseBrick, b) and
            tiles_overlap(b:get_position(), self:get_doorway()) then
+            return true
+        end
+    end
+
+    -- Check if there is a closed door in our doorway
+    for _, d in pairs(self.room.doors) do
+        if d.state ~= 'open' and
+           tiles_overlap(d:get_position(), self:get_doorway()) then
             return true
         end
     end

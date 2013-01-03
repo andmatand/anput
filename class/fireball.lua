@@ -16,8 +16,9 @@ function Fireball:hit(patient)
         patient:receive_damage(self.damage, self)
     end
 
-    -- Only stop when we hit a wall or go out of bounds
-    if instanceOf(Brick, patient) or patient == nil then
+    -- Only stop when we hit a brick or a door or we go out of bounds
+    if instanceOf(Brick, patient) or instanceOf(Door, patient) or
+       patient == nil then
         self:die()
         return true
     end

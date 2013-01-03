@@ -1,4 +1,5 @@
 require('util.oo')
+require('class.golem')
 require('class.sound')
 require('class.wrapper')
 require('util.graphics')
@@ -55,7 +56,7 @@ function love.load()
 
     -- Alpha values
     LIGHT = 255
-    DARK = 20
+    DARK = 10
 
     -- These are the dimensions of one letter of the font before scaling
     FONT_W = 8
@@ -80,6 +81,7 @@ function love.load()
     playerImg = {default = new_image('player.png'),
                  sword = new_image('player-sword.png'),
                  bow = new_image('player-bow.png'),
+                 horn = new_image('player-horn.png'),
                  firestaff = new_image('player-firestaff.png'),
                  thunderstaff = new_image('player-thunderstaff.png')}
 
@@ -99,15 +101,31 @@ function love.load()
                                      {image = new_image('cobra-walk2.png'),
                                       delay = 2}},
                              attack = new_image('cobra-attack.png')}
+    images.monsters.golem = {default = new_image('golem.png'),
+                             step = new_image('golem-step.png'),
+                             attack = new_image('golem-attack.png'),
+                             spawn = {{image = new_image('golem-spawn1.png'),
+                                      delay = 4},
+                                     {image = new_image('golem-spawn2.png'),
+                                      delay = 4},
+                                     {image = new_image('golem-spawn3.png'),
+                                      delay = 4},
+                                     {image = new_image('golem-spawn4.png'),
+                                      delay = 4},
+                                     {image = new_image('golem-spawn5.png'),
+                                      delay = 4}}}
     images.monsters.mummy = {default = new_image('mummy.png'),
-                             walk = new_image('mummy-walk.png')}
+                             walk = new_image('mummy-walk.png'),
+                             firestaff = new_image('mummy-firestaff.png')}
     images.monsters.archer = {bow = new_image('archer-bow.png'),
                               sword = new_image('archer-sword.png')}
     images.monsters.ghost = {default = new_image('ghost.png')}
 
     -- NPCs
-    camelImg = {default = new_image('camel.png'),
-                step = new_image('camel-step.png')}
+    images.npc = {}
+    images.npc.camel = {default = new_image('camel.png'),
+                        step = new_image('camel-step.png')}
+    images.npc.khnum = {default = new_image('khnum.png')}
 
     -- Projectiles
     projectileImg = {}
@@ -118,21 +136,26 @@ function love.load()
     -- Items
     images.items = load_images('item/',
                                {'ankh', 'arrow', 'bow', 'firestaff', 'flask',
-                                'sword', 'thunderstaff'})
+                                'horn', 'sword', 'thunderstaff'})
     images.items.shinything = {new_image('item/shiny-1.png'),
                                new_image('item/shiny-2.png'),
                                new_image('item/shiny-3.png')}
+
+    -- Furniture
+    images.door = new_image('door.png')
+    images.switch = {{image = new_image('switch1.png'), delay = 2},
+                     {image = new_image('switch2.png'), delay = 2},
+                     {image = new_image('switch3.png'), delay = 2}}
 
     -- Verbs
     images.verbs = load_images('', {'drop', 'use'})
 
     -- Buttons
-    buttonImg = {
-        w = new_image('button/w.png'),
-        a = new_image('button/a.png'),
-        s = new_image('button/s.png'),
-        d = new_image('button/d.png'),
-        enter = new_image('button/enter.png')}
+    buttonImg = {w = new_image('button/w.png'),
+                 a = new_image('button/a.png'),
+                 s = new_image('button/s.png'),
+                 d = new_image('button/d.png'),
+                 enter = new_image('button/enter.png')}
 
     -- Hieroglyphs
     images.hieroglyphs = load_images('hieroglyph/',
@@ -187,6 +210,7 @@ function love.load()
     sounds.camel = {run = Sound('res/sfx/camel-run.wav'),
                     caught = Sound('res/sfx/camel-caught.wav'),
                     gulp = Sound('res/sfx/camel-gulp.wav')}
+    sounds.golem = {spawn = Sound('res/sfx/golem-spawn.wav')}
     sounds.shootArrow = Sound('res/sfx/shoot-arrow.wav')
     sounds.unable = Sound('res/sfx/unable.wav')
     sounds.thud = Sound('res/sfx/thud.wav')
@@ -296,35 +320,38 @@ function love.keypressed(key, unicode)
         elseif key == 'up' or key == 'right' or key == 'down' or
                key == 'left' then
             jump_to_room_in_direction(key)
-        elseif key == 'g' then
-            -- Give the player some goodies!
-            for i = 1, 7 do
-                local item = Item('shinything')
-                wrapper.game.player:pick_up(item)
-            end
-        elseif key == 'd' then
-            wrapper.game:set_demo_mode(not wrapper.game.demoMode)
-            print('demo mode: ', wrapper.game.demoMode)
-        elseif key == 'c' then
-            for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
-                if c.name then
-                    c.ai:chase(wrapper.game.player)
-                end
-            end
         elseif key == 'b' then
             if not wrapper.game.player.armory.weapons.bow then
                 local bow = Weapon('bow')
                 wrapper.game.player:pick_up(bow)
             end
             wrapper.game.player.armory.weapons.bow:add_ammo(20)
+        elseif key == 'c' then
+            for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
+                if c.name then
+                    c.ai:chase(wrapper.game.player)
+                end
+            end
+        elseif key == 'd' then
+            wrapper.game:set_demo_mode(not wrapper.game.demoMode)
+            print('demo mode: ', wrapper.game.demoMode)
         elseif key == 'f' then
             local firestaff = Weapon('firestaff')
             wrapper.game.player:pick_up(firestaff)
+        elseif key == 'g' then
+            -- Give the player some goodies!
+            for i = 1, 7 do
+                local item = Item('shinything')
+                wrapper.game.player:pick_up(item)
+            end
+        elseif key == 'h' then
+            wrapper.game.player:add_health(100)
+        elseif key == 'o' then
+            local horn = Horn()
+            wrapper.game.player:pick_up(horn)
         elseif key == 't' then
             local thunderstaff = ThunderStaff()
             wrapper.game.player:pick_up(thunderstaff)
-        elseif key == 'h' then
-            wrapper.game.player:add_health(100)
         end
     else
         wrapper:key_pressed(key)
@@ -345,4 +372,9 @@ function love.draw()
     love.graphics.translate(SCREEN_X, SCREEN_Y)
     wrapper:draw()
     --cga_print(joystickButton, 1, 1)
+    --if wrapper.game.player then
+    --    local txt = wrapper.game.player.position.x .. ' ' ..
+    --                wrapper.game.player.position.y
+    --    cga_print(txt, 1, 1)
+    --end
 end

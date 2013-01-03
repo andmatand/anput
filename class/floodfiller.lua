@@ -4,9 +4,10 @@
 
 FloodFiller = class('FloodFiller')
 
-function FloodFiller:init(source, hotLava)
+function FloodFiller:init(source, hotLava, options)
     self.source = source -- Needs to have an x and y key, e.g. {x = 2, y = 47}
     self.hotLava = hotLava -- Coordinates which are illegal to traverse
+    self.options = options or {}
 
     self.freeTiles = {}
 end
@@ -17,6 +18,10 @@ function FloodFiller:flood()
 
     -- Add the source position as the first seed
     table.insert(seeds, self.source)
+
+    if not self:legal_position(self.source.x, self.source.y) then
+        return {}
+    end
 
     while #seeds > 0 do
         -- Pop the last seed off the table
@@ -37,6 +42,12 @@ function FloodFiller:flood()
             if x ~= self.source.x or y ~= self.source.y then
                 -- Add this tile to the table of found tiles
                 table.insert(self.freeTiles, {x = x, y = y})
+
+                --if self.options.maxSize then
+                --    if #self.freeTiles >= self.options.maxSize then
+                --        return {}
+                --    end
+                --end
             end
 
             -- If we are searching the left side and we find a legal

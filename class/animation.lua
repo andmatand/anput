@@ -27,7 +27,7 @@ end
 
 function Animation:update()
     -- If there's nothing to animate
-    if not self.frames or #self.frames < 2 then
+    if not self.frames or #self.frames < 2 or self.isStopped then
         return
     end
 

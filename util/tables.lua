@@ -21,7 +21,7 @@ function remove_value_from_table(value, tbl)
     for k, v in pairs(tbl) do
         if v == value then
             table.remove(tbl, k)
-            break
+            return
         end
     end
 end
