@@ -681,10 +681,11 @@ function Character:shoot(dir)
 
     -- If we have a weapon that shoots projectiles
     if self.armory.currentWeapon.projectileClass then
-        -- Check if we are trying to shoot into a brick or a door
+        -- Check if we are trying to shoot into a brick or a non-open door
         local tile = self.room:get_tile(add_direction(self:get_position(), dir))
         for _, object in pairs(tile.contents) do
-            if instanceOf(Brick, object) or instanceOf(Door, object) then
+           if instanceOf(Brick, object) or
+              (instanceOf(Door, object) and object.state ~= 'open') then
                 -- Save ourself the ammo
                 return false
             end
