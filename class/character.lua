@@ -491,7 +491,7 @@ function Character:hit(patient)
             end
         -- If patient is not an enemy, and has AI
         elseif patient.ai then
-            if not patient.isSpawning and not patient.state == 'drinking' then
+            if not patient.isSpawning and patient.state ~= 'drinking' then
                 -- Tell our teammate to dodge us
                 patient.ai:dodge(self, nil, false)
             end
