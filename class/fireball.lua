@@ -17,7 +17,8 @@ function Fireball:hit(patient)
     end
 
     -- Only stop when we hit a brick or a door or we go out of bounds
-    if instanceOf(Brick, patient) or instanceOf(Door, patient) or
+    if instanceOf(Brick, patient) or
+       (instanceOf(Door, patient) and patient.state ~= 'open') or
        patient == nil then
         self:die()
         return true
