@@ -39,7 +39,10 @@ function Golem:init(owner)
         return true
     end
 
-    sounds.golem.spawn:play()
+    self.room = self.owner.room
+    if self:is_audible() then
+        sounds.golem.spawn:play()
+    end
 end
 
 function Golem:receive_damage(amount, agent)
