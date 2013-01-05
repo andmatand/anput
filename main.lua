@@ -337,7 +337,8 @@ function love.keypressed(key, unicode)
             local camel = Camel()
             camel.state = 'caught'
             camel.ai.level.globetrot.prob = nil
-            self.ai.level.follow.prob = 10
+            camel.ai.level.follow.prob = 10
+            camel.ai.level.follow.target = wrapper.game.player
             camel:set_position(wrapper.game.currentRoom:get_free_tile())
             wrapper.game.currentRoom:add_object(camel)
         elseif key == 'd' then
