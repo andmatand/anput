@@ -176,10 +176,10 @@ function set_scale(scale, resolution, fullscreen)
     love.graphics.setFont(font)
 end
 
-function upscale_x(w)
-    return w * TILE_W * SCALE_X
+function upscale_x(x)
+    return x * TILE_W * SCALE_X
 end
 
-function upscale_y(h)
-    return h * TILE_H * SCALE_Y
+function upscale_y(y)
+    return y * TILE_H * SCALE_Y
 end
