@@ -40,7 +40,6 @@ function Room:add_object(obj)
     if instanceOf(Sprite, obj) then
         -- Add this sprite to the room's sprite table
         table.insert(self.sprites, obj)
-
     elseif instanceOf(Turret, obj) then
         -- Add this turret to the room's turret table
         table.insert(self.turrets, obj)
@@ -228,7 +227,7 @@ function Room:draw_bricks()
         local dist
         for _, b in pairs(self.bricks) do
             --local dist = manhattan_distance(b, self.game.player.position)
-            if tile_in_table(b, self.fov) or DEBUG then
+            if tile_in_table(b, self.fov) then
                 b.hasBeenSeen = true
                 --alpha = LIGHT - dist * .04--((2 ^ dist) * .05)
                 alpha = LIGHT
@@ -236,7 +235,11 @@ function Room:draw_bricks()
                 alpha = DARK
             end
 
-            if b.hasBeenSeen then
+            if DEBUG then
+                alpha = LIGHT
+            end
+
+            if b.hasBeenSeen or DEBUG then
                 self.brickBatch:setColor(255, 255, 255, alpha)
                 self.brickBatch:add(b.x * TILE_W, b.y * TILE_H)
             end

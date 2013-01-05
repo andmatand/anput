@@ -66,11 +66,6 @@ function Golem:bring_item_to_owner(item)
     end
 end
 
-function Golem:is_enemies_with(character)
-    -- Be enemies with the same dudes our owner is enemies with
-    return self.owner:is_enemies_with(character)
-end
-
 function Golem:drop_item_next_to_owner(item)
     local neighbors = find_neighbor_tiles(self:get_position())
     local best = {tile, distance}
@@ -92,6 +87,16 @@ function Golem:drop_item_next_to_owner(item)
         end
     end
 end
+
+function Golem:is_enemies_with(character)
+    -- Be enemies with the same dudes our owner is enemies with
+    return self.owner:is_enemies_with(character)
+end
+
+function Golem:set_position(position)
+    Golem.super.set_position(self, position)
+end
+
 
 function Golem:update()
     Golem.super.update(self)

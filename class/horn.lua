@@ -30,6 +30,10 @@ function Horn:shoot(dir)
             golem:set_position(pos)
             self.owner.room:add_object(golem)
 
+            -- Force physics on the golem in case it spawned on an exit and
+            -- needs to go through it
+            golem:physics(true)
+
             -- Use one unit of ammo for each golem
             self:use_ammo(self.ammoCost)
             spawnedGolem = true

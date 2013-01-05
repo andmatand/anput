@@ -88,8 +88,9 @@ function Sprite:move_to_room(room)
     end
 end
 
-function Sprite:physics()
-    if self.didPhysics or not self.room.isGenerated or not self.canMove then
+function Sprite:physics(force)
+    if (self.didPhysics or not self.room.isGenerated or not self.canMove) and
+       not force then
         return
     else
         self.didPhysics = true
@@ -106,7 +107,9 @@ function Sprite:physics()
             -- Clear attackedDir
             self.attackedDir = nil
         end
-        return
+        if not force then
+            return
+        end
     end
 
     -- Make sure velocity does not contain nil values

@@ -96,7 +96,7 @@ function Exit:is_collidable()
         -- Check if a collidable character is standing in (blocking) the
         -- doorway to which we lead
         local destination = self:get_linked_exit():get_doorway()
-        for _, c in pairs(self.room:get_characters()) do
+        for _, c in pairs(self:get_linked_exit().room:get_characters()) do
             if tiles_overlap(c:get_position(), destination) then
                 if c:is_collidable() then
                     return true
