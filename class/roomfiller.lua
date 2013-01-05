@@ -211,22 +211,35 @@ function RoomFiller:position_hieroglyph(letters, orientation)
                     -- Switch directions
                     dir = dirs[2]
                     previousBrick = brick
+
+                -- If we didn't find enough bricks to fit all the letters
                 elseif #bricksInARow < #letters then
                     removeBricks = true
-                end
-            end
 
-            -- If we found enough bricks for all the letters
-            if #bricksInARow == #letters then
-                -- Create the letters over the bricks
-                for i, b in ipairs(bricksInARow) do
-                    table.insert(self.room.hieroglyphs,
-                                 Hieroglyph(b:get_position(), letters[i]))
-                end
-                removeBricks = true
+                -- If we found enough bricks for all the letters
+                elseif #bricksInARow >= #letters then
+                    -- Find the starting brick that will make the string of
+                    -- letters be centered
+                    local start = math.floor((#bricksInARow / 2) -
+                                             (#letters / 2)) + 1
+                    print(#bricksInARow, #letters, start)
 
-                -- Don't add any more hieroglyphs
-                return true
+                    -- Create the letters over the bricks
+                    --for i, b in ipairs(bricksInARow) do
+                    local letterIndex = 0
+                    for i = start, start + #letters - 1 do
+                        local b = bricksInARow[i]
+
+                        letterIndex = letterIndex + 1
+                        table.insert(self.room.hieroglyphs,
+                                     Hieroglyph(b:get_position(),
+                                                letters[letterIndex]))
+                    end
+                    --removeBricks = true
+
+                    -- We are done
+                    return true
+                end
             end
 
             if removeBricks then
