@@ -328,11 +328,18 @@ function love.keypressed(key, unicode)
             end
             wrapper.game.player.armory.weapons.bow:add_ammo(20)
         elseif key == 'c' then
-            for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
-                if c.name then
-                    c.ai:chase(wrapper.game.player)
-                end
-            end
+            --for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
+            --    if c.name then
+            --        c.ai:chase(wrapper.game.player)
+            --    end
+            --end
+
+            local camel = Camel()
+            camel.state = 'caught'
+            camel.ai.level.globetrot.prob = nil
+            self.ai.level.follow.prob = 10
+            camel:set_position(wrapper.game.currentRoom:get_free_tile())
+            wrapper.game.currentRoom:add_object(camel)
         elseif key == 'd' then
             wrapper.game:set_demo_mode(not wrapper.game.demoMode)
             print('demo mode: ', wrapper.game.demoMode)
