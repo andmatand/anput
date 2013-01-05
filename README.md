@@ -7,7 +7,7 @@
 These are pre-packaged versions of the source code that are updated whenever I
 make a new commit:
 * [Windows Executable](http://unfinishedblog.org/temp/anput-win32.zip)
-* [Cross-Platform Game File](http://unfinishedblog.org/temp/anput.love) (requires [LÖVE](http://love2d.org) 0.8.0)
+* [Cross-Platform Game File](http://unfinishedblog.org/temp/anput.love) (Linux, Mac OS X, Windows; requires [LÖVE](http://love2d.org) 0.8.0)
 
 ##History
 One day in 2003 (when I was 16 years old), I was watching
