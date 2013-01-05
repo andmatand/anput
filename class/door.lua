@@ -48,11 +48,13 @@ function Door:draw(alpha)
                             upscale_x(1), upscale_y(1))
 
     -- Draw the foreground of the door
-    love.graphics.setColor(WHITE[1], WHITE[2], WHITE[3], alpha)
-    love.graphics.draw(images.door,
-                       upscale_x(self.position.x) + offset.x,
-                       upscale_y(self.position.y) + offset.y,
-                       rotation, SCALE_X, SCALE_Y)
+    if self.room then
+        love.graphics.setColor(WHITE[1], WHITE[2], WHITE[3], alpha)
+        love.graphics.draw(images.door,
+                           upscale_x(self.position.x) + offset.x,
+                           upscale_y(self.position.y) + offset.y,
+                           rotation, SCALE_X, SCALE_Y)
+    end
 
     love.graphics.setScissor()
 end
