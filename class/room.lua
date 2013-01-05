@@ -107,21 +107,15 @@ function Room:draw()
     -- Draw bricks
     self:draw_bricks()
 
-    -- Draw doors
-    for _, door in pairs(self.doors) do
-        self:draw_with_fov_alpha(door)
-    end
+    -- Draw objects which can be seen darkly even when outside the FOV
+    self:draw_objects_with_fov_alpha(self.hieroglyphs)
+    self:draw_objects_with_fov_alpha(self.doors)
+    self:draw_objects_with_fov_alpha(self.switches)
 
-    -- Draw switches
-    for _, switch in pairs(self.switches) do
-        self:draw_with_fov_alpha(switch)
-    end
-
-    -- Draw lakes
     for _, lake in pairs(self.lakes) do
         lake:draw(self.fov)
     end
-    
+
     -- Draw items
     for _, i in pairs(self.items) do
         if tile_in_table(i.position, self.fov) or DEBUG then
@@ -131,14 +125,10 @@ function Room:draw()
 
     -- Draw sprites
     for _, s in pairs(self.sprites) do
-        --if instanceOf(Crate, s) then
-        --    self:draw_with_fov_alpha(s)
-        --else
-            if tile_in_table(s.position, self.fov) or s.isThundershocked or
-                instanceOf(Fireball, s) or DEBUG then
-                s:draw()
-            end
-        --end
+        if tile_in_table(s.position, self.fov) or s.isThundershocked or
+            instanceOf(Fireball, s) or DEBUG then
+            s:draw()
+        end
     end
 
     -- Draw thunderbolts
@@ -237,17 +227,19 @@ function Room:draw_bricks()
         local alpha
         local dist
         for _, b in pairs(self.bricks) do
-            --dist = manhattan_distance(b, self.game.player.position)
+            --local dist = manhattan_distance(b, self.game.player.position)
             if tile_in_table(b, self.fov) or DEBUG then
-                --alpha = LIGHT - ((2 ^ dist) * .05)
+                b.hasBeenSeen = true
+                --alpha = LIGHT - dist * .04--((2 ^ dist) * .05)
                 alpha = LIGHT
             else
                 alpha = DARK
             end
-            --if alpha < DARK then alpha = DARK end
 
-            self.brickBatch:setColor(255, 255, 255, alpha)
-            self.brickBatch:add(b.x * TILE_W, b.y * TILE_H)
+            if b.hasBeenSeen then
+                self.brickBatch:setColor(255, 255, 255, alpha)
+                self.brickBatch:add(b.x * TILE_W, b.y * TILE_H)
+            end
         end
 
         self.brickBatch:unbind()
@@ -258,21 +250,6 @@ function Room:draw_bricks()
     --love.graphics.setColor(WHITE)
     love.graphics.draw(self.brickBatch, upscale_x(0), upscale_y(0),
                        0, SCALE_X, SCALE_Y)
-
-    self:draw_hieroglyphs()
-end
-
-function Room:draw_hieroglyphs()
-    for _, h in pairs(self.hieroglyphs) do
-        if tile_in_table(h.position, self.fov) then
-            alpha = LIGHT
-        else
-            alpha = DARK
-        end
-        love.graphics.setColor(255, 255, 255, alpha)
-
-        h:draw()
-    end
 end
 
 function Room:draw_messages()
@@ -283,14 +260,21 @@ function Room:draw_messages()
     end
 end
 
-function Room:draw_with_fov_alpha(object)
-    local alpha
-    if tile_in_table(object:get_position(), self.fov) then
-        alpha = LIGHT
-    else
-        alpha = DARK
+function Room:draw_objects_with_fov_alpha(objects)
+    for _, object in pairs(objects) do
+        local alpha
+        if tile_in_table(object:get_position(), self.fov) then
+            object.hasBeenSeen = true
+            alpha = LIGHT
+        else
+            alpha = DARK
+        end
+
+        if object.hasBeenSeen then
+            love.graphics.setColor(255, 255, 255, alpha)
+            object:draw(alpha)
+        end
     end
-    object:draw(alpha)
 end
 
 function Room:generate_all()

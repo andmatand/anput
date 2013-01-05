@@ -7,7 +7,8 @@ function Hieroglyph:init(position, letter)
     self.image = images.hieroglyphs[self.letter]
 end
 
-function Hieroglyph:draw()
+function Hieroglyph:draw(alpha)
+    love.graphics.setColor(255, 255, 255, alpha)
     love.graphics.draw(self.image,
                        upscale_x(self.position.x), upscale_y(self.position.y),
                        0, SCALE_X, SCALE_Y)

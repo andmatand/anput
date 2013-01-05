@@ -41,16 +41,34 @@ function Lake:draw(fov)
                        0, SCALE_X, SCALE_Y)
 
     -- Darken tiles that are out of the FOV
-    love.graphics.setColor(0, 0, 0, LIGHT - DARK)
-    for y = self.drawBox.y1, self.drawBox.y2 do
-        for x = self.drawBox.x1, self.drawBox.x2 do
-            if not tile_in_table({x = x, y = y}, fov) and not DEBUG then
-                love.graphics.rectangle('fill',
-                                        upscale_x(x), upscale_y(y),
-                                        upscale_x(1), upscale_y(1))
+    for _, tile in pairs(self.tiles) do
+        local pos = tile:get_position()
+        if tile_in_table(pos, fov) then
+            tile.hasBeenSeen = true
+        else
+            if tile.hasBeenSeen then
+                love.graphics.setColor(0, 0, 0, LIGHT - DARK)
+            else
+                love.graphics.setColor(0, 0, 0, 255)
             end
+
+            love.graphics.rectangle('fill',
+                                    upscale_x(pos.x), upscale_y(pos.y),
+                                    upscale_x(1), upscale_y(1))
         end
+
     end
+    --for y = self.drawBox.y1, self.drawBox.y2 do
+    --    for x = self.drawBox.x1, self.drawBox.x2 do
+    --        if tile_in_table({x = x, y = y}, fov) then
+
+    --        if not tile_in_table({x = x, y = y}, fov) and not DEBUG then
+    --            love.graphics.rectangle('fill',
+    --                                    upscale_x(x), upscale_y(y),
+    --                                    upscale_x(1), upscale_y(1))
+    --        end
+    --    end
+    --end
 
     -- Remove the stencil
     love.graphics.setStencil()
