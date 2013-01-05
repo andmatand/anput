@@ -122,7 +122,6 @@ function Monster:init(game, monsterType)
         self.images = images.monsters.ghost
         self.maxHealth = 80
         self.magic = 100
-        self.isCollidable = false
 
         local staff = Weapon('firestaff')
         self:pick_up(staff)
@@ -138,6 +137,14 @@ function Monster:init(game, monsterType)
     self.images = copy_table(self.images)
 
     self.health = self.maxHealth
+end
+
+function Monster:is_collidable()
+    if self.monsterType == 'ghost' then
+        return false
+    else
+        return true
+    end
 end
 
 function Monster:receive_hit(agent)

@@ -25,7 +25,6 @@ function Character:init()
     self.usedMagicTimer = 0
     self.flashTimer = 0
     self.rechargeTimer = {delay = 4, value = 0}
-    self.isCollidable = true
     self.isMovable = true
     self.dir = 1
 
@@ -539,6 +538,10 @@ function Character:is_audible()
     return false
 end
 
+function Character:is_collidable()
+    return true
+end
+
 function Character:is_enemies_with(character)
     -- If the character has an owner
     if character.owner then
@@ -684,8 +687,8 @@ function Character:shoot(dir)
         -- Check if we are trying to shoot into a brick or a non-open door
         local tile = self.room:get_tile(add_direction(self:get_position(), dir))
         for _, object in pairs(tile.contents) do
-           if instanceOf(Brick, object) or
-              (instanceOf(Door, object) and object.state ~= 'open') then
+           if object:is_collidable() and
+              (instanceOf(Brick, object) or instanceOf(Door, object)) then
                 -- Save ourself the ammo
                 return false
             end

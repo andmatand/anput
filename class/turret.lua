@@ -74,7 +74,7 @@ function Turret:sense()
     -- Iterate through all the room's characters
     for _, c in pairs(self.room:get_characters()) do
         -- If this character is collidable, and there is a line of sight to him
-        if c.isCollidable and self:line_of_sight(c.position) then
+        if c:is_collidable() and self:line_of_sight(c.position) then
             -- If this room hasn't played the trap sound yet, and we are
             -- targeting a player
             if not self.room.playedTrapSound and instanceOf(Player, c) then

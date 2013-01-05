@@ -88,6 +88,14 @@ function Door:is_audible()
     end
 end
 
+function Door:is_collidable()
+    if self.state == 'open' then
+        return false
+    else
+        return true
+    end
+end
+
 function Door:open(instantly)
     if instantly then
         self.offset = self.maxOffset

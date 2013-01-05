@@ -89,6 +89,25 @@ function Exit:get_position()
     return {x = self.x, y = self.y}
 end
 
+function Exit:is_collidable()
+    if self:is_hidden() then
+        return true
+    else
+        -- Check if a collidable character is standing in (blocking) the
+        -- doorway to which we lead
+        local destination = self:get_linked_exit():get_doorway()
+        for _, c in pairs(self.room:get_characters()) do
+            if tiles_overlap(c:get_position(), destination) then
+                if c:is_collidable() then
+                    return true
+                end
+            end
+        end
+    end
+
+    return false
+end
+
 function Exit:is_hidden()
     if not self.room then
         return false

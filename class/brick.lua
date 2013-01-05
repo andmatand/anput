@@ -5,7 +5,6 @@ function Brick:init(coordinates)
     self.x = coordinates.x
     self.y = coordinates.y
 
-    self.isCollidable = true
     self.isFovObstacle = true
 end
 
@@ -21,6 +20,10 @@ end
 
 function Brick:get_position()
     return {x = self.x, y = self.y}
+end
+
+function Brick:is_collidable()
+    return true
 end
 
 function Brick:receive_hit(agent)

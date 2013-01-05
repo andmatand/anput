@@ -1,7 +1,7 @@
 Hieroglyph = class('Hieroglyph')
 
 function Hieroglyph:init(position, letter)
-    self.position = position
+    self.position = {x = position.x, y = position.y}
     self.letter = letter
 
     self.image = images.hieroglyphs[self.letter]

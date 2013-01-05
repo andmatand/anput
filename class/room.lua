@@ -449,7 +449,7 @@ function Room:plot_path(src, dest)
         table.insert(hotLava, brick:get_position())
     end
     for _, door in pairs(self.doors) do
-        if door.state ~= 'open' then
+        if door:is_collidable() then
             table.insert(hotLava, door:get_position())
         end
     end
@@ -542,7 +542,7 @@ function Room:tile_is_droppoint(tile, ignoreCharacter)
         return false
     elseif furnitureTile.isInRoom then
         for _, object in pairs(furnitureTile.contents) do
-            if object.isCollidable then
+            if object:is_collidable() then
                 return false
             end
         end
@@ -591,9 +591,7 @@ function Room:tile_walkable(tile)
 
     -- Check if there is a collidable object in the tile
     for _, object in pairs(cachedTile.contents) do
-        if object.isCollidable or
-           (instanceOf(Door, object) and object.state ~= 'open') or
-           (instanceOf(Exit, object) and object:is_hidden()) then
+        if object:is_collidable() then
             return false
         end
     end
@@ -601,7 +599,7 @@ function Room:tile_walkable(tile)
     -- Create a table of collidable characters
     local collidables = {}
     for _, c in pairs(self:get_characters()) do
-        if c.isCollidable then
+        if c:is_collidable() then
             table.insert(collidables, c)
         end
     end
@@ -821,6 +819,7 @@ function Room:update_tile_cache()
     for _, ft in pairs(self.freeTiles) do
         local tile = self:get_tile(ft)
         tile.isInRoom = true
+        tile.is_collidable = function() return false end
     end
 
     -- Add exits
@@ -843,5 +842,6 @@ function Room:update_tile_cache()
         local tile = self:get_tile(switch:get_position())
         table.insert(tile.contents, switch)
         tile.isInRoom = true
+        tile.is_collidable = function() return false end
     end
 end
