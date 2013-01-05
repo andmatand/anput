@@ -31,8 +31,10 @@ function RoomFiller:fill_next_step()
     -- If this room contains a roadblock
     if self.room.roadblock then
         if self:add_required_objects() then
-            if self:position_switches() then
-                return true
+            if self:add_hieroglyphs() then
+                if self:position_switches() then
+                    return true
+                end
             end
         end
     else

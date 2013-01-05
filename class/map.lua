@@ -222,7 +222,7 @@ function Map:add_branches()
 end
 
 function Map:add_hieroglyphs()
-    -- Add inpwt "Anput" to the first room
+    -- Add "Anput" to the first room
     self.rooms[1].requiredHieroglyphs = {{'i', 'n_p', 'w', 't', 'goddess'}}
 
     -- DEBUG
@@ -542,6 +542,10 @@ function Map:add_required_objects()
         if room.roadblock == 'khnum' then
             -- Put Khnum in this room
             add_npc_to_room(Khnum(), room)
+
+            -- Add the "Khnum" hieroglyphs to the room
+            room.requiredHieroglyphs = {{'hnm', 'khnum'}}
+
         elseif room.roadblock == 'lake' then
             -- Put the camel in a room somewhere before the lake
             local rooms
