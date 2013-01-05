@@ -358,7 +358,7 @@ end
 
 function Game:update(dt)
     if not self.playedTheme then
-        --sounds.theme:play()
+        sounds.theme:play()
         self.playedTheme = true
     end
 
