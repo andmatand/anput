@@ -97,8 +97,15 @@ function RoomBuilder:add_branches()
             brick = Brick(position)
             table.insert(self.bricks, brick)
             table.insert(seedBricks, brick)
+
+            -- Remove this brick's position from the room's freeTiles
             self.freeTiles = remove_tiles_from_table({position},
                                                      self.freeTiles)
+
+            -- Remove this brick's position from any lakes here
+            for _, lake in pairs(self.lakes) do
+                lake.tiles = remove_tiles_from_table({position}, lake.tiles)
+            end
 
             if math.random(1, 5) == 1 then
                 previoiusPosition = nil
