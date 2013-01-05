@@ -30,8 +30,10 @@ function Khnum:update()
 
     if self.state == 'wait' then
         if self.room.game.player.room == self.room and self.room.fov then
-        -- If we are within the player's field of view
+            -- If we are within the player's field of view
             if tile_in_table(self:get_position(), self.room.fov) then
+                -- Play our musical cue
+                sounds.khnum.encounter:play()
                 self.state = 'line1'
             end
         end

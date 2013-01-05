@@ -212,6 +212,7 @@ function love.load()
                     caught = Sound('res/sfx/camel-caught.wav'),
                     gulp = Sound('res/sfx/camel-gulp.wav')}
     sounds.golem = {spawn = Sound('res/sfx/golem-spawn.wav')}
+    sounds.khnum = {encounter = Sound('res/sfx/khnum-encounter.wav')}
     sounds.shootArrow = Sound('res/sfx/shoot-arrow.wav')
     sounds.unable = Sound('res/sfx/unable.wav')
     sounds.thud = Sound('res/sfx/thud.wav')
