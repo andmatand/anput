@@ -222,7 +222,6 @@ function RoomFiller:position_hieroglyph(letters, orientation)
                     -- letters be centered
                     local start = math.floor((#bricksInARow / 2) -
                                              (#letters / 2)) + 1
-                    print(#bricksInARow, #letters, start)
 
                     -- Create the letters over the bricks
                     --for i, b in ipairs(bricksInARow) do
