@@ -10,6 +10,19 @@ local function first_line(string)
     end
 end
 
+local function get_direction_input(key)
+    if key == KEYS.WALK.NORTH or key == KEYS.SHOOT.NORTH then
+        return 1
+    elseif key == KEYS.WALK.EAST or key == KEYS.SHOOT.EAST then
+        return 2
+    elseif key == KEYS.WALK.SOUTH or key == KEYS.SHOOT.SOUTH then
+        return 3
+    elseif key == KEYS.WALK.WEST or key == KEYS.SHOOT.WEST then
+        return 4
+    end
+end
+
+
 -- An InventoryMenu is a visual representation of a character's items and a
 -- menu system for interacting with them
 InventoryMenu = class('InventoryMenu')
@@ -430,18 +443,4 @@ function InventoryMenu:update()
 
     -- Update the owner's frame
     self.owner:update_image()
-end
-
-
--- Local functions
-local function get_direction_input(key)
-    if key == KEYS.WALK.NORTH or key == KEYS.SHOOT.NORTH then
-        return 1
-    elseif key == KEYS.WALK.EAST or key == KEYS.SHOOT.EAST then
-        return 2
-    elseif key == KEYS.WALK.SOUTH or key == KEYS.SHOOT.SOUTH then
-        return 3
-    elseif key == KEYS.WALK.WEST or key == KEYS.SHOOT.WEST then
-        return 4
-    end
 end
