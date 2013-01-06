@@ -2,11 +2,6 @@ require('util.tile')
 
 local DEBUG = false
 
--- Returns distance between to points
-local function distance(a, b)
-    return math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
-end
-
 local function round(num)
     --return math.floor(num + .5)
     return math.floor(num)

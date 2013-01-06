@@ -5,6 +5,8 @@ function Inventory:init(owner)
     self.owner = owner
 
     self.items = {}
+
+    self.numItemSlots = 6
 end
 
 function Inventory:add(item)
@@ -107,15 +109,10 @@ end
 function Inventory:has_room_for(item)
     local num = #self:get_unique_items()
 
-    -- If we have less than 4 unique items
-    if (num < 4) then
+    -- If we have less items than there are slots
+    if num < self.numItemSlots then
         return true
-    elseif num == 4 then
-        -- If we are holding one item as a weapon
-        if self.owner.armory.currentWeapon then
-            return true
-        end
-    elseif num == 5 then
+    elseif num == self.numItemSlots then
         -- If the new item is of the same type as one of our current ones
         if self:get_item(item.itemType) ~= nil then
             return true

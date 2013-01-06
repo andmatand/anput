@@ -388,3 +388,8 @@ function love.draw()
     --    cga_print(txt, 1, 1)
     --end
 end
+
+-- Returns distance between to points
+function distance(a, b)
+    return math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
+end
