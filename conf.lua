@@ -16,6 +16,7 @@ function love.conf(t)
     -- Keyboard Bindings
     KEYBOARD = {}
     KEYBOARD.CONTEXT = 'return'
+    KEYBOARD.DROP = 'delete'
     KEYBOARD.ELIXIR = 'e'
     KEYBOARD.EXIT = 'escape'
     KEYBOARD.INVENTORY = 'i'
@@ -41,6 +42,7 @@ function love.conf(t)
     JOYSTICK = {}
     JOYSTICK_NUM = 1 -- Use the first joystick/gamepad
     JOYSTICK.CONTEXT = 1 -- A
+    JOYSTICK.DROP = 3 -- Black
     JOYSTICK.ELIXIR = 4 -- X
     JOYSTICK.EXIT = 2 -- B
     JOYSTICK.INVENTORY = 8 -- Start

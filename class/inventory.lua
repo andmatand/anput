@@ -6,13 +6,28 @@ function Inventory:init(owner)
 
     self.items = {}
 
-    self.numItemSlots = 6
+    self.numItemSlots = 9
 end
 
 function Inventory:add(item)
     item.position = nil
     item.owner = self.owner
-    table.insert(self.items, item)
+
+    -- Find the index of an existing item of the same type
+    local index
+    for i, it in pairs(self.items) do
+        if it.itemType == item.itemType then
+            index = i
+            break
+        end
+    end
+
+    if index then
+        -- Insert the new item after the found index
+        table.insert(self.items, index + 1, item)
+    else
+        table.insert(self.items, item)
+    end
 
     -- Save a pointer to the most recently added item
     self.newestItem = item

@@ -30,6 +30,7 @@ project for trying out Lua and the LÖVE framework.
 * map: m
 * use elixir: e
 * use potion: p
+* drop item: delete
 * fullscreen: f11, Alt + Enter
 * new game: Ctrl + n
 * increase/decrease graphics scaling: Ctrl +/-

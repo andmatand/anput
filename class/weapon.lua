@@ -123,12 +123,11 @@ function Weapon:shoot(dir)
 end
 
 function Weapon:use()
-    if self.owner then
+    if self.owner and self ~= self.owner.armory.currentWeapon then
         -- Make this weapon the owner's current weapon
         self.owner.armory:set_current_weapon(self)
-
-        return true
     else
+        sounds.unable:play()
         return false
     end
 end

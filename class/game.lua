@@ -242,12 +242,6 @@ function Game:key_released(key)
        (self.player.attackedDir == 4 and key == KEYS.WALK.WEST) then
         self.player.attackedDir = nil
     end
-
-    -- If the inventory menu is up
-    if self.paused and self.menuState == 'inventory' then
-        -- Pass the key to the inventory menu
-        self.inventoryMenu:key_released(key)
-    end
 end
 
 function Game:move_player_to_start()
@@ -273,8 +267,8 @@ function Game:pause()
     if not self.paused then
         sounds.pause:play()
 
-        -- Reset the inventory menu to its initial view
-        self.inventoryMenu:reset()
+        -- Refresh the inventory menu
+        self.inventoryMenu:refresh_items()
 
         self.paused = true
     end

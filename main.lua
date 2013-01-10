@@ -147,9 +147,6 @@ function love.load()
                      {image = new_image('switch2.png'), delay = 2},
                      {image = new_image('switch3.png'), delay = 2}}
 
-    -- Verbs
-    images.verbs = load_images('', {'drop', 'use'})
-
     -- Buttons
     buttonImg = {w = new_image('button/w.png'),
                  a = new_image('button/a.png'),
@@ -345,6 +342,9 @@ function love.keypressed(key, unicode)
         elseif key == 'd' then
             wrapper.game:set_demo_mode(not wrapper.game.demoMode)
             print('demo mode: ', wrapper.game.demoMode)
+        elseif key == 'e' then
+            local elixir = Item('elixir')
+            wrapper.game.player:pick_up(elixir)
         elseif key == 'f' then
             local firestaff = Weapon('firestaff')
             wrapper.game.player:pick_up(firestaff)
