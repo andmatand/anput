@@ -278,18 +278,8 @@ function AI:do_action(action)
     elseif action == 'follow' then
         target = self.level[action].target
 
-        -- If the player is far enough away from us, or in a different room
-        --if self:target_in_range(target, action) or
-        if manhattan_distance(target:get_position(),
-                              self.owner:get_position()) >=
-           self.level[action].dist or target.room ~= self.owner.room then
-            if not self.path.nodes or
-               self.path.action == AI_ACTION.explore then
-                -- Follow the target
-                self:chase(target)
-                self.path.action = AI_ACTION[action]
-                return true
-            end
+        if self:follow(target) then
+            return true
         end
     elseif action == 'globetrot' and
            (not self.path.nodes or
@@ -738,6 +728,36 @@ function AI:flee_from(threat)
     return false
 end
 
+function AI:follow(target)
+    -- If the player is far enough away from us, or in a different room
+    --if self:target_in_range(target, action) or
+    if manhattan_distance(target:get_position(), self.owner:get_position()) >=
+       self.level['follow'].dist or target.room ~= self.owner.room then
+        if not self.path.nodes or self.path.action == AI_ACTION.explore then
+            -- Follow the target
+            self:chase(target)
+            self.path.action = AI_ACTION[action]
+
+            if self.path.nodes then
+                -- Remove some nodes from the end of the path so that we end up
+                -- staying our follow distance behind the target
+                for i = 1, self.level['follow'].dist - 2 do
+                    if #self.path.nodes > 1 then
+                        table.remove(self.path.nodes)
+                    else
+                        break
+                    end
+                end
+                self.path.destination = self.path.nodes[#self.path.nodes]
+            end
+
+            return true
+        end
+    end
+
+    return false
+end
+
 function AI:follow_path(force)
     if self.owner.tag then
         if self.path.nodes then
@@ -1053,8 +1073,8 @@ function AI:target_in_range(target, action)
 
     if targetPosition then
         local dist = manhattan_distance(self.owner.position, targetPosition)
-        if action == 'chase' and tiles_touching(self.owner.position,
-                                                targetPosition) then
+        if action == 'chase' and self.owner.room == target.room and
+           tiles_touching(self.owner.position, targetPosition) then
             -- We don't need to chase if we are standing right next to the
             -- target
             return false
