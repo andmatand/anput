@@ -148,11 +148,9 @@ function love.load()
                      {image = new_image('switch3.png'), delay = 2}}
 
     -- Buttons
-    buttonImg = {w = new_image('button/w.png'),
-                 a = new_image('button/a.png'),
-                 s = new_image('button/s.png'),
-                 d = new_image('button/d.png'),
-                 enter = new_image('button/enter.png')}
+    images.buttons = load_images('button/',
+                                 {'w', 'a', 's', 'd', 'enter', 'up', 'right',
+                                 'left', 'down'})
 
     -- Hieroglyphs
     images.hieroglyphs = load_images('hieroglyph/',

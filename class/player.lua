@@ -179,6 +179,12 @@ function Player:key_pressed(key)
     end
 end
 
+function Player:shoot(dir)
+    Player.super.shoot(self, dir)
+
+    self.room.game.tutorial.playerShot = true
+end
+
 function Player:update()
     Player.super.update(self)
 

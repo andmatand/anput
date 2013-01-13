@@ -69,29 +69,37 @@ function StatusBar:draw()
         end
     end
 
-    if self.contextMessage.text then
-        -- Find the total width (in tiles) of the buttons concatenated a space
-        -- and the text
-        local totalWidth = 0
-        for _, key in pairs(self.contextMessage.buttons) do
-            totalWidth = totalWidth + (buttonImg[key]:getWidth() / TILE_W)
-        end
-        totalWidth = totalWidth + 1 + self.contextMessage.text:len()
+    self:draw_context_message()
+end
 
-        local x = (ROOM_W / 2) - (totalWidth / 2)
-
-        -- Draw the buttons
-        love.graphics.setColor(WHITE)
-        for _, key in pairs(self.contextMessage.buttons) do
-            love.graphics.draw(buttonImg[key],
-                               upscale_x(x), upscale_y(self.position.y),
-                               0, SCALE_X, SCALE_Y)
-            x = x + (buttonImg[key]:getWidth() / TILE_W)
-        end
-        
-        -- Draw the text
-        cga_print(' ' .. self.contextMessage.text, x, self.position.y)
+function StatusBar:draw_context_message()
+    if not self.contextMessage.text then
+        return
     end
+
+    -- Find the total width (in pixels) of the concatenated buttons, a space,
+    -- and the text
+    local totalWidth = 0
+    for _, key in pairs(self.contextMessage.buttons) do
+        totalWidth = totalWidth +
+                     (images.buttons[key]:getWidth() * SCALE_X) + SCALE_X
+    end
+    totalWidth = totalWidth + upscale_x(1 + self.contextMessage.text:len())
+
+    local x = upscale_x(ROOM_W / 2) - (totalWidth / 2)
+
+    -- Draw the buttons
+    love.graphics.setColor(WHITE)
+    for _, key in pairs(self.contextMessage.buttons) do
+        love.graphics.draw(images.buttons[key],
+                           x, upscale_y(self.position.y),
+                           0, SCALE_X, SCALE_Y)
+        x = x + (images.buttons[key]:getWidth() * SCALE_X) + SCALE_X
+    end
+
+    -- Draw the text
+    cga_print(' ' .. self.contextMessage.text, nil, nil,
+              {position = {x = x, y = upscale_y(self.position.y)}})
 end
 
 function StatusBar:draw_health_meter()

@@ -13,6 +13,7 @@ WEAPON_TYPE = {
                     meleeDamage = 15},
 
     bow          = {order = 2,
+                    canShoot = true,
                     ammoCost = 1,
                     ammoItem = 'arrow',
                     projectileClass = Arrow},
@@ -20,17 +21,20 @@ WEAPON_TYPE = {
     firestaff    = {order = 3,
                     meleeDamage = 5,
                     isMagic = true,
+                    canShoot = true,
                     ammoCost = 10,
                     projectileClass = Fireball},
 
     thunderstaff = {order = 4,
                     meleeDamage = 5,
+                    canShoot = true,
                     isMagic = true,
                     ammoCost = 4},
 
     horn         = {order = 5,
                     meleeDamage = 5,
                     isMagic = true,
+                    canShoot = true,
                     ammoCost = 10}
     }
 
@@ -102,7 +106,7 @@ function Weapon:get_ammo()
 end
 
 function Weapon:shoot(dir)
-    if self.owner and self.ammoCost then
+    if self.owner and self.canShoot then
         if self:get_ammo() >= self.ammoCost then
             self:use_ammo(self.ammoCost)
 

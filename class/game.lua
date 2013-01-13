@@ -16,7 +16,8 @@ function Game:init(wrapper)
     self.menuState = 'inventory'
     self.paused = false
     self.time = 0
-    self.playerMoved = false
+    self.tutorial = {playerMoved = false,
+                     playerShot = false}
 
     -- Create the outside "room"
     self.outside = Room({game = self, index = -1})
@@ -298,6 +299,27 @@ function Game:set_demo_mode(tf)
     end
 end
 
+function Game:show_tutorial_messages()
+    -- If the player has not moved for the first three seconds of the game
+    if not self.tutorial.playerMoved and self.time >= 3 then
+        -- Show a contextual help message
+        self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
+    end
+    if self.player.stepped then
+        self.tutorial.playerMoved = true
+    end
+
+    -- If the player has a shootable weapon equipped
+    if not self.tutorial.playerShot and self.player.armory.currentWeapon and
+       self.player.armory.currentWeapon.canShoot then
+        self.statusBar:show_context_message({'up', 'down', 'left', 'right'},
+                                            'SHOOT')
+    end
+    if self.player.shot then
+        self.tutorial.playerShot = true
+    end
+end
+
 function Game:switch_to_room(room)
     --if DEBUG then
         print('switching to room ' .. room.index)
@@ -379,14 +401,7 @@ function Game:update(dt)
 
     self:holdable_key_input()
 
-    -- If the player has not moved for the first three seconds of the game
-    if not self.playerMoved and self.time >= 3 then
-        -- Show a contextual help message
-        self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
-    end
-    if self.player.stepped then
-        self.playerMoved = true
-    end
+    self:show_tutorial_messages()
 
     -- Update the current room
     self.currentRoom:update()
