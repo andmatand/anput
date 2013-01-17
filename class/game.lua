@@ -13,7 +13,6 @@ Game = class('Game')
 function Game:init(wrapper)
     self.wrapper = wrapper
 
-    self.menuState = 'inventory'
     self.paused = false
     self.time = 0
     self.tutorial = {playerMoved = false,
@@ -50,11 +49,34 @@ function Game:draw()
     self:draw_metadata()
 
     if self.paused then
-        if self.menuState == 'inventory' then
-            self.inventoryMenu:draw()
-        elseif self.menuState == 'map' then
-            self.map:draw(self.currentRoom)
-        end
+        -- Dither out the screen
+        --for x = 0, BASE_SCREEN_W * SCALE_X, SCALE_X * 2 do
+        --    love.graphics.setColor(BLACK)
+        --    love.graphics.rectangle('fill',
+        --                            x, 0,
+        --                            SCALE_X,
+        --                            (BASE_SCREEN_H * SCALE_Y) - upscale_y(1))
+        --end
+
+        -- Dim the screen
+        --love.graphics.setColor(0, 0, 0, 128)
+        --love.graphics.rectangle('fill', 0, 0,
+        --                        BASE_SCREEN_W * SCALE_X,
+        --                        (BASE_SCREEN_H * SCALE_Y) - upscale_y(1))
+
+
+        local offset = math.floor(self.menuOffset / upscale_x(1))
+        offset = offset * upscale_x(1)
+
+        love.graphics.push()
+        love.graphics.translate(-offset, 0)
+        self.inventoryMenu:draw()
+        love.graphics.pop()
+
+        love.graphics.push()
+        love.graphics.translate(offset, 0)
+        self.map:draw(self.currentRoom)
+        love.graphics.pop()
     end
 end
 
@@ -105,7 +127,7 @@ end
 
 function Game:generate()
     self.randomSeed = os.time() + math.random(0, 1000)
-    --self.randomSeed = 1344820550
+    --self.randomSeed = 1358040137
     math.randomseed(self.randomSeed)
     print('\nrandom seed for game: ' .. self.randomSeed)
 
@@ -217,18 +239,10 @@ function Game:key_pressed(key)
 
     -- If the game is paused
     if self.paused then
-        -- If the inventory is open
-        if self.menuState == 'inventory' then
-            -- Route input to inventory menu
-            if self.inventoryMenu:key_pressed(key) then
-                -- InventoryMenu:keypressed() evaluates to true when the user
-                -- exits the menu
-                self.paused = false
-            end
-        end
-
-        -- If the map is open and escape was pressed
-        if self.menuState == 'map' and key == KEYS.EXIT then
+        -- Route input to inventory menu
+        if self.inventoryMenu:key_pressed(key) then
+            -- InventoryMenu:keypressed() evaluates to true when the user
+            -- exits the menu
             self.paused = false
         end
     end
@@ -267,6 +281,8 @@ end
 function Game:pause()
     if not self.paused then
         sounds.pause:play()
+
+        self.menuOffset = upscale_x(9)
 
         -- Refresh the inventory menu
         self.inventoryMenu:refresh_items()
@@ -374,7 +390,7 @@ end
 
 function Game:update(dt)
     if not self.playedTheme then
-        sounds.theme:play()
+        --sounds.theme:play()
         self.playedTheme = true
     end
 
@@ -391,11 +407,13 @@ function Game:update(dt)
     end
 
     if self.paused then
-        self.inventoryMenu:update()
-        if self.menuState == 'map' then
-            self.map:update()
+        if self.menuOffset > 0 then
+            self.menuOffset = self.menuOffset / 4
+            --self.menuOffset = self.menuOffset - upscale_x(3)
         end
 
+        self.inventoryMenu:update()
+        self.map:update()
         return
     end
 

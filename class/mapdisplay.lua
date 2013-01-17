@@ -10,9 +10,9 @@ function MapDisplay:init(map)
 end
 
 function MapDisplay:draw(currentRoom)
-    -- Place the display in the center of the screen
+    -- Place the display right of the center of the screen
     self.nodeSize = 3 * SCALE_X
-    self.gridPosition = {x = math.floor((GRID_W / 2) - (self.size.w / 2)),
+    self.gridPosition = {x = math.floor((GRID_W / 2) + 4),
                          y = math.floor((GRID_H / 2) - (self.size.h / 2))}
     self.position = {x = upscale_x(self.gridPosition.x),
                      y = upscale_y(self.gridPosition.y)}

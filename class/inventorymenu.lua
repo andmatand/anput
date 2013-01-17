@@ -35,7 +35,7 @@ function InventoryMenu:init(owner)
     self.owner = owner
 
     self.size = {w = 9, h = 9}
-    self.position = {x = math.floor((GRID_W / 2) - (self.size.w / 2)),
+    self.position = {x = math.floor((GRID_W / 2) - self.size.w - 4),
                      y = math.floor((GRID_H / 2) - (self.size.h / 2))}
 
     self.slotPositions = {{x = 0, y = 0},
@@ -98,6 +98,11 @@ function InventoryMenu:draw()
     for i, item in ipairs(self.items) do
         local pos = item:get_position()
         item:draw()
+
+        local itemsOfThisType = self.owner.inventory:get_items(item.itemType)
+        pos.x = upscale_x(pos.x) + upscale_x(.5)
+        pos.y = upscale_y(pos.y) + upscale_y(.5) - 1
+        cga_print(#itemsOfThisType, nil, nil, {position = pos})
     end
 
     -- Switch back to normal scale
@@ -120,7 +125,7 @@ function InventoryMenu:draw()
                 caption.text = caption.text .. 'S'
             end
         end
-        caption:wrap(8)
+        caption:wrap(self.size.w)
 
         -- Draw the text below the items
         --local pos = {x = upscale_x(self.size.w / 2) * 2,
@@ -128,6 +133,7 @@ function InventoryMenu:draw()
         local pos = {x = upscale_x(self.position.x + self.size.w / 2),
                      y = upscale_y(self.position.y + self.size.h + 2)}
 
+        --pos.x = math.floor(pos.x / upscale_x(1)) * upscale_x(1)
         cga_print(caption.text, nil, nil, {position = pos, center = true})
     end
 end
