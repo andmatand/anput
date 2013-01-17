@@ -31,6 +31,8 @@ function Message:init(args)
 
     -- Wrap the text (add linebreaks)
     self:wrap(wrapWidth)
+
+    self.isStarted = false
 end
 
 -- Decide on a good position that does not overlap with the player
@@ -59,6 +61,10 @@ function Message:choose_position()
 end
 
 function Message:draw()
+    if not self.isStarted then
+        return
+    end
+
     local xOffset, yOffset
 
     if self.verticalAlign == 'bottom' then
@@ -102,6 +108,8 @@ function Message:get_text()
 end
 
 function Message:update()
+    self.isStarted = true
+
     -- If we are still unfurling the text
     if self.cursor < self.text:len() then
         self.cursor = self.cursor + 1
