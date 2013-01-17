@@ -26,6 +26,10 @@ function Map:generate()
     self:add_roadblocks()
     self:add_branches()
 
+    -- Combine the path and branches into one table
+    self.nodes = concat_tables({self.path, self.branches})
+
+    self:add_first_secret_room()
     self.rooms = self:generate_rooms()
     self:add_temple_exit()
 
@@ -38,6 +42,53 @@ function Map:generate()
     self.display = MapDisplay(self)
 
     return self.rooms
+end
+
+-- Add a secret-room node somewhere before the first roadblock
+function Map:add_first_secret_room()
+    local firstRoadblockDist = self.roadblocks[1].node.distanceFromStart
+
+    -- Make a working copy of the nodes
+    local nodes = copy_table(self.nodes)
+
+    while #nodes > 0 do
+        local index = math.random(1, #nodes)
+        local node = nodes[index]
+
+        if node.distanceFromStart > 1 and
+           node.distanceFromStart < firstRoadblockDist then
+            local neighbors = find_neighbor_tiles(node, self.nodes,
+                                                  {diagonals = false})
+            for _, neighbor in pairs(neighbors) do
+                if not neighbor.occupied then
+                    local neighbs = find_neighbor_tiles(neighbor, self.nodes,
+                                                        {diagonals = false})
+                    local ok = true
+                    for _, pos in pairs(neighbs) do
+                        if pos.occupied and not tiles_overlap(pos, node) then
+                            ok = false
+                            break
+                        end
+                    end
+
+                    if ok then
+                        -- Add a new node here
+                        local newNode = {x = neighbor.x, y = neighbor.y}
+                        newNode.distanceFromStart = node.distanceFromStart + 1
+                        newNode.firstSecretRoom = true
+                        table.insert(self.nodes, newNode)
+
+                        return
+                    end
+                end
+            end
+        end
+
+        table.remove(nodes, index)
+    end
+
+    print('OOPS: failed to find position for first secret room')
+    love.event.quit()
 end
 
 function Map:add_temple_exit()
@@ -332,9 +383,6 @@ function Map:generate_path()
 end
 
 function Map:generate_rooms()
-    -- Combine the path and branches into one table
-    self.nodes = concat_tables({self.path, self.branches})
-
     -- Make a new room for each node
     local rooms = {}
     for i, node in ipairs(self.nodes) do
@@ -343,8 +391,8 @@ function Map:generate_rooms()
         r.distanceFromStart = node.distanceFromStart
         table.insert(rooms, r)
         node.room = r
-        node.room.roadblock = node.roadblock
-        node.room.mapNode = node
+        r.roadblock = node.roadblock
+        r.mapNode = node
         local neighbors = find_neighbor_tiles(node, self.nodes,
                                               {diagonals = false})
 
@@ -352,7 +400,7 @@ function Map:generate_rooms()
         local exits = {}
         for j, n in ipairs(neighbors) do
             if n.occupied then
-                linkedExit = nil
+                local linkedExit
 
                 local x = math.random(2, ROOM_W - 2)
                 local y = math.random(2, ROOM_H - 2)
@@ -361,36 +409,34 @@ function Map:generate_rooms()
 
                     -- If this neighbor has already been converted into a room
                     -- with exits, use the position of its corresponding exit
-                    if n.room ~= nil then
+                    if n.room then
                         linkedExit = n.room:get_exit({y = ROOM_H})
                         x = linkedExit.x
                     end
                 elseif j == 2 then
                     x = ROOM_W -- East
-                    if n.room ~= nil then
+                    if n.room then
                         linkedExit = n.room:get_exit({x = -1})
                         y = linkedExit.y
                     end
                 elseif j == 3 then
                     y = ROOM_H -- South
-                    if n.room ~= nil then
+                    if n.room then
                         linkedExit = n.room:get_exit({y = -1})
                         x = linkedExit.x
                     end
                 elseif j == 4 then
                     x = -1 -- West
-                    if n.room ~= nil then
+                    if n.room then
                         linkedExit = n.room:get_exit({x = ROOM_W})
                         y = linkedExit.y
                     end
                 end
 
-                newExit = Exit({x = x, y = y, room = node.room})
+                local newExit = Exit({x = x, y = y, room = node.room})
                 if linkedExit ~= nil then
-                    --linkedExit.roomIndex = #rooms
                     linkedExit.targetRoom = node.room
 
-                    --newExit.roomIndex = n.room.index
                     newExit.targetRoom = n.room
                 end
                 --print('new exit:', newExit.x, newExit.y, newExit.roomIndex)
@@ -403,25 +449,12 @@ function Map:generate_rooms()
         node.room.exits = exits
     end
 
-    -- Find the room that's farthest away from the first room, and set it as
-    -- the artifact room
-    --local farthestDistance = 0
-    --for _, r in pairs(rooms) do
-    --    if --r.distanceFromStart >= 60 and
-    --       r.distanceFromStart > farthestDistance and
-    --       #r.exits == 1 then
-    --        farthestDistance = r.distanceFromStart
-    --        self.artifactRoom = r
-    --    end
-    --end
-
     -- Set the last room on the main path as the artifact room
     self.artifactRoom = self.path[#self.path].room
 
     for _, r in pairs(rooms) do
         -- Give the room a specifc random seed
-        r.randomSeed = math.random(self.game.randomSeed + r.index +
-                                   math.random(1, 1000))
+        r.randomSeed = math.random(self.game.randomSeed + r.index)
 
         -- Assign difficulty to each room based on distance from first room
         -- compared to artifact room
@@ -612,6 +645,10 @@ function Map:add_roadblocks()
             -- Add the next roadblock to this room
             node.roadblock = roadblocks[r]
 
+            -- Cache some info about this roadblock
+            if not self.roadblocks then self.roadblocks = {} end
+            self.roadblocks[r] = {node = node, roadblockType = roadblocks[r]}
+
             r = r + 1
             if r > #roadblocks then
                 break
@@ -624,11 +661,12 @@ function Map:add_roadblocks()
 end
 
 function Map:add_secret_rooms()
+    -- Mark any qualified rooms as secret rooms
     for _, r in pairs(self.rooms) do
         -- If this room has only 1 exit and is not the first room or the
         -- artifact room
-        if #r.exits == 1 and r.distanceFromStart > 0 and not r.artifactRoom then
-           --math.random(0, 1) == 0 then -- Also mix in some randomness
+        if #r.exits == 1 and r.distanceFromStart > 0 and
+           not r.artifactRoom then
             -- Put a false brick in front of the exit that leads to this room
             local adjacentRoom = r.exits[1].targetRoom
             local adjacentExit = adjacentRoom:get_exit({targetRoom = r})
@@ -639,12 +677,6 @@ function Map:add_secret_rooms()
             r.isSecret = true
         end
     end
-
-    -- DEBUG: put false brick in first room
-    --local exit = self.rooms[1].exits[1]
-    ---- Put a false brick in front of the exit that leads to this room
-    --local falseBrick = FalseBrick(exit:get_doorway())
-    --table.insert(self.rooms[1].requiredObjects, falseBrick)
 end
 
 function Map:add_doors()

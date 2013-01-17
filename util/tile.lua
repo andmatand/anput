@@ -193,7 +193,7 @@ function find_neighbor_tiles(node, occupiedNodes, options)
                 if tiles_overlap(o, n) then
                     -- Mark this neighbor-tile as occupied
                     n.occupied = true
-                    n.room = o.room
+                    n.room = o.room -- Dirty hack for map:generate_rooms()
                 end
             end
         end

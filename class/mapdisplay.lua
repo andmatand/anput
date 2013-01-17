@@ -36,6 +36,8 @@ function MapDisplay:draw(currentRoom)
                 love.graphics.setColor(CYAN)
             elseif DEBUG and n.room.roadblock then
                 love.graphics.setColor(255, 0, 0)
+            elseif DEBUG and n.firstSecretRoom then
+                love.graphics.setColor(0, 0, 255)
             elseif DEBUG and n.room.isSecret then
                 love.graphics.setColor(255, 243, 48)
             elseif DEBUG and n.sourceNode ~= n then
