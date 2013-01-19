@@ -185,6 +185,12 @@ function Wrapper:key_pressed(key)
         key = 'shift'
     end
 
+    if tonumber(key) then
+        if tonumber(key) >= 1 and tonumber(key) <= 9 then
+            self:send_keypress(key)
+        end
+    end
+
     for name, k in pairs(KEYBOARD) do
         if name == 'WALK' or name == 'SHOOT' then
             self:directional_key_pressed(name, key)
