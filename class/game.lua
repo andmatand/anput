@@ -36,7 +36,7 @@ function Game:draw()
 
         local tx = -upscale_x(self.player.position.x + .5) +
                    upscale_x(ROOM_W / 4)
-        local ty = -upscale_x(self.player.position.y + .5) +
+        local ty = -upscale_y(self.player.position.y + .5) +
                    upscale_y(ROOM_H / 4)
 
         love.graphics.push()
@@ -45,43 +45,15 @@ function Game:draw()
 
     self.currentRoom:draw()
 
+    self:draw_metadata()
+
     if self.paused then
         love.graphics.pop()
         SCALE_X = SCALE_X / 2
         SCALE_Y = SCALE_Y / 2
-    end
 
-    self:draw_metadata()
-
-    if self.paused then
-        -- Dither out the screen
-        --for x = 0, BASE_SCREEN_W * SCALE_X, SCALE_X * 2 do
-        --    love.graphics.setColor(BLACK)
-        --    love.graphics.rectangle('fill',
-        --                            x, 0,
-        --                            SCALE_X,
-        --                            (BASE_SCREEN_H * SCALE_Y) - upscale_y(1))
-        --end
-
-        -- Dim the screen
-        --love.graphics.setColor(0, 0, 0, 128)
-        --love.graphics.rectangle('fill', 0, 0,
-        --                        BASE_SCREEN_W * SCALE_X,
-        --                        (BASE_SCREEN_H * SCALE_Y) - upscale_y(1))
-
-
-        local offset = math.floor(self.menuOffset / upscale_x(1))
-        offset = offset * upscale_x(1)
-
-        love.graphics.push()
-        love.graphics.translate(-offset, 0)
         self.inventoryMenu:draw()
-        love.graphics.pop()
-
-        love.graphics.push()
-        love.graphics.translate(offset, 0)
         self.map:draw(self.currentRoom)
-        love.graphics.pop()
     end
 end
 
@@ -292,9 +264,6 @@ function Game:pause()
     if not self.paused then
         sounds.pause:play()
 
-        --self.menuOffset = upscale_x(9)
-        self.menuOffset = 0
-
         -- Refresh the inventory menu
         self.inventoryMenu:refresh_items()
 
@@ -418,11 +387,6 @@ function Game:update(dt)
     self.statusBar:update()
 
     if self.paused then
-        if self.menuOffset > 0 then
-            self.menuOffset = self.menuOffset / 4
-            --self.menuOffset = self.menuOffset - upscale_x(3)
-        end
-
         self.inventoryMenu:update()
         self.map:update()
         return
