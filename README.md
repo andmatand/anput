@@ -22,7 +22,7 @@ project for trying out Lua and the LÖVE framework.
 
 ##Controls
 * move: wasd
-* switch weapon: 1 - 3, or Shift
+* switch weapon: 1 - 5, or Shift
 * shoot: arrow buttons
 * pause: spacebar
 * switch menu (while paused): tab
