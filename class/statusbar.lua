@@ -5,8 +5,9 @@ require('util.graphics')
 -- health, ammo, etc.
 StatusBar = class('StatusBar')
 
-function StatusBar:init(owner)
+function StatusBar:init(owner, game)
     self.owner = owner
+    self.game = game
 
     self.position = {x = ROOM_W, y = ROOM_H}
     self.selectedItemNum = nil
@@ -23,11 +24,15 @@ function StatusBar:draw()
     local x = 0
     local y = self.position.y
 
+    if self.game.paused then
+        -- Draw a black background behind the entire statusbar line
+        love.graphics.setColor(BLACK)
+        love.graphics.rectangle('fill', x, upscale_y(y),
+                                upscale_x(ROOM_W), upscale_y(1))
+    end
+
     -- Display the health meter
     self:draw_health_meter()
-
-    -- Display the most recently picked up item for a few seconds
-    self:draw_newest_item()
 
     -- Display the ammo for the current weapon
     local w = self.owner.armory.currentWeapon
@@ -69,7 +74,12 @@ function StatusBar:draw()
         end
     end
 
-    self:draw_context_message()
+    if not self.game.paused then
+        -- Display the most recently picked up item for a few seconds
+        self:draw_newest_item()
+
+        self:draw_context_message()
+    end
 end
 
 function StatusBar:draw_context_message()
@@ -185,17 +195,6 @@ function StatusBar:update()
         self.healthMeter.toast:unfreeze()
     end
 
-    -- Update the toast popups
-    self.healthMeter.toast:update()
-    self.newestItem.toast:update()
-
-    -- If there is an item popup showing, and the game is not paused
-    if (self.newestItem.item and self.newestItem.toast:is_visible() and
-        not self.owner.room.game.paused) then
-        -- Update the newestItem's animation
-        self.newestItem.item:update()
-    end
-
     -- Decrement the flash timer
     if self.flash.timer > 0 then
         self.flash.timer = self.flash.timer - 1
@@ -205,6 +204,25 @@ function StatusBar:update()
             self.flash.state = false
         else
             self.flash.state = true
+        end
+    end
+
+    if self.game.paused then
+        -- Freeze the newestItem popup
+        self.newestItem.toast:freeze()
+    else
+        self.newestItem.toast:unfreeze()
+    end
+
+    -- Update the health toast popups
+    self.healthMeter.toast:update()
+    self.newestItem.toast:update()
+
+    if not self.game.paused then
+        -- If there is an item popup showing
+        if self.newestItem.item and self.newestItem.toast:is_visible() then
+            -- Update the newestItem's animation
+            self.newestItem.item:update()
         end
     end
 end

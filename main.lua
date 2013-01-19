@@ -358,6 +358,9 @@ function love.keypressed(key, unicode)
         elseif key == 'o' then
             local horn = Horn()
             wrapper.game.player:pick_up(horn)
+        elseif key == 'p' then
+            local potion = Item('potion')
+            wrapper.game.player:pick_up(potion)
         elseif key == 't' then
             local thunderstaff = ThunderStaff()
             wrapper.game.player:pick_up(thunderstaff)
@@ -378,8 +381,14 @@ function love.draw()
     --    love.graphics.shear(sx, sy)
     --end
 
+    love.graphics.setScissor(SCREEN_X, SCREEN_Y,
+                             BASE_SCREEN_W * SCALE_X, BASE_SCREEN_H * SCALE_Y)
     love.graphics.translate(SCREEN_X, SCREEN_Y)
+
     wrapper:draw()
+
+    love.graphics.setScissor()
+
     --cga_print(joystickButton, 1, 1)
     --if wrapper.game.player then
     --    local txt = wrapper.game.player.position.x .. ' ' ..

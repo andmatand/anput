@@ -5,8 +5,6 @@ require('class.statusbar')
 require('util.tables')
 require('util.tile')
 
---local DEBUG = true
-
 -- A Game handles a collection of rooms
 Game = class('Game')
 
@@ -32,18 +30,25 @@ function Game:add_time(seconds)
 end
 
 function Game:draw()
+    if self.paused then
+        SCALE_X = SCALE_X * 2
+        SCALE_Y = SCALE_Y * 2
+
+        local tx = -upscale_x(self.player.position.x + .5) +
+                   upscale_x(ROOM_W / 4)
+        local ty = -upscale_x(self.player.position.y + .5) +
+                   upscale_y(ROOM_H / 4)
+
+        love.graphics.push()
+        love.graphics.translate(tx, ty)
+    end
+
     self.currentRoom:draw()
 
-    if DEBUG then
-        -- Show tiles added to make room for required room objects
-        --if #self.currentRoom.debugTiles > 0 then
-        --    for _, t in pairs(self.currentRoom.debugTiles) do
-        --        love.graphics.setColor(0, 255, 0, 100)
-        --        love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
-        --                                upscale_x(1), upscale_y(1))
-        --    end
-        --end
-
+    if self.paused then
+        love.graphics.pop()
+        SCALE_X = SCALE_X / 2
+        SCALE_Y = SCALE_Y / 2
     end
 
     self:draw_metadata()
@@ -165,7 +170,7 @@ function Game:generate()
     end
 
     -- Create a status bar
-    self.statusBar = StatusBar(self.player)
+    self.statusBar = StatusBar(self.player, self)
 
     -- Create an inventory menu
     self.inventoryMenu = InventoryMenu(self.player)
@@ -251,6 +256,11 @@ function Game:key_pressed(key)
 end
 
 function Game:key_released(key)
+    if self.paused then
+        -- Route input to the inventory menu
+        self.inventoryMenu:key_released(key)
+    end
+
     if (self.player.attackedDir == 1 and key == KEYS.WALK.NORTH) or
        (self.player.attackedDir == 2 and key == KEYS.WALK.EAST) or
        (self.player.attackedDir == 3 and key == KEYS.WALK.SOUTH) or
@@ -282,7 +292,8 @@ function Game:pause()
     if not self.paused then
         sounds.pause:play()
 
-        self.menuOffset = upscale_x(9)
+        --self.menuOffset = upscale_x(9)
+        self.menuOffset = 0
 
         -- Refresh the inventory menu
         self.inventoryMenu:refresh_items()
@@ -394,8 +405,6 @@ function Game:update(dt)
         self.playedTheme = true
     end
 
-    self.statusBar:update()
-
     if self.player.isDead then
         if not self.playerDeadTimer then
             self.playerDeadTimer = self.time
@@ -405,6 +414,8 @@ function Game:update(dt)
             self.statusBar:show_context_message({'enter'}, 'NEW GAME')
         end
     end
+
+    self.statusBar:update()
 
     if self.paused then
         if self.menuOffset > 0 then
@@ -418,7 +429,6 @@ function Game:update(dt)
     end
 
     self:holdable_key_input()
-
     self:show_tutorial_messages()
 
     -- Update the current room
