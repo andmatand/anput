@@ -25,17 +25,17 @@ WEAPON_TYPE = {
                     ammoCost = 10,
                     projectileClass = Fireball},
 
-    thunderstaff = {order = 4,
+    horn         = {order = 4,
                     meleeDamage = 5,
-                    canShoot = true,
                     isMagic = true,
-                    ammoCost = 4},
+                    canShoot = true,
+                    ammoCost = 10},
 
-    horn         = {order = 5,
+    thunderstaff = {order = 5,
                     meleeDamage = 5,
-                    isMagic = true,
                     canShoot = true,
-                    ammoCost = 10}
+                    isMagic = true,
+                    ammoCost = 4}
     }
 
 function Weapon:init(weaponType)
