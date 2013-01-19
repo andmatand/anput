@@ -45,13 +45,15 @@ function Game:draw()
 
     self.currentRoom:draw()
 
-    self:draw_metadata()
-
     if self.paused then
         love.graphics.pop()
         SCALE_X = SCALE_X / 2
         SCALE_Y = SCALE_Y / 2
+    end
 
+    self:draw_metadata()
+
+    if self.paused then
         self.inventoryMenu:draw()
         self.map:draw(self.currentRoom)
     end
@@ -183,42 +185,11 @@ function Game:key_pressed(key)
         end
     end
 
-    -- Toggle inventory menu
-    if key == KEYS.INVENTORY or (self.paused and self.menuState == 'map' and
-                                 key == KEYS.SWITCH_MENU) then
-        if self.paused and self.menuState == 'inventory' then
-            self:unpause()
-        else
-            if not self.paused then
-                self:pause()
-            else
-                sounds.menuSelect:play()
-            end
-
-            self.menuState = 'inventory'
-        end
-
-    -- Toggle map
-    elseif key == KEYS.MAP or (self.paused and self.menuState == 'inventory' and
-                               key == KEYS.SWITCH_MENU) then
-        if self.paused and self.menuState == 'map' then
-            self:unpause()
-        else
-            if not self.paused then
-                self:pause()
-            else
-                sounds.menuSelect:play()
-            end
-        end
-
-        self.menuState = 'map'
-    end
-
     -- If the game is paused
     if self.paused then
         -- Route input to inventory menu
         if self.inventoryMenu:key_pressed(key) then
-            -- InventoryMenu:keypressed() evaluates to true when the user
+            -- InventoryMenu:key_pressed() evaluates to true when the user
             -- exits the menu
             self.paused = false
         end
@@ -374,6 +345,8 @@ function Game:update(dt)
         self.playedTheme = true
     end
 
+    self.statusBar:update()
+
     if self.player.isDead then
         if not self.playerDeadTimer then
             self.playerDeadTimer = self.time
@@ -383,8 +356,6 @@ function Game:update(dt)
             self.statusBar:show_context_message({'enter'}, 'NEW GAME')
         end
     end
-
-    self.statusBar:update()
 
     if self.paused then
         self.inventoryMenu:update()

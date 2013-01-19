@@ -19,13 +19,10 @@ function love.conf(t)
     KEYBOARD.DROP = 'delete'
     KEYBOARD.ELIXIR = 'e'
     KEYBOARD.EXIT = 'escape'
-    KEYBOARD.INVENTORY = 'i'
-    KEYBOARD.MAP = 'm'
     KEYBOARD.PAUSE = ' '
     KEYBOARD.POTION = 'p'
     KEYBOARD.SKIP_CUTSCENE = 'escape'
     KEYBOARD.SKIP_DIALOG = '.'
-    KEYBOARD.SWITCH_MENU = 'tab'
     KEYBOARD.SWITCH_WEAPON = 'shift'
     KEYBOARD.SHOOT = {NORTH = 'up',
                       EAST  = 'right',
@@ -45,13 +42,10 @@ function love.conf(t)
     JOYSTICK.DROP = 3 -- Black
     JOYSTICK.ELIXIR = 4 -- X
     JOYSTICK.EXIT = 2 -- B
-    JOYSTICK.INVENTORY = 8 -- Start
-    JOYSTICK.MAP = 7 -- Back
-    JOYSTICK.PAUSE = nil -- Disabled
+    JOYSTICK.PAUSE = 8 -- Start
     JOYSTICK.POTION = 2 -- B
     JOYSTICK.SKIP_CUTSCENE = 8 -- Start
     JOYSTICK.SKIP_DIALOG = 2 -- B
-    JOYSTICK.SWITCH_MENU = nil -- Disabled
     JOYSTICK.SWITCH_WEAPON = 5 -- Y
     JOYSTICK.SHOOT_AXIS_X = 4 -- Right stick
     JOYSTICK.SHOOT_AXIS_Y = 5
