@@ -63,12 +63,8 @@ function love.load()
     LIGHT = 255
     DARK = 15
 
-    -- These are the dimensions of one letter of the font before scaling
-    FONT_W = 8
-    FONT_H = 8
-
     local function new_image(filename)
-        img = love.graphics.newImage('res/img/' .. filename)
+        local img = love.graphics.newImage('res/img/' .. filename)
         --img:setFilter('nearest', 'nearest')
         return img
     end

@@ -169,14 +169,13 @@ function StatusBar:draw_newest_item()
         return
     end
 
-    if self.newestItem.toast:is_visible() then
+    if self.newestItem.toast:is_visible() and self.newestItem.item then
         local x = upscale_x((ROOM_W / 2) - 1)
         local y = self.newestItem.toast:get_y()
         local num =
             #self.owner.inventory:get_items(self.newestItem.item.itemType)
 
-        love.graphics.setColor(WHITE)
-        love.graphics.print(num, x, y)
+        cga_print(num, nil, nil, {position = {x = x, y = y}})
         self.newestItem.item:draw({x = x + (upscale_x(1) *
                                             tostring(num):len()),
                                    y = y})

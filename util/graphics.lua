@@ -47,6 +47,13 @@ function cga_print(text, x, y, options)
         y = math.floor(upscale_y(y))
     end
 
+    -- Unscale the coordinates since we are going to upscale the drawing
+    x = x / SCALE_X
+    y = y / SCALE_Y
+
+    love.graphics.push()
+    love.graphics.scale(SCALE_X, SCALE_Y)
+
     -- Go through each line of the text
     local i = 0
     for line in text:gmatch("[^\n]+") do
@@ -54,11 +61,6 @@ function cga_print(text, x, y, options)
         if options.center then
             xPos = x - (font:getWidth(line) / 2)
         end
-
-        -- Draw a black background behind this line of text
-        love.graphics.setColor(BLACK)
-        love.graphics.rectangle('fill', xPos, y + upscale_y(i),
-                                font:getWidth(line), font:getHeight())
 
         -- Set the color
         if options.color then
@@ -68,11 +70,13 @@ function cga_print(text, x, y, options)
         end
 
         -- Draw this line of text
-        love.graphics.print(line, xPos, y + upscale_y(i))
+        love.graphics.print(line, xPos, y + (i * TILE_H))
 
         -- Keep track of which line number we're on
         i = i + 1
     end
+
+    love.graphics.pop()
 end
 
 -- Parameters refer to the size of the content area, not the actual border
@@ -172,7 +176,9 @@ function set_scale(scale, resolution, fullscreen)
     end
 
     -- Load the font at the correct scale
-    font = love.graphics.newFont('res/font/cga.ttf', upscale_x(1))
+    local img = love.graphics.newImage('res/font/cga.png')
+    local glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789:.,\'"!?'
+    font = love.graphics.newImageFont(img, glyphs)
     love.graphics.setFont(font)
 end
 
