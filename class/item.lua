@@ -106,8 +106,6 @@ function Item:use()
         if self:use_on(self.owner) then
             self.owner.inventory:remove(self)
             return true
-        else
-            return false
         end
     end
 

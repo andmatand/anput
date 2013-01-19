@@ -50,6 +50,7 @@ function InventoryMenu:init(owner)
 
     self.selectedSlot = 1
     self.flashTimer = {delay = 4, value = 0, state = false}
+    self.selectorColor = MAGENTA
 end
 
 function InventoryMenu:draw()
@@ -80,7 +81,7 @@ function InventoryMenu:draw()
         local pos = self.slotPositions[self.selectedSlot]
         pos = add_padding(pos)
 
-        love.graphics.setColor(MAGENTA)
+        love.graphics.setColor(self.selectorColor)
         love.graphics.rectangle('fill',
                                 upscale_x(pos.x) - SCALE_X,
                                 upscale_y(pos.y) - SCALE_Y,
@@ -99,10 +100,10 @@ function InventoryMenu:draw()
         local pos = item:get_position()
         item:draw()
 
-        local itemsOfThisType = self.owner.inventory:get_items(item.itemType)
-        pos.x = upscale_x(pos.x) + upscale_x(.5)
-        pos.y = upscale_y(pos.y) + upscale_y(.5) - 1
-        cga_print(#itemsOfThisType, nil, nil, {position = pos})
+        --local itemsOfThisType = self.owner.inventory:get_items(item.itemType)
+        --pos.x = upscale_x(pos.x) + upscale_x(.5)
+        --pos.y = upscale_y(pos.y) + upscale_y(.5) - 1
+        --cga_print(#itemsOfThisType, nil, nil, {position = pos})
     end
 
     -- Switch back to normal scale
@@ -125,15 +126,11 @@ function InventoryMenu:draw()
                 caption.text = caption.text .. 'S'
             end
         end
-        caption:wrap(self.size.w)
+        --caption:wrap(self.size.w)
 
-        -- Draw the text below the items
-        --local pos = {x = upscale_x(self.size.w / 2) * 2,
-        --             y = upscale_y(self.size.h + 1) * 2}
-        local pos = {x = upscale_x(self.position.x + self.size.w / 2),
-                     y = upscale_y(self.position.y + self.size.h + 2)}
+        -- Draw the text in the status bar
+        local pos = {x = upscale_x(ROOM_W / 2), y = upscale_y(ROOM_H)}
 
-        --pos.x = math.floor(pos.x / upscale_x(1)) * upscale_x(1)
         cga_print(caption.text, nil, nil, {position = pos, center = true})
     end
 end
@@ -160,10 +157,24 @@ function InventoryMenu:key_pressed(key)
         end
     elseif key == KEYS.CONTEXT and self.selectedItem then
         self:reset_flash_timer()
-        self.selectedItem:use()
+        if self.selectedItem:use() then
+            self.selectorColor = WHITE
+        else
+            self.selectorColor = BLACK
+        end
     elseif key == KEYS.DROPITEM and self.selectedItem then
         self:reset_flash_timer()
         self.owner:drop_items({self.selectedItem})
+    end
+end
+
+function InventoryMenu:key_released(key)
+    if key == KEYS.CONTEXT then
+        if self.selectorColor == BLACK then
+            self:reset_flash_timer()
+        end
+
+        self.selectorColor = MAGENTA
     end
 end
 

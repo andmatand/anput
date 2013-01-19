@@ -123,7 +123,7 @@ end
 
 function Player:key_pressed(key)
     -- Get input for switching weapons
-    if key == '1' or key == '2' or key == '3' then
+    if tonumber(key) then
         -- Switch to specified weapon number, based on display order
         self.armory:switch_to_weapon_number(tonumber(key))
     elseif key == KEYS.SWITCH_WEAPON then
