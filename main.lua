@@ -29,7 +29,12 @@ function love.load()
             WALK = {NORTH = 16,
                     EAST = 17,
                     SOUTH = 18,
-                    WEST = 19}}
+                    WEST = 19},
+            WEAPON_SLOT_1 = 20,
+            WEAPON_SLOT_2 = 21,
+            WEAPON_SLOT_3 = 22,
+            WEAPON_SLOT_4 = 23,
+            WEAPON_SLOT_5 = 24}
 
     -- These are the tile dimensions in (unscaled) pixels
     TILE_W = 8

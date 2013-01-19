@@ -187,7 +187,7 @@ function Wrapper:key_pressed(key)
 
     if tonumber(key) then
         if tonumber(key) >= 1 and tonumber(key) <= 9 then
-            self:send_keypress(key)
+            self:send_keypress(KEYS['WEAPON_SLOT_' .. key])
         end
     end
 

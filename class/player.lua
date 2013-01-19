@@ -122,11 +122,16 @@ function Player:key_held(key)
 end
 
 function Player:key_pressed(key)
+    if not key then
+        return
+    end
+
     -- Get input for switching weapons
-    if tonumber(key) then
+    if key >= KEYS.WEAPON_SLOT_1 and key <= KEYS.WEAPON_SLOT_5 then
         -- Switch to specified weapon number, based on display order
-        self.armory:switch_to_weapon_number(tonumber(key))
-    elseif key == KEYS.SWITCH_WEAPON then
+        self.armory:switch_to_weapon_number(key - KEYS.WEAPON_SLOT_1 + 1)
+    end
+    if key == KEYS.SWITCH_WEAPON then
         -- Switch to the next weapon
         self.armory:switch_to_next_weapon()
     end
