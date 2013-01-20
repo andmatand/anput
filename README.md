@@ -21,16 +21,20 @@ unfinished program and thought a more developed remake of it would be a fun
 project for trying out Lua and the LÖVE framework.
 
 ##Controls
+###Gameplay
 * move: wasd
 * switch weapon: 1 - 5, or Shift
 * shoot: arrow buttons
 * pause: spacebar
-* switch menu (while paused): tab
-* inventory: i
-* map: m
 * use elixir: e
 * use potion: p
+* context sensitive button: enter
+
+###Inventory
+* use item: enter
 * drop item: delete
+
+###System-Wide
 * fullscreen: f11, Alt + Enter
 * new game: Ctrl + n
 * increase/decrease graphics scaling: Ctrl +/-
