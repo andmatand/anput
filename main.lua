@@ -124,6 +124,8 @@ function love.load()
     images.npc.camel = {default = new_image('camel.png'),
                         step = new_image('camel-step.png')}
     images.npc.khnum = {default = new_image('khnum.png')}
+    images.npc.wizard = {default = new_image('wizard.png'),
+                         firestaff = new_image('wizard-firestaff.png')}
 
     -- Projectiles
     projectileImg = {}

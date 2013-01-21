@@ -7,7 +7,7 @@ function Wizard:init()
     Wizard.super.init(self, {ware = Weapon('firestaff')})
 
     self.name = 'WIZARD'
-    self.images = playerImg
+    self.images = images.npc.wizard
     self.magic = 100
 
     -- See monsters as enemies
