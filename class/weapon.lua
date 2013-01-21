@@ -29,7 +29,7 @@ WEAPON_TYPE = {
                     meleeDamage = 5,
                     isMagic = true,
                     canShoot = true,
-                    ammoCost = 10},
+                    ammoCost = 5},
 
     thunderstaff = {order = 5,
                     meleeDamage = 5,
