@@ -4,7 +4,6 @@ Toast = class('Toast')
 
 function Toast:init()
     -- Begin offscreen
-    self.position = {y = upscale_y(ROOM_H)}
     self.offset = {y = upscale_y(1)}
     self.visible = false
 
@@ -17,15 +16,15 @@ function Toast:freeze()
 end
 
 function Toast:get_y()
-    return self.position.y + self.offset.y
+    return self:get_position().y + self.offset.y
+end
+
+function Toast:get_position()
+    return {y = upscale_y(ROOM_H)}
 end
 
 function Toast:is_visible()
-    if self.offset.y >= upscale_y(1) then
-        return false
-    else
-        return true
-    end
+    return self.visible
 end
 
 function Toast:show()
@@ -40,12 +39,6 @@ function Toast:unfreeze()
 end
 
 function Toast:update()
-    -- If the scale changed
-    if self.scale ~= SCALE_X then
-        self.scale = SCALE_X
-        self.position.y = upscale_y(ROOM_H)
-    end
-
     if self.frozen then
         return
     end

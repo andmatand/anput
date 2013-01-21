@@ -22,6 +22,7 @@ function Door:draw(alpha)
                             upscale_y(self.position.y),
                             upscale_x(1), upscale_y(1))
 
+    love.graphics.push()
     love.graphics.setScissor(SCREEN_X + upscale_x(self.position.x),
                              SCREEN_Y + upscale_y(self.position.y),
                              upscale_x(1), upscale_y(1))
@@ -57,6 +58,7 @@ function Door:draw(alpha)
     end
 
     love.graphics.setScissor()
+    love.graphics.pop()
 end
 
 function Door:get_position()
