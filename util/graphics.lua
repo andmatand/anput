@@ -53,7 +53,7 @@ function cga_print(text, x, y, options)
     for line in text:gmatch("[^\n]+") do
         local xPos = x
         if options.center then
-            xPos = x - (font:getWidth(line) / 2)
+            xPos = x - ((font:getWidth(line) * SCALE_X) / 2)
         end
 
         -- Set the color
@@ -64,7 +64,7 @@ function cga_print(text, x, y, options)
         end
 
         -- Draw this line of text
-        love.graphics.print(line, xPos, y + (i * TILE_H), 0, SCALE_X, SCALE_Y)
+        love.graphics.print(line, xPos, y + upscale_y(i), 0, SCALE_X, SCALE_Y)
 
         -- Keep track of which line number we're on
         i = i + 1
