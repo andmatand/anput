@@ -35,6 +35,7 @@ function cga_print(text, x, y, options)
     -- Set default options
     options = options or {}
 
+    local x, y = x, y
     local text = tostring(text)
 
     -- If an actual pixel position is given
@@ -46,13 +47,6 @@ function cga_print(text, x, y, options)
         x = math.floor(upscale_x(x))
         y = math.floor(upscale_y(y))
     end
-
-    -- Unscale the coordinates since we are going to upscale the drawing
-    x = x / SCALE_X
-    y = y / SCALE_Y
-
-    love.graphics.push()
-    love.graphics.scale(SCALE_X, SCALE_Y)
 
     -- Go through each line of the text
     local i = 0
@@ -70,13 +64,11 @@ function cga_print(text, x, y, options)
         end
 
         -- Draw this line of text
-        love.graphics.print(line, xPos, y + (i * TILE_H))
+        love.graphics.print(line, xPos, y + (i * TILE_H), 0, SCALE_X, SCALE_Y)
 
         -- Keep track of which line number we're on
         i = i + 1
     end
-
-    love.graphics.pop()
 end
 
 -- Parameters refer to the size of the content area, not the actual border
