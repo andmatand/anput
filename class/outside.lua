@@ -60,6 +60,7 @@ function Outside:draw()
     love.graphics.push()
     love.graphics.translate(0, -SCALE_Y)
 
+    love.graphics.setColor(WHITE)
     love.graphics.draw(self.museum.image,
                        upscale_x(self.museum.position.x),
                        upscale_y(self.museum.position.y) -
