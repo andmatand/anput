@@ -15,7 +15,7 @@ function Camel:init()
     -- AI
     self.ai.choiceTimer.delay = 0
     self.ai.level.globetrot = {prob = 10, delay = 0}
-    self.ai.level.follow = {dist = 5, delay = .1}
+    self.ai.level.follow = {dist = 8, delay = .1}
     self.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
     self.ai.level.drop = {prob = 10, delay = .5}
 
