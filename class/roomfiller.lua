@@ -5,7 +5,7 @@ require('class.turret')
 require('util.tile')
 require('util.tables')
 
--- A RoomFiller fills a room with monsters, items
+-- A RoomFiller fills a room with monsters, items, etc.
 RoomFiller = class('RoomFiller')
 
 function RoomFiller:init(room)
@@ -14,9 +14,6 @@ function RoomFiller:init(room)
     -- Make a table of tiles in which (walkable) items may be placed
     self.itemTiles = copy_table(self.room.freeTiles)
     
-    -- Make a table of tiles in which (non-walkable) obstacles may be placed
-    self.obstacleTiles = copy_table(self.room.freeTiles)
-
     -- Remove doorway tiles from future use
     for _, e in pairs(self.room.exits) do
         local dw = e:get_doorway()
@@ -266,16 +263,13 @@ function RoomFiller:add_items()
         return true
     end
 
+    local itemTypes = self:get_item_types()
+
     -- If this is a secret room
     if self.room.isSecret then
         -- Add some goodies
         local numGoodies = math.random(3, 8)
         local goodies = {}
-        local itemTypes = {'arrow', 'elixir', 'shinything', 'potion'}
-
-        if self.room.difficulty < MONSTER_DIFFICULTY['archer'] then
-            table.insert(itemTypes, 'bow')
-        end
 
         for i = 1, numGoodies do
             -- Choose a random item type
@@ -295,14 +289,6 @@ function RoomFiller:add_items()
         -- Place the goodies in the room
         self:position_objects(goodies)
     else
-        local itemTypes = {'elixir', 'arrow'}
-        --if self.room.difficulty >= MONSTER_DIFFICULTY['archer'] / 2 then
-        --    table.insert(itemTypes, 'arrow')
-        --end
-        if self.room.difficulty >= 50 then
-            table.insert(itemTypes, 'potion')
-        end
-
         -- Give items to the monsters
         for _, m in pairs(self.room:get_monsters()) do
             if #itemTypes == 0 then
@@ -340,8 +326,8 @@ function RoomFiller:add_items()
     return false
 end
 
-function RoomFiller:add_monsters()
-    local max = #self.room.freeTiles * .04
+function RoomFiller:add_monsters(max)
+    local max = max or #self.room.freeTiles * .04
 
     if self.addedMonsters then
         -- Flag that this step was already completed
@@ -368,8 +354,8 @@ function RoomFiller:add_monsters()
     end
 
     -- Create a table of monsters with difficulties as high as possible in
-    -- order to meet room difficulty level, without exceding the room's maximum
-    -- occupancy
+    -- order to meet the room's difficulty level, without exceding the room's
+    -- maximum occupancy
     local monsters = {}
     local totalDifficulty = 0
     while totalDifficulty < self.room.difficulty and #monsters < max do
@@ -396,13 +382,13 @@ function RoomFiller:add_monsters()
     -- DEBUG
     --print('actual difficulty: ' .. totalDifficulty)
 
-    if #monsters > 0 then
-        -- Iterate through the existing items in the room
-        for _, item in pairs(self.room.items) do
-            -- Give the item to a random monster
-            monsters[math.random(1, #monsters)]:pick_up(item)
-        end
-    end
+    --if #monsters > 0 then
+    --    -- Iterate through the existing items in the room
+    --    for _, item in pairs(self.room.items) do
+    --        -- Give the item to a random monster
+    --        monsters[math.random(1, #monsters)]:pick_up(item)
+    --    end
+    --end
 
     self:position_objects(monsters)
 
@@ -557,6 +543,30 @@ function RoomFiller:add_required_objects()
     return false
 end
 
+function RoomFiller:get_item_types()
+    -- Return the possible item types that are appropriate for this
+    -- room
+    local itemTypes = {}
+    if self.room.isSecret then
+        itemTypes = {'arrow', 'elixir', 'shinything', 'potion'}
+
+        if self.room.difficulty < MONSTER_DIFFICULTY['archer'] then
+            table.insert(itemTypes, 'bow')
+        end
+    else
+        itemTypes = {'arrow', 'elixir'}
+
+        if self.room.difficulty >= 33 then
+            table.insert(itemTypes, 'potion')
+        end
+    end
+
+    return itemTypes
+end
+
+function RoomFiller:get_max_monsters()
+end
+
 function RoomFiller:position_objects(objects)
     local ok
 
@@ -567,11 +577,7 @@ function RoomFiller:position_objects(objects)
             local position = self.itemTiles[tileIndex]
 
             -- Remove this tile from future consideration
-            if o.isWalkable or o.isMovable then
-                ok = self:use_tile(position)
-            else
-                ok = self:use_obstacle_tile(position)
-            end
+            ok = self:use_tile(position)
 
             -- If this position was available
             if ok then
@@ -590,69 +596,11 @@ function RoomFiller:position_objects(objects)
     end
 end
 
-function RoomFiller:use_obstacle_tile(tile)
-    local tileIsAvailable = false
-
-    for i, t in pairs(self.obstacleTiles) do
-        if tiles_overlap(tile, t) then
-            tileIsAvailable = true
-
-            -- Remove the tile from future use by obstacles
-            table.remove(self.obstacleTiles, i)
-
-            break
-        end
-    end
-
-    -- If this tile is still available
-    if tileIsAvailable then
-        local ok = false
-
-        -- If this tile has 5 consecutive free adjacent tiles
-        if consecutive_free_neighbors(tile, self.room.bricks, 5) then
-            ok = true
-        end
-
-        if ok then
-            -- Make sure the position is not blocking a doorway
-            for _, e in pairs(self.room.exits) do
-                if tiles_touching(tile, e:get_doorway()) then
-                    ok = false
-                    break
-                end
-            end
-        end
-
-        if ok then
-            -- Remove the tile from the room's freeTiles
-            for i, t in pairs(self.room.freeTiles) do
-                if tiles_overlap(tile, t) then
-                    table.remove(self.room.freeTiles, i)
-                    break
-                end
-            end
-
-            return true
-        end
-    end
-
-    return false
-end
-
 function RoomFiller:use_tile(tile)
-    -- Ensure the tile is still available
-    for i, t in pairs(self.obstacleTiles) do
-        if tiles_overlap(tile, t) then
-            -- Remove this tile from future use by obstacles
-            table.remove(self.obstacleTiles, i)
-
-            -- Remove this tile from future use by items
-            for j, ft in pairs(self.itemTiles) do
-                if tiles_overlap(tile, ft) then
-                    table.remove(self.itemTiles, j)
-                    break
-                end
-            end
+    -- Remove this tile from future use by items
+    for j, ft in pairs(self.itemTiles) do
+        if tiles_overlap(tile, ft) then
+            table.remove(self.itemTiles, j)
 
             -- Signal that the tile was available
             return true

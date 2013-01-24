@@ -313,8 +313,9 @@ function Room:generate_next_piece()
         -- Mark the generation process as complete
         self.isGenerated = true
 
-        -- Free up the memory used by the roomBuilder
-        --self.roomBuilder = nil
+        -- Free up the memory used by the roomBuilder and roomFiller
+        self.roomBuilder = nil
+        self.roomFiller = nil
 
         if DEBUG then
             print('generated room ' .. self.index)

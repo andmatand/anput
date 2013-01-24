@@ -562,6 +562,12 @@ function Map:add_required_objects()
     --thing.tag = true
     --table.insert(self.rooms[1].requiredObjects, thing)
 
+    -- Put a bow in one of the 5 earliest rooms
+    local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
+    local bowRoom = rooms[math.random(1, #rooms)]
+    local bow = Weapon('bow')
+    table.insert(bowRoom.requiredObjects, bow)
+
     -- Put the wizard in one of the 5 earliest rooms
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
     local wizardRoom = rooms[math.random(1, #rooms)]

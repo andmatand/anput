@@ -287,6 +287,96 @@ function Game:show_tutorial_messages()
     end
 end
 
+function Game:spawn_more_monsters()
+    if not self.spawnTimer or self.time >= self.spawnTimer + 10 then
+        self.spawnTimer = self.time
+    else
+        return
+    end
+
+    -- Find a random room that has less than its target total monster
+    -- difficulty
+    local rooms = copy_table(self.rooms)
+    while #rooms > 0 do
+        local index = math.random(1, #rooms)
+        local room = rooms[index]
+
+        local ok = false
+        local totalDifficulty
+
+        -- If this is a room which can have monsters added to it
+        if room.isGenerated and not room.isSecret and not room.roadblock and
+           room.index > 1 and room ~= self.currentRoom then
+            ok = true
+
+            -- Check if the total monster difficulty is lower than the room's
+            -- difficulty
+            totalDifficulty = 0
+            for _, sprite in pairs(room.sprites) do
+                if instanceOf(Monster, sprite) then
+                    totalDifficulty = totalDifficulty + sprite.difficulty
+
+                    -- If the total monster difficulty is already at its
+                    -- maximum
+                    if totalDifficulty >= room.difficulty then
+                        -- There is no more room for new monsters
+                        ok = false
+                        break
+                    end
+                end
+            end
+        end
+
+        -- If it's okay to add a new monster to the room
+        if ok then
+            if DEBUG then
+                print('trying to spawn a monster in room ' .. room.index)
+            end
+
+            local possibleMonsterTypes = {}
+            for monsterType, difficulty in pairs(MONSTER_DIFFICULTY) do
+                if difficulty and
+                   difficulty <= room.difficulty - totalDifficulty then
+                    table.insert(possibleMonsterTypes, monsterType)
+                end
+            end
+
+            if #possibleMonsterTypes > 0 then
+                local index = math.random(1, #possibleMonsterTypes)
+                local newMonsterType = possibleMonsterTypes[index]
+                local newMonster = Monster(self, newMonsterType)
+                local position = room:get_free_tile()
+
+                if position then
+                    if DEBUG then
+                        print('spawning a ' .. newMonsterType .. ' in room ' ..
+                              room.index)
+                    end
+
+                    newMonster:set_position(room:get_free_tile())
+                    room:add_object(newMonster)
+
+                    if math.random(1, 3) == 1 then
+                        -- Choose a random item type
+                        local roomFiller = RoomFiller(room)
+                        local itemTypes = roomFiller:get_item_types()
+                        local itemType = itemTypes[math.random(1, #itemTypes)]
+
+                        local newItem = Item(itemType)
+
+                        -- Pretend the monster picked it up
+                        newMonster:pick_up(newItem)
+                    end
+
+                    return
+                end
+            end
+        end
+
+        table.remove(rooms, index)
+    end
+end
+
 function Game:switch_to_room(room)
     --if DEBUG then
         print('switching to room ' .. room.index)
@@ -365,6 +455,8 @@ function Game:update(dt)
 
     self:holdable_key_input()
     self:show_tutorial_messages()
+
+    self:spawn_more_monsters()
 
     -- Update the current room
     self.currentRoom:update()
