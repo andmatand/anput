@@ -122,26 +122,7 @@ function Game:generate()
     -- Switch to the first room
     self:move_player_to_start()
 
-    -- Put the sword close to the entrance of the first room
-    local swordPos
-    local freeTiles = copy_table(self.currentRoom.freeTiles)
-    while #freeTiles > 0 do
-        local index = math.random(1, #freeTiles)
-        local dist = manhattan_distance(freeTiles[index],
-                                        self.player:get_position())
-        if dist > 1 and dist <= 7 then
-            swordPos = freeTiles[index]
-            break
-        else
-            table.remove(freeTiles, index)
-        end
-    end
-    for _, item in pairs(self.currentRoom.items) do
-        if item.itemType == 'sword' then
-            item:set_position(swordPos)
-            break
-        end
-    end
+    self:position_sword()
 
     -- Create a status bar
     self.statusBar = StatusBar(self.player, self)
@@ -239,6 +220,25 @@ function Game:pause()
         self.inventoryMenu:refresh_items()
 
         self.paused = true
+    end
+end
+
+function Game:position_sword()
+    -- Put the sword midway along the path the player will need to take to
+    -- reach the exit to the second room
+    local firstRoom = self.rooms[1]
+    local exitToSecondRoom = firstRoom:get_exit({targetRoom = self.rooms[2]})
+
+    local pf = PathFinder(self.player:get_position(),
+                          exitToSecondRoom:get_doorway(),
+                          firstRoom.bricks)
+    local path = pf:plot()
+    local swordPosition = path[math.floor(#path / 2)]
+    for _, item in pairs(firstRoom.items) do
+        if item.itemType == 'sword' then
+            item:set_position(swordPosition)
+            break
+        end
     end
 end
 
