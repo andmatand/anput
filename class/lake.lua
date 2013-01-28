@@ -26,9 +26,10 @@ end
 
 function Lake:draw(fov)
     -- Enable the stencil
-    if not DEBUG then
-        love.graphics.setStencil(self.stencil)
-    end
+    love.graphics.push()
+    love.graphics.setStencil(self.stencil)
+
+    if DEBUG then love.graphics.setStencil() end
 
     if not self.spriteBatches[self.frameNumber] then
         self:create_spritebatch(self.frameNumber)
@@ -71,6 +72,7 @@ function Lake:draw(fov)
     --end
 
     -- Remove the stencil
+    love.graphics.pop()
     love.graphics.setStencil()
 end
 
