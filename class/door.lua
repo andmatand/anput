@@ -12,20 +12,35 @@ function Door:init(position, dir)
     self.offset = 0
     self.maxOffset = 4
     self.timer = {delay = .2, value = love.timer.getTime()}
+    self.drawGlyph = true
+
+    local stencilFunction =
+        function()
+            love.graphics.setColor(255, 255, 255, 255)
+            love.graphics.rectangle('fill',
+                                    upscale_x(self.position.x),
+                                    upscale_y(self.position.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+    self.stencil = love.graphics.newStencil(stencilFunction)
 end
 
 function Door:draw(alpha)
-    -- Draw the blackness inside
-    love.graphics.setColor(BLACK)
-    love.graphics.rectangle('fill',
-                            upscale_x(self.position.x),
-                            upscale_y(self.position.y),
-                            upscale_x(1), upscale_y(1))
+    love.graphics.setColorMode('modulate')
 
-    love.graphics.push()
-    love.graphics.setScissor(SCREEN_X + upscale_x(self.position.x),
-                             SCREEN_Y + upscale_y(self.position.y),
-                             upscale_x(1), upscale_y(1))
+    if self.drawBlackness then
+        -- Draw the blackness inside (used for Outside)
+        love.graphics.setColor(BLACK)
+        love.graphics.rectangle('fill',
+                                upscale_x(self.position.x),
+                                upscale_y(self.position.y),
+                                upscale_x(1), upscale_y(1))
+    end
+
+    if self.state == 'opening' or self.state == 'closing' then
+        love.graphics.push()
+        love.graphics.setStencil(self.stencil)
+    end
 
     local rotation = 0
     local offset = {x = 0, y = 0}
@@ -39,26 +54,28 @@ function Door:draw(alpha)
         offset.y = -(self.offset * 2 * SCALE_Y)
     end
 
-    love.graphics.setColorMode('modulate')
+    if self.state ~= 'open' then
+        -- Draw the door's background color
+        love.graphics.setColor(MAGENTA[1], MAGENTA[2], MAGENTA[3], alpha)
+        love.graphics.rectangle('fill',
+                                upscale_x(self.position.x) + offset.x,
+                                upscale_y(self.position.y) + offset.y,
+                                upscale_x(1), upscale_y(1))
 
-    -- Draw the door's background color
-    love.graphics.setColor(MAGENTA[1], MAGENTA[2], MAGENTA[3], alpha)
-    love.graphics.rectangle('fill',
-                            upscale_x(self.position.x) + offset.x,
-                            upscale_y(self.position.y) + offset.y,
-                            upscale_x(1), upscale_y(1))
-
-    -- Draw the foreground of the door
-    if self.room then
-        love.graphics.setColor(WHITE[1], WHITE[2], WHITE[3], alpha)
-        love.graphics.draw(images.door,
-                           upscale_x(self.position.x) + offset.x,
-                           upscale_y(self.position.y) + offset.y,
-                           rotation, SCALE_X, SCALE_Y)
+        -- Draw the foreground of the door
+        if self.drawGlyph then
+            love.graphics.setColor(WHITE[1], WHITE[2], WHITE[3], alpha)
+            love.graphics.draw(images.door,
+                               upscale_x(self.position.x) + offset.x,
+                               upscale_y(self.position.y) + offset.y,
+                               rotation, SCALE_X, SCALE_Y)
+        end
     end
 
-    love.graphics.setScissor()
-    love.graphics.pop()
+    if self.state == 'opening' or self.state == 'closing' then
+        love.graphics.setStencil()
+        love.graphics.pop()
+    end
 end
 
 function Door:get_position()

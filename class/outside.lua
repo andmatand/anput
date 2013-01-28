@@ -32,6 +32,8 @@ function Outside:init()
 
     self.door = Door({x = (2 * self.temple.position.x) + 3,
                       y = (2 * self.temple.position.y) - 1})
+    self.door.drawBlackness = true
+    self.door.drawGlyph = false
 end
 
 function Outside:add_dialogue(lines)
