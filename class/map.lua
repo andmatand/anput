@@ -583,7 +583,7 @@ function Map:add_required_objects()
             add_npc_to_room(Khnum(), room)
 
             -- Add the "Khnum" hieroglyphs to the room
-            room.requiredHieroglyphs = {{'hnm', 'khnum'}}
+            room.requiredHieroglyphs = {{'hnm', 'w', 'khnum'}}
         elseif room.roadblock == 'lake' then
             -- Add the "lake" hieroglyphs to the room
             room.requiredHieroglyphs = {{'water', 'lake'}}
