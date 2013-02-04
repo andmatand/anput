@@ -575,7 +575,6 @@ end
 -- Floodfill starting from the exit, but in such a way that the entrance is not
 -- blocked
 function RoomBuilder:lake_fill(exit, entrance)
-    print('lake_fill')
     -- Decide on a good maximum amount of water to allow, based on the
     -- room's size
     local maxTiles = #self.freeTiles * .33
