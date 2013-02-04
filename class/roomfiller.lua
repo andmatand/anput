@@ -540,6 +540,10 @@ function RoomFiller:add_required_objects()
         if pos.x and pos.y  then
             self.room:add_object(obj)
 
+            if instanceOf(Brick, obj) then
+                self.room.tileCache:add(pos, obj)
+            end
+
             -- Remove the object's position from future use
             self:use_tile(pos)
         else
