@@ -187,6 +187,7 @@ function RoomFiller:position_hieroglyph(letters, orientation)
     end
 
     -- Find a long enough row of bricks
+    local padding = 1
     while #goodBricks > 0 do
         brick = goodBricks[math.random(1, #goodBricks)]
 
@@ -219,11 +220,11 @@ function RoomFiller:position_hieroglyph(letters, orientation)
                     previousBrick = brick
 
                 -- If we didn't find enough bricks to fit all the letters
-                elseif #bricksInARow < #letters then
+                elseif #bricksInARow < #letters + (padding * 2) then
                     removeBricks = true
 
                 -- If we found enough bricks for all the letters
-                elseif #bricksInARow >= #letters then
+                elseif #bricksInARow >= #letters + (padding * 2) then
                     -- Find the starting brick that will make the string of
                     -- letters be centered
                     local start = math.floor((#bricksInARow / 2) -
