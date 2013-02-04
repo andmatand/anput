@@ -43,11 +43,11 @@ function FloodFiller:flood()
                 -- Add this tile to the table of found tiles
                 table.insert(self.freeTiles, {x = x, y = y})
 
-                --if self.options.maxSize then
-                --    if #self.freeTiles >= self.options.maxSize then
-                --        return {}
-                --    end
-                --end
+                if self.options.maxSize then
+                    if #self.freeTiles >= self.options.maxSize then
+                        return {}
+                    end
+                end
             end
 
             -- If we are searching the left side and we find a legal
@@ -96,8 +96,12 @@ function FloodFiller:legal_position(x, y)
         return false
     end
 
-    -- If this is an illegal tile
-    if self.hotLava then
+    if self.options.lavaCache then
+        local tile = self.options.lavaCache:get_tile({x = x, y = y})
+        if #tile.contents > 0 then
+            return false
+        end
+    elseif self.hotLava then
         for _, l in pairs(self.hotLava) do
             if x == l.x and y == l.y then
                 return false

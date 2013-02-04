@@ -1,6 +1,7 @@
 require('class.fovfinder')
 require('class.roombuilder')
 require('class.roomfiller')
+require('class.tilecache')
 
 Room = class('Room')
 
@@ -10,7 +11,8 @@ function Room:init(args)
     self.visited = false
     self.bricksDirty = true
 
-    self.tileCache = {}
+    self.tileCache = TileCache()
+    self.tileCache.room = self
 
     -- Drawables
     self.bricks = {}
@@ -299,6 +301,9 @@ function Room:generate_next_piece()
     end
 
     if not self.roomFiller then
+        -- Update the tile cache with the locations of bricks, exits, and
+        -- freeTiles from the roombuilder
+        self:add_roombuilder_result_to_tilecache()
         self.roomFiller = RoomFiller(self)
     end
 
@@ -306,9 +311,6 @@ function Room:generate_next_piece()
     if self.roomFiller:fill_next_step() then
         -- Make a spriteBatch for drawing bricks
         self.brickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
-
-        -- Update the tile cache with the locations of permanent objects
-        self:update_tile_cache()
 
         -- Mark the generation process as complete
         self.isGenerated = true
@@ -381,19 +383,6 @@ function Room:get_monsters()
     end
 
     return monsters
-end
-
--- Returns cached information about a tile
-function Room:get_tile(position)
-    local index = ((ROOM_W + 2) * (position.y + 1)) + (position.x + 1) + 1
-
-    -- If no tile exists in the cache at this index
-    if not self.tileCache[index] then
-        -- Add an empty tile to the cache
-        self.tileCache[index] = {contents = {}, isInRoom = false}
-    end
-
-    return self.tileCache[index]
 end
 
 function Room:is_audible()
@@ -493,8 +482,7 @@ end
 function Room:remove_object(obj)
     -- Remove the object from its tile in our tile cache
     if obj.get_position then
-        local tile = self:get_tile(obj:get_position())
-        remove_value_from_table(obj, tile.contents)
+        self.tileCache:remove(obj:get_position(), obj)
     end
 
     if instanceOf(Item, obj) then
@@ -542,10 +530,10 @@ end
 function Room:tile_is_droppoint(tile, ignoreCharacter)
     -- Check if the tile is overlapping with a collidable object in the tile
     -- cache, or the tile is not in the room
-    local furnitureTile = self:get_tile(tile)
+    local furnitureTile = self.tileCache:get_tile(tile)
     if furnitureTile.isExit then
         return false
-    elseif furnitureTile.isInRoom then
+    elseif furnitureTile.isPartOfRoom then
         for _, object in pairs(furnitureTile.contents) do
             if object:is_collidable() then
                 return false
@@ -576,8 +564,8 @@ function Room:tile_is_droppoint(tile, ignoreCharacter)
 end
 
 function Room:tile_in_room(tile)
-    local furnitureTile = self:get_tile(tile)
-    if furnitureTile.isInRoom then
+    local furnitureTile = self.tileCache:get_tile(tile)
+    if furnitureTile.isPartOfRoom then
         return true
     else
         return false
@@ -587,10 +575,10 @@ end
 -- Return true if tile can be walked on right now (contains no collidable
 -- objects)
 function Room:tile_walkable(tile)
-    local cachedTile = self:get_tile(tile)
+    local cachedTile = self.tileCache:get_tile(tile)
 
     -- If the tile is not in the room
-    if not cachedTile.isInRoom then
+    if not cachedTile.isPartOfRoom then
         return false
     end
 
@@ -828,51 +816,24 @@ function Room:update_messages()
     return false
 end
 
-function Room:update_tile_cache()
-    -- Mark all tiles as emtpy
-    self.tileCache = {}
-    --local i = 0
-    --for y = -1, ROOM_H do
-    --    for x = -1, ROOM_W do
-    --        i = i + 1
-    --        self.tileCache[i] = {contents = {}, isInRoom = false}
-    --    end
-    --end
-
+function Room:add_roombuilder_result_to_tilecache()
     -- Add bricks
     for _, brick in pairs(self.bricks) do
-        local tile = self:get_tile(brick:get_position())
-        tile.contents = {brick}
-        tile.isInRoom = true
+        self.tileCache:add(brick:get_position(), brick)
     end
 
     -- Add freeTiles
     for _, ft in pairs(self.freeTiles) do
-        local tile = self:get_tile(ft)
-        tile.isInRoom = true
-        tile.is_collidable = function() return false end
+        self.tileCache:add(ft)
     end
 
     -- Add exits
     for _, exit in pairs(self.exits) do
-        local tile = self:get_tile(exit:get_position())
-        tile.contents = {exit}
-        tile.isInRoom = true
-        tile.isExit = true
+        self.tileCache:add(exit:get_position(), exit, {isExit = true})
     end
 
     -- Add doors
     for _, door in pairs(self.doors) do
-        local tile = self:get_tile(door:get_position())
-        tile.contents = {door}
-        tile.isInRoom = true
-    end
-
-    -- Add switches
-    for _, switch in pairs(self.switches) do
-        local tile = self:get_tile(switch:get_position())
-        table.insert(tile.contents, switch)
-        tile.isInRoom = true
-        tile.is_collidable = function() return false end
+        self.tileCache:add(door:get_position(), door)
     end
 end

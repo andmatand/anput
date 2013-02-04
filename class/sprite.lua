@@ -130,7 +130,7 @@ function Sprite:physics(force)
     test.position.y = test.position.y + self.velocity.y
     
     -- Check for collision with collidable objects
-    local tile = test.room:get_tile(test.position)
+    local tile = test.room.tileCache:get_tile(test.position)
     for i = 1, #tile.contents do
         local object = tile.contents[i]
         if self:hit(object) then

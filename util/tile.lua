@@ -91,7 +91,7 @@ function directions_to(from, to)
     return dirs
 end
 
-function extend_to_lava(src, dirs, hotLava)
+function extend_to_lava(src, dirs, lavaCache)
     local tiles = {}
     table.insert(tiles, src)
 
@@ -103,11 +103,8 @@ function extend_to_lava(src, dirs, hotLava)
 
             local ok = true
 
-            for _, hl in pairs(hotLava) do
-                if tiles_overlap(pos, hl) then
-                    ok = false
-                    break
-                end
+            if #lavaCache:get_tile(pos).contents > 0 then
+                ok = false
             end
 
             if pos.x < 0 or pos.y < 0 or

@@ -21,8 +21,7 @@ function FalseBrick:receive_hit(agent)
     self.isDead = true
 
     -- Remove ourself from the room's tile cache
-    local tile = self.room:get_tile(self:get_position())
-    remove_value_from_table(self, tile.contents)
+    self.room.tileCache:remove(self:get_position(), self)
 
     -- Force a redraw of the room's bricks
     self.room.bricksDirty = true

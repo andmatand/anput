@@ -215,7 +215,7 @@ function FOVFinder:shadow_cast()
                 local transTile = job.cone:translate_octant(tile)
 
                 local occupied = false
-                local roomTile = self.room:get_tile(transTile)
+                local roomTile = self.room.tileCache:get_tile(transTile)
                 for j = 1, #roomTile.contents do
                     if roomTile.contents[j].isFovObstacle then
                         occupied = true

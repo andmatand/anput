@@ -16,10 +16,14 @@ function PathFinder:legal_position(x, y)
         return true
     end
 
-    -- If this is an illegal tile
-    if self.hotLava ~= nil then
-        for j,b in pairs(self.hotLava) do
-            if x == b.x and y == b.y then
+    if self.options.lavaCache then
+        local tile = self.options.lavaCache:get_tile({x = x, y = y})
+        if #tile.contents > 0 then
+            return false
+        end
+    elseif self.hotLava then
+        for _, hl in pairs(self.hotLava) do
+            if x == hl.x and y == hl.y then
                 return false
             end
         end

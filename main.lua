@@ -216,9 +216,8 @@ function love.load()
     sounds.secret = Sound('res/sfx/secret.wav')
     sounds.trap = Sound('res/sfx/trap.wav')
 
-    showDebug = false
-
-    FPS = 15
+    --mute = true
+    FPS_LIMIT = 15
 
     -- Create a new wrapper object
     wrapper = Wrapper()

@@ -387,8 +387,8 @@ function Character:drop_item_group(items)
                     local index = math.random(1, #tempNeighbors)
                     local n = tempNeighbors[index]
 
-                    local roomTile = self.room:get_tile(n)
-                    if roomTile.isInRoom and #roomTile.contents == 0 then
+                    local roomTile = self.room.tileCache:get_tile(n)
+                    if roomTile.isPartOfRoom and #roomTile.contents == 0 then
                         -- Use this position
                         position = {x = n.x, y = n.y}
                         break
@@ -685,7 +685,9 @@ function Character:shoot(dir)
     -- If we have a weapon that shoots projectiles
     if self.armory.currentWeapon.projectileClass then
         -- Check if we are trying to shoot into a brick or a non-open door
-        local tile = self.room:get_tile(add_direction(self:get_position(), dir))
+        local tile
+        tile = self.room.tileCache:get_tile(add_direction(self:get_position(),
+                                                          dir))
         for _, object in pairs(tile.contents) do
            if object:is_collidable() and
               (instanceOf(Brick, object) or instanceOf(Door, object)) then

@@ -55,7 +55,7 @@ end
 Wrapper = class('Wrapper')
 
 function Wrapper:init()
-    self.fpsTimer = 0
+    self.fpsLimitTimer = 0
 
     -- Create a new thread for building rooms in the background
     self.roomBuilderThread = love.thread.newThread('roombuilder_thread',
@@ -325,7 +325,7 @@ function Wrapper:update(dt)
     self:joystick_directional_input('SHOOT')
 
     -- Add to timer to limit FPS
-    self.fpsTimer = self.fpsTimer + dt
+    self.fpsLimitTimer = self.fpsLimitTimer + dt
 
     if self.state == 'game' then
         -- Add to game time
@@ -354,7 +354,7 @@ function Wrapper:update(dt)
     end
 
     -- If we have waited long enough between frames
-    if self.fpsTimer > 1 / FPS then
+    if self.fpsLimitTimer > 1 / FPS_LIMIT then
         if self.state == 'intro' then
             self.intro:update()
         elseif self.state == 'game' then
@@ -363,7 +363,7 @@ function Wrapper:update(dt)
             self.outro:update()
         end
 
-        self.fpsTimer = 0
+        self.fpsLimitTimer = 0
     else -- Do stuff in between frames
         if self.game.map then
             self:manage_roombuilder_thread()
@@ -380,8 +380,10 @@ function Wrapper:update(dt)
             end
 
             if numRoomsGenerated == #self.game.rooms then
+                local totalTime = love.timer.getTime() - roomGenTimer
                 print('generated all ' .. #self.game.rooms .. ' rooms in ' ..
-                      love.timer.getTime() - roomGenTimer .. ' seconds')
+                      totalTime .. ' seconds ' .. '(' ..
+                      #self.game.rooms / totalTime .. ' rooms/sec)')
                 self.game.generatedAllRooms = true
             end
         else

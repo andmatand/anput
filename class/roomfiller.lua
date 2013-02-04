@@ -115,17 +115,15 @@ function RoomFiller:position_switches()
 
             -- Make sure this position is not overlapping with a hieroglyph
             if ok then
-                for _, h in pairs(self.room.hieroglyphs) do
-                    if tiles_overlap(brick:get_position(),
-                                     h:get_position()) then
-                        ok = false
-                        break
-                    end
+                local tile = self.room.tileCache:get_tile(brick:get_position())
+                if tile:contains_class(Hieroglyph) then
+                    ok = false
                 end
             end
 
             if ok then
                 switch:set_position(brick:get_position())
+                self.room.tileCache:add(switch:get_position(), switch)
                 break
             else
                 -- Remove this brick from future consideration
@@ -162,14 +160,25 @@ function RoomFiller:position_hieroglyph(letters, orientation)
 
         if orientation == 'horizontal' then
             -- If this brick has a freeTile below it
-            for _, ft in pairs(self.room.freeTiles) do
-                if ft.x == b.x and ft.y == b.y + 1 then
-                    ok = true
-                    break
+            local belowBrick = add_direction(b:get_position(), 3)
+            local tile = self.room.tileCache:get_tile(belowBrick)
+            if tile.isPartOfRoom then
+                ok = true
+            end
+            for _, obj in pairs(tile.contents) do
+                if instanceOf(Brick, obj) or instanceOf(Door, obj) then
+                    ok = false
                 end
             end
         else
             ok = true
+        end
+
+        -- If this brick does not already have a hieroglyph on it
+        local tile = self.room.tileCache:get_tile(b:get_position())
+        if tile:contains_class(Hieroglyph) then
+            -- It is not okay to use it
+            ok = false
         end
 
         if ok then
@@ -227,9 +236,12 @@ function RoomFiller:position_hieroglyph(letters, orientation)
                         local b = bricksInARow[i]
 
                         letterIndex = letterIndex + 1
-                        table.insert(self.room.hieroglyphs,
-                                     Hieroglyph(b:get_position(),
-                                                letters[letterIndex]))
+
+                        local newHieroglyph = Hieroglyph(b:get_position(),
+                                                         letters[letterIndex])
+                        table.insert(self.room.hieroglyphs, newHieroglyph)
+                        self.room.tileCache:add(newHieroglyph:get_position(),
+                                                newHieroglyph)
                     end
                     --removeBricks = true
 

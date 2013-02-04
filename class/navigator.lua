@@ -3,11 +3,10 @@ require('class.pathfinder')
 -- A Navigator plots a path with multiple destinations
 Navigator = class('Navigator')
 
-function Navigator:init(source, destinations, hotLava)
+function Navigator:init(source, destinations, lavaCache)
     self.source = source
     self.destinations = destinations
-    self.hotLava = hotLava -- Coordinates which are illegal to traverse
-    if self.hotLava == nil then self.hotLava = {} end
+    self.lavaCache = lavaCache -- Coordinates which are illegal to traverse
 end
 
 function Navigator:plot()
@@ -25,8 +24,8 @@ function Navigator:plot()
             src = self.destinations[i - 1]
         end
 
-        local pf = PathFinder(src, d, self.hotLava, self.points,
-                              {smooth = true})
+        local pf = PathFinder(src, d, nil, self.points,
+                              {smooth = true, lavaCache = self.lavaCache})
         local points = pf:plot()
 
         for j, p in ipairs(points) do
@@ -36,9 +35,6 @@ function Navigator:plot()
                 -- Add this point to the self.points
                 table.insert(self.points, {x = p.x, y = p.y})
             end
-
-            -- Add this point to hotlava
-            --table.insert(self.hotLava, {x = p.x, y = p.y})
         end
     end
 

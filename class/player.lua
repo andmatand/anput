@@ -51,7 +51,7 @@ end
 
 function Player:find_context()
     for _, pos in pairs(adjacent_tiles(self.position)) do
-        local tile = self.room:get_tile(pos)
+        local tile = self.room.tileCache:get_tile(pos)
         for _, obj in pairs(tile.contents) do
             if instanceOf(Switch, obj) then
                 if not obj.isActivated then

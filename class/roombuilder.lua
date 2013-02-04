@@ -3,8 +3,10 @@ require('class.cheappathfinder')
 require('class.floodfiller')
 require('class.lake')
 require('class.navigator')
+require('class.tilecache')
 require('util.tables')
 require('util.tile')
+--require('love.timer')
 
 --local DEBUG = true
 
@@ -23,6 +25,9 @@ function RoomBuilder:init(room)
     self.midPaths = {}
     self.lakes = {}
     self.nooks = {}
+
+    self.brickCache = TileCache()
+    self.occupiedTileCache = TileCache()
 
     self.lakeSources = {}
 end
@@ -93,14 +98,17 @@ function RoomBuilder:add_branches()
         end
 
         if position then
-            numAddedBricks = numAddedBricks + 1
-            brick = Brick(position)
-            table.insert(self.bricks, brick)
-            table.insert(seedBricks, brick)
-
             -- Remove this brick's position from the room's freeTiles
             self.freeTiles = remove_tiles_from_table({position},
                                                      self.freeTiles)
+            self.brickCache:clear(position)
+
+            -- Add a brick here
+            numAddedBricks = numAddedBricks + 1
+            local brick = Brick(position)
+            table.insert(self.bricks, brick)
+            table.insert(seedBricks, brick)
+            self.brickCache:add(position, brick)
 
             -- Remove this brick's position from any lakes here
             for _, lake in pairs(self.lakes) do
@@ -128,6 +136,7 @@ function RoomBuilder:add_occupied_tile(tile)
         end
     end
     table.insert(self.occupiedTiles, tile)
+    self.occupiedTileCache:add(tile, {})
 
     return true
 end
@@ -248,7 +257,8 @@ function RoomBuilder:build()
 
     if DEBUG and timer then
         local elapsed = love.timer.getTime() - timer
-        print('built room ' .. self.room.index .. ' in ' .. elapsed)
+        print('built room ' .. self.room.index .. ' in ' .. elapsed ..
+              ' seconds')
     end
 
     return true
@@ -256,16 +266,24 @@ end
 
 function RoomBuilder:cleanup_untouchable_bricks()
     -- Do a floodfill on the inside of the room, using the bricks as hotLava
-    local ff = FloodFiller(self.midPoint, self.bricks)
+    local ff = FloodFiller(self.midPoint, nil, {lavaCache = self.brickCache})
     self.freeTiles = ff:flood()
+
+    -- Add the freeTiles to the brickCache
+    for _, ft in pairs(self.freeTiles) do
+        self.brickCache:add(ft)
+    end
 
     -- Add the midpoint to freeTiles, since it is not included by the
     -- floodfiller
     table.insert(self.freeTiles, self.midPoint)
+    self.brickCache:add(self.midPoint)
 
     -- Remove any bricks that do not touch the inside of the room
     local newBricks = {}
     for i, b in pairs(self.bricks) do
+        self.brickCache:clear(b:get_position())
+
         for _, t in pairs(self.freeTiles) do
             local ok = false
 
@@ -290,6 +308,7 @@ function RoomBuilder:cleanup_untouchable_bricks()
 
             if ok then
                 table.insert(newBricks, b)
+                self.brickCache:add(b:get_position(), b)
                 break
             end
         end
@@ -337,30 +356,50 @@ function RoomBuilder:finalize()
 end
 
 function RoomBuilder:find_nooks()
-    for _, tile in pairs(self.freeTiles) do
+    for _, brick in pairs(self.bricks) do
         local ok = false
 
         local searchDirs = {}
-        local neighbors = find_neighbor_tiles(tile, self.bricks,
-                                              {diagonals = false})
+        local doorway
 
-        -- If there are bricks directly to the north and south of this tile
-        if neighbors[1].occupied and neighbors[3].occupied then
-            searchDirs = {2, 4}
-        -- If there are bricks directly to the east and west of this tile
-        elseif neighbors[2].occupied and neighbors[4].occupied then
-            searchDirs = {1, 3}
+        for dir = 2, 3 do
+            local position = add_direction(brick:get_position(), dir)
+            local tile1 = self.brickCache:get_tile(position)
+
+            -- If the first tile in this direction is a free tile
+            if tile1.isPartOfRoom and #tile1.contents == 0 then
+                doorway = position
+
+                position = add_direction(position, dir)
+                local tile2 = self.brickCache:get_tile(position)
+
+                -- If the second tile in this direction contains a brick
+                if #tile2.contents > 0 then
+                    -- Search in the directions perpendicular to this one
+                    searchDirs = perpendicular_directions(dir)
+                    break
+                end
+            end
         end
 
         for _, dir in pairs(searchDirs) do
-            local src = add_direction(tile, dir)
-            local hotLava = concat_tables({self.bricks, {tile}})
-            local ff = FloodFiller(src, hotLava, {maxSize = 50})
+            -- Add a temporary brick to the doorway to block off the floodfill
+            local tempBrick = Brick(doorway)
+            self.brickCache:add(doorway, tempBrick)
+
+            local src = add_direction(doorway, dir)
+            local ff = FloodFiller(src, nil,
+                                   {maxSize = 50, lavaCache = self.brickCache})
             local area = ff:flood()
+
+            -- Remove the temporary brick
+            self.brickCache:remove(doorway, tempBrick)
+
+            -- Add the floodfiller source tile to the area
             table.insert(area, src)
 
             local areaIsNook = true
-            if #area == 1 then
+            if #area < 2 then
                 areaIsNook = false
             else
                 -- Check if this area contains a doorway
@@ -379,6 +418,8 @@ function RoomBuilder:find_nooks()
                 table.insert(self.nooks, area)
                 break
             end
+
+            --table.insert(self.nooks, {src})
         end
     end
 
@@ -420,18 +461,6 @@ function RoomBuilder:plot_midpaths()
         -- Add the exit position to the list of illegal coordinates
         self:add_occupied_tile({x = e.x, y = e.y})
 
-        -- Get the position into the room by one tile
-        --local src = {x = e.x, y = e.y}
-        --if src.y == -1 then
-        --    src.y = src.y + 1
-        --elseif src.x == ROOM_W then
-        --    src.x = src.x - 1
-        --elseif src.y == ROOM_H then
-        --    src.y = src.y - 1
-        --elseif src.x == -1 then
-        --    src.x = src.x + 1
-        --end
-
         local cpf = CheapPathFinder(e:get_doorway(), self.midPoint,
                                     {x1 = 0, y1 = 0,
                                      x2 = ROOM_W - 1, y2 = ROOM_H - 1})
@@ -439,16 +468,10 @@ function RoomBuilder:plot_midpaths()
 
         -- Append these tiles to occupiedTiles and midPaths
         for _, t in pairs(tiles) do
-            self:add_occupied_tile({x = t.x, y = t.y})
-            table.insert(self.midPaths, {x = t.x, y = t.y})
+            local pos = {x = t.x, y = t.y}
+            self:add_occupied_tile(pos)
+            table.insert(self.midPaths, pos)
         end
-
-        --if DEBUG then
-        --    table.insert(self.room.debugTiles, {x = e.x, y = e.y})
-        --    for _, t in pairs(tiles) do
-        --        table.insert(self.room.debugTiles, t)
-        --    end
-        --end
     end
 end
 
@@ -469,16 +492,9 @@ function RoomBuilder:plot_walls()
         end
 
         -- Find all vacant tiles accessible from the source doorframe
-        local ff = FloodFiller(src, self.occupiedTiles)
+        --local ff = FloodFiller(src, self.occupiedTiles)
+        local ff = FloodFiller(src, nil, {lavaCache = self.occupiedTileCache})
         exit.freeTiles = ff:flood()
-
-        --for k, v in pairs(self.occupiedTiles) do
-        --    for k2, v2 in pairs(self.occupiedTiles) do
-        --        if k ~= k2 and v.x == v2.x and v.y == v2.y then
-        --            print('* redundant hotLava: ' .. v.x, v.y)
-        --        end
-        --    end
-        --end
 
         -- Remove dest from freeTiles
         for j, t in pairs(exit.freeTiles) do
@@ -505,24 +521,18 @@ function RoomBuilder:plot_walls()
         -- Add dest to end of table of destinations
         table.insert(destinations, dest)
         
-        --if DEBUG then
-        --  print('doing navigator:')
-        --  print('  ' .. src.x .. ', ' .. src.y)
-        --  for _, p in ipairs(destinations) do
-        --      print('  ' .. p.x .. ', ' .. p.y)
-        --  end
-        --end
-
         -- Plot a path from src along all points in destinations
-        local nav = Navigator(src, destinations, self.occupiedTiles)
+        local nav = Navigator(src, destinations, self.occupiedTileCache)
         local tiles = nav:plot()
 
-        -- Make bricks at these coordinates
+        -- Make bricks at these coordinates, and add them to the brickCache
         for _, b in pairs(tiles) do
             local newBrick = Brick(b)
             newBrick.fromWall = exit:get_direction()
 
             table.insert(self.bricks, newBrick)
+
+            self.brickCache:add(newBrick:get_position(), newBrick)
         end
     end
 end
@@ -565,9 +575,15 @@ end
 -- Floodfill starting from the exit, but in such a way that the entrance is not
 -- blocked
 function RoomBuilder:lake_fill(exit, entrance)
+    print('lake_fill')
     -- Decide on a good maximum amount of water to allow, based on the
     -- room's size
     local maxTiles = #self.freeTiles * .33
+
+    local lavaCache = TileCache()
+    for _, b in pairs(self.bricks) do
+        lavaCache:add(b:get_position(), b)
+    end
 
     -- Place the waterTiles
     local waterTiles = {}
@@ -575,7 +591,7 @@ function RoomBuilder:lake_fill(exit, entrance)
     local lateralDirs = perpendicular_directions(exit:get_direction())
     repeat
         local previousRow = row
-        local row = extend_to_lava(src, lateralDirs, self.bricks)
+        local row = extend_to_lava(src, lateralDirs, self.brickCache)
 
         -- Check if one of the tiles in this row is touching the entrance
         for _, t in pairs(row) do
@@ -587,13 +603,16 @@ function RoomBuilder:lake_fill(exit, entrance)
         end
 
         if row then
+            for _, t in pairs(row) do
+                lavaCache:add(t, {})
+            end
+
             -- Make sure there are at least two water tiles that can be touched
             -- from the entrance
             local testWaterTiles = concat_tables({waterTiles, row})
             local numTouching = 0
-            local ff = FloodFiller(entrance:get_doorway(),
-                                   concat_tables({self.bricks,
-                                                  testWaterTiles}))
+            local ff = FloodFiller(entrance:get_doorway(), nil,
+                                   {lavaCache = lavaCache})
             for _, t in pairs(ff:flood()) do
                 for _, wt in pairs(testWaterTiles) do
                     if tiles_touching(t, wt) then
@@ -615,7 +634,7 @@ function RoomBuilder:lake_fill(exit, entrance)
             break
         end
 
-        -- Add this row to the hotLava for the water floodfill
+        -- Add this row to the cumulitive table of water tiles
         waterTiles = concat_tables({waterTiles, row})
 
         if previousRow then

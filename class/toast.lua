@@ -7,7 +7,7 @@ function Toast:init()
     self.offset = {y = upscale_y(1)}
     self.visible = false
 
-    self.hideTimer = {delay = FPS, value = 0}
+    self.hideTimer = {delay = FPS_LIMIT, value = 0}
     self.frozen = false
 end
 
