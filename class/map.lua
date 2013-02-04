@@ -584,8 +584,10 @@ function Map:add_required_objects()
 
             -- Add the "Khnum" hieroglyphs to the room
             room.requiredHieroglyphs = {{'hnm', 'khnum'}}
-
         elseif room.roadblock == 'lake' then
+            -- Add the "lake" hieroglyphs to the room
+            room.requiredHieroglyphs = {{'water', 'lake'}}
+
             -- Put the camel in a room somewhere before the lake
             local rooms
             rooms = self:get_rooms_by_distance(2, room.distanceFromStart - 1,
