@@ -160,7 +160,7 @@ function Sprite:physics(force)
 
                 -- Move the test coordinates to the doorway of the
                 -- corresponding exit
-                local newExit = test.room:get_exit({targetRoom = oldRoom})
+                local newExit = test.room:find_exit({targetRoom = oldRoom})
                 test.position = newExit:get_doorway()
 
                 break

@@ -201,7 +201,7 @@ function Game:move_player_to_start()
     self.player:move_to_room(room)
 
     -- Put the player at the temple exit
-    local templeExit = room:get_exit({targetRoom = self.outside})
+    local templeExit = room:find_exit({targetRoom = self.outside})
     self.player:set_position(templeExit:get_doorway())
 
     -- Face the player toward the room's midpoint (left/right only)
@@ -227,7 +227,7 @@ function Game:position_sword()
     -- Put the sword midway along the path the player will need to take to
     -- reach the exit to the second room
     local firstRoom = self.rooms[1]
-    local exitToSecondRoom = firstRoom:get_exit({targetRoom = self.rooms[2]})
+    local exitToSecondRoom = firstRoom:find_exit({targetRoom = self.rooms[2]})
 
     local pf = PathFinder(self.player:get_position(),
                           exitToSecondRoom:get_doorway(),

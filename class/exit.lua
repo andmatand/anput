@@ -121,13 +121,20 @@ function Exit:is_hidden()
         end
     end
 
-    -- Check if there is a closed door in our doorway
-    for _, d in pairs(self.room.doors) do
-        if d.state ~= 'open' and
-           tiles_overlap(d:get_position(), self:get_doorway()) then
-            return true
-        end
+    -- If there is a non-open door in our doorway
+    local door = self:get_door()
+    if door and door.state ~= 'open' then
+        return true
     end
 
     return false
+end
+
+function Exit:get_door()
+    local tile = self.room.tileCache:get_tile(self:get_doorway())
+    for _, obj in pairs(tile.contents) do
+        if instanceOf(Door, obj) then
+            return obj
+        end
+    end
 end

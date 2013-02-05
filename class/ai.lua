@@ -555,7 +555,7 @@ function AI:find_exit()
 end
 
 function AI:find_exit_toward_target(target)
-    return self.owner.room:get_exit({targetRoom = target.room})
+    return self.owner.room:find_exit({targetRoom = target.room})
 end
 
 function AI:find_item()

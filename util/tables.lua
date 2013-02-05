@@ -26,6 +26,16 @@ function remove_value_from_table(value, tbl)
     end
 end
 
+function search_table(tbl, search)
+    for _, item in pairs(tbl) do
+        for key, value in pairs(search) do
+            if item[key] == value then
+                return item
+            end
+        end
+    end
+end
+
 function tables_have_equal_values(t1, t2)
     for k, v in pairs(t1) do
         if v ~= t2[k] then

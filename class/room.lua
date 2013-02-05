@@ -276,11 +276,15 @@ function Room:draw_objects_with_fov_alpha(objects)
             alpha = DARK
         end
 
-        if object.hasBeenSeen then
+        if object.hasBeenSeen or DEBUG then
             love.graphics.setColor(255, 255, 255, alpha)
             object:draw(alpha)
         end
     end
+end
+
+function Room:find_exit(search)
+    return search_table(self.exits, search)
 end
 
 function Room:generate_all()
@@ -348,17 +352,6 @@ function Room:get_collidable_objects()
     return concat_tables({self.bricks, self.doors})
 end
 
-function Room:get_exit(search)
-    for i, e in pairs(self.exits) do
-        if (e.x ~= nil and e.x == search.x) or
-           (e.y ~= nil and e.y == search.y) or
-           --(e.roomIndex ~= nil and e.roomIndex == search.roomIndex) or
-           (e.targetRoom ~= nil and e.targetRoom == search.targetRoom) then
-            return e
-        end
-    end
-end
-
 -- Return a random free position in the room
 function Room:get_free_tile()
     local freeTiles = copy_table(self.freeTiles)
@@ -383,6 +376,26 @@ function Room:get_monsters()
     end
 
     return monsters
+end
+
+function Room:get_next_room()
+    if #self.exits == 2 then
+        for _, exit in pairs(self.exits) do
+            if exit.targetRoom.distanceFromStart > self.distanceFromStart then
+                return exit.targetRoom
+            end
+        end
+    end
+end
+
+function Room:get_previous_room()
+    if #self.exits == 2 then
+        for _, exit in pairs(self.exits) do
+            if exit.targetRoom.distanceFromStart < self.distanceFromStart then
+                return exit.targetRoom
+            end
+        end
+    end
 end
 
 function Room:is_audible()
@@ -725,15 +738,8 @@ function Room:update()
     -- If this is the game's current room
     if self.game.currentRoom == self then
         if self.game.player.moved then
-            --and self:tile_in_room(self.game.player.position)) then
             self:update_fov()
         end
-
-        -- If the player moved
-        --if self.game.player.moved then
-        --    -- Flag the bricks for a redraw
-        --    --self.bricksDirty = true
-        --end
     end
 end
 

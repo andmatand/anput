@@ -25,6 +25,14 @@ function Khnum:init()
     self.state = 'wait'
 end
 
+function Khnum:die()
+    -- Open the doors blocking the exits
+    self.room.roadblockInfo.exitDoor:open()
+    self.room.roadblockInfo.entranceDoor:open()
+
+    Khnum.super.die(self)
+end
+
 function Khnum:update()
     Khnum.super.update(self)
 
@@ -42,8 +50,21 @@ function Khnum:update()
         self.mouth:speak()
         self.state = 'line2'
 
+        -- If the player is in the entrance doorway (i.e. he would be hit by
+        -- the door)
+        local entranceDoor = self.room.roadblockInfo.entranceDoor
+        local doorway = entranceDoor:get_position()
+        if tiles_overlap(self.room.game.player:get_position(), doorway) then
+            -- Make the player take a step into the room
+            local dir = opposite_direction(entranceDoor:get_direction())
+            self.room.game.player:step(dir)
+        end
+
         -- Prevent the player from moving
-        wrapper.game.player.canMove = false
+        self.room.game.player.canMove = false
+
+        -- Close the door blocking the entrance
+        self.room.roadblockInfo.entranceDoor:close()
     elseif self.state == 'line2' then
         if not self.mouth.isSpeaking then
             self.mouth:set_speech('RISE, MY CLAY BABIES!')
@@ -57,7 +78,7 @@ function Khnum:update()
             self.state = 'attack'
 
             -- Let the player move again
-            wrapper.game.player.canMove = true
+            self.room.game.player.canMove = true
         end
     elseif self.state == 'attack' then
         -- If we don't have a path

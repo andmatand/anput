@@ -410,25 +410,25 @@ function Map:generate_rooms()
                     -- If this neighbor has already been converted into a room
                     -- with exits, use the position of its corresponding exit
                     if n.room then
-                        linkedExit = n.room:get_exit({y = ROOM_H})
+                        linkedExit = n.room:find_exit({y = ROOM_H})
                         x = linkedExit.x
                     end
                 elseif j == 2 then
                     x = ROOM_W -- East
                     if n.room then
-                        linkedExit = n.room:get_exit({x = -1})
+                        linkedExit = n.room:find_exit({x = -1})
                         y = linkedExit.y
                     end
                 elseif j == 3 then
                     y = ROOM_H -- South
                     if n.room then
-                        linkedExit = n.room:get_exit({y = -1})
+                        linkedExit = n.room:find_exit({y = -1})
                         x = linkedExit.x
                     end
                 elseif j == 4 then
                     x = -1 -- West
                     if n.room then
-                        linkedExit = n.room:get_exit({x = ROOM_W})
+                        linkedExit = n.room:find_exit({x = ROOM_W})
                         y = linkedExit.y
                     end
                 end
@@ -584,6 +584,18 @@ function Map:add_required_objects()
 
             -- Add the "Khnum" hieroglyphs to the room
             room.requiredHieroglyphs = {{'hnm', 'w', 'khnum'}}
+
+            -- Put a door at the entrance with no switch
+            local entrance = room:find_exit({targetRoom =
+                                             room:get_previous_room()})
+            local door1 = self:add_door(entrance, false)
+            door1:open(true) -- Open the door
+
+            -- Put a door at the exit with no switch
+            local exit = room:find_exit({targetRoom = room:get_next_room()})
+            local door2 = self:add_door(exit, false)
+
+            room.roadblockInfo = {entranceDoor = door1, exitDoor = door2}
         elseif room.roadblock == 'lake' then
             -- Add the "lake" hieroglyphs to the room
             room.requiredHieroglyphs = {{'water', 'lake'}}
@@ -677,7 +689,7 @@ function Map:add_secret_rooms()
            not r.artifactRoom then
             -- Put a false brick in front of the exit that leads to this room
             local adjacentRoom = r.exits[1].targetRoom
-            local adjacentExit = adjacentRoom:get_exit({targetRoom = r})
+            local adjacentExit = adjacentRoom:find_exit({targetRoom = r})
             local falseBrick = FalseBrick(adjacentExit:get_doorway())
             table.insert(adjacentRoom.requiredObjects, falseBrick)
 
@@ -691,7 +703,7 @@ function Map:add_doors()
     for _, r in pairs(self.rooms) do
         -- If this room is not the first room or the artifact room
         if r.distanceFromStart > 0 and not r.artifactRoom and
-           math.random(1, 1) == 1 and not r.isSecret then
+           math.random(1, 2) == 1 and not r.isSecret and not r.roadblock then
            -- Choose one of the exits in this room
            local exits = copy_table(r.exits)
            local exit = nil
@@ -701,9 +713,9 @@ function Map:add_doors()
 
                -- If this exit is already concealed (e.g. by a falsebrick) or
                -- its linked exit is already concealed, or this exit leads to a
-               -- secret room
+               -- secret room, or this exit leads to a roadblock room
                if e:is_hidden() or e:get_linked_exit():is_hidden() or
-                  e.targetRoom.isSecret then
+                  e.targetRoom.isSecret or e.targetRoom.roadblock then
                    -- Remove it from future consideration
                    table.remove(exits, index)
                else
@@ -714,38 +726,43 @@ function Map:add_doors()
            
            -- If we have chosen an exit
            if exit then
-               -- Put a door in front of the exit and in front of its linked
-               -- exit
-
-               local insideDoor = Door(exit:get_doorway(),
-                                       exit:get_direction())
-               exit.room:add_object(insideDoor)
-
-               local linkedExit = exit:get_linked_exit()
-               local outsideDoor = Door(linkedExit:get_doorway(),
-                                        linkedExit:get_direction())
-               linkedExit.room:add_object(outsideDoor)
-
-               outsideDoor:set_sister(insideDoor)
-               insideDoor:set_sister(outsideDoor)
-
-               local room1, room2, door1
-               if exit.room.distanceFromStart <
-                  linkedExit.room.distanceFromStart then
-                   room1 = exit.room
-                   room2 = linkedExit.room
-                   door1 = insideDoor
-               else
-                   room1 = linkedExit.room
-                   room2 = exit.room
-                   door1 = outsideDoor
-               end
-
-               local switch = Switch(door1)
-               room1:add_object(switch)
+               self:add_door(exit)
            end
        end
    end
+end
+
+-- Put a door in front of the exit and in front of its linked exit
+function Map:add_door(exit, addSwitch)
+    local insideDoor = Door(exit:get_doorway(), exit:get_direction())
+    exit.room:add_object(insideDoor)
+
+    local linkedExit = exit:get_linked_exit()
+    local outsideDoor = Door(linkedExit:get_doorway(),
+                            linkedExit:get_direction())
+    linkedExit.room:add_object(outsideDoor)
+
+    outsideDoor:set_sister(insideDoor)
+    insideDoor:set_sister(outsideDoor)
+
+    if addSwitch ~= false then
+       -- Put a switch in the room which is closer to the starting room
+       local room1, room2, door1
+       if exit.room:get_next_room() == linkedExit.room then
+           room1 = exit.room
+           room2 = linkedExit.room
+           door1 = insideDoor
+       else
+           room1 = linkedExit.room
+           room2 = exit.room
+           door1 = outsideDoor
+       end
+
+       local switch = Switch(door1)
+       room1:add_object(switch)
+    end
+
+    return insideDoor
 end
 
 function Map:update()
