@@ -155,10 +155,10 @@ function love.load()
 
     -- Hieroglyphs
     images.hieroglyphs = load_images('hieroglyph/',
-                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's',
-                                      't', 't_sh', 'w', 'y',
+                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's', 'sw',
+                                      't', 't_sh', 't_y', 'w', 'y',
                                       'book', 'god', 'goddess', 'khnum',
-                                      'lake', 'water'})
+                                      'lake', 'set', 'water'})
 
     -- Outside
     outsideImg = {}
