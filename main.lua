@@ -311,6 +311,9 @@ function love.keypressed(key, unicode)
     elseif ctrl and shift then
         if key == 'f1' then
             DEBUG = not DEBUG
+        elseif key == 'i' then
+            wrapper.game.player.isInvincible =
+                not wrapper.game.player.isInvincible
         elseif key == 'j' then
             jump_to_room(wrapper.game.currentRoom.index + 1)
         elseif key == 'k' then
@@ -386,6 +389,11 @@ function love.draw()
                              BASE_SCREEN_W * SCALE_X, BASE_SCREEN_H * SCALE_Y)
     love.graphics.translate(SCREEN_X, SCREEN_Y)
 
+    if DEBUG and wrapper.game.player then
+        local pos = wrapper.game.player:get_position()
+        cga_print(pos.x .. ' ' .. pos.y, 1, 1)
+    end
+
     wrapper:draw()
 
     love.graphics.setScissor()
@@ -398,7 +406,7 @@ function love.draw()
     --end
 end
 
--- Returns distance between to points
+-- Returns distance between two tiles
 function distance(a, b)
     return math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
 end
