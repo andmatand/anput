@@ -33,10 +33,6 @@ function love.load()
             WEAPON_SLOT_4 = 23,
             WEAPON_SLOT_5 = 24}
 
-    -- These are the tile dimensions in (unscaled) pixels
-    TILE_W = 8
-    TILE_H = 8
-
     -- Set the width and height of the tile grid (in # of tiles)
     GRID_W = BASE_SCREEN_W / TILE_W
     GRID_H = BASE_SCREEN_H / TILE_H
@@ -124,6 +120,7 @@ function love.load()
     images.npc.camel = {default = new_image('camel.png'),
                         step = new_image('camel-step.png')}
     images.npc.khnum = {default = new_image('khnum.png')}
+    images.npc.set = {default = new_image('set.png')}
     images.npc.wizard = {default = new_image('wizard.png'),
                          firestaff = new_image('wizard-firestaff.png')}
 
@@ -143,6 +140,7 @@ function love.load()
 
     -- Furniture
     images.door = new_image('door.png')
+    images.spike = new_image('spike.png')
     images.switch = {{image = new_image('switch1.png'), delay = 2},
                      {image = new_image('switch2.png'), delay = 2},
                      {image = new_image('switch3.png'), delay = 2}}
@@ -154,10 +152,10 @@ function love.load()
 
     -- Hieroglyphs
     images.hieroglyphs = load_images('hieroglyph/',
-                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's',
-                                      't', 't_sh', 'w', 'y',
+                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's', 'sw',
+                                      't', 't_sh', 't_y', 'w', 'y',
                                       'book', 'god', 'goddess', 'khnum',
-                                      'lake', 'water'})
+                                      'lake', 'set', 'water'})
 
     -- Outside
     outsideImg = {}
@@ -212,7 +210,6 @@ function love.load()
     sounds.shootArrow = Sound('res/sfx/shoot-arrow.wav')
     sounds.unable = Sound('res/sfx/unable.wav')
     sounds.thud = Sound('res/sfx/thud.wav')
-    sounds.thud.varyPitch = true
     sounds.pause = Sound('res/sfx/pause.wav')
     sounds.menuSelect = Sound('res/sfx/menu-select.wav')
     sounds.secret = Sound('res/sfx/secret.wav')

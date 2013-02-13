@@ -6,6 +6,7 @@ require('class.mapdisplay')
 require('class.monster')
 require('class.pathfinder')
 require('class.room')
+require('class.set')
 require('class.switch')
 require('class.thunderstaff')
 require('class.trader')
@@ -562,6 +563,12 @@ function Map:add_required_objects()
     --thing.tag = true
     --table.insert(self.rooms[1].requiredObjects, thing)
 
+    -- DEBUG: Put Set in the second room
+    --local setRoom = self.rooms[2]
+    --local thing = Set()
+    --table.insert(setRoom.requiredObjects, thing)
+    --setRoom.requiredHieroglyphs = {{'sw', 't_y', 'set'}}
+
     -- Put a bow in one of the 5 earliest rooms
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
     local bowRoom = rooms[math.random(1, #rooms)]
@@ -759,7 +766,9 @@ function Map:add_door(exit, addSwitch)
        end
 
        local switch = Switch(door1)
-       room1:add_object(switch)
+       --room1:add_object(switch)
+       if not room1.requiredSwitches then room1.requiredSwitches = {} end
+       table.insert(room1.requiredSwitches, switch)
     end
 
     return insideDoor
