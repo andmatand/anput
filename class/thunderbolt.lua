@@ -18,7 +18,7 @@ function Thunderbolt:find_points()
 
         if i == 1 then
             -- Put the first point directly on the ball of the staff
-            if self.staff.owner.mirrored then
+            if self.staff.owner and self.staff.owner.mirrored then
                 x = (n.x * TILE_W) + 1
             else
                 x = (n.x * TILE_W) + 6

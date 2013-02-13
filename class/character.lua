@@ -138,9 +138,8 @@ function Character:check_for_items()
             if tiles_overlap(self.position, item.position) then
                 -- Pick it up
                 if self:pick_up(item) then
-                    -- If we didn't already pick something up, and we are in a
-                    -- room, and it is the game's current room, or we are a
-                    -- player
+                    -- If we didn't already pick something up, and we are
+                    -- audible
                     if (not pickedSomethingUp) then
                         if self:is_audible() then
                             -- Play a sound
@@ -160,7 +159,7 @@ function Character:check_for_items()
 end
 
 function Character:die()
-    Sprite.die(self)
+    Character.super.die(self)
 
     local itemsToDrop = {}
 
@@ -261,9 +260,12 @@ function Character:draw(pos, rotation)
         local offsetDir
         if self.hitSomething and not self.hitSomethingLastFrame then
             offsetDir = self.dir
+        elseif self.isThundershocked then
+            -- Shake around from being all electrified
+            offsetDir = math.random(1, 4)
         end
 
-        if offsetDir then
+        if offsetDir and not self.isDead then
             if offsetDir == 1 then
                 y = y - SCALE_Y
             elseif offsetDir == 2 then
@@ -283,7 +285,6 @@ function Character:draw(pos, rotation)
                            x, y,
                            rotation,
                            sx, SCALE_Y)
-
     end
 
     if DEBUG and not instanceOf(Player, self) then

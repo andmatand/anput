@@ -86,7 +86,7 @@ function AI:aim_at(target)
 end
 
 function AI:attack()
-    local rangedWeapon = self.owner.armory:get_best_ranged_weapon()
+    --local rangedWeapon = self.owner.armory:get_best_ranged_weapon()
     if self.owner.armory:switch_to_ranged_weapon() then
         -- Check if there's an enemy in our sights we should shoot
         for _, c in pairs(self.owner.room:get_characters()) do
@@ -97,14 +97,12 @@ function AI:attack()
                     end
 
                     -- Switch to the ranged weapon
-                    self.owner.armory:set_current_weapon(rangedWeapon)
+                    --self.owner.armory:set_current_weapon(rangedWeapon)
 
-                    -- Try to shoot
-                    local dir = self.owner:direction_to(c.position)
-                    if self.owner:shoot(dir) then
-                        self:reset_timer(AI_ACTION.attack)
-                        return true
-                    end
+                    -- Express our desire to shoot
+                    self.owner.shootDir = self.owner:direction_to(c.position)
+                    self:reset_timer(AI_ACTION.attack)
+                    return true
                 end
             end
         end
@@ -933,14 +931,16 @@ function AI:is_afraid_of(threat)
 end
 
 function AI:is_aimed_at(target)
-    if (self:target_in_range(target, AI_ACTION.attack) and
-        self.owner:line_of_sight(target) and
-        not tiles_overlap(self.owner:get_position(),
-                          target:get_position())) then
-        return true
-    else
-        return false
+    if self:target_in_range(target, AI_ACTION.attack) then
+        if instanceOf(ThunderStaff, self.owner.armory.currentWeapon) then
+            return true
+        elseif self.owner:line_of_sight(target) and
+           not tiles_overlap(self.owner:get_position(),
+                             target:get_position()) then
+            return true
+        end
     end
+    return false
 end
 
 function AI:path_obsolete()

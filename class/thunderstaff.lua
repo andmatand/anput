@@ -76,10 +76,10 @@ function ThunderStaff:shoot()
                         -- If the sprite has a receive_damage function
                         if s.receive_damage then
                             if s:receive_damage(self.damage, self) then
-                                if math.random(1, 3) > 1 then
+                                --if math.random(1, 3) > 1 then
                                     -- Make the character light up
                                     s.isThundershocked = true
-                                end
+                                --end
                             end
                         end
                     end

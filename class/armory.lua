@@ -45,16 +45,16 @@ end
 function Armory:get_best_ranged_weapon()
     local best = {damage = -1, weapon = nil}
     for _, w in pairs(self.weapons) do
-        if w.projectileClass then
-            -- Create a test projectile of the sort that shoot forth from this
-            -- weapon
-            local projectile = w.projectileClass(self.owner)
+        if w.canShoot then
+            local damage = 1
+            if w.projectileClass then
+                damage = w.projectileClass(self.owner).damage
+            end
 
-            -- If this projectile's damage is better than the best, and
-            -- it has enough ammo to shoot
-            if projectile.damage > best.damage and
-               w:get_ammo() > w.ammoCost then
-                best.damage = projectile.damage
+            -- If this weapon's shooting damage is better than the best, and it
+            -- has enough ammo to shoot
+            if damage > best.damage and w:get_ammo() > w.ammoCost then
+                best.damage = damage
                 best.weapon = w
             end
         end

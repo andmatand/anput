@@ -632,9 +632,10 @@ function Room:update()
         c.rug = false
     end
 
-    -- Let characters shoot weapons
+    -- Let characters shoot all weapons except thunderstaves
     for _, c in pairs(self:get_characters()) do
-        if c.shootDir then
+        if c.shootDir and
+           c.armory:get_current_weapon_type() ~= 'thunderstaff' then
             c:shoot(c.shootDir)
             c.shootDir = nil
         end
