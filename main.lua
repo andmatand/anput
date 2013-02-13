@@ -212,6 +212,7 @@ function love.load()
     sounds.shootArrow = Sound('res/sfx/shoot-arrow.wav')
     sounds.unable = Sound('res/sfx/unable.wav')
     sounds.thud = Sound('res/sfx/thud.wav')
+    sounds.thud.varyPitch = true
     sounds.pause = Sound('res/sfx/pause.wav')
     sounds.menuSelect = Sound('res/sfx/menu-select.wav')
     sounds.secret = Sound('res/sfx/secret.wav')
