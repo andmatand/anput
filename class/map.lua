@@ -563,12 +563,6 @@ function Map:add_required_objects()
     --thing.tag = true
     --table.insert(self.rooms[1].requiredObjects, thing)
 
-    -- DEBUG: Put Set in the second room
-    --local setRoom = self.rooms[2]
-    --local thing = Set()
-    --table.insert(setRoom.requiredObjects, thing)
-    --setRoom.requiredHieroglyphs = {{'sw', 't_y', 'set'}}
-
     -- Put a bow in one of the 5 earliest rooms
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
     local bowRoom = rooms[math.random(1, #rooms)]
@@ -612,6 +606,12 @@ function Map:add_required_objects()
             rooms = self:get_rooms_by_distance(2, room.distanceFromStart - 1,
                                                {isSecret = false})
             add_npc_to_room(Camel(), rooms[math.random(1, #rooms)])
+        elseif room.roadblock == 'set' then
+            -- Put Set in this room
+            add_npc_to_room(Set(), room)
+
+            -- Add the "Swty" hieroglyphs to the room
+            room.requiredHieroglyphs = {{'sw', 't_y', 'set'}}
         end
     end
 
@@ -649,15 +649,24 @@ function Map:add_required_objects()
 end
 
 function Map:add_roadblocks()
-    local numRoadblocks = 2
+    local numRoadblocks = 3
 
     local roadblockTypes = {'khnum', 'lake'}
 
     -- Pick which roadblocks to use
     local roadblocks = {}
     for i = 1, numRoadblocks do
-        roadblocks[i] = table.remove(roadblockTypes,
-                                     math.random(1, #roadblockTypes))
+        local index = math.random(1, #roadblockTypes)
+        local addType = roadblockTypes[index]
+
+        table.remove(roadblockTypes, index)
+
+        if addType == 'khnum' then
+            -- Set can only be after Khnum (so golems can be used against Set)
+            table.insert(roadblockTypes, 'set')
+        end
+
+        roadblocks[i] = addType
     end
 
     -- Find positions on the main path for the roadblocks
