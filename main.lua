@@ -120,7 +120,6 @@ function love.load()
     images.npc.camel = {default = new_image('camel.png'),
                         step = new_image('camel-step.png')}
     images.npc.khnum = {default = new_image('khnum.png')}
-    images.npc.set = {default = new_image('set.png')}
     images.npc.wizard = {default = new_image('wizard.png'),
                          firestaff = new_image('wizard-firestaff.png')}
 
@@ -152,10 +151,10 @@ function love.load()
 
     -- Hieroglyphs
     images.hieroglyphs = load_images('hieroglyph/',
-                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's', 'sw',
-                                      't', 't_sh', 't_y', 'w', 'y',
+                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's',
+                                      't', 't_sh', 'w', 'y',
                                       'book', 'god', 'goddess', 'khnum',
-                                      'lake', 'set', 'water'})
+                                      'lake', 'water'})
 
     -- Outside
     outsideImg = {}
@@ -359,6 +358,12 @@ function love.keypressed(key, unicode)
         elseif key == 'p' then
             local potion = Item('potion')
             wrapper.game.player:pick_up(potion)
+        elseif key == 's' then
+            if wrapper.game.currentRoom then
+                for _, spike in pairs(wrapper.game.currentRoom.spikes) do
+                    spike:trigger()
+                end
+            end
         elseif key == 't' then
             local thunderstaff = ThunderStaff()
             wrapper.game.player:pick_up(thunderstaff)
