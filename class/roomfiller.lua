@@ -157,7 +157,6 @@ function RoomFiller:add_spikes()
     local maxLength = 15
 
     local lines, dir1 = self:find_spike_positions(minLength, maxLength)
-    print('room ' .. self.room.index .. ' has ' .. #lines .. ' spike-lines')
     for i, line in pairs(lines) do
         -- Determine which direction this line of spikes should point
         local dir
@@ -273,7 +272,6 @@ function RoomFiller:find_spike_positions(minLength, maxLength)
                         -- Add the spike positions to the lines
                         table.insert(lines[1], pos)
                         table.insert(lines[2], add_direction(pos, spikeDir, 2))
-                        print('adding position ', pos.x, pos.y)
                     else
                         break
                     end

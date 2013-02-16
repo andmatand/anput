@@ -46,7 +46,7 @@ function Spike:draw(alpha)
     local w = self.image:getWidth()
     local h = self.image:getHeight()
 
-    local offset = self:get_offset()
+    local offset = self:get_draw_offset()
     x = x + (offset.x * SCALE_X) + ((w * SCALE_X) / 2)
     y = y + (offset.y * SCALE_Y) + ((h * SCALE_Y) / 2)
 
@@ -70,17 +70,62 @@ function Spike:extend()
     end
 end
 
-function Spike:get_offset()
-    local offset = {x = 0, y = 0}
-    offset = add_direction(offset, self.dir, self.extension)
+-- This function returns one or two grid-tiles with which the visible spike
+-- overlaps
+function Spike:get_visible_tiles()
+    local tiles = {}
 
-    if self.dir == 3 then
-        offset.x = offset.x + TILE_W / 2
-    elseif self.dir == 4 then
-        offset.y = offset.y + TILE_H / 2
+    -- Add the main tile into which the spike protrudes
+    tiles[1] = add_direction(self.position, self.dir)
+
+    local gridOffset = self:get_grid_offset()
+    if gridOffset.x ~= 0 or gridOffset.y ~= 0 then
+        local dir = self:get_interleave_offset_direction()
+        tiles[2] = add_direction(self.position, dir)
+    end
+
+    return tiles
+end
+
+function Spike:get_draw_offset()
+    local extensionOffset = self:get_extension_offset()
+    local interleaveOffset = self:get_grid_offset()
+    return {x = extensionOffset.x + (interleaveOffset.x * TILE_W),
+            y = extensionOffset.y + (interleaveOffset.y * TILE_H)}
+end
+
+-- This function returns an offset in unscaled pixels
+function Spike:get_extension_offset()
+    local offset = {x = 0, y = 0}
+    return add_direction(offset, self.dir, self.extension)
+end
+
+-- This function returns an offset in grid coordinates
+function Spike:get_grid_offset()
+    local offset = {x = 0, y = 0}
+
+    -- If this spike is on a south or west row, add the offset to make the rows
+    -- of spikes interleave with each other
+    --if self.dir == 3 then
+    --    offset.x = offset.x + .5
+    --elseif self.dir == 4 then
+    --    offset.y = offset.y + .5
+    --end
+    local dir = self:get_interleave_offset_direction()
+
+    if dir then
+        offset = add_direction(offset, dir, .5)
     end
 
     return offset
+end
+
+function Spike:get_interleave_offset_direction()
+    if self.dir == 3 then
+        return 2
+    elseif self.dir == 4 then
+        return 3
+    end
 end
 
 function Spike:retract()

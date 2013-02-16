@@ -120,7 +120,8 @@ function Room:draw()
         self:update_fov()
     end
 
-    self:draw_objects_with_fov_alpha(self.spikes)
+    -- Draw spikes
+    self:draw_spikes()
 
     -- Draw bricks
     self:draw_bricks()
@@ -304,6 +305,30 @@ function Room:draw_objects_with_fov_alpha(objects)
         if object.hasBeenSeen or DEBUG then
             love.graphics.setColor(255, 255, 255, alpha)
             object:draw(alpha)
+        end
+    end
+end
+
+function Room:draw_spikes()
+    for _, spike in pairs(self.spikes) do
+        for _, tile in pairs(spike:get_visible_tiles()) do
+            local inFOV = tile_in_table(tile, self.fov)
+            if inFOV then
+                spike.hasBeenSeen = true
+            end
+
+            if spike.hasBeenSeen then
+                spike:draw(LIGHT)
+            end
+
+            if not inFOV then
+                -- Darken this tile
+                love.graphics.setColor(0, 0, 0, LIGHT - DARK)
+                --love.graphics.setColor(0, 255, 0)
+                love.graphics.rectangle('fill',
+                                        upscale_x(tile.x), upscale_y(tile.y),
+                                        upscale_x(1), upscale_y(1))
+            end
         end
     end
 end
