@@ -579,9 +579,6 @@ function Map:add_required_objects()
     -- Check for objects that need to be added when certain roadblocks exist
     for _, room in pairs(self.rooms) do
         if room.roadblock == 'khnum' then
-            -- Put Khnum in this room
-            add_npc_to_room(Khnum(), room)
-
             -- Add the "Khnum" hieroglyphs to the room
             room.requiredHieroglyphs = {{'hnm', 'w', 'khnum'}}
 
@@ -595,7 +592,10 @@ function Map:add_required_objects()
             local exit = room:find_exit({targetRoom = room:get_next_room()})
             local door2 = self:add_door(exit, false)
 
-            room.roadblockInfo = {entranceDoor = door1, exitDoor = door2}
+            -- Put Khnum in this room
+            local khnum = Khnum()
+            khnum.roadblockInfo = {entranceDoor = door1, exitDoor = door2}
+            add_npc_to_room(khnum, room)
         elseif room.roadblock == 'lake' then
             -- Add the "lake" hieroglyphs to the room
             room.requiredHieroglyphs = {{'water', 'lake'}}
