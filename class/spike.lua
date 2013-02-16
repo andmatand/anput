@@ -13,6 +13,7 @@ function Spike:init(position, dir)
     self.dir = dir
 
     self.image = images.spike
+    self.hasBeenSeen = {}
     self.extension = SPIKE_MIN_EXTENSION
     self.state = 'retracted'
     self.postExtensionTimer = {delay = 4, value = 0}
@@ -40,7 +41,7 @@ function Spike:update()
     end
 end
 
-function Spike:draw(alpha)
+function Spike:draw(lightness)
     local x = upscale_x(self.position.x)
     local y = upscale_y(self.position.y)
     local w = self.image:getWidth()
@@ -53,7 +54,7 @@ function Spike:draw(alpha)
     -- Determine the rotation/flipping
     local r, sx, sy = get_rotation(self.dir)
 
-    love.graphics.setColor(255, 255, 255, alpha)
+    love.graphics.setColor(lightness, lightness, lightness)
     love.graphics.draw(self.image, x, y, r, sx, sy, w / 2, h / 2)
 end
 
@@ -78,10 +79,9 @@ function Spike:get_visible_tiles()
     -- Add the main tile into which the spike protrudes
     tiles[1] = add_direction(self.position, self.dir)
 
-    local gridOffset = self:get_grid_offset()
-    if gridOffset.x ~= 0 or gridOffset.y ~= 0 then
-        local dir = self:get_interleave_offset_direction()
-        tiles[2] = add_direction(self.position, dir)
+    local dir = self:get_interleave_offset_direction()
+    if dir then
+        tiles[2] = add_direction(tiles[1], dir)
     end
 
     return tiles

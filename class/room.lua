@@ -311,24 +311,36 @@ end
 
 function Room:draw_spikes()
     for _, spike in pairs(self.spikes) do
-        for _, tile in pairs(spike:get_visible_tiles()) do
+        local tiles = spike:get_visible_tiles()
+        for i, tile in pairs(tiles) do
             local inFOV = tile_in_table(tile, self.fov)
+            local lightness
+
             if inFOV then
-                spike.hasBeenSeen = true
+                lightness = LIGHT
+                spike.hasBeenSeen[i] = true
+            else
+                lightness = DARK
             end
 
-            if spike.hasBeenSeen then
-                spike:draw(LIGHT)
+            local stencilFunction =
+                function ()
+                    love.graphics.rectangle('fill',
+                                            upscale_x(tile.x),
+                                            upscale_y(tile.y),
+                                            upscale_x(1), upscale_y(1))
+                end
+
+            love.graphics.push()
+            local stencil = love.graphics.newStencil(stencilFunction)
+            love.graphics.setStencil(stencil)
+
+            if spike.hasBeenSeen[i] then
+                spike:draw(lightness)
             end
 
-            if not inFOV then
-                -- Darken this tile
-                love.graphics.setColor(0, 0, 0, LIGHT - DARK)
-                --love.graphics.setColor(0, 255, 0)
-                love.graphics.rectangle('fill',
-                                        upscale_x(tile.x), upscale_y(tile.y),
-                                        upscale_x(1), upscale_y(1))
-            end
+            love.graphics.setStencil()
+            love.graphics.pop()
         end
     end
 end
