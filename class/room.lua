@@ -380,7 +380,7 @@ function Room:generate_next_piece()
 
         -- Make a spike timer
         local minDelay = FPS_LIMIT * 2
-        local delay = math.random(minDelay, FPS_LIMIT * 15)
+        local delay = math.random(minDelay, FPS_LIMIT * 10)
         delay = delay - (self.difficulty / 4)
         if delay < minDelay then delay = minDelay end
         self.spikeTimer = {delay = delay, value = 0}
