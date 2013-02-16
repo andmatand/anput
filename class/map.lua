@@ -701,7 +701,9 @@ end
 
 function Map:add_doors()
     for _, r in pairs(self.rooms) do
-        -- If this room is not the first room or the artifact room
+        -- If this room is not the first room or the artifact room, and a
+        -- random chance is met, and the room is not secret, and the room is
+        -- not a roadblock
         if r.distanceFromStart > 0 and not r.artifactRoom and
            math.random(1, 2) == 1 and not r.isSecret and not r.roadblock then
            -- Choose one of the exits in this room
@@ -711,9 +713,9 @@ function Map:add_doors()
                local index = math.random(1, #exits)
                local e = exits[index]
 
-               -- If this exit is already concealed (e.g. by a falsebrick) or
-               -- its linked exit is already concealed, or this exit leads to a
-               -- secret room, or this exit leads to a roadblock room
+               -- If this exit is already concealed (by a falsebrick or a door)
+               -- or its linked exit is already concealed, or this exit leads
+               -- to a secret room, or this exit leads to a roadblock room
                if e:is_hidden() or e:get_linked_exit():is_hidden() or
                   e.targetRoom.isSecret or e.targetRoom.roadblock then
                    -- Remove it from future consideration

@@ -79,7 +79,7 @@ function Room:add_object(obj)
     obj.room = self
 
     if instanceOf(Hieroglyph, obj) or instanceOf(Switch, obj) or
-       instanceOf(Brick, obj) then
+       instanceOf(Brick, obj) or instanceOf(Door, obj) then
         -- Add the object to our tilecache
         self.tileCache:add(obj:get_position(), obj)
     end
@@ -930,10 +930,5 @@ function Room:add_roombuilder_result_to_tilecache()
 
         -- Add the exit's doorway
         self.tileCache:add(exit:get_doorway(), nil, {isDoorway = true})
-    end
-
-    -- Add doors
-    for _, door in pairs(self.doors) do
-        self.tileCache:add(door:get_position(), door)
     end
 end
