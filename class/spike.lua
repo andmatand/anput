@@ -44,7 +44,7 @@ function Spike:update()
         for _, c in pairs(self.room:get_characters()) do
             for _, tile in pairs(self:get_visible_tiles()) do
                 if tiles_overlap(tile, c:get_position()) then
-                    c:receive_damage(40, self)
+                    c:receive_damage(50, self)
                 end
             end
         end
