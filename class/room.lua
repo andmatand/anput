@@ -703,6 +703,7 @@ function Room:update()
     for _, c in pairs(self:get_characters()) do
         c.isThundershocked = false
         c.rug = false
+        c.wasHurtBySpike = false
     end
 
     -- Let characters shoot all weapons except thunderstaves

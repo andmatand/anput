@@ -137,7 +137,7 @@ function RoomFiller:position_switches()
                     if not switch:get_position().x then
                         -- Increase the maxDistance and search again
                         maxDistance = maxDistance * 2
-                        local bricks = copy_table(self.room.bricks)
+                        bricks = copy_table(self.room.bricks)
                     end
                 end
             end

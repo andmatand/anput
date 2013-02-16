@@ -739,7 +739,7 @@ function Map:add_door(exit, addSwitch)
 
     local linkedExit = exit:get_linked_exit()
     local outsideDoor = Door(linkedExit:get_doorway(),
-                            linkedExit:get_direction())
+                             linkedExit:get_direction())
     linkedExit.room:add_object(outsideDoor)
 
     outsideDoor:set_sister(insideDoor)
@@ -759,7 +759,6 @@ function Map:add_door(exit, addSwitch)
        end
 
        local switch = Switch(door1)
-       --room1:add_object(switch)
        if not room1.requiredSwitches then room1.requiredSwitches = {} end
        table.insert(room1.requiredSwitches, switch)
     end

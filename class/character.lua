@@ -593,7 +593,7 @@ function Character:pick_up(item)
 end
 
 function Character:receive_damage(amount, agent)
-    if self.isDead then
+    if self.isDead or self.wasHurtBySpike then
         -- Do not receive any damage
         return false
     end
@@ -601,6 +601,10 @@ function Character:receive_damage(amount, agent)
     -- Find out who was ultimately responsible for this damage (e.g. if it was
     -- an arrow, get the owner (character) of the owner (bow) of the arrow)
     local perpetrator = get_ultimate_owner(agent)
+
+    if instanceOf(Spike, perpetrator) then
+        self.wasHurtBySpike = true
+    end
 
     if perpetrator.log then
         -- Give the perp credit for the hit
