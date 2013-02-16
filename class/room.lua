@@ -336,7 +336,7 @@ function Room:draw_spikes()
             love.graphics.setStencil(stencil)
 
             if spike.hasBeenSeen[i] then
-                spike:draw(lightness)
+                spike:draw(nil, lightness)
             end
 
             love.graphics.setStencil()
@@ -377,6 +377,13 @@ function Room:generate_next_piece()
     if self.roomFiller:fill_next_step() then
         -- Make a spriteBatch for drawing bricks
         self.brickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
+
+        -- Make a spike timer
+        local minDelay = FPS_LIMIT * 2
+        local delay = math.random(minDelay, FPS_LIMIT * 15)
+        delay = delay - (self.difficulty / 4)
+        if delay < minDelay then delay = minDelay end
+        self.spikeTimer = {delay = delay, value = 0}
 
         -- Mark the generation process as complete
         self.isGenerated = true
@@ -685,6 +692,10 @@ function Room:tile_walkable(tile)
 end
 
 function Room:update()
+    if not self.isGenerated then
+        return
+    end
+
     -- Get monsters' directional input
     self:character_input()
 
@@ -721,6 +732,17 @@ function Room:update()
     -- Update doors
     for _, door in pairs(self.doors) do
         door:update()
+    end
+
+    -- Update the spike timer
+    if self.spikeTimer.value > 0 then
+        self.spikeTimer.value = self.spikeTimer.value - 1
+    else
+        self.spikeTimer.value = self.spikeTimer.delay
+
+        for _, spike in pairs(self.spikes) do
+            spike:trigger()
+        end
     end
 
     -- Update spikes

@@ -30,7 +30,7 @@ function Projectile:draw(manualPosition)
         return
     end
     local position = manualPosition or {x = upscale_x(self.position.x),
-                                        y = upscale_y(self.position.y)}
+                                        y = upscale_y(self.position.y), LIGHT}
 
     if self.new then
         return

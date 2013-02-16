@@ -16,7 +16,7 @@ function Spike:init(position, dir)
     self.hasBeenSeen = {}
     self.extension = SPIKE_MIN_EXTENSION
     self.state = 'retracted'
-    self.postExtensionTimer = {delay = 4, value = 0}
+    self.postExtensionTimer = {delay = 8, value = 0}
 end
 
 function Spike:trigger()
@@ -39,11 +39,29 @@ function Spike:update()
             self:retract()
         end
     end
+
+    if self.room and self.giveDamage then
+        for _, c in pairs(self.room:get_characters()) do
+            for _, tile in pairs(self:get_visible_tiles()) do
+                if tiles_overlap(tile, c:get_position()) then
+                    c:receive_damage(40, self)
+                end
+            end
+        end
+
+        self.giveDamage = false
+    end
 end
 
-function Spike:draw(lightness)
-    local x = upscale_x(self.position.x)
-    local y = upscale_y(self.position.y)
+function Spike:draw(manualPosition, lightness)
+    local x, y
+    if manualPosition then
+        x = manualPosition.x
+        y = manualPosition.y
+    else
+        x = upscale_x(self.position.x)
+        y = upscale_y(self.position.y)
+    end
     local w = self.image:getWidth()
     local h = self.image:getHeight()
 
@@ -66,8 +84,11 @@ function Spike:extend()
     end
 
     if self.extension == SPIKE_MAX_EXTENSION then
-        self.state = 'extended'
-        self.postExtensionTimer.value = self.postExtensionTimer.delay
+        if self.state ~= 'extended' then
+            self.giveDamage = true
+            self.state = 'extended'
+            self.postExtensionTimer.value = self.postExtensionTimer.delay
+        end
     end
 end
 

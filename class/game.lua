@@ -78,7 +78,8 @@ function Game:draw_metadata()
         cga_print(msg, x, y)
         x = x + msg:len()
         cga_print(" ", x, y)
-        self.player.log.wasKilledBy:draw({x = upscale_x(x), y = upscale_y(y)})
+        self.player.log.wasKilledBy:draw({x = upscale_x(x), y = upscale_y(y)},
+                                         LIGHT)
 
         if #self.player.log:get_kills() > 0 then
             x = 1
@@ -463,7 +464,7 @@ function Game:update(dt)
 
     -- Update the adjacent rooms
     for _, room in pairs(self:get_adjacent_rooms()) do
-        if room.isGenerated then
+        if room ~= self.outside then
             room:update()
         end
     end

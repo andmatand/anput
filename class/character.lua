@@ -207,7 +207,7 @@ function Character:direction_to(position)
     return direction_to(self.position, position)
 end
 
-function Character:draw(pos, rotation)
+function Character:draw(pos, lightness, rotation)
     if not self.currentImage then
         self:update_image()
     end
