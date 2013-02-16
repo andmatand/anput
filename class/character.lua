@@ -138,9 +138,8 @@ function Character:check_for_items()
             if tiles_overlap(self.position, item.position) then
                 -- Pick it up
                 if self:pick_up(item) then
-                    -- If we didn't already pick something up, and we are in a
-                    -- room, and it is the game's current room, or we are a
-                    -- player
+                    -- If we didn't already pick something up, and we are
+                    -- audible
                     if (not pickedSomethingUp) then
                         if self:is_audible() then
                             -- Play a sound
@@ -160,7 +159,7 @@ function Character:check_for_items()
 end
 
 function Character:die()
-    Sprite.die(self)
+    Character.super.die(self)
 
     local itemsToDrop = {}
 
@@ -283,7 +282,6 @@ function Character:draw(pos, lightness, rotation)
                            x, y,
                            rotation,
                            sx, SCALE_Y)
-
     end
 
     if DEBUG and not instanceOf(Player, self) then
@@ -593,7 +591,7 @@ function Character:pick_up(item)
 end
 
 function Character:receive_damage(amount, agent)
-    if self.isDead or self.wasHurtBySpike then
+    if self.isDead or self.wasHurtBySpike or self.isInvincible then
         -- Do not receive any damage
         return false
     end

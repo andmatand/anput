@@ -68,9 +68,7 @@ function MapDisplay:draw(currentRoom)
 
     if DEBUG then
         -- Display the path length
-        cga_print('PATH LENGTH: ' .. #self.map.path, 1, 1)
-        cga_print('DIST. TO LAST ROOM: ' ..
-                  self.map.artifactRoom.distanceFromStart, 1, 2)
+        cga_print('PATH LENGTH: ' .. #self.map.path, 1, 3)
     end
 end
 
