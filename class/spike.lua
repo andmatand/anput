@@ -54,10 +54,13 @@ function Spike:update()
 end
 
 function Spike:draw(manualPosition, lightness)
+    local enableGridOffset = true
+
     local x, y
     if manualPosition then
         x = manualPosition.x
         y = manualPosition.y
+        enableGridOffset = false
     else
         x = upscale_x(self.position.x)
         y = upscale_y(self.position.y)
@@ -65,7 +68,12 @@ function Spike:draw(manualPosition, lightness)
     local w = self.image:getWidth()
     local h = self.image:getHeight()
 
-    local offset = self:get_draw_offset()
+    local offset
+    if enableGridOffset then
+        offset = self:get_draw_offset()
+    else
+        offset = self:get_extension_offset()
+    end
     x = x + (offset.x * SCALE_X) + ((w * SCALE_X) / 2)
     y = y + (offset.y * SCALE_Y) + ((h * SCALE_Y) / 2)
 

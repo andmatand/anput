@@ -154,7 +154,25 @@ function RoomFiller:add_spikes()
     end
 
     local minLength = 3
-    local maxLength = 15
+    local maxLength
+
+    if self.room.difficulty < 5 or math.random(1, 3) ~= 1 then
+        -- Do not put any spikes in this room
+        self.addedSpikes = true
+        return
+    end
+
+    -- Set the maximum number of spikes in a row, depending on the room's size
+    -- and difficulty
+    maxLength = math.random(0, #self.room.bricks * .02 *
+                            (self.room.difficulty * .1))
+
+    -- Determine a maximum length based on the room's difficulty
+    --maxLength = math.floor(self.room.difficulty / 5)
+
+    if maxLength < minLength then
+        maxLength = minLength
+    end
 
     local lines, dir1 = self:find_spike_positions(minLength, maxLength)
     for i, line in pairs(lines) do

@@ -206,7 +206,7 @@ function Character:direction_to(position)
     return direction_to(self.position, position)
 end
 
-function Character:draw(pos, lightness, rotation)
+function Character:draw(pos)
     if not self.currentImage then
         self:update_image()
     end
@@ -280,7 +280,7 @@ function Character:draw(pos, lightness, rotation)
 
         love.graphics.draw(drawable,
                            x, y,
-                           rotation,
+                           nil,
                            sx, SCALE_Y)
     end
 
