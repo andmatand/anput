@@ -4,11 +4,12 @@
 
 PLAY "mb t130 l40"
 
-SELECT CASE 29 '' Change this number to hear different sounds
+SELECT CASE 1 '' Change this number to hear different sounds
 CASE 1
     '' theme
-    PLAY "l10 o3  cde-b >c <b a- g c."
-
+    PLAY "l10 o3  cd-e gg+ b g+g > l5c"
+    'PLAY "l10 o3 b g+g f e p10 d- p10 c." 'l40cc+cc+cc+cc+"
+    'PLAY "l10 o3 b g+g f e c+ c <b> c."
 CASE 2
     '' player cry
     PLAY "l40 o1  bb-a"
@@ -112,7 +113,7 @@ CASE 26
     'PLAY "l30 o1 e-a g->c <a>e- cg- e-a"
     'PLAY "l30 o2 ae- g-c e-<a> c<g- ae-"
     'PLAY "l25 o1 e-a g->c"
-    'PLAY "l25 o1 efg-"
+    PLAY "l25 o1 efg-"
 CASE 27
     '' Door open
     PLAY "l64 ms o0"
@@ -126,7 +127,7 @@ CASE 28
     PLAY "l20 mn o1 p5 f+d+ fd f+d+ fd"
 CASE 29
     'PLAY "o2 l5 e-. l10 c g+ p10 g p10 l40 f+f f+f f+f f+f f+f f+f"
-    PLAY "l10 o2 c d- e d- l10 c p10 <b> p10 l40 ff+ ff+ ff+ ff+ ff+ ff+"
+    PLAY "l10 o2 c d- e d- c p10 <b> p10 l40 ff+ ff+ ff+ ff+ ff+ ff+"
 END SELECT
 
 PLAY "p3"
