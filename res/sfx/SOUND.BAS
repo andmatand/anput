@@ -126,7 +126,7 @@ CASE 28
     PLAY "l20 mn o1 p5 f+d+ fd f+d+ fd"
 CASE 29
     'PLAY "o2 l5 e-. l10 c g+ p10 g p10 l40 f+f f+f f+f f+f f+f f+f"
-    PLAY "l10 o2 c d e- d l10 c p10 <b> p10 l40 ff+ ff+ ff+ ff+ ff+ ff+"
+    PLAY "l10 o2 c d- e d- l10 c p10 <b> p10 l40 ff+ ff+ ff+ ff+ ff+ ff+"
 END SELECT
 
 PLAY "p3"
