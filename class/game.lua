@@ -78,7 +78,14 @@ function Game:draw_metadata()
         cga_print(msg, x, y)
         x = x + msg:len()
         cga_print(" ", x, y)
-        self.player.log.wasKilledBy:draw({x = upscale_x(x), y = upscale_y(y)})
+
+        local obj = self.player.log.wasKilledBy
+
+        if instanceOf(Spike, obj) then
+            obj:draw({x = upscale_x(x), y = upscale_y(y)}, LIGHT)
+        else
+            obj:draw({x = upscale_x(x), y = upscale_y(y)})
+        end
 
         if #self.player.log:get_kills() > 0 then
             x = 1
@@ -91,8 +98,9 @@ function Game:draw_metadata()
                 k.flashTimer = 0
 
                 cga_print(" ", x, y)
-                print('drawing: ', k)
-                k:draw({x = upscale_x(x), y = upscale_y(y)})
+                if k.draw then
+                    k:draw({x = upscale_x(x), y = upscale_y(y)})
+                end
 
                 x = x + 1
                 if x == GRID_W - 1 then
@@ -463,7 +471,7 @@ function Game:update(dt)
 
     -- Update the adjacent rooms
     for _, room in pairs(self:get_adjacent_rooms()) do
-        if room.isGenerated then
+        if room ~= self.outside then
             room:update()
         end
     end

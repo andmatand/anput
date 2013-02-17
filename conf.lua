@@ -4,6 +4,8 @@ function love.conf(t)
 
     BASE_SCREEN_W = 320
     BASE_SCREEN_H = 200
+    TILE_W = 8
+    TILE_H = 8
     SCALE_X = 3
     SCALE_Y = 3
 

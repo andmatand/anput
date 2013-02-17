@@ -33,10 +33,6 @@ function love.load()
             WEAPON_SLOT_4 = 23,
             WEAPON_SLOT_5 = 24}
 
-    -- These are the tile dimensions in (unscaled) pixels
-    TILE_W = 8
-    TILE_H = 8
-
     -- Set the width and height of the tile grid (in # of tiles)
     GRID_W = BASE_SCREEN_W / TILE_W
     GRID_H = BASE_SCREEN_H / TILE_H
@@ -143,6 +139,7 @@ function love.load()
 
     -- Furniture
     images.door = new_image('door.png')
+    images.spike = new_image('spike.png')
     images.switch = {{image = new_image('switch1.png'), delay = 2},
                      {image = new_image('switch2.png'), delay = 2},
                      {image = new_image('switch3.png'), delay = 2}}
@@ -365,6 +362,12 @@ function love.keypressed(key, unicode)
         elseif key == 'p' then
             local potion = Item('potion')
             wrapper.game.player:pick_up(potion)
+        elseif key == 's' then
+            if wrapper.game.currentRoom then
+                for _, spike in pairs(wrapper.game.currentRoom.spikes) do
+                    spike:trigger()
+                end
+            end
         elseif key == 't' then
             local thunderstaff = ThunderStaff()
             wrapper.game.player:pick_up(thunderstaff)

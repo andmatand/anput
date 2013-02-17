@@ -206,7 +206,7 @@ function Character:direction_to(position)
     return direction_to(self.position, position)
 end
 
-function Character:draw(pos, rotation)
+function Character:draw(pos)
     if not self.currentImage then
         self:update_image()
     end
@@ -280,7 +280,7 @@ function Character:draw(pos, rotation)
 
         love.graphics.draw(drawable,
                            x, y,
-                           rotation,
+                           nil,
                            sx, SCALE_Y)
     end
 
@@ -591,7 +591,7 @@ function Character:pick_up(item)
 end
 
 function Character:receive_damage(amount, agent)
-    if self.isDead or self.isInvincible then
+    if self.isDead or self.wasHurtBySpike or self.isInvincible then
         -- Do not receive any damage
         return false
     end
@@ -599,6 +599,10 @@ function Character:receive_damage(amount, agent)
     -- Find out who was ultimately responsible for this damage (e.g. if it was
     -- an arrow, get the owner (character) of the owner (bow) of the arrow)
     local perpetrator = get_ultimate_owner(agent)
+
+    if instanceOf(Spike, perpetrator) then
+        self.wasHurtBySpike = true
+    end
 
     if perpetrator.log then
         -- Give the perp credit for the hit

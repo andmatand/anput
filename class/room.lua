@@ -1,7 +1,12 @@
+require('class.brick')
+require('class.door')
 require('class.fovfinder')
 require('class.roombuilder')
 require('class.roomfiller')
 require('class.tilecache')
+require('class.spike')
+require('class.switch')
+require('class.turret')
 
 Room = class('Room')
 
@@ -20,9 +25,10 @@ function Room:init(args)
     self.hieroglyphs = {}
     self.items = {}
     self.lakes = {}
+    self.spikes = {}
     self.sprites = {}
-    self.thunderbolts = {}
     self.switches = {}
+    self.thunderbolts = {}
 
     self.exits = {}
     self.freeTiles = {}
@@ -41,11 +47,13 @@ end
 
 function Room:add_object(obj)
     if instanceOf(Sprite, obj) then
-        -- Add this sprite to the room's sprite table
         table.insert(self.sprites, obj)
-    elseif instanceOf(Turret, obj) then
-        -- Add this turret to the room's turret table
-        table.insert(self.turrets, obj)
+    elseif instanceOf(Brick, obj) then
+        table.insert(self.bricks, obj)
+    elseif instanceOf(Door, obj) then
+        table.insert(self.doors, obj)
+    elseif instanceOf(Hieroglyph, obj) then
+        table.insert(self.hieroglyphs, obj)
     elseif instanceOf(Item, obj) then
         -- Add this item to the room's item table
         table.insert(self.items, obj)
@@ -55,20 +63,26 @@ function Room:add_object(obj)
 
         -- Re-enable animation
         obj.animationEnabled = true
-    elseif instanceOf(Thunderbolt, obj) then
-        table.insert(self.thunderbolts, obj)
-    elseif instanceOf(Brick, obj) then
-        table.insert(self.bricks, obj)
-    elseif instanceOf(Door, obj) then
-        table.insert(self.doors, obj)
+    elseif instanceOf(Spike, obj) then
+        table.insert(self.spikes, obj)
     elseif instanceOf(Switch, obj) then
         table.insert(self.switches, obj)
+    elseif instanceOf(Thunderbolt, obj) then
+        table.insert(self.thunderbolts, obj)
+    elseif instanceOf(Turret, obj) then
+        table.insert(self.turrets, obj)
     else
         return false
     end
 
     -- Add a reference to this room to the object
     obj.room = self
+
+    if instanceOf(Hieroglyph, obj) or instanceOf(Switch, obj) or
+       instanceOf(Brick, obj) or instanceOf(Door, obj) then
+        -- Add the object to our tilecache
+        self.tileCache:add(obj:get_position(), obj)
+    end
 end
 
 function Room:add_message(message)
@@ -105,6 +119,9 @@ function Room:draw()
         -- Update the FOV
         self:update_fov()
     end
+
+    -- Draw spikes
+    self:draw_spikes()
 
     -- Draw bricks
     self:draw_bricks()
@@ -178,6 +195,15 @@ function Room:draw()
             end
         end
 
+        -- Show spikes
+        for _, spike in pairs(self.spikes) do
+            love.graphics.setColor(0, 200, 50, 180)
+            love.graphics.rectangle('fill',
+                                    upscale_x(spike.position.x),
+                                    upscale_y(spike.position.y),
+                                    upscale_x(1), upscale_y(1))
+        end
+
         -- Show tiles in FOV
         for _, tile in pairs(self.fov) do
             love.graphics.setColor(0, 255, 0)
@@ -226,24 +252,24 @@ function Room:draw_bricks()
         self.brickBatch:clear()
 
         -- Add each brick to the correct spriteBatch
-        local alpha
+        local lightness
         local dist
         for _, b in pairs(self.bricks) do
             --local dist = manhattan_distance(b, self.game.player.position)
             if tile_in_table(b, self.fov) then
                 b.hasBeenSeen = true
-                --alpha = LIGHT - dist * .04--((2 ^ dist) * .05)
-                alpha = LIGHT
+                --lightness = LIGHT - dist * .04--((2 ^ dist) * .05)
+                lightness = LIGHT
             else
-                alpha = DARK
+                lightness = DARK
             end
 
             if DEBUG then
-                alpha = LIGHT
+                lightness = LIGHT
             end
 
             if b.hasBeenSeen or DEBUG then
-                self.brickBatch:setColor(255, 255, 255, alpha)
+                self.brickBatch:setColor(lightness, lightness, lightness)
                 self.brickBatch:add(b.x * TILE_W, b.y * TILE_H)
             end
         end
@@ -283,6 +309,42 @@ function Room:draw_objects_with_fov_alpha(objects)
     end
 end
 
+function Room:draw_spikes()
+    for _, spike in pairs(self.spikes) do
+        local tiles = spike:get_visible_tiles()
+        for i, tile in pairs(tiles) do
+            local inFOV = tile_in_table(tile, self.fov)
+            local lightness
+
+            if inFOV then
+                lightness = LIGHT
+                spike.hasBeenSeen[i] = true
+            else
+                lightness = DARK
+            end
+
+            local stencilFunction =
+                function ()
+                    love.graphics.rectangle('fill',
+                                            upscale_x(tile.x),
+                                            upscale_y(tile.y),
+                                            upscale_x(1), upscale_y(1))
+                end
+
+            love.graphics.push()
+            local stencil = love.graphics.newStencil(stencilFunction)
+            love.graphics.setStencil(stencil)
+
+            if spike.hasBeenSeen[i] then
+                spike:draw(nil, lightness)
+            end
+
+            love.graphics.setStencil()
+            love.graphics.pop()
+        end
+    end
+end
+
 function Room:find_exit(search)
     return search_table(self.exits, search)
 end
@@ -315,6 +377,13 @@ function Room:generate_next_piece()
     if self.roomFiller:fill_next_step() then
         -- Make a spriteBatch for drawing bricks
         self.brickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
+
+        -- Make a spike timer
+        local minDelay = FPS_LIMIT * 2
+        local delay = math.random(minDelay, FPS_LIMIT * 10)
+        delay = delay - (self.difficulty / 4)
+        if delay < minDelay then delay = minDelay end
+        self.spikeTimer = {delay = delay, value = 0}
 
         -- Mark the generation process as complete
         self.isGenerated = true
@@ -623,6 +692,10 @@ function Room:tile_walkable(tile)
 end
 
 function Room:update()
+    if not self.isGenerated then
+        return
+    end
+
     -- Get monsters' directional input
     self:character_input()
 
@@ -630,11 +703,13 @@ function Room:update()
     for _, c in pairs(self:get_characters()) do
         c.isThundershocked = false
         c.rug = false
+        c.wasHurtBySpike = false
     end
 
-    -- Let characters shoot weapons
+    -- Let characters shoot all weapons except thunderstaves
     for _, c in pairs(self:get_characters()) do
-        if c.shootDir then
+        if c.shootDir and
+           c.armory:get_current_weapon_type() ~= 'thunderstaff' then
             c:shoot(c.shootDir)
             c.shootDir = nil
         end
@@ -658,6 +733,22 @@ function Room:update()
     -- Update doors
     for _, door in pairs(self.doors) do
         door:update()
+    end
+
+    -- Update the spike timer
+    if self.spikeTimer.value > 0 then
+        self.spikeTimer.value = self.spikeTimer.value - 1
+    else
+        self.spikeTimer.value = self.spikeTimer.delay
+
+        for _, spike in pairs(self.spikes) do
+            spike:trigger()
+        end
+    end
+
+    -- Update spikes
+    for _, spike in pairs(self.spikes) do
+        spike:update()
     end
 
     -- Update lakes
@@ -836,10 +927,8 @@ function Room:add_roombuilder_result_to_tilecache()
     -- Add exits
     for _, exit in pairs(self.exits) do
         self.tileCache:add(exit:get_position(), exit, {isExit = true})
-    end
 
-    -- Add doors
-    for _, door in pairs(self.doors) do
-        self.tileCache:add(door:get_position(), door)
+        -- Add the exit's doorway
+        self.tileCache:add(exit:get_doorway(), nil, {isDoorway = true})
     end
 end

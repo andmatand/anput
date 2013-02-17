@@ -39,10 +39,12 @@ function RoomFiller:fill_next_step()
             if self:add_hieroglyphs() then
                 if self:add_turrets() then
                     if self:position_switches() then
-                        if self:add_monsters() then
-                            if self:add_items() then
-                                -- Flag that room is done being filled
-                                return true
+                        if self:add_spikes() then
+                            if self:add_monsters() then
+                                if self:add_items() then
+                                    -- Flag that room is done being filled
+                                    return true
+                                end
                             end
                         end
                     end
@@ -75,14 +77,14 @@ function RoomFiller:add_hieroglyphs()
 end
 
 function RoomFiller:position_switches()
-    if self.positionedSwitches then
+    if self.positionedSwitches or not self.room.requiredSwitches then
         return true
     end
 
     local bricks = copy_table(self.room.bricks)
     local maxDistance = 5
 
-    for _, switch in pairs(self.room.switches) do
+    for _, switch in pairs(self.room.requiredSwitches) do
         while #bricks > 0 do
             local index = math.random(1, #bricks)
             local brick = bricks[index]
@@ -123,7 +125,7 @@ function RoomFiller:position_switches()
 
             if ok then
                 switch:set_position(brick:get_position())
-                self.room.tileCache:add(switch:get_position(), switch)
+                self.room:add_object(switch)
                 break
             else
                 -- Remove this brick from future consideration
@@ -135,7 +137,7 @@ function RoomFiller:position_switches()
                     if not switch:get_position().x then
                         -- Increase the maxDistance and search again
                         maxDistance = maxDistance * 2
-                        local bricks = copy_table(self.room.bricks)
+                        bricks = copy_table(self.room.bricks)
                     end
                 end
             end
@@ -144,6 +146,179 @@ function RoomFiller:position_switches()
 
     self.positionedSwitches = true
     return false
+end
+
+function RoomFiller:add_spikes()
+    if self.addedSpikes then
+        return true
+    end
+
+    local minLength = 3
+    local maxLength
+
+    if self.room.difficulty < 5 or math.random(1, 3) ~= 1 then
+        -- Do not put any spikes in this room
+        self.addedSpikes = true
+        return
+    end
+
+    -- Set the maximum number of spikes in a row, depending on the room's size
+    -- and difficulty
+    maxLength = math.random(0, #self.room.bricks * .02 *
+                            (self.room.difficulty * .1))
+
+    -- Determine a maximum length based on the room's difficulty
+    --maxLength = math.floor(self.room.difficulty / 5)
+
+    if maxLength < minLength then
+        maxLength = minLength
+    end
+
+    local lines, dir1 = self:find_spike_positions(minLength, maxLength)
+    for i, line in pairs(lines) do
+        -- Determine which direction this line of spikes should point
+        local dir
+        if i == 1 then
+            dir = dir1
+        else
+            dir = opposite_direction(dir1)
+        end
+
+        local lastPosition = {x = -1, y = -1}
+        if dir == 3 then
+            -- Find the spike that is farthest to the east
+            for _, pos in pairs(line) do
+                if pos.x > lastPosition.x then
+                    lastPosition = pos
+                end
+            end
+        elseif dir == 4 then
+            -- Find the spike that is farthest to the south
+            for _, pos in pairs(line) do
+                if pos.y > lastPosition.y then
+                    lastPosition = pos
+                end
+            end
+        end
+
+        -- Add a spike on each tile in this line
+        for _, pos in pairs(line) do
+            -- If this is the end spike pointing south or west
+            if not tiles_overlap(pos, lastPosition) then
+                self.room:add_object(Spike(pos, dir))
+            end
+        end
+    end
+
+    self.addedSpikes = true
+    return false
+end
+
+function RoomFiller:find_spike_positions(minLength, maxLength)
+    local lines = {{}, {}}
+
+    test_tile = function(tile, room)
+        -- If this tile does not contain only one brick
+        local cachedTile = room.tileCache:get_tile(tile)
+        if not (#cachedTile.contents == 1 and
+                instanceOf(Brick, cachedTile.contents[1])) then
+            return false, {}
+        end
+
+        local legalSpikeDirections = {}
+
+        for dir = 1, 4 do
+            for dist = 1, 2 do
+                local pos = add_direction(tile, dir, dist)
+                local cachedTile = room.tileCache:get_tile(pos)
+
+                if dist == 1 then
+                    -- If the tile is empty and inside the room, and is not a
+                    -- doorway
+                    if cachedTile.isPartOfRoom and not cachedTile.isDoorway and
+                       #cachedTile.contents == 0 then
+                    else
+                        break
+                    end
+                elseif dist == 2 then
+                    -- If the tile contains only a brick
+                    if #cachedTile.contents == 1 and
+                       instanceOf(Brick, cachedTile.contents[1]) then
+                        table.insert(legalSpikeDirections, dir)
+                    end
+                end
+            end
+        end
+
+        if #legalSpikeDirections > 0 then
+            return true, legalSpikeDirections
+        else
+            return false, {}
+        end
+    end
+
+    local bricks = copy_table(self.room.bricks)
+    while #bricks > 0 do
+        local index = math.random(1, #bricks)
+        local sourceBrick = bricks[index]
+
+        local ok, spikeDirections = test_tile(sourceBrick:get_position(),
+                                              self.room)
+        if not ok then
+            -- Remove this brick from future use
+            table.remove(bricks, index)
+        end
+        for _, spikeDir in pairs(spikeDirections) do
+            -- Add the position of the source brick and its mate
+            local pos = sourceBrick:get_position()
+            table.insert(lines[1], pos)
+            table.insert(lines[2], add_direction(pos, spikeDir, 2))
+
+            -- Look for bricks next to this brick
+            for _, lateralDir in pairs(perpendicular_directions(spikeDir)) do
+                pos = sourceBrick:get_position()
+                while true do
+                    -- Move to the next tile in this direction
+                    pos = add_direction(pos, lateralDir)
+
+                    local ok, directions = test_tile(pos, self.room)
+
+                    -- If this tile is an acceptable position for a spike
+                    -- pointed in the same direction as the direction from the
+                    -- source brick we are currently searching
+                    if ok and value_in_table(spikeDir, directions) then
+                        -- Add the spike positions to the lines
+                        table.insert(lines[1], pos)
+                        table.insert(lines[2], add_direction(pos, spikeDir, 2))
+                    else
+                        break
+                    end
+                end
+            end
+
+            if #lines[1] >= minLength then
+                return lines, spikeDir
+            end
+
+            -- Remove the bricks in the lines from future use
+            for _, line in pairs(lines) do
+                for _, t in pairs(line) do
+                    for i, b in pairs(bricks) do
+                        if tiles_overlap(t, b) then
+                            table.remove(bricks, i)
+                            break
+                        end
+                    end
+                end
+            end
+
+            -- Clear the lines
+            lines[1] = {}
+            lines[2] = {}
+        end
+    end
+
+    return {}
 end
 
 function RoomFiller:position_hieroglyph(letters, orientation)
@@ -174,9 +349,9 @@ function RoomFiller:position_hieroglyph(letters, orientation)
             ok = true
         end
 
-        -- If this brick does not already have a hieroglyph on it
+        -- If this brick already has something else on it
         local tile = self.room.tileCache:get_tile(b:get_position())
-        if tile:contains_class(Hieroglyph) then
+        if #tile.contents > 1 then
             -- It is not okay to use it
             ok = false
         end
@@ -240,9 +415,7 @@ function RoomFiller:position_hieroglyph(letters, orientation)
 
                         local newHieroglyph = Hieroglyph(b:get_position(),
                                                          letters[letterIndex])
-                        table.insert(self.room.hieroglyphs, newHieroglyph)
-                        self.room.tileCache:add(newHieroglyph:get_position(),
-                                                newHieroglyph)
+                        self.room:add_object(newHieroglyph)
                     end
                     --removeBricks = true
 
@@ -473,7 +646,7 @@ function RoomFiller:find_turret_positions(min, max)
             positions = {srcPos}
 
             -- Iterate through the directions in which we should look for
-            -- neighboring /ricks
+            -- neighboring bricks
             for _, dir in pairs(perpendicular_directions(shootDir)) do
                 -- Search out from the source brick
                 local pos = srcPos
@@ -482,7 +655,8 @@ function RoomFiller:find_turret_positions(min, max)
                     pos = add_direction(pos, dir)
 
                     -- If there is a brick here
-                    if tile_in_table(pos, bricks) then
+                    local tile = self.room.tileCache:get_tile(pos)
+                    if tile:contains_class(Brick) then
                         -- If one of the shootable directions from this tile
                         -- is the same as the source brick's shooting direction
                         if value_in_table(shootDir, shootable_directions(pos,
@@ -540,10 +714,6 @@ function RoomFiller:add_required_objects()
 
         if pos.x and pos.y  then
             self.room:add_object(obj)
-
-            if instanceOf(Brick, obj) then
-                self.room.tileCache:add(pos, obj)
-            end
 
             -- Remove the object's position from future use
             self:use_tile(pos)

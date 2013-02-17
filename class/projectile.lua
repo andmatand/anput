@@ -30,24 +30,14 @@ function Projectile:draw(manualPosition)
         return
     end
     local position = manualPosition or {x = upscale_x(self.position.x),
-                                        y = upscale_y(self.position.y)}
+                                        y = upscale_y(self.position.y), LIGHT}
 
     if self.new then
         return
     end
 
     -- Determine the rotation/flipping
-    r = 0
-    sx = SCALE_X
-    sy = SCALE_Y
-    if self.dir == 2 then
-        r = math.rad(90)
-    elseif self.dir == 3 then
-        sy = -SCALE_Y
-    elseif self.dir == 4 then
-        r = math.rad(90)
-        sy = -SCALE_Y
-    end
+    local r, sx, sy = get_rotation(self.dir)
 
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(
