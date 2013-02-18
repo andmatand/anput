@@ -114,7 +114,7 @@ end
 
 function Game:generate()
     self.randomSeed = os.time() + math.random(0, 1000)
-    --self.randomSeed = 1358040137
+    --self.randomSeed = 1361157016
     math.randomseed(self.randomSeed)
     print('\nrandom seed for game: ' .. self.randomSeed)
 

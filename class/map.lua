@@ -750,7 +750,7 @@ function Map:add_door(exit, addSwitch)
     if addSwitch ~= false then
        -- Put a switch in the room which is closer to the starting room
        local room1, room2, door1
-       if exit.room:get_next_room() == linkedExit.room then
+       if exit.room.distanceFromStart < linkedExit.room.distanceFromStart then
            room1 = exit.room
            room2 = linkedExit.room
            door1 = insideDoor
