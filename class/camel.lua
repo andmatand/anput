@@ -14,10 +14,11 @@ function Camel:init()
 
     -- AI
     self.ai.choiceTimer.delay = 0
-    self.ai.level.globetrot = {prob = 10, delay = 0}
-    self.ai.level.follow = {dist = 8, delay = .1}
+    self.ai.level.avoid = {prob = 10, delay = 0}
     self.ai.level.dodge = {dist = 5, prob = 10, delay = 0}
     self.ai.level.drop = {prob = 10, delay = .5}
+    self.ai.level.follow = {dist = 8, delay = .1}
+    self.ai.level.globetrot = {prob = 10, delay = 0}
 
     -- Mouth
     self.mouth = Mouth({sprite = self})
@@ -33,6 +34,16 @@ function Camel:forgive()
 
     -- Begin fleeing
     self.ai.level.flee = {dist = 5, prob = 9, delay = 0}
+end
+
+function Camel:receive_damage(amount, agent)
+    -- If the agent is a spike
+    if instanceOf(Spike, agent) then
+        -- Take only 1 damage
+        amount = 1
+    end
+
+    return Camel.super.receive_damage(self, amount, agent)
 end
 
 function Camel:update()

@@ -4,6 +4,7 @@ AI = class('AI')
 
 AI_ACTION = {aim = 'aim', -- Get into a shooting position
              attack = 'attack', -- Use a weapon (if it would hurt an enemy)
+             avoid = 'avoid', -- Avoid dangerous areas
              chase = 'chase', -- Move toward an enemy
              dodge = 'dodge', -- Get out of the (straight-line) path of a
                               -- sprite (if it's coming toward us)
@@ -129,6 +130,23 @@ function AI:attack()
     end
 end
 
+function AI:avoid(area)
+    -- If we are not in the area
+    if not tile_in_table(self.owner:get_position(), area) then
+        -- We don't need to avoid the area
+        return false
+    end
+
+    -- Find a tile somewhere in the room that is not within the area
+    while true do
+        local tile = self.owner.room:get_free_tile()
+        if not tile_in_table(tile, area) then
+            self:plot_path(tile, AI_ACTION.avoid)
+            return true
+        end
+    end
+end
+
 function AI:chase(target)
     if self.owner.tag then
         print('chase: new target:', target)
@@ -228,6 +246,20 @@ function AI:do_action(action)
     elseif action == 'attack' and self:waited_to(action) then
         if self:attack() then
             return true
+        end
+    elseif action == 'avoid' and self:waited_to(action) and
+           self.path.action ~= AI_ACTION.avoid and
+           self.path.action ~= AI_ACTION.follow then
+        local areas = self:find_dangerous_areas()
+
+        -- If there are any dangerous areas
+        if areas then
+            for _, area in pairs(areas) do
+                -- Try to avoid the area
+                if self:avoid(area) then
+                    return true
+                end
+            end
         end
     elseif action == 'chase' and
            (not self.path.nodes or self.path.action == AI_ACTION.explore) then
@@ -494,6 +526,21 @@ function AI:drop_item()
     end
 end
 
+function AI:find_dangerous_areas()
+    local areas = {}
+
+    -- Add any spikes in the room
+    local area = {}
+    for _, spike in pairs(self.owner.room.spikes) do
+        for _, tile in pairs(spike:get_visible_tiles()) do
+            table.insert(area, tile)
+        end
+    end
+    table.insert(areas, area)
+
+    return areas
+end
+
 function AI:find_enemy()
     -- Find the closest enemy
     local closestEnemy
@@ -729,6 +776,18 @@ function AI:flee_from(threat)
 end
 
 function AI:follow(target)
+    -- If we have any "avoid" AI
+    if self.level.avoid.prob and self.level.avoid.prob > 0 then
+        local areas = self:find_dangerous_areas()
+        for _, area in pairs(areas) do
+            -- If the target is in this dangerous area
+            if tile_in_table(target:get_position(), area) then
+                -- Do not follow the target
+                return false
+            end
+        end
+    end
+
     -- If the player is far enough away from us, or in a different room
     --if self:target_in_range(target, action) or
     if manhattan_distance(target:get_position(), self.owner:get_position()) >=

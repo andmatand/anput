@@ -260,6 +260,7 @@ function Game:set_demo_mode(tf)
             self.player.ai.choiceTimer.delay = .1
             self.player.ai.level.aim = {dist = 20, prob = 10, delay = .05}
             self.player.ai.level.attack = {dist = 20, prob = 10, delay = .1}
+            self.player.ai.level.avoid = {prob = 10, delay = 0}
             self.player.ai.level.chase = {dist = 20, prob = 9, delay = .05}
             self.player.ai.level.dodge = {dist = 20, prob = 10, delay = .05}
             self.player.ai.level.explore = {dist = 20, prob = 9, delay = .05}
