@@ -741,6 +741,10 @@ function Room:update()
     else
         self.spikeTimer.value = self.spikeTimer.delay
 
+        if self:is_audible() and #self.spikes > 0 then
+            sounds.spikes:play()
+        end
+
         for _, spike in pairs(self.spikes) do
             spike:trigger()
         end

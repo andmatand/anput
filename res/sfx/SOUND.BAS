@@ -4,7 +4,7 @@
 
 PLAY "mb t130 l40"
 
-SELECT CASE 1 '' Change this number to hear different sounds
+SELECT CASE 30 '' Change this number to hear different sounds
 CASE 1
     '' theme
     PLAY "l10 o3  cd-e gg+ b g+g > l5c"
@@ -126,10 +126,14 @@ CASE 28
     '' Fight to the Death
     PLAY "l20 mn o1 p5 f+d+ fd f+d+ fd"
 CASE 29
-    'PLAY "o2 l5 e-. l10 c g+ p10 g p10 l40 f+f f+f f+f f+f f+f f+f"
+    '' Khnum theme
     PLAY "l10 o2 c d- e d- c p10 <b> p10 l40 ff+ ff+ ff+ ff+ ff+ ff+"
+CASE 30
+    '' Spikes trigger
+    PLAY "l64 o4b o3b o2gf o1e-c<fe"
 END SELECT
 
 PLAY "p3"
 'PLAY "l10 o3 mn cde-b >c <b a- g c."
+                                                           e
 

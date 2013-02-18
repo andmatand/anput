@@ -213,6 +213,7 @@ function love.load()
     sounds.pause = Sound('res/sfx/pause.wav')
     sounds.menuSelect = Sound('res/sfx/menu-select.wav')
     sounds.secret = Sound('res/sfx/secret.wav')
+    sounds.spikes = Sound('res/sfx/spikes-trigger.wav')
     sounds.trap = Sound('res/sfx/trap.wav')
 
     --mute = true
