@@ -736,7 +736,7 @@ function AI:follow(target)
         if not self.path.nodes or self.path.action == AI_ACTION.explore then
             -- Follow the target
             self:chase(target)
-            self.path.action = AI_ACTION[action]
+            self.path.action = AI_ACTION.follow
 
             if self.path.nodes then
                 -- Remove some nodes from the end of the path so that we end up
