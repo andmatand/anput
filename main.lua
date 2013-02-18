@@ -309,6 +309,7 @@ function love.keypressed(key, unicode)
     elseif ctrl and shift then
         if key == 'f1' then
             DEBUG = not DEBUG
+            wrapper.game.currentRoom.bricksDirty = true
         elseif key == 'i' then
             wrapper.game.player.isInvincible =
                 not wrapper.game.player.isInvincible

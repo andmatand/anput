@@ -302,6 +302,8 @@ function Room:draw_objects_with_fov_alpha(objects)
             alpha = DARK
         end
 
+        if DEBUG then alpha = LIGHT end
+
         if object.hasBeenSeen or DEBUG then
             love.graphics.setColor(255, 255, 255, alpha)
             object:draw(alpha)
@@ -323,6 +325,8 @@ function Room:draw_spikes()
                 lightness = DARK
             end
 
+            if DEBUG then lightness = LIGHT end
+
             local stencilFunction =
                 function ()
                     love.graphics.rectangle('fill',
@@ -335,7 +339,7 @@ function Room:draw_spikes()
             local stencil = love.graphics.newStencil(stencilFunction)
             love.graphics.setStencil(stencil)
 
-            if spike.hasBeenSeen[i] then
+            if spike.hasBeenSeen[i] or DEBUG then
                 spike:draw(nil, lightness)
             end
 
