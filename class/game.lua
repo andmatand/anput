@@ -98,8 +98,17 @@ function Game:draw_metadata()
                 k.flashTimer = 0
 
                 cga_print(" ", x, y)
-                if k.draw then
-                    k:draw({x = upscale_x(x), y = upscale_y(y)})
+                --if k.draw then
+                --    k:draw({x = upscale_x(x), y = upscale_y(y)})
+                --end
+
+                local ok, errorMessage = pcall(k.draw, k, {x = upscale_x(x),
+                                                           y = upscale_y(y)})
+                if not ok then
+                    print('error drawing ', k)
+                    print('  monsterType: ', k.monsterType)
+                    print('  currentImage: ', k.currentImage)
+                    print('  error message:' .. errorMessage)
                 end
 
                 x = x + 1
