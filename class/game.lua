@@ -1,7 +1,6 @@
 require('class.inventorymenu')
 require('class.map')
 require('class.player')
-require('class.statusbar')
 require('util.tables')
 require('util.tile')
 
@@ -62,7 +61,7 @@ end
 function Game:draw_metadata()
     love.graphics.setColor(255, 255, 255)
 
-    self.statusBar:draw()
+    self.player.statusBar:draw()
 
     if self.player.isDead then
         local visitedRooms = 0
@@ -134,15 +133,12 @@ function Game:generate()
     self.generatedAllRooms = false
 
     -- Create a player
-    self.player = Player()
+    self.player = Player(self)
 
     -- Switch to the first room
     self:move_player_to_start()
 
     self:position_sword()
-
-    -- Create a status bar
-    self.statusBar = StatusBar(self.player, self)
 
     -- Create an inventory menu
     self.inventoryMenu = InventoryMenu(self.player)
@@ -288,7 +284,8 @@ function Game:show_tutorial_messages()
     -- If the player has not moved for the first three seconds of the game
     if not self.tutorial.playerMoved and self.time >= 3 then
         -- Show a contextual help message
-        self.statusBar:show_context_message({'w', 'a', 's', 'd'}, 'MOVE')
+        self.player.statusBar:show_context_message({'w', 'a', 's', 'd'},
+                                                   'MOVE')
     end
     if self.player.stepped then
         self.tutorial.playerMoved = true
@@ -297,8 +294,8 @@ function Game:show_tutorial_messages()
     -- If the player has a shootable weapon equipped
     if not self.tutorial.playerShot and self.player.armory.currentWeapon and
        self.player.armory.currentWeapon.canShoot then
-        self.statusBar:show_context_message({'up', 'down', 'left', 'right'},
-                                            'SHOOT')
+        self.player.statusBar:show_context_message({'up', 'down', 'left',
+                                                    'right'}, 'SHOOT')
     end
     if self.player.shot then
         self.tutorial.playerShot = true
@@ -453,7 +450,7 @@ function Game:update(dt)
         self.playedTheme = true
     end
 
-    self.statusBar:update()
+    self.player.statusBar:update()
 
     if self.player.isDead then
         if not self.playerDeadTimer then
@@ -461,7 +458,7 @@ function Game:update(dt)
         end
 
         if self.time >= self.playerDeadTimer + 3 then
-            self.statusBar:show_context_message({'enter'}, 'NEW GAME')
+            self.player.statusBar:show_context_message({'enter'}, 'NEW GAME')
         end
     end
 

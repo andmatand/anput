@@ -69,15 +69,6 @@ function Weapon:add_ammo(amount)
     return false
 end
 
-function Weapon:draw(position)
-    position = position or self.position
-
-    love.graphics.setColor(255, 255, 255)
-    love.graphics.draw(self.image,
-                       upscale_x(position.x), upscale_y(position.y),
-                       0, SCALE_X, SCALE_Y)
-end
-
 function Weapon:is_effective_against(character)
     -- If we are not a magic weapon
     if not self.isMagic then

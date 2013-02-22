@@ -1,10 +1,13 @@
 require('class.character')
+require('class.statusbar')
 require('class.switch')
 
 Player = class('Player', Character)
 
-function Player:init()
+function Player:init(game)
     Player.super.init(self)
+
+    self.game = game
 
     self:add_enemy_class(Monster)
     self:add_enemy_class(Khnum)
@@ -18,6 +21,9 @@ function Player:init()
     self.mouth = Mouth({sprite = self})
 
     self.wantsToTrade = false
+
+    -- Create a status bar
+    self.statusBar = StatusBar(self, self.game)
 end
 
 function Player:can_trade(price)
@@ -184,6 +190,17 @@ function Player:key_pressed(key)
     end
 end
 
+function Player:pick_up(item)
+    if Player.super.pick_up(self, item) then
+        -- Add this new item our status bar's pop-up queue
+        self.statusBar:add_new_item(item)
+
+        return true
+    else
+        return false
+    end
+end
+
 function Player:shoot(dir)
     Player.super.shoot(self, dir)
 
@@ -205,7 +222,7 @@ function Player:update()
         contextAction = 'ACTIVATE'
     end
     if contextAction then
-        self.room.game.statusBar:show_context_message({'enter'}, contextAction)
+        self.statusBar:show_context_message({'enter'}, contextAction)
     end
 end
 
