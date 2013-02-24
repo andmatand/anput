@@ -29,7 +29,7 @@ function Lake:draw(fov)
     love.graphics.push()
     love.graphics.setStencil(self.stencil)
 
-    if DEBUG then love.graphics.setStencil() end
+    --if DEBUG then love.graphics.setStencil() end
 
     if not self.spriteBatches[self.frameNumber] then
         self:create_spritebatch(self.frameNumber)
@@ -41,6 +41,7 @@ function Lake:draw(fov)
                        self.offset.x * SCALE_X, self.offset.y * SCALE_Y,
                        0, SCALE_X, SCALE_Y)
 
+    if not DEBUG then
     -- Darken tiles that are out of the FOV
     for _, tile in pairs(self.tiles) do
         local pos = tile:get_position()
@@ -59,17 +60,7 @@ function Lake:draw(fov)
         end
 
     end
-    --for y = self.drawBox.y1, self.drawBox.y2 do
-    --    for x = self.drawBox.x1, self.drawBox.x2 do
-    --        if tile_in_table({x = x, y = y}, fov) then
-
-    --        if not tile_in_table({x = x, y = y}, fov) and not DEBUG then
-    --            love.graphics.rectangle('fill',
-    --                                    upscale_x(x), upscale_y(y),
-    --                                    upscale_x(1), upscale_y(1))
-    --        end
-    --    end
-    --end
+    end
 
     -- Remove the stencil
     love.graphics.pop()

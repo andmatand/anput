@@ -17,6 +17,7 @@ function Wizard:init()
     self.ai.choiceTimer.delay = .25
     self.ai.level.aim = {dist = 4, prob = 10, delay = .1}
     self.ai.level.attack = {dist = 10, prob = 10, delay = .1}
+    self.ai.level.avoid = {prob = 10, delay = 0}
     self.ai.level.dodge = {dist = 7, prob = 10, delay = 0}
     self.ai.level.flee = {dist = 10, prob = 10, delay = .25}
     self.ai.level.heal = {prob = 10, delay = .5}

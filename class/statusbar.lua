@@ -13,11 +13,28 @@ function StatusBar:init(owner, game)
     self.selectedItemNum = nil
 
     self.healthMeter = {toast = Toast()}
-    self.newestItem = {item = nil, toast = Toast()}
+    self.newItems = {}
 
     self.contextMessage = {buttons = {}, text = nil}
 
     self.flash = {timer = 0, state = true}
+end
+
+function StatusBar:add_new_item(newItem)
+    -- Iterate through the items that are already queued up to show
+    for _, existingItem in pairs(self.newItems) do
+        -- If the new item is of the same type as this one
+        if newItem.itemType == existingItem.item.itemType then
+            -- Reset this item's toast instead of adding a new item
+            existingItem.toast:show()
+            return false
+        end
+    end
+
+    -- Add the item to the queue
+    local newToast = Toast()
+    newToast:show()
+    table.insert(self.newItems, {item = newItem, toast = newToast})
 end
 
 function StatusBar:draw()
@@ -76,7 +93,7 @@ function StatusBar:draw()
 
     if not self.game.paused then
         -- Display the most recently picked up item for a few seconds
-        self:draw_newest_item()
+        self:draw_new_item()
 
         self:draw_context_message()
     end
@@ -155,30 +172,32 @@ function StatusBar:draw_health_meter()
                       upscale_y(1) / 2)
 end
 
-function StatusBar:draw_newest_item()
-    if self.owner.inventory.newestItem then
-        -- If the owner's newest item is different than the previous newest
-        -- item we displayed, and it's not a weapon
-        if (self.owner.inventory.newestItem ~= self.newestItem.item and
-            not instanceOf(Weapon, self.owner.inventory.newestItem)) then
-            self.newestItem.item = self.owner.inventory.newestItem
-            self.newestItem.toast:show()
-        end
-    else
-        self.newestItem.item = nil
-        return
-    end
-
-    if self.newestItem.toast:is_visible() and self.newestItem.item then
+function StatusBar:draw_new_item()
+    if self.newItems[1] and self:can_show_new_items() then
+        local newItem = self.newItems[1]
         local x = upscale_x((ROOM_W / 2) - 1)
-        local y = self.newestItem.toast:get_y()
-        local num =
-            #self.owner.inventory:get_items(self.newestItem.item.itemType)
+        local y = newItem.toast:get_y()
 
-        cga_print(num, nil, nil, {position = {x = x, y = y}})
-        self.newestItem.item:draw({x = x + (upscale_x(1) *
-                                            tostring(num):len()),
-                                   y = y})
+        local text
+
+        -- If the newest item is a weapon
+        --if #instanceOf(Weapon, newItem.item) then
+        local num = #self.owner.inventory:get_items(newItem.item.itemType)
+        if num == 1 then
+            -- Show the weapon name
+            text = ITEM_NAME[newItem.item.itemType]
+        else
+            -- Show the total number of this type of item in the inventory
+            text = tostring(num)
+        end
+
+        if text then
+            x = x - upscale_x(math.floor(text:len() / 2))
+            cga_print(text, nil, nil, {position = {x = x, y = y}})
+            x = x + upscale_x(text:len())
+        end
+
+        newItem.item:draw({x = x, y = y})
     end
 end
 
@@ -187,8 +206,6 @@ function StatusBar:show_context_message(buttons, text)
 end
 
 function StatusBar:update()
-    self.contextMessage.text = nil
-
     -- If the health meter is full
     if self.owner.health >= 100 then
         self.healthMeter.toast:unfreeze()
@@ -206,22 +223,44 @@ function StatusBar:update()
         end
     end
 
-    if self.game.paused then
-        -- Freeze the newestItem popup
-        self.newestItem.toast:freeze()
-    else
-        self.newestItem.toast:unfreeze()
-    end
+    self:update_new_items()
 
-    -- Update the health toast popups
+    -- Update the health toast popup
     self.healthMeter.toast:update()
-    self.newestItem.toast:update()
 
-    if not self.game.paused then
-        -- If there is an item popup showing
-        if self.newestItem.item and self.newestItem.toast:is_visible() then
-            -- Update the newestItem's animation
-            self.newestItem.item:update()
+    self.contextMessage.text = nil
+end
+
+function StatusBar:can_show_new_items()
+    if self.game.paused or self.contextMessage.text then
+        return false
+    else
+        return true
+    end
+end
+
+function StatusBar:update_new_items()
+    -- If there is an item on the queue
+    if self.newItems[1] then
+        if self:can_show_new_items() then
+            self.newItems[1].toast:unfreeze()
+        else
+            -- Freeze the item's toast
+            self.newItems[1].toast:freeze()
+        end
+
+        self.newItems[1].toast:update()
+
+        -- If the item has not gone all the way down offscreen yet
+        if self.newItems[1].toast:is_visible() then
+            -- If the game is not paused
+            if self:can_show_new_items() then
+                -- Update the item's animation
+                self.newItems[1].item:update()
+            end
+        else
+            -- Remove the item from the queue
+            table.remove(self.newItems, 1)
         end
     end
 end

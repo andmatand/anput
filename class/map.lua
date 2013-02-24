@@ -580,9 +580,6 @@ function Map:add_required_objects()
     -- Check for objects that need to be added when certain roadblocks exist
     for _, room in pairs(self.rooms) do
         if room.roadblock == 'khnum' then
-            -- Put Khnum in this room
-            add_npc_to_room(Khnum(), room)
-
             -- Add the "Khnum" hieroglyphs to the room
             room.requiredHieroglyphs = {{'hnm', 'w', 'khnum'}}
 
@@ -596,7 +593,10 @@ function Map:add_required_objects()
             local exit = room:find_exit({targetRoom = room:get_next_room()})
             local door2 = self:add_door(exit, false)
 
-            room.roadblockInfo = {entranceDoor = door1, exitDoor = door2}
+            -- Put Khnum in this room
+            local khnum = Khnum()
+            khnum.roadblockInfo = {entranceDoor = door1, exitDoor = door2}
+            add_npc_to_room(khnum, room)
         elseif room.roadblock == 'lake' then
             -- Add the "lake" hieroglyphs to the room
             room.requiredHieroglyphs = {{'water', 'lake'}}
@@ -717,7 +717,9 @@ end
 
 function Map:add_doors()
     for _, r in pairs(self.rooms) do
-        -- If this room is not the first room or the artifact room
+        -- If this room is not the first room or the artifact room, and a
+        -- random chance is met, and the room is not secret, and the room is
+        -- not a roadblock
         if r.distanceFromStart > 0 and not r.artifactRoom and
            math.random(1, 2) == 1 and not r.isSecret and not r.roadblock then
            -- Choose one of the exits in this room
@@ -727,9 +729,9 @@ function Map:add_doors()
                local index = math.random(1, #exits)
                local e = exits[index]
 
-               -- If this exit is already concealed (e.g. by a falsebrick) or
-               -- its linked exit is already concealed, or this exit leads to a
-               -- secret room, or this exit leads to a roadblock room
+               -- If this exit is already concealed (by a falsebrick or a door)
+               -- or its linked exit is already concealed, or this exit leads
+               -- to a secret room, or this exit leads to a roadblock room
                if e:is_hidden() or e:get_linked_exit():is_hidden() or
                   e.targetRoom.isSecret or e.targetRoom.roadblock then
                    -- Remove it from future consideration
@@ -755,7 +757,7 @@ function Map:add_door(exit, addSwitch)
 
     local linkedExit = exit:get_linked_exit()
     local outsideDoor = Door(linkedExit:get_doorway(),
-                            linkedExit:get_direction())
+                             linkedExit:get_direction())
     linkedExit.room:add_object(outsideDoor)
 
     outsideDoor:set_sister(insideDoor)
@@ -764,7 +766,7 @@ function Map:add_door(exit, addSwitch)
     if addSwitch ~= false then
        -- Put a switch in the room which is closer to the starting room
        local room1, room2, door1
-       if exit.room:get_next_room() == linkedExit.room then
+       if exit.room.distanceFromStart < linkedExit.room.distanceFromStart then
            room1 = exit.room
            room2 = linkedExit.room
            door1 = insideDoor
@@ -775,7 +777,8 @@ function Map:add_door(exit, addSwitch)
        end
 
        local switch = Switch(door1)
-       room1:add_object(switch)
+       if not room1.requiredSwitches then room1.requiredSwitches = {} end
+       table.insert(room1.requiredSwitches, switch)
     end
 
     return insideDoor

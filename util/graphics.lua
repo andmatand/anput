@@ -114,6 +114,22 @@ function draw_progress_bar(barInfo, x, y, w, h)
     love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
 end
 
+function get_rotation(dir)
+    local r = 0
+    local sx = SCALE_X
+    local sy = SCALE_Y
+    if dir == 2 then
+        r = math.rad(90)
+    elseif dir == 3 then
+        sy = -SCALE_Y
+    elseif dir == 4 then
+        r = math.rad(90)
+        sy = -SCALE_Y
+    end
+
+    return r, sx, sy
+end
+
 function toggle_fullscreen()
     local w, h, fs = love.graphics.getMode()
 

@@ -10,7 +10,7 @@ function Khnum:init()
     self.images = images.npc.khnum
     self.magic = 100
 
-    self:add_enemy_class(Monster)
+    --self:add_enemy_class(Monster)
     self:add_enemy_class(Player)
 
     self.ai.choiceTimer.delay = .25
@@ -27,8 +27,8 @@ end
 
 function Khnum:die()
     -- Open the doors blocking the exits
-    self.room.roadblockInfo.exitDoor:open()
-    self.room.roadblockInfo.entranceDoor:open()
+    self.roadblockInfo.exitDoor:open()
+    self.roadblockInfo.entranceDoor:open()
 
     Khnum.super.die(self)
 end
@@ -52,7 +52,7 @@ function Khnum:update()
 
         -- If the player is in the entrance doorway (i.e. he would be hit by
         -- the door)
-        local entranceDoor = self.room.roadblockInfo.entranceDoor
+        local entranceDoor = self.roadblockInfo.entranceDoor
         local doorway = entranceDoor:get_position()
         if tiles_overlap(self.room.game.player:get_position(), doorway) then
             -- Make the player take a step into the room
@@ -64,7 +64,7 @@ function Khnum:update()
         self.room.game.player.canMove = false
 
         -- Close the door blocking the entrance
-        self.room.roadblockInfo.entranceDoor:close()
+        self.roadblockInfo.entranceDoor:close()
     elseif self.state == 'line2' then
         if not self.mouth.isSpeaking then
             self.mouth:set_speech('RISE, MY CLAY BABIES!')

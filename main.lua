@@ -33,10 +33,6 @@ function love.load()
             WEAPON_SLOT_4 = 23,
             WEAPON_SLOT_5 = 24}
 
-    -- These are the tile dimensions in (unscaled) pixels
-    TILE_W = 8
-    TILE_H = 8
-
     -- Set the width and height of the tile grid (in # of tiles)
     GRID_W = BASE_SCREEN_W / TILE_W
     GRID_H = BASE_SCREEN_H / TILE_H
@@ -144,6 +140,7 @@ function love.load()
 
     -- Furniture
     images.door = new_image('door.png')
+    images.spike = new_image('spike.png')
     images.switch = {{image = new_image('switch1.png'), delay = 2},
                      {image = new_image('switch2.png'), delay = 2},
                      {image = new_image('switch3.png'), delay = 2}}
@@ -217,6 +214,7 @@ function love.load()
     sounds.pause = Sound('res/sfx/pause.wav')
     sounds.menuSelect = Sound('res/sfx/menu-select.wav')
     sounds.secret = Sound('res/sfx/secret.wav')
+    sounds.spikes = Sound('res/sfx/spikes-trigger.wav')
     sounds.trap = Sound('res/sfx/trap.wav')
 
     --mute = true
@@ -312,6 +310,10 @@ function love.keypressed(key, unicode)
     elseif ctrl and shift then
         if key == 'f1' then
             DEBUG = not DEBUG
+            wrapper.game.currentRoom.bricksDirty = true
+        elseif key == 'i' then
+            wrapper.game.player.isInvincible =
+                not wrapper.game.player.isInvincible
         elseif key == 'j' then
             jump_to_room(wrapper.game.currentRoom.index + 1)
         elseif key == 'k' then
@@ -363,6 +365,12 @@ function love.keypressed(key, unicode)
         elseif key == 'p' then
             local potion = Item('potion')
             wrapper.game.player:pick_up(potion)
+        elseif key == 's' then
+            if wrapper.game.currentRoom then
+                for _, spike in pairs(wrapper.game.currentRoom.spikes) do
+                    spike:trigger()
+                end
+            end
         elseif key == 't' then
             local thunderstaff = ThunderStaff()
             wrapper.game.player:pick_up(thunderstaff)
@@ -387,6 +395,11 @@ function love.draw()
                              BASE_SCREEN_W * SCALE_X, BASE_SCREEN_H * SCALE_Y)
     love.graphics.translate(SCREEN_X, SCREEN_Y)
 
+    if DEBUG and wrapper.game.player then
+        local pos = wrapper.game.player:get_position()
+        cga_print(pos.x .. ' ' .. pos.y, 1, 1)
+    end
+
     wrapper:draw()
 
     love.graphics.setScissor()
@@ -399,7 +412,7 @@ function love.draw()
     --end
 end
 
--- Returns distance between to points
+-- Returns distance between two tiles
 function distance(a, b)
     return math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
 end
