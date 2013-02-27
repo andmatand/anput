@@ -57,7 +57,7 @@ function Map:add_first_secret_room()
         local node = nodes[index]
 
         if node.distanceFromStart > 1 and
-           node.distanceFromStart < firstRoadblockDist then
+           node.sourceNode.distanceFromStart < firstRoadblockDist then
             local neighbors = find_neighbor_tiles(node, self.nodes,
                                                   {diagonals = false})
             for _, neighbor in pairs(neighbors) do
