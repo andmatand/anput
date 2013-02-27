@@ -22,18 +22,25 @@ function Intro:choose_speech()
          {p = 'I WILL DO IT'},
          {p = 'I AM AN ARCHAEOLOGIST'}},
 
-        {{m = 'GO FIND AN ARTIFACT IN THE ANCIENT TEMPLE OF EGYPT'},
+        {{m = 'FIND AN ARTIFACT IN THE ANCIENT TEMPLE OF ANPUT'},
+         {m = 'THE ONE IN EGYPT'},
          {p = 'RIGHT AWAY, BOSS'}},
 
-        {{m = 'GO DO ARCHAEOLOGY ON THE TEMPLE OF ANPUT, GODDESS OF EGYPT'},
-         {p = 'I SHALL RETRIEVE AN ARTIFACT'}},
+        {{m = 'GO GET AN ARTIFACT FROM THAT TEMPLE OVER THERE'},
+         {p = 'YOU MEAN THE TEMPLE OF ANPUT, GODDESS OF THE 17TH NOME OF ' ..
+              'UPPER EGYPT?'},
+         {m = 'YES'}},
 
         {{m = 'THE MUSEUM NEEDS AN EGYPTIAN ARTIFACT'},
          {m = 'DO ARCHAEOLOGY'},
-         {p = 'I WILL DO THE ARCHAEOLOGY IN THIS TEMPLE.'}},
+         {p = 'I WILL ARCHAEOLOGY SO HARD'}},
+
+        {{m = 'FIND A NEW ARTIFACT IN EGYPT'},
+         {p = 'OH BOY'},
+         {p = 'IT WILL BE AN ARCHAEOLOGY ADVENTURE'}},
 
         {{m = 'FIND A NEW ARTIFACT OF EGYPT'},
-         {p = 'IT WILL BE AN ARCHAEOLOGY ADVENTURE'}},
+         {p = 'ARTIFACTS ARE NOT NEW BUT OKAY I WILL DO IT'}},
 
         {{m = 'LOOK A TEMPLE'},
          {m = 'INVESTIGATE'},
@@ -44,14 +51,34 @@ function Intro:choose_speech()
          {p = 'I WILL CHECK OVER HERE'}},
 
         {{m = 'IF YOU FIND AN ARTIFACT, YOU WILL GET A PROMOTION'},
-         {p = 'I WILL GO TO EGYPT'}},
+         {p = 'I AM BOUND TO FIND AN ARTIFACT IN EGYPT'}},
 
         {{m = 'THE MUSEUM\'S EGYPT EXHIBIT HAS NO ARTIFACTS'},
-         {p = 'I WILL FIND ONE'}},
+         {p = 'I WILL FIND ONE IN THE TEMPLE OF ANPUT'},
+         {m = 'GOOD IDEA'}},
 
         {{m = 'THE MUSEUM NEEDS MORE PATRONS'},
          {m = 'A NEW ARTIFACT WILL DRIVE TICKET SALES'},
-         {p = 'I WILL FIND AN ARTIFACT IN EGYPT'}}
+         {p = 'I WILL FIND AN ARTIFACT IN EGYPT'}},
+
+        {{m = 'OBTAIN AN ANCIENT ARTIFACT FOR THE EGYPTOLOGY EXHIBIT'},
+         {p = 'OKAY'},
+         {m = 'ALSO CAN YOU PICK UP SOME MILK WHILE YOU ARE OUT'}},
+
+        {{m = 'CRISIS HAS STRUCK THE MUSEUM'},
+         {m = 'WE ARE ALL OUT OF EGYPTIAN ARTIFACTS'},
+         {p = 'I WILL DISCOVER AN ARTIFACT IN EGYPT'},
+         {m = 'PLEASE HURRY'}},
+
+        {{m = 'OUR PRIZED EGYPTIAN ARTIFACT HAS BEEN STOLEN BY A ' ..
+              'MASKED MAN'},
+         {m = 'APREHEND THE THIEF AND RECOVER THE ARTIFACT'},
+         {p = 'I\'M ON IT, CHIEF'}},
+
+        {{m = 'A PRICELESS EGYPTIAN ARTIFACT HAS BEEN STOLEN BY A ' ..
+              'MASKED WOMAN'},
+         {m = 'APREHEND THE THIEF AND RECOVER THE ARTIFACT'},
+         {p = 'I\'M ON IT, CHIEF'}}
     }
 
     n = math.random(1, #choices)
