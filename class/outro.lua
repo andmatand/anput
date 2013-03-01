@@ -22,6 +22,8 @@ function Outro:init(game)
     self.outside.player.dir = 4
 
     self.artifact = self.outside.player:get_artifact()
+    self.artifact.position = nil
+
     if self.artifact then
         self.state = 'talk win'
     else
