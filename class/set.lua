@@ -36,7 +36,7 @@ function Set:update()
             -- If we are within the player's field of view
             if tile_in_table(self:get_position(), self.room.fov) then
                 -- Play our musical cue
-                --sounds.set.encounter:play()
+                sounds.set.encounter:play()
                 self.state = 'speech'
             end
         end
