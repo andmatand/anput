@@ -320,6 +320,9 @@ function love.keypressed(key, unicode)
         elseif key == 'up' or key == 'right' or key == 'down' or
                key == 'left' then
             jump_to_room_in_direction(key)
+        elseif key == 'a' then
+            local artifact = Item('ankh')
+            wrapper.game.player:pick_up(artifact)
         elseif key == 'b' then
             if not wrapper.game.player.armory.weapons.bow then
                 local bow = Weapon('bow')
