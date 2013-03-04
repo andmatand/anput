@@ -10,6 +10,7 @@ function Mouth:init(args)
     self.room = args.room
 
     self.isSpeaking = false
+    self.speakToNeighbor = true
 end
 
 function Mouth:get_speech()
@@ -63,8 +64,9 @@ function Mouth:should_speak()
         self.room = self.sprite.room
     end
 
-    -- If we have a position and room
-    if position and self.room then
+    -- If we have a position and room and we speak to the player when he is
+    -- touching us
+    if position and self.room and self.speakToNeighbor then
         -- If the player just moved, or the room has not been drawn
         if self.room.game.player.moved or not self.room.drawn then
             -- If the player is standing right next to us
