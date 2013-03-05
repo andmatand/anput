@@ -607,11 +607,23 @@ function Map:add_required_objects()
                                                {isSecret = false})
             add_npc_to_room(Camel(), rooms[math.random(1, #rooms)])
         elseif room.roadblock == 'set' then
-            -- Put Set in this room
-            add_npc_to_room(Set(), room)
-
             -- Add the "Swty" hieroglyphs to the room
             room.requiredHieroglyphs = {{'sw', 't_y', 'set'}}
+
+            -- Put a door at the entrance with no switch
+            local entrance = room:find_exit({targetRoom =
+                                             room:get_previous_room()})
+            local door1 = self:add_door(entrance, false)
+            door1:open(true) -- Open the door
+
+            -- Put a door at the exit with no switch
+            local exit = room:find_exit({targetRoom = room:get_next_room()})
+            local door2 = self:add_door(exit, false)
+
+            -- Put Set in this room
+            local set = Set()
+            set.roadblockInfo = {entranceDoor = door1, exitDoor = door2}
+            add_npc_to_room(set, room)
         end
     end
 

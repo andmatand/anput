@@ -23,9 +23,18 @@ function Set:init()
     self.mouth = Mouth({sprite = self})
     self.mouth.speakToNeighbor = false
 
-    self.teleportTimer = Timer(8)
+    self.teleportWaitTimer = Timer(15)
+    self.teleportFlashTimer = Timer(8)
 
     self.state = 'wait for player'
+end
+
+function Set:die()
+    -- Open the doors blocking the exits
+    self.roadblockInfo.exitDoor:open()
+    self.roadblockInfo.entranceDoor:open()
+
+    Set.super.die(self)
 end
 
 function Set:update()
@@ -38,6 +47,9 @@ function Set:update()
                 -- Play our musical cue
                 sounds.set.encounter:play()
                 self.state = 'speech'
+
+                -- Close the door blocking the entrance
+                self.roadblockInfo.entranceDoor:close()
             end
         end
     elseif self.state == 'speech' then
@@ -61,11 +73,15 @@ function Set:update()
         self.ai.choiceTimer.delay = 0
         self.ai.level.attack = {dist = 15, prob = 8, delay = 0}
 
-        -- If the player is close enough to us
-        if manhattan_distance(self.room.game.player:get_position(),
-                              self:get_position()) < 10 then
-            -- Teleport to somewhere
-            self.state = 'pre-teleport'
+        if self.teleportWaitTimer:update() then
+            self.teleportWaitTimer:reset()
+
+            -- If the player is close enough to us
+            if manhattan_distance(self.room.game.player:get_position(),
+                                  self:get_position()) < 10 then
+                -- Teleport to somewhere
+                self.state = 'pre-teleport'
+            end
         end
     end
 
@@ -75,8 +91,8 @@ function Set:update()
         local colors = {CYAN, MAGENTA, WHITE}
         self.color = colors[math.random(1, #colors)]
 
-        if self.teleportTimer:update() then
-            self.teleportTimer:reset()
+        if self.teleportFlashTimer:update() then
+            self.teleportFlashTimer:reset()
 
             if self.state == 'pre-teleport' then
                 self.state = 'teleport'
