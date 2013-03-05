@@ -80,6 +80,8 @@ function ThunderStaff:shoot()
                                     -- Make the character light up
                                     s.isThundershocked = true
                                 --end
+                            else
+                                sounds.unable:play()
                             end
                         end
                     end
