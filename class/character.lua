@@ -24,7 +24,7 @@ function Character:init()
     self.hurtTimer = 0
     self.usedMagicTimer = 0
     self.flashTimer = 0
-    self.rechargeTimer = {delay = 4, value = 0}
+    self.rechargeTimer = {delay = 2, value = 0}
     self.isMovable = true
     self.dir = 1
 
