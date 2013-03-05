@@ -35,7 +35,7 @@ WEAPON_TYPE = {
                     meleeDamage = 5,
                     canShoot = true,
                     isMagic = true,
-                    ammoCost = 4}
+                    ammoCost = 2}
     }
 
 function Weapon:init(weaponType)
