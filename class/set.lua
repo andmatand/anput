@@ -89,7 +89,7 @@ function Set:update()
 
     if self.state == 'teleport' then
         -- Play a teleporting sound
-        --sounds.teleport:play()
+        sounds.set.teleport:play()
 
         self:set_position(self.room:get_free_tile())
         self.state = 'post-teleport'

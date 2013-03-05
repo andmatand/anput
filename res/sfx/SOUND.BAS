@@ -4,7 +4,7 @@
 
 PLAY "mb t130 l40"
 
-SELECT CASE 31 '' Change this number to hear different sounds
+SELECT CASE 32 '' Change this number to hear different sounds
 CASE 1
     '' theme
     PLAY "l10 o3  cd-e gg+ b g+g > l5c"
@@ -133,7 +133,10 @@ CASE 30
     PLAY "l64 o4b o3b o2gf o1e-c<fe"
 CASE 31
     '' Set's theme
-    PLAY "o2 l5 c. l10 c+ l5 e l15 o3 d-e g l40 bb- bb- bb- bb- bb- bb-"
+    PLAY "o2 l5 c. l10 c+ l5 e l15 d-e g l40 bb- bb- bb- bb- bb- bb-"
+CASE 32
+    '' Set teleport
+    PLAY "l30 o1 e-a g->c <a>e- cg- e-a"
 END SELECT
 
 PLAY "p3"
