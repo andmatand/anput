@@ -11,6 +11,7 @@ function Player:init(game)
 
     self:add_enemy_class(Monster)
     self:add_enemy_class(Khnum)
+    self:add_enemy_class(Set)
 
     -- Remove AI in favor of just I
     self.ai = nil

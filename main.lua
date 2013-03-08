@@ -120,6 +120,7 @@ function love.load()
     images.npc.camel = {default = new_image('camel.png'),
                         step = new_image('camel-step.png')}
     images.npc.khnum = {default = new_image('khnum.png')}
+    images.npc.set = {default = new_image('set.png')}
     images.npc.wizard = {default = new_image('wizard.png'),
                          firestaff = new_image('wizard-firestaff.png')}
 
@@ -151,10 +152,10 @@ function love.load()
 
     -- Hieroglyphs
     images.hieroglyphs = load_images('hieroglyph/',
-                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's',
-                                      't', 't_sh', 'w', 'y',
+                                     {'h', 'hnm', 'i', 'ka', 'n_p', 's', 'sw',
+                                      't', 't_sh', 't_y', 'w', 'y',
                                       'book', 'god', 'goddess', 'khnum',
-                                      'lake', 'water'})
+                                      'lake', 'set', 'water'})
 
     -- Outside
     outsideImg = {}
@@ -213,6 +214,8 @@ function love.load()
     sounds.pause = Sound('res/sfx/pause.wav')
     sounds.menuSelect = Sound('res/sfx/menu-select.wav')
     sounds.secret = Sound('res/sfx/secret.wav')
+    sounds.set = {encounter = Sound('res/sfx/set-encounter.wav'),
+                  teleport = Sound('res/sfx/set-teleport.wav')}
     sounds.spikes = Sound('res/sfx/spikes-trigger.wav')
     sounds.trap = Sound('res/sfx/trap.wav')
 

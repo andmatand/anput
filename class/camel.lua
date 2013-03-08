@@ -9,9 +9,6 @@ function Camel:init()
     self.name = 'CAMEL'
     self.images = images.npc.camel
 
-    -- Give him a thunderstaff as an item only (not a weapon)
-    self.inventory:add(ThunderStaff())
-
     -- AI
     self.ai.choiceTimer.delay = 0
     self.ai.level.avoid = {prob = 10, delay = 0}

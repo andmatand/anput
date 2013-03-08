@@ -260,9 +260,12 @@ function Character:draw(pos)
         local offsetDir
         if self.hitSomething and not self.hitSomethingLastFrame then
             offsetDir = self.dir
+        elseif self.isThundershocked then
+            -- Shake around from being all electrified
+            offsetDir = math.random(1, 4)
         end
 
-        if offsetDir then
+        if offsetDir and not self.isDead then
             if offsetDir == 1 then
                 y = y - SCALE_Y
             elseif offsetDir == 2 then

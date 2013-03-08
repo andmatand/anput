@@ -9,7 +9,6 @@ function Sprite:init()
     self.friction = 1
     self.moved = false
     self.didPhysics = false
-    self.canMove = true
 
     -- Alias x and y for position
     --self.x = function() return self.position.x end
@@ -89,7 +88,7 @@ function Sprite:move_to_room(room)
 end
 
 function Sprite:physics(force)
-    if (self.didPhysics or not self.room.isGenerated or not self.canMove) and
+    if (self.didPhysics or not self.room.isGenerated) and
        not force then
         return
     else

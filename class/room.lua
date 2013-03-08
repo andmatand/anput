@@ -15,6 +15,7 @@ function Room:init(args)
     self.isSecret = false
     self.visited = false
     self.bricksDirty = true
+    self.physicsEnabled = true
 
     self.tileCache = TileCache()
     self.tileCache.room = self
@@ -779,21 +780,25 @@ function Room:update()
         s:update()
     end
 
-    -- Run physics on all sprites
-    for _, s in pairs(self.sprites) do
-        s:physics()
+    if self.physicsEnabled then
+        -- Run physics on all sprites
+        for _, s in pairs(self.sprites) do
+            s:physics()
 
-        -- If the sprite is still in this room
-        if s.room == self then
-            -- If this is a character
-            if instanceOf(Character, s) then
-                -- Check if he is on an item
-                s:check_for_items()
+            -- If the sprite is still in this room
+            if s.room == self then
+                -- If this is a character
+                if instanceOf(Character, s) then
+                    -- Check if he is on an item
+                    s:check_for_items()
+                end
             end
         end
     end
     for _, s in pairs(self.sprites) do
-        s:post_physics()
+        if self.physicsEnabled then
+            s:post_physics()
+        end
 
         -- Reset one-frame variables
         s.wantsToTrade = false

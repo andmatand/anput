@@ -18,6 +18,7 @@ function Khnum:init()
 
     -- Mouth
     self.mouth = Mouth({sprite = self})
+    self.mouth.speakToNeighbor = false
 
     -- Give him the Horn of Khnum
     self:pick_up(Horn())
@@ -60,8 +61,8 @@ function Khnum:update()
             self.room.game.player:step(dir)
         end
 
-        -- Prevent the player from moving
-        self.room.game.player.canMove = false
+        -- Pause all physics in the room
+        self.room.physicsEnabled = false
 
         -- Close the door blocking the entrance
         self.roadblockInfo.entranceDoor:close()
@@ -69,7 +70,6 @@ function Khnum:update()
         if not self.mouth.isSpeaking then
             self.mouth:set_speech('RISE, MY CLAY BABIES!')
             self.mouth:speak()
-            self.mouth:set_speech()
 
             self.state = 'wait to attack'
         end
@@ -77,8 +77,8 @@ function Khnum:update()
         if not self.mouth.isSpeaking then
             self.state = 'attack'
 
-            -- Let the player move again
-            self.room.game.player.canMove = true
+            -- Resume the room's physics
+            self.room.physicsEnabled = true
         end
     elseif self.state == 'attack' then
         -- If we don't have a path
