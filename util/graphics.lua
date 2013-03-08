@@ -165,12 +165,18 @@ function set_scale(scale, resolution, fullscreen)
                       height = BASE_SCREEN_H * scale}
     end
 
-    -- If an invalid scale or an unsupported screen resolution was given
-    if scale < 1 or
-       not love.graphics.checkMode(resolution.width, resolution.height,
-                                   fullscreen) then
-        print('error: resolution not supported')
-        return
+    local w, h, fs = love.graphics.getMode()
+    -- If the given resolution is different than the current mode
+    if resolution.width ~= w or resolution.height ~= h or
+       fullscreen ~= fs then
+        -- If an invalid scale was given, or setMode fails
+        if scale < 1 or
+           not love.graphics.setMode(resolution.width, resolution.height,
+                                     fullscreen) then
+            print('error: could not set graphics mode to ' ..
+                  resolution.width .. 'x' .. resolution.height)
+            return
+        end
     end
 
     SCALE_X = scale
@@ -181,13 +187,6 @@ function set_scale(scale, resolution, fullscreen)
     -- taller than the game screen
     SCREEN_X = (resolution.width / 2) - ((BASE_SCREEN_W * SCALE_X) / 2)
     SCREEN_Y = (resolution.height / 2) - ((BASE_SCREEN_H * SCALE_Y) / 2)
-
-    local w, h, fs = love.graphics.getMode()
-    -- If the given scale or resolution is different than the current mode
-    if resolution.width ~= w or resolution.height ~= h or
-       fullscreen ~= fs then
-        love.graphics.setMode(resolution.width, resolution.height, fullscreen)
-    end
 
     -- Load the font at the correct scale
     local img = love.graphics.newImage('res/font/cga.png')
