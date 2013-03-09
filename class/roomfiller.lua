@@ -454,7 +454,7 @@ function RoomFiller:add_items()
     -- If this is a secret room
     if self.room.isSecret then
         -- Add some goodies
-        local numGoodies = math.random(3, 8)
+        local numGoodies = math.random(4, 9)
         local goodies = {}
 
         for i = 1, numGoodies do
