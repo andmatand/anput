@@ -321,6 +321,27 @@ function RoomFiller:find_spike_positions(minLength, maxLength)
     return {}
 end
 
+function RoomFiller:give_random_items_to_monster(monster, possibleItemTypes)
+    -- Choose a random item type
+    local itemType = possibleItemTypes[math.random(1, #possibleItemTypes)]
+    local num
+
+    -- If this is an arrow
+    if itemType == 'arrow' then
+        -- Give the monster several arrows
+        num = math.random(1, 10)
+    else
+        num = 1
+    end
+
+    for i = 1, num do
+        local newItem = Item(itemType)
+
+        -- Pretend the monster picked it up
+        monster:pick_up(newItem)
+    end
+end
+
 function RoomFiller:position_hieroglyph(letters, orientation)
     local dirs
     if orientation == 'horizontal' then
@@ -482,13 +503,7 @@ function RoomFiller:add_items()
             end
 
             if math.random(1, 3) == 1 then
-                -- Choose a random item type
-                local itemType = itemTypes[math.random(1, #itemTypes)]
-
-                local newItem = Item(itemType)
-
-                -- Pretend the monster picked it up
-                m:pick_up(newItem)
+                self:give_random_items_to_monster(m, itemTypes)
             end
         end
 

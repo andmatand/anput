@@ -375,12 +375,8 @@ function Game:spawn_more_monsters()
                         -- Choose a random item type
                         local roomFiller = RoomFiller(room)
                         local itemTypes = roomFiller:get_item_types()
-                        local itemType = itemTypes[math.random(1, #itemTypes)]
-
-                        local newItem = Item(itemType)
-
-                        -- Pretend the monster picked it up
-                        newMonster:pick_up(newItem)
+                        roomFiller:give_random_items_to_monster(newMonster,
+                                                                itemTypes)
                     end
 
                     return
