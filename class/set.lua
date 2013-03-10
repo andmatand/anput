@@ -41,6 +41,16 @@ function Set:update()
     Set.super.update(self)
     
     if self.state == 'wait for player' then
+        -- If the player is in the entrance doorway (i.e. he would be hit by
+        -- the door)
+        local entranceDoor = self.roadblockInfo.entranceDoor
+        local doorway = entranceDoor:get_position()
+        if tiles_overlap(self.room.game.player:get_position(), doorway) then
+            -- Make the player take a step into the room
+            local dir = opposite_direction(entranceDoor:get_direction())
+            self.room.game.player:step(dir)
+        end
+
         if self.room.game.player.room == self.room and self.room.fov then
             -- If we are within the player's field of view
             if tile_in_table(self:get_position(), self.room.fov) then
@@ -67,7 +77,7 @@ function Set:update()
 
             -- Enable our AI
             self.ai.choiceTimer.delay = 0
-            self.ai.level.attack = {dist = 15, prob = 10, delay = 0}
+            self.ai.level.attack = {dist = 15, prob = 9, delay = 0}
 
             -- Begin attacking
             self.state = 'attack'

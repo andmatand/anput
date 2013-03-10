@@ -45,7 +45,7 @@ function Door:draw(alpha)
     local rotation = 0
     local offset = {x = 0, y = 0}
 
-    -- If we are on the north or south edge of the sreen
+    -- If we are on the north or south edge of the screen
     if self.dir == 1 or self.dir == 3 then
         -- Open the door horizontally
         offset.x = -(self.offset * 2 * SCALE_X)
@@ -76,6 +76,10 @@ function Door:draw(alpha)
         love.graphics.setStencil()
         love.graphics.pop()
     end
+end
+
+function Door:get_direction()
+    return self.dir
 end
 
 function Door:get_position()
