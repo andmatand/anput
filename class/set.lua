@@ -65,14 +65,14 @@ function Set:update()
             -- Resume the room's physics
             self.room.physicsEnabled = true
 
+            -- Enable our AI
+            self.ai.choiceTimer.delay = 0
+            self.ai.level.attack = {dist = 15, prob = 10, delay = 0}
+
             -- Begin attacking
             self.state = 'attack'
         end
     elseif self.state == 'attack' then
-        -- Enable our AI
-        self.ai.choiceTimer.delay = 0
-        self.ai.level.attack = {dist = 15, prob = 8, delay = 0}
-
         if self.teleportWaitTimer:update() then
             self.teleportWaitTimer:reset()
 
