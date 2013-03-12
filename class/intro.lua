@@ -35,16 +35,13 @@ function Intro:choose_speech()
          {m = 'DO ARCHAEOLOGY'},
          {p = 'I WILL ARCHAEOLOGY SO HARD'}},
 
-        {{m = 'FIND A NEW ARTIFACT IN EGYPT'},
+        {{m = 'IT IS TIME TO FIND A NEW ARTIFACT IN EGYPT'},
          {p = 'OH BOY'},
          {p = 'IT WILL BE AN ARCHAEOLOGY ADVENTURE'}},
 
-        {{m = 'FIND A NEW ARTIFACT OF EGYPT'},
-         {p = 'ARTIFACTS ARE NOT NEW BUT OKAY I WILL DO IT'}},
-
-        {{m = 'LOOK A TEMPLE'},
-         {m = 'INVESTIGATE'},
-         {p = 'MAYBE I WILL DISCOVER AN EGYPT ARTIFACT'}},
+        {{m = 'UNDERTAKE AN EXPEDITION TO EGYPT'},
+         {m = 'FIND THE HIDDEN ARTIFACT IN THE TEMPLE OF ANPUT'},
+         {p = 'I SHALL NOT FAIL'}},
 
         {{m = 'THE MUSEUM IS IN NEED OF AN EGYPT EXHIBIT'},
          {m = 'FIND AN ARTIFACT'},
@@ -61,22 +58,19 @@ function Intro:choose_speech()
          {m = 'A NEW ARTIFACT WILL DRIVE TICKET SALES'},
          {p = 'I WILL FIND AN ARTIFACT IN EGYPT'}},
 
-        {{m = 'OBTAIN AN ANCIENT ARTIFACT FOR THE EGYPTOLOGY EXHIBIT'},
+        {{m = 'HEY CAN YOU GO GET AN ARTIFACT FOR THE EGYPTOLOGY EXHIBIT?'},
          {p = 'OKAY'},
-         {m = 'ALSO CAN YOU PICK UP SOME MILK WHILE YOU ARE OUT'}},
+         {m = 'THX'}},
 
         {{m = 'CRISIS HAS STRUCK THE MUSEUM'},
          {m = 'WE ARE ALL OUT OF EGYPTIAN ARTIFACTS'},
          {p = 'I WILL DISCOVER AN ARTIFACT IN EGYPT'},
          {m = 'PLEASE HURRY'}},
 
-        {{m = 'OUR PRIZED EGYPTIAN ARTIFACT HAS BEEN STOLEN BY A ' ..
-              'MASKED MAN'},
-         {m = 'APREHEND THE THIEF AND RECOVER THE ARTIFACT'},
-         {p = 'I\'M ON IT, CHIEF'}},
-
-        {{m = 'A PRICELESS EGYPTIAN ARTIFACT HAS BEEN STOLEN BY A ' ..
-              'MASKED WOMAN'},
+        {{m = 'OUR ' ..
+              (math.random(0, 1) == 0 and 'PRIZED' or 'PRICELESS') .. ' ' ..
+              'EGYPTIAN ARTIFACT HAS BEEN STOLEN BY A MASKED ' ..
+              (math.random(0, 1) == 0 and 'MAN' or 'WOMAN')},
          {m = 'APREHEND THE THIEF AND RECOVER THE ARTIFACT'},
          {p = 'I\'M ON IT, CHIEF'}}
     }
