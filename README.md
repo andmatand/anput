@@ -1,7 +1,7 @@
 #Temple of Anput
 * featuring procedurally generated dungeon action and CGA graphics!
 * written using the awesome [LÖVE](http://love2d.org) framework
-* not finished yet; this is essentially an engine demo
+* not completely finished yet; doesn't have much of an ending
 
 ##Download
 These are pre-packaged versions of the source code that are updated whenever I
@@ -10,7 +10,7 @@ make a new commit:
 * [Cross-Platform Game File](http://unfinishedblog.org/temp/anput.love) (Linux, Mac OS X, Windows; requires [LÖVE](http://love2d.org) 0.8.0)
 
 ##History
-One day in 2003 (when I was 16 years old), I was watching
+One day in 2003, I was watching
 [Strong Bad Email #4](http://www.homestarrunner.com/sbemail4.html).  At the
 end, Strong Bad plays a game that is supposed to be
 [Temple of Apshai](http://en.wikipedia.org/wiki/Temple_of_Apshai) but is
@@ -28,7 +28,7 @@ project for trying out Lua and the LÖVE framework.
 * pause: spacebar
 * use elixir: e
 * use potion: p
-* context sensitive button: enter
+* context-sensitive button: enter
 
 ###Inventory
 * use item: enter
