@@ -36,19 +36,19 @@ function love.conf(t)
                      WEST  = 'a'}
 
     -- Joystick/Gamepad Bindings
-    -- (These are for an original Xbox controller; change them as needed for
+    -- (These are for an Xbox 360 controller; change them as needed for
     --  other joysticks/gamepads)
     JOYSTICK = {}
     JOYSTICK_NUM = 1 -- Use the first joystick/gamepad
     JOYSTICK.CONTEXT = 1 -- A
-    JOYSTICK.DROP = 3 -- Black
-    JOYSTICK.ELIXIR = 4 -- X
+    JOYSTICK.DROP = 3 -- X
+    JOYSTICK.ELIXIR = 3 -- X
     JOYSTICK.EXIT = 2 -- B
     JOYSTICK.PAUSE = 8 -- Start
     JOYSTICK.POTION = 2 -- B
     JOYSTICK.SKIP_CUTSCENE = 8 -- Start
     JOYSTICK.SKIP_DIALOG = 2 -- B
-    JOYSTICK.SWITCH_WEAPON = 5 -- Y
+    JOYSTICK.SWITCH_WEAPON = 4 -- Y
     JOYSTICK.SHOOT_AXIS_X = 4 -- Right stick
     JOYSTICK.SHOOT_AXIS_Y = 5
     JOYSTICK.SHOOT_HAT = nil -- Disabled
