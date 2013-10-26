@@ -1,6 +1,5 @@
 ![screenshot 1](http://i.imgur.com/zYFggN9.png "SCREENSHOT!")
 
-
 #Temple of Anput
 * featuring procedurally generated dungeon action and CGA graphics!
 * written using the awesome [LÖVE](http://love2d.org) framework
