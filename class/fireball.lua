@@ -7,6 +7,7 @@ function Fireball:init(owner, dir)
 
     self.damage = 20
     self.images = projectileImg.fireball
+    self.color = MAGENTA
     self.isMagic = true
 end
 

@@ -61,6 +61,7 @@ function Outside:draw()
 
     love.graphics.push()
     love.graphics.translate(0, -SCALE_Y)
+    love.graphics.setColorMode('modulate')
 
     love.graphics.setColor(WHITE)
     love.graphics.draw(self.museum.image,
@@ -69,6 +70,7 @@ function Outside:draw()
                        ((self.museum.image:getHeight() - 1) * SCALE_Y),
                        0, SCALE_X, SCALE_Y)
 
+    love.graphics.setColor(MAGENTA)
     love.graphics.draw(self.temple.image,
                        upscale_x(self.temple.position.x),
                        upscale_y(self.temple.position.y) -

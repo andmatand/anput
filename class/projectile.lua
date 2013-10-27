@@ -39,7 +39,15 @@ function Projectile:draw(manualPosition)
     -- Determine the rotation/flipping
     local r, sx, sy = get_rotation(self.dir)
 
-    love.graphics.setColor(255, 255, 255)
+    -- Set the color
+    love.graphics.setColorMode('modulate')
+    if self.color then
+        love.graphics.setColor(self.color)
+    else
+        love.graphics.setColor(255, 255, 255)
+    end
+
+    -- Perform the draw
     love.graphics.draw(
         self.images[self.frame],
         position.x + (self.images[self.frame]:getWidth() * SCALE_X) / 2,

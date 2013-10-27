@@ -41,7 +41,7 @@ function love.load()
     ROOM_W = GRID_W
     ROOM_H = GRID_H - 1
 
-    -- Set default image fileter to show ALL the pixels
+    -- Set default image filter to show ALL the pixels
     love.graphics.setDefaultImageFilter('nearest', 'nearest')
 
     set_scale(SCALE_X, nil, false)
@@ -50,7 +50,7 @@ function love.load()
     BLACK = {0, 0, 0}
     WHITE = {255, 255, 255}
     CYAN = {85, 255, 255}
-    MAGENTA = {255, 0, 255}
+    MAGENTA = {255, 85, 255}
 
     -- Alpha values
     LIGHT = 255
