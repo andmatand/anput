@@ -1,4 +1,4 @@
-![screenshot 1](http://i.imgur.com/zYFggN9.png "SCREENSHOT!")
+![screenshot 1](http://i.imgur.com/J8ZTQUc.png "SCREENSHOT!")
 
 #Temple of Anput
 * featuring procedurally generated dungeon action and CGA graphics!
