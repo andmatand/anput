@@ -5,7 +5,7 @@ require('class.wrapper')
 require('util.graphics')
 
 function love.load()
-    love.graphics.setCaption('TEMPLE OF ANPUT')
+    love.window.setTitle('TEMPLE OF ANPUT')
     if love.graphics.isCreated() == false then
         print('failed to create a window')
     end
@@ -42,7 +42,7 @@ function love.load()
     ROOM_H = GRID_H - 1
 
     -- Set default image filter to show ALL the pixels
-    love.graphics.setDefaultImageFilter('nearest', 'nearest')
+    love.graphics.setDefaultFilter('nearest', 'nearest')
 
     set_scale(SCALE_X, nil, false)
 

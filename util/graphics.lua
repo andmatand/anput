@@ -97,7 +97,8 @@ function draw_progress_bar(barInfo, x, y, w, h)
     bar.h = h - (SCALE_Y * 2)
     
     -- Draw border
-    love.graphics.setLine(1, 'rough')
+    love.graphics.setLineWidth(1)
+    love.graphics.setLineStyle('rough')
     love.graphics.setColor(barInfo.borderColor or WHITE)
     love.graphics.rectangle('fill', x, y, w, h)
 
@@ -131,31 +132,26 @@ function get_rotation(dir)
 end
 
 function toggle_fullscreen()
-    local w, h, fs = love.graphics.getMode()
+    local w, h, flags = love.window.getMode()
 
     -- If we are already in fullscreen
-    if fs then
+    if flags.fullscreen then
         set_scale(3, nil, false)
         return
     end
 
-    -- Find the best fullscreen resolution
-    local bestResolution = {width = 0, height = 0}
-    for _, mode in pairs(love.graphics.getModes()) do
-        if mode.width * mode.height >
-           bestResolution.width * bestResolution.height then
-            bestResolution = mode
-        end
-    end
+    -- Get the desktop resolution
+    local w, h = love.window.getDesktopDimensions(flags.display)
+    local desktopResolution = {width = w, height = h}
 
-    -- Find the largest scale that will fit within the target resolution
+    -- Find the largest scale that will fit within the desktop resolution
     local scale = 1
-    while BASE_SCREEN_W * (scale + 1) <= bestResolution.width and
-          BASE_SCREEN_H * (scale + 1) <= bestResolution.height do
+    while BASE_SCREEN_W * (scale + 1) <= desktopResolution.width and
+          BASE_SCREEN_H * (scale + 1) <= desktopResolution.height do
         scale = scale + 1
     end
 
-    set_scale(scale, bestResolution, true)
+    set_scale(scale, desktopResolution, true)
 end
 
 function set_scale(scale, resolution, fullscreen)
@@ -165,14 +161,23 @@ function set_scale(scale, resolution, fullscreen)
                       height = BASE_SCREEN_H * scale}
     end
 
-    local w, h, fs = love.graphics.getMode()
+    local w, h, flags = love.window.getMode()
+
     -- If the given resolution is different than the current mode
     if resolution.width ~= w or resolution.height ~= h or
-       fullscreen ~= fs then
+       fullscreen ~= flags.fullscreen then
+
+        newFlags = {fullscreentype = 'desktop'}
+        if fullscreen then
+            newFlags.fullscreen = true
+        else
+            newFlags.fullscreen = false
+        end
+
         -- If an invalid scale was given, or setMode fails
         if scale < 1 or
-           not love.graphics.setMode(resolution.width, resolution.height,
-                                     fullscreen) then
+           not love.window.setMode(resolution.width, resolution.height,
+                                   newFlags) then
             print('error: could not set graphics mode to ' ..
                   resolution.width .. 'x' .. resolution.height)
             return

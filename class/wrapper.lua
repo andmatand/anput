@@ -115,7 +115,7 @@ end
 
 function Wrapper:joystick_directional_input(group)
     -- If there is no joystick detected
-    if love.joystick.getNumJoysticks() < 1 then
+    if love.joystick.getJoystickCount() < 1 then
         return
     end
 

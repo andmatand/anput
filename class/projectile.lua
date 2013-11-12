@@ -40,7 +40,6 @@ function Projectile:draw(manualPosition)
     local r, sx, sy = get_rotation(self.dir)
 
     -- Set the color
-    love.graphics.setColorMode('modulate')
     if self.color then
         love.graphics.setColor(self.color)
     else

@@ -61,7 +61,6 @@ function Outside:draw()
 
     love.graphics.push()
     love.graphics.translate(0, -SCALE_Y)
-    love.graphics.setColorMode('modulate')
 
     love.graphics.setColor(WHITE)
     love.graphics.draw(self.museum.image,

@@ -46,7 +46,8 @@ function Thunderbolt:draw()
     end
 
     love.graphics.setColor(WHITE)
-    love.graphics.setLine(SCALE_X, 'rough')
+    love.graphics.setLineWidth(SCALE_X)
+    love.graphics.setLineStyle('rough')
 
     for i = 1, #self.points - 1 do
         local p1 = self.points[i]
