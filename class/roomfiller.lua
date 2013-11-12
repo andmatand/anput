@@ -167,9 +167,6 @@ function RoomFiller:add_spikes()
     maxLength = math.random(0, #self.room.bricks * .02 *
                             (self.room.difficulty * .1))
 
-    -- Determine a maximum length based on the room's difficulty
-    --maxLength = math.floor(self.room.difficulty / 5)
-
     if maxLength < minLength then
         maxLength = minLength
     end
@@ -209,6 +206,27 @@ function RoomFiller:add_spikes()
             end
         end
     end
+
+    if #lines > 0 then
+        -- Set the minimum spikeTimer delay based on the length of the line of
+        -- spikes, so that the player will always have enough time to traverse
+        -- them
+        local minDelay = #lines[1] + math.floor(FPS_LIMIT * 1.5)
+
+        -- Set the maximum delay to 10 seconds, effectively
+        local maxDelay = minDelay * 3
+
+        -- Choose a random spikeTimer delay for this room
+        local delay = math.random(minDelay, maxDelay)
+
+        -- Decrease the delay a bit based on the room's difficulty
+        delay = delay - (self.room.difficulty / 4)
+        if delay < minDelay then delay = minDelay end
+
+        -- Add a spikeTimer to the room, with the determined delay
+        self.room.spikeTimer = {delay = delay, value = 0}
+    end
+
 
     self.addedSpikes = true
     return false

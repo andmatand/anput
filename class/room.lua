@@ -383,13 +383,6 @@ function Room:generate_next_piece()
         -- Make a spriteBatch for drawing bricks
         self.brickBatch = love.graphics.newSpriteBatch(brickImg, #self.bricks)
 
-        -- Make a spike timer
-        local minDelay = FPS_LIMIT * 2
-        local delay = math.random(minDelay, FPS_LIMIT * 10)
-        delay = delay - (self.difficulty / 4)
-        if delay < minDelay then delay = minDelay end
-        self.spikeTimer = {delay = delay, value = 0}
-
         -- Mark the generation process as complete
         self.isGenerated = true
 
@@ -740,18 +733,21 @@ function Room:update()
         door:update()
     end
 
-    -- Update the spike timer
-    if self.spikeTimer.value > 0 then
-        self.spikeTimer.value = self.spikeTimer.value - 1
-    else
-        self.spikeTimer.value = self.spikeTimer.delay
+    -- If we have a spike timer
+    if self.spikeTimer then
+        -- Update the spike timer
+        if self.spikeTimer.value > 0 then
+            self.spikeTimer.value = self.spikeTimer.value - 1
+        else
+            self.spikeTimer.value = self.spikeTimer.delay
 
-        if self:is_audible() and #self.spikes > 0 then
-            sounds.spikes:play()
-        end
+            if self:is_audible() and #self.spikes > 0 then
+                sounds.spikes:play()
+            end
 
-        for _, spike in pairs(self.spikes) do
-            spike:trigger()
+            for _, spike in pairs(self.spikes) do
+                spike:trigger()
+            end
         end
     end
 
