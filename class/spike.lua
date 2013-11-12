@@ -133,13 +133,6 @@ end
 function Spike:get_grid_offset()
     local offset = {x = 0, y = 0}
 
-    -- If this spike is on a south or west row, add the offset to make the rows
-    -- of spikes interleave with each other
-    --if self.dir == 3 then
-    --    offset.x = offset.x + .5
-    --elseif self.dir == 4 then
-    --    offset.y = offset.y + .5
-    --end
     local dir = self:get_interleave_offset_direction()
 
     if dir then
@@ -154,6 +147,17 @@ function Spike:get_interleave_offset_direction()
         return 2
     elseif self.dir == 4 then
         return 3
+    end
+end
+
+function Spike:receive_hit(agent)
+    -- If we are at least half way retracted
+    if self.extension <= SPIKE_MAX_EXTENSION / 2 then
+        -- Objects cannot collide with us
+        return false
+    else
+        -- Objects can collide with us
+        return true
     end
 end
 

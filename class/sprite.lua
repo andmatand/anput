@@ -234,6 +234,17 @@ function Sprite:physics(force)
         end
     end
 
+    -- Check for collision with closed spikes
+    for _, spike in pairs(test.room.spikes) do
+        for _, tile in pairs(spike:get_visible_tiles()) do
+            if tiles_overlap(test.position, tile) then
+                if self:hit(spike) then
+                    return
+                end
+            end
+        end
+    end
+
     -- Apply friction
     if self.velocity.x < 0 then
         self.velocity.x = self.velocity.x + self.friction
