@@ -58,8 +58,13 @@ function Wrapper:init()
     self.fpsLimitTimer = 0
 
     -- Create a new thread for building rooms in the background
-    self.roomBuilderThread = love.thread.newThread('roombuilder_thread',
-                                                   'thread/roombuilder.lua')
+    self.roomBuilderThread = love.thread.newThread('thread/roombuilder.lua')
+
+    -- Create channels to communicate with the roombuilder thread
+    self.roomBuilderInputChannel = love.thread.getChannel('roombuilder_input')
+    self.roomBuilderOutputChannel = love.thread.getChannel('roombuilder_output')
+
+    -- Start the roombuilder thread
     self.roomBuilderThread:start()
 
     --local chunk = love.filesystem.load('thread/roombuilder.lua')
@@ -231,9 +236,9 @@ function Wrapper:send_keyrelease(key)
 end
 
 function Wrapper:manage_roombuilder_thread()
-    -- Check the brick_layer thread for a message containing a pseudo-room
-    -- object
-    local result = self.roomBuilderThread:get('result')
+    -- Check the roomBuilder output channel for a message containing a
+    -- pseudo-room object
+    local result = self.roomBuilderOutputChannel:pop()
 
     -- If we got a message
     if result then
@@ -280,8 +285,8 @@ function Wrapper:manage_roombuilder_thread()
         end
     end
 
-    -- If the roombuilder thread does not have any input message
-    if not self.roomBuilderThread:peek('input') then
+    -- If the roombuilder input channel does not have a message
+    if not self.roomBuilderInputChannel:peek() then
         -- Find the next room that is not built or being built
         local nextRoom = nil
         for _, r in pairs(self.game:get_adjacent_rooms()) do
@@ -302,9 +307,9 @@ function Wrapper:manage_roombuilder_thread()
         if nextRoom then
             nextRoom.isBeingBuilt = true
 
-            -- Send another pseduo-room message
+            -- Send another pseduo-room message to the roombuilder thread
             local input = serialize_room(nextRoom)
-            self.roomBuilderThread:set('input', input)
+            self.roomBuilderInputChannel:push(input)
         end
     end
 end
