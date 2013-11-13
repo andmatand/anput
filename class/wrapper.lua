@@ -380,6 +380,13 @@ function Wrapper:update(dt)
 
     self:joystick_directional_input('WALK')
     self:joystick_directional_input('SHOOT')
+    if self.joystickVibration then
+        self.joystickVibration:update(dt)
+
+        if not self.joystickVibration.isVibrating then
+            self.joystickVibration = nil
+        end
+    end
 
     -- Add to timer to limit FPS
     self.fpsLimitTimer = self.fpsLimitTimer + dt
@@ -450,4 +457,18 @@ function Wrapper:update(dt)
             self.state = 'intro'
         end
     end
+end
+
+function Wrapper:vibrate_joystick(left, right, duration)
+    -- If we already have a vibration
+    if self.joystickVibration then
+        -- Stop it
+        self.joystickVibration:stop()
+    end
+
+    --  Create a new vibration
+    self.joystickVibration = Vibration(self.joystick, left, right, duration)
+
+    -- Start the vibration
+    self.joystickVibration:start()
 end
