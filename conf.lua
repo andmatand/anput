@@ -35,24 +35,24 @@ function love.conf(t)
                      SOUTH = 's',
                      WEST  = 'a'}
 
-    -- Joystick/Gamepad Bindings
-    -- (These are for an Xbox 360 controller; change them as needed for
-    --  other joysticks/gamepads)
-    JOYSTICK = {}
-    JOYSTICK_NUM = 1 -- Use the first joystick/gamepad
-    JOYSTICK.CONTEXT = 1 -- A
-    JOYSTICK.DROP = 3 -- X
-    JOYSTICK.ELIXIR = 3 -- X
-    JOYSTICK.EXIT = 2 -- B
-    JOYSTICK.PAUSE = 8 -- Start
-    JOYSTICK.POTION = 2 -- B
-    JOYSTICK.SKIP_CUTSCENE = 8 -- Start
-    JOYSTICK.SKIP_DIALOG = 2 -- B
-    JOYSTICK.SWITCH_WEAPON = 4 -- Y
-    JOYSTICK.SHOOT_AXIS_X = 4 -- Right stick
-    JOYSTICK.SHOOT_AXIS_Y = 5
-    JOYSTICK.SHOOT_HAT = nil -- Disabled
-    JOYSTICK.WALK_AXIS_X = 1 -- Left stick
-    JOYSTICK.WALK_AXIS_Y = 2
-    JOYSTICK.WALK_HAT = 1 -- D-Pad
+    -- Gamepad Bindings (Works with XBox 360 and similar controllers)
+    GAMEPAD = {}
+    GAMEPAD.CONTEXT = 'a'
+    GAMEPAD.DROP = 'x'
+    GAMEPAD.ELIXIR = 'x'
+    GAMEPAD.EXIT = 'b'
+    GAMEPAD.PAUSE = 'start'
+    GAMEPAD.POTION = 'b'
+    GAMEPAD.SKIP_CUTSCENE = 'start'
+    GAMEPAD.SKIP_DIALOG = 'b'
+    GAMEPAD.SWITCH_WEAPON = 'y'
+    GAMEPAD.SHOOT_AXIS_X = 'rightx'
+    GAMEPAD.SHOOT_AXIS_Y = 'righty'
+    GAMEPAD.SHOOT = nil -- Shooting with buttons is disabled by default
+    GAMEPAD.WALK_AXIS_X = 'leftx'
+    GAMEPAD.WALK_AXIS_Y = 'lefty'
+    GAMEPAD.WALK = {NORTH = 'dpup',
+                    EAST  = 'dpright',
+                    SOUTH = 'dpdown',
+                    WEST  = 'dpleft'}
 end
