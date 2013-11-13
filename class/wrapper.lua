@@ -460,6 +460,10 @@ function Wrapper:update(dt)
 end
 
 function Wrapper:vibrate_joystick(left, right, duration)
+    if not self.joystick or not self.joystick:isVibrationSupported() then
+        return
+    end
+
     -- If we already have a vibration
     if self.joystickVibration then
         -- Stop it
