@@ -9,6 +9,14 @@ function Animation:init(frames)
 end
 
 function Animation:advance_to_frame(num)
+    if self.frameCallbacks then
+        -- If there is a callback function for this frame number
+        if self.frameCallbacks[num] then
+            -- Call this frame's callback function
+            self.frameCallbacks[num]()
+        end
+    end
+
     self.currentFrame = {index = num,
                          image = self.frames[num].image,
                          delay = self.frames[num].delay,
@@ -19,6 +27,15 @@ end
 
 function Animation:get_drawable()
     return self.currentFrame.image
+end
+
+function Animation:is_at_beginning()
+    if self.currentFrame.index == 1 and
+       self.currentFrame.timer == 0 then
+        return true
+    else
+        return false
+    end
 end
 
 function Animation:is_stopped()

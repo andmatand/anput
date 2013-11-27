@@ -7,8 +7,8 @@ function Intro:init()
     self.outside = Outside()
 
     -- Start with the player facing left next to the museum
-    self.outside.player.position.x = 11
-    self.outside.player.dir = 4
+    self.outside.puppets.player.position.x = 11
+    self.outside.puppets.player.dir = 4
 
     self.outside:add_dialogue(self:choose_speech())
     self.state = 'talk'
@@ -86,30 +86,20 @@ end
 function Intro:key_pressed(key)
     if key == KEYS.SKIP_CUTSCENE then
         self.finished = true
-    elseif key == KEYS.SKIP_DIALOG then
-        -- If there is a message on the queue
-        if self.outside.room.messages[1] then
-            -- Skip it
-            self.outside.room.messages[1].finished = true
-        end
+    else
+        self.outside:key_pressed(key)
     end
 end
 
 function Intro:update()
     if self.state == 'talk' then
-        if not self.outside.room:update_messages() then
+        if self.outside.messageQueue:is_empty() then
             self.state = 'walk'
-            self.outside.player.stepTimer = love.timer.getTime() + .3
+            self.outside.puppets.player:walk(2, 19, 1)
         end
     elseif self.state == 'walk' then
-        if love.timer.getTime() >= self.outside.player.stepTimer + .1 then
-            if self.outside.player:get_position().x < 30 then
-                --self.outside.player.mirrored = false
-                self.outside.player:step(2)
-            else
-                self.state = 'open'
-            end
-            self.outside.player.stepTimer = love.timer.getTime()
+        if self.outside.puppets.player:get_position().x == 30 then
+            self.state = 'open'
         end
     elseif self.state == 'open' then
         if self.outside.door.state == 'closed' then
@@ -118,7 +108,7 @@ function Intro:update()
             self.state = 'enter'
         end
     elseif self.state == 'enter' then
-        self.outside.player:step(2)
+        self.outside.puppets.player:walk(2)
         self.finishTimer = love.timer.getTime()
         self.state = 'finish'
     elseif self.state == 'finish' then
@@ -127,8 +117,5 @@ function Intro:update()
         end
     end
 
-    self.outside.door:update()
-    self.outside.player:update()
-    self.outside.player:physics()
-    self.outside.player:post_physics()
+    self.outside:update()
 end

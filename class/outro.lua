@@ -1,3 +1,5 @@
+require('class.credits')
+require('class.curtaincall')
 require('class.outside')
 
 Outro = class('Outro')
@@ -6,28 +8,29 @@ function Outro:init(game)
     self.game = game
 
     -- Create an outside environment which we can manipulate
-    self.outside = Outside()
+    self.outside = Outside() 
 
     -- Start with the temple door open
     self.outside.door:open(true)
 
-    -- Save the y position of the fake outside player
-    local y = self.outside.player.position.y
+    -- Make a syntactical shortcut to access the outside puppets
+    self.puppets = self.outside.puppets
 
-    -- Substitute the actual game's player for the the fake outside player
-    self.outside.player = self.game.player
+    -- Give the game player's current image to the puppet player
+    self.puppets.player.image = self.game.player.currentImage
 
     -- Start the scene with the player facing left at the door of the temple
-    self.outside.player:set_position({x = 31, y = y})
-    self.outside.player.dir = 4
+    self.puppets.player.position.x = 31
+    self.puppets.player.dir = 4
 
-    self.artifact = self.outside.player:get_artifact()
-    if self.artifact then
-        self.artifact.position = nil
-    end
+    local artifact = game.player:get_artifact()
 
-    if self.artifact then
-        self.state = 'talk win'
+    -- If the player has an artifact
+    if artifact then
+        self.puppets.artifact = Puppet({image = artifact.image})
+        self.puppets.artifact.enabled = false
+
+        self.state = 'win talk'
     else
         self.state = 'talk'
     end
@@ -35,11 +38,15 @@ function Outro:init(game)
     self.outside:add_dialogue(self:choose_speech())
 end
 
+function Outro:key_pressed(key)
+    self.outside:key_pressed(key)
+end
+
 function Outro:choose_speech()
     local lines = {}
 
     -- If the player has the artifact
-    if self.state == 'talk win' then
+    if self.state == 'win talk' then
         if self.game.numOutsideVisits >= 20 then
             lines = {{m = 'YOU ACTUALLY FOUND AN ARTIFACT???'},
                      {m = 'NOT GONNA LIE; I WAS HOPING YOU WOULDN\'T ' ..
@@ -51,15 +58,7 @@ function Outro:choose_speech()
                      {m = 'BRING IT OVER HERE'}}
         else
             lines = {{m = 'AT LAST!'},
-                     {m = 'THE ARTIFACT'}}
-        end
-
-        return lines
-    elseif self.state == 'edutain' then
-        if self.artifact.itemType == 'ankh' then
-            lines = {{p = 'IT IS AN ANKH'},
-                     {p = 'THE ANKH IS AN EGYPTIAN SYMBOL OF LIFE'},
-                     {p = 'IT IS ALSO A HIEROGLYPH'}}
+                     {m = 'THE ARTIFACT!'}}
         end
 
         return lines
@@ -118,69 +117,85 @@ end
 function Outro:draw()
     self.outside:draw()
 
-    if self.artifact and self.artifact.position then
-        self.artifact:draw()
-    end
-end
-
-function Outro:key_pressed(key)
-    if key == KEYS.SKIP_DIALOG then
-        -- If there is a message on the queue
-        if self.outside.room.messages[1] then
-            -- Skip it
-            self.outside.room.messages[1].finished = true
-        end
+    if self.credits then
+        self.credits:draw()
     end
 end
 
 function Outro:update()
     if self.state == 'talk' then
-        if not self.outside.room:update_messages() then
+        -- If the dialogue is finished
+        if self.outside.messageQueue:is_empty() then
             self.state = 'turn'
         end
-    elseif self.state == 'talk win' then
-        if not self.outside.room:update_messages() then
-            self.state = 'walk'
-            self.frameTimer = love.timer.getTime() + .2
+    elseif self.state == 'win talk' then
+        -- If the dialogue is finished
+        if self.outside.messageQueue:is_empty() then
+            self.puppets.player:walk(4, 20, 2)
+            self.state = 'win walk'
         end
-    elseif self.state == 'walk' then
-        if self.outside.player.position.x > 11 then
-            if love.timer.getTime() >= self.frameTimer + .2 then
-                self.outside.player:step(4)
-                self.frameTimer = love.timer.getTime()
-            end
-        else
-            self.state = 'drop'
+    elseif self.state == 'win walk' then
+        if self.puppets.player.position.x == 11 then
+            self.delayStart = love.timer.getTime()
+            self.state = 'win drop'
         end
-    elseif self.state == 'drop' then
-        self.artifact:set_position({x = self.outside.player.position.x - 1,
-                                    y = self.outside.player.position.y})
-        self.outside.player:drop_item(self.artifact)
+    elseif self.state == 'win drop' then
+        if love.timer.getTime() >= self.delayStart + .5 then
+            -- Drop the artifact
+            local position = {x = self.puppets.player.position.x - 1,
+                              y = self.puppets.player.position.y}
+            self.puppets.artifact:set_position(position)
+            self.puppets.artifact.enabled = true
 
-        self.frameTimer = love.timer.getTime()
-        self.state = 'edutain'
-        self.outside:add_dialogue(self:choose_speech())
-    elseif self.state == 'edutain' then
-        if love.timer.getTime() >= self.frameTimer + .25 then
-            if not self.outside.room:update_messages() then
-                --self.state = 'next'
-            end
+            self.delayStart = love.timer.getTime()
+            self.state = 'win music'
         end
+    elseif self.state == 'win music' then
+        if love.timer.getTime() >= self.delayStart + .5 then
+            --sounds.danceMusic:play()
+            sounds.khnum.encounter:play()
+            self.delayStart = love.timer.getTime()
+            self.state = 'win listen'
+        end
+    elseif self.state == 'win listen' then
+        if love.timer.getTime() >= self.delayStart + 4 then
+            self.state = 'win dance'
+            self.delayStart = love.timer.getTime()
+        end
+    elseif self.state == 'win dance' then
+        self.puppets.museum:dance()
+        self.puppets.player:dance()
+        if love.timer.getTime() >= self.delayStart + 6 then
+            -- Turn the player to the right
+            self.puppets.player.dir = 2
+
+            -- Start the credits
+            self.credits = Credits()
+
+            -- Start the curtain call
+            self.curtainCall = CurtainCall(self.puppets.player, self.outside,
+                                           self.credits)
+            self.state = 'credits'
+        end
+    elseif self.state == 'credits' then
+        -- Do something??
     elseif self.state == 'turn' then
-        self.outside.player.dir = 2
+        self.puppets.player.dir = 2
         self.state = 'finish'
-        self.frameTimer = love.timer.getTime()
+        self.delayStart = love.timer.getTime()
     elseif self.state == 'finish' then
-        if love.timer.getTime() >= self.frameTimer + .2 then
+        if love.timer.getTime() >= self.delayStart + .2 then
             if self.game.status == 'game over' then
                 love.event.quit()
             else
-                self.state = 'go back'
+                self.state = 'go back inside'
             end
         end
     end
 
-    self.outside.player:update()
-    self.outside.player:physics()
-    self.outside.player:post_physics()
+    self.outside:update()
+    
+    if self.curtainCall then
+        self.curtainCall:update()
+    end
 end

@@ -101,10 +101,10 @@ function Wrapper:draw()
         self.state = 'load'
     elseif self.state == 'intro' then
         self.intro:draw()
-    elseif self.state == 'outro' then
-        self.outro:draw()
     elseif self.state == 'game' then
         self.game:draw()
+    elseif self.state == 'outro' then
+        self.outro:draw()
     end
 end
 
@@ -205,10 +205,10 @@ end
 function Wrapper:send_keypress(key)
     if self.state == 'intro' then
         self.intro:key_pressed(key)
-    elseif self.state == 'outro' then
-        self.outro:key_pressed(key)
     elseif self.state == 'game' then
         self.game:key_pressed(key)
+    elseif self.state == 'outro' then
+        self.outro:key_pressed(key)
     end
 end
 
@@ -344,7 +344,7 @@ function Wrapper:update(dt)
         self.outro = Outro(self.game)
 
         self.state = 'outro'
-    elseif self.state == 'outro' and self.outro.state == 'go back' then
+    elseif self.state == 'outro' and self.outro.state == 'go back inside' then
         -- Free the memory used by the outro
         self.outro = nil
 

@@ -24,7 +24,7 @@ function love.conf(t)
     KEYBOARD.PAUSE = ' '
     KEYBOARD.POTION = 'p'
     KEYBOARD.SKIP_CUTSCENE = 'escape'
-    KEYBOARD.SKIP_DIALOG = '.'
+    KEYBOARD.SKIP_DIALOGUE = '.'
     KEYBOARD.SWITCH_WEAPON = 'shift'
     KEYBOARD.SHOOT = {NORTH = 'up',
                       EAST  = 'right',
@@ -47,7 +47,7 @@ function love.conf(t)
     JOYSTICK.PAUSE = 8 -- Start
     JOYSTICK.POTION = 2 -- B
     JOYSTICK.SKIP_CUTSCENE = 8 -- Start
-    JOYSTICK.SKIP_DIALOG = 2 -- B
+    JOYSTICK.SKIP_DIALOGUE = 2 -- B
     JOYSTICK.SWITCH_WEAPON = 4 -- Y
     JOYSTICK.SHOOT_AXIS_X = 4 -- Right stick
     JOYSTICK.SHOOT_AXIS_Y = 5

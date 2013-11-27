@@ -5,7 +5,8 @@ require('class.wrapper')
 require('util.graphics')
 
 function love.load()
-    love.graphics.setCaption('TEMPLE OF ANPUT')
+    GAME_TITLE = 'TEMPLE OF ANPUT'
+    love.graphics.setCaption(GAME_TITLE)
     if love.graphics.isCreated() == false then
         print('failed to create a window')
     end
@@ -17,7 +18,7 @@ function love.load()
             PAUSE = 6,
             POTION = 7,
             SKIP_CUTSCENE = 8,
-            SKIP_DIALOG = 9,
+            SKIP_DIALOGUE = 9,
             SWITCH_WEAPON = 11,
             SHOOT = {NORTH = 12,
                      EAST = 13,
@@ -159,9 +160,11 @@ function love.load()
 
     -- Outside
     outsideImg = {}
-    outsideImg.museum = {image = new_image('museum.png'),
+    outsideImg.museum = {image1 = new_image('museum1.png'),
+                         image2 = new_image('museum2.png'),
                          avatar = new_image('museum-avatar.png')}
     outsideImg.temple = {image = new_image('temple.png')}
+    outsideImg.player = {dance = new_image('player-dance.png')}
 
 
     -- Water

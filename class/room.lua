@@ -1,6 +1,7 @@
 require('class.brick')
 require('class.door')
 require('class.fovfinder')
+require('class.messagequeue')
 require('class.roombuilder')
 require('class.roomfiller')
 require('class.tilecache')
@@ -34,8 +35,7 @@ function Room:init(args)
     self.exits = {}
     self.freeTiles = {}
     self.fovCache = {}
-    self.messages = {}
-    self.newMessageTimer = {value = 0, delay = 2}
+    self.messageQueue = MessageQueue()
     self.requiredObjects = {}
     self.turrets = {}
 
@@ -87,7 +87,7 @@ function Room:add_object(obj)
 end
 
 function Room:add_message(message)
-    table.insert(self.messages, message)
+    self.messageQueue:add(message)
 end
 
 function Room:character_input()
@@ -156,7 +156,7 @@ function Room:draw()
         tb:draw()
     end
 
-    self:draw_messages()
+    self.messageQueue:draw()
 
     if DEBUG then
         -- Show freeTiles
@@ -283,14 +283,6 @@ function Room:draw_bricks()
     --love.graphics.setColor(WHITE)
     love.graphics.draw(self.brickBatch, upscale_x(0), upscale_y(0),
                        0, SCALE_X, SCALE_Y)
-end
-
-function Room:draw_messages()
-    -- If there is a message on the queue
-    if self.messages[1] then
-        -- Draw the message
-        self.messages[1]:draw()
-    end
 end
 
 function Room:draw_objects_with_fov_alpha(objects)
@@ -833,7 +825,7 @@ function Room:update()
     end
 
     -- Update messages
-    self:update_messages()
+    self.messageQueue:update()
 
     -- If this is the game's current room
     if self.game.currentRoom == self then
@@ -870,56 +862,6 @@ function Room:update_fov()
     -- Add this FOV to the FOV cache
     table.insert(self.fovCache, {origin = self.game.player.position,
                                  fov = self.fov})
-end
-
-function Room:update_messages()
-    -- If there is a message on our queue
-    if self.messages[1] then
-        if self.newMessageTimer.value > 0 then
-            self.newMessageTimer.value = self.newMessageTimer.value - 1
-        else
-            self.messages[1]:update()
-        end
-
-        local removeMessage = false
-
-        -- If the message is finished displaying
-        if self.messages[1].finished then
-            -- Remove it from the queue
-            removeMessage = true
-
-        -- If the message's mouth is no longer in the room
-        elseif self.messages[1].mouth and self.messages[1].mouth.sprite and
-           self.messages[1].mouth.sprite.room ~= self then
-            -- Move the message to the new room
-            self.messages[1].mouth.sprite.room:add_message(self.messages[1])
-            removeMessage = true
-        end
-
-        if removeMessage then
-            local oldMessage = self.messages[1]
-            table.remove(self.messages, 1)
-            local newMessage = self.messages[1]
-
-            -- If there is another message on the queue
-            if newMessage then
-                -- If the new message has a different speaker
-                if newMessage.avatar ~= oldMessage.avatar or
-                   newMessage.mouth ~= oldMessage.mouth then
-                   -- Start a timer so that the next message does not display
-                   -- in the very next frame
-                   self.newMessageTimer.value = self.newMessageTimer.delay
-                else
-                    -- Start the next message now
-                    newMessage:update()
-                end
-            end
-        end
-
-        return true
-    end
-
-    return false
 end
 
 function Room:add_roombuilder_result_to_tilecache()
