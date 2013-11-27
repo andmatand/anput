@@ -379,6 +379,8 @@ function love.keypressed(key, unicode)
         elseif key == 't' then
             local thunderstaff = ThunderStaff()
             wrapper.game.player:pick_up(thunderstaff)
+        elseif key == 'z' then
+            wrapper.game.player:receive_damage(100, wrapper.game.player)
         end
     else
         wrapper:key_pressed(key)

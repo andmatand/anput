@@ -13,7 +13,7 @@ Room = class('Room')
 function Room:init(args)
     self.isGenerated = false
     self.isSecret = false
-    self.visited = false
+    self.isVisited = false
     self.bricksDirty = true
     self.physicsEnabled = true
 

@@ -1,3 +1,4 @@
+require('class.gamesummary')
 require('class.inventorymenu')
 require('class.map')
 require('class.player')
@@ -64,59 +65,11 @@ function Game:draw_metadata()
     self.player.statusBar:draw()
 
     if self.player.isDead then
-        local visitedRooms = 0
-        for _, r in pairs(self.rooms) do
-            if r.visited then
-                visitedRooms = visitedRooms + 1
-            end
+        if not self.summary then
+            self.summary = GameSummary(self)
         end
 
-        local x = 1
-        local y = 1
-        local msg = "YOU WERE KILLED BY "
-        cga_print(msg, x, y)
-        x = x + msg:len()
-        cga_print(" ", x, y)
-
-        local obj = self.player.log.wasKilledBy
-
-        if instanceOf(Spike, obj) then
-            obj:draw({x = upscale_x(x), y = upscale_y(y)}, LIGHT)
-        else
-            obj:draw({x = upscale_x(x), y = upscale_y(y)})
-        end
-
-        if #self.player.log:get_kills() > 0 then
-            x = 1
-            y = y + 2
-            local msg = "YOU KILLED "
-            cga_print(msg, x, y)
-
-            x = x + msg:len()
-            for _, k in pairs(self.player.log:get_kills()) do
-                k.flashTimer = 0
-
-                cga_print(" ", x, y)
-                --if k.draw then
-                --    k:draw({x = upscale_x(x), y = upscale_y(y)})
-                --end
-
-                local ok, errorMessage = pcall(k.draw, k, {x = upscale_x(x),
-                                                           y = upscale_y(y)})
-                if not ok then
-                    print('error drawing ', k)
-                    print('  monsterType: ', k.monsterType)
-                    print('  currentImage: ', k.currentImage)
-                    print('  error message:' .. errorMessage)
-                end
-
-                x = x + 1
-                if x == GRID_W - 1 then
-                    x = 1
-                    y = y + 1
-                end
-            end
-        end
+        self.summary:draw()
     end
 end
 
@@ -407,7 +360,7 @@ function Game:switch_to_room(room)
 
     -- Set the new room as the current room
     self.currentRoom = room
-    self.currentRoom.visited = true
+    self.currentRoom.isVisited = true
 
     -- Make sure the room has been completely generated
     if not self.currentRoom.isGenerated then
@@ -420,7 +373,7 @@ function Game:switch_to_room(room)
     -- Clear any dead objects
     self.currentRoom:sweep()
 
-    --if DEBUG then
+    if DEBUG then
         if #room.switches > 0 then
             print('  switches: ')
             for i, s in pairs(room.switches) do
@@ -431,7 +384,7 @@ function Game:switch_to_room(room)
                 print('      door room:', s.door.room.index)
             end
         end
-    --end
+    end
 end
 
 function Game:unpause()
