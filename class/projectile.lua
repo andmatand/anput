@@ -23,6 +23,12 @@ function Projectile:init(owner, dir)
 
     self.frame = 1
     self.animateTimer = 0
+
+    -- Determine who shot us out, and give them credit in their log
+    local shooter = get_ultimate_owner(self)
+    if shooter.log then
+        shooter.log:add_shot()
+    end
 end
 
 function Projectile:draw(manualPosition)

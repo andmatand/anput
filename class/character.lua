@@ -609,7 +609,7 @@ function Character:receive_damage(amount, agent)
 
     if perpetrator.log then
         -- Give the perp credit for the hit
-        perpetrator.log:add_hit(self)
+        perpetrator.log:add_hit(self, agent)
     end
 
     self.health = self.health - amount

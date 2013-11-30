@@ -57,10 +57,10 @@ function cga_print(text, x, y, options)
         end
 
         -- Draw a black background behind this line of text
-        --love.graphics.setColor(BLACK)
-        --love.graphics.rectangle('fill', xPos, y + upscale_y(i),
-        --                        SCALE_X * font:getWidth(line),
-        --                        font:getHeight() * SCALE_Y)
+        love.graphics.setColor(BLACK)
+        love.graphics.rectangle('fill', xPos, y + upscale_y(i),
+                                SCALE_X * font:getWidth(line),
+                                font:getHeight() * SCALE_Y)
 
         -- Set the color
         if options.color then
