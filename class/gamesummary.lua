@@ -16,8 +16,15 @@ function GameSummary:draw()
     end
 
     if self.numParagraphs >= 2 then
-        self:draw_kills()
-        self.y = self.y + 2
+        -- If any kills were drawn
+        if self:draw_kills() then
+            self.y = self.y + 2
+        else
+            if self.numParagraphs == 2 then
+                -- Advance to the next paragraph
+                self.numParagraphs = self.numParagraphs + 1
+            end
+        end
     end
 
     if self.numParagraphs >= 3 then
@@ -62,39 +69,43 @@ function GameSummary:draw_killer()
 end
 
 function GameSummary:draw_kills()
-    if #self.game.player.log:get_kills() > 0 then
-        local x = 1
-        local msg = 'YOU KILLED '
-        cga_print(msg, x, self.y)
+    if #self.game.player.log:get_kills() == 0 then
+        return false
+    end
 
-        x = x + msg:len()
-        for _, k in pairs(self.game.player.log:get_kills()) do
-            k.flashTimer = 0
+    local x = 1
+    local msg = 'YOU KILLED '
+    cga_print(msg, x, self.y)
 
-            -- Draw the black background this tile would have if it was a
-            -- text character
-            cga_print(' ', x, self.y)
+    x = x + msg:len()
+    for _, k in pairs(self.game.player.log:get_kills()) do
+        k.flashTimer = 0
 
-            -- Draw the dead monster
-            --if k.draw then
-            --    k:draw({x = upscale_x(x), y = upscale_y(y)})
-            --end
-            local ok, errorMessage = pcall(k.draw, k, {x = upscale_x(x),
-                                                       y = upscale_y(self.y)})
-            if not ok then
-                print('error drawing ', k)
-                print('  monsterType: ', k.monsterType)
-                print('  currentImage: ', k.currentImage)
-                print('  error message:' .. errorMessage)
-            end
+        -- Draw the black background this tile would have if it was a
+        -- text character
+        cga_print(' ', x, self.y)
 
-            x = x + 1
-            if x == GRID_W - 1 then
-                x = 1
-                self.y = self.y + 1
-            end
+        -- Draw the dead monster
+        --if k.draw then
+        --    k:draw({x = upscale_x(x), y = upscale_y(y)})
+        --end
+        local ok, errorMessage = pcall(k.draw, k, {x = upscale_x(x),
+                                                   y = upscale_y(self.y)})
+        if not ok then
+            print('error drawing ', k)
+            print('  monsterType: ', k.monsterType)
+            print('  currentImage: ', k.currentImage)
+            print('  error message:' .. errorMessage)
+        end
+
+        x = x + 1
+        if x == GRID_W - 1 then
+            x = 1
+            self.y = self.y + 1
         end
     end
+
+    return true
 end
 
 function GameSummary:draw_rooms_visited()
