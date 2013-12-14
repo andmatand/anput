@@ -208,7 +208,8 @@ function Room:draw()
         -- Show tiles in FOV
         for _, tile in pairs(self.fov) do
             love.graphics.setColor(0, 255, 0)
-            love.graphics.setLine(1, 'rough')
+            love.graphics.setLineWidth(1)
+            love.graphics.setLineStyle('rough')
             love.graphics.rectangle('line',
                                     upscale_x(tile.x), upscale_y(tile.y),
                                     upscale_x(1), upscale_y(1))
@@ -337,8 +338,7 @@ function Room:draw_spikes()
                 end
 
             love.graphics.push()
-            local stencil = love.graphics.newStencil(stencilFunction)
-            love.graphics.setStencil(stencil)
+            love.graphics.setStencil(stencilFunction)
 
             if spike.hasBeenSeen[i] or DEBUG then
                 spike:draw(nil, lightness)

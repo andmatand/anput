@@ -64,7 +64,6 @@ end
 function Item:draw(manualPosition)
     local position = manualPosition or {x = upscale_x(self.position.x),
                                         y = upscale_y(self.position.y)}
-    love.graphics.setColorMode('modulate')
     if self.color then
         love.graphics.setColor(self.color)
     else

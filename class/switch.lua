@@ -12,7 +12,6 @@ function Switch:init(door)
 end
 
 function Switch:draw(alpha)
-    love.graphics.setColorMode('modulate')
     love.graphics.setColor(WHITE[1], WHITE[2], WHITE[3], alpha)
     if not self.position.x or not self.position.y then
         return

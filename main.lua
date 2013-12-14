@@ -5,7 +5,7 @@ require('class.wrapper')
 require('util.graphics')
 
 function love.load()
-    love.graphics.setCaption('TEMPLE OF ANPUT')
+    love.window.setTitle('TEMPLE OF ANPUT')
     if love.graphics.isCreated() == false then
         print('failed to create a window')
     end
@@ -42,7 +42,7 @@ function love.load()
     ROOM_H = GRID_H - 1
 
     -- Set default image filter to show ALL the pixels
-    love.graphics.setDefaultImageFilter('nearest', 'nearest')
+    love.graphics.setDefaultFilter('nearest', 'nearest')
 
     set_scale(SCALE_X, nil, false)
 
@@ -277,13 +277,22 @@ function jump_to_room_in_direction(direction)
     end
 end
 
-function love.joystickpressed(joystick, button)
-    wrapper:joystick_pressed(joystick, button)
-    --joystickButton = button
+function love.joystickadded(joystick)
+    print('joystickadded')
+    wrapper:joystick_added(joystick)
 end
 
-function love.joystickreleased(joystick, button)
-    wrapper:joystick_released(joystick, button)
+function love.gamepadpressed(joystick, button)
+    wrapper:gamepad_pressed(joystick, button)
+    --gamepadButton = button
+end
+
+function love.gamepadreleased(joystick, button)
+    wrapper:gamepad_released(joystick, button)
+end
+
+function love.joystickremoved(joystick)
+    wrapper:joystick_removed(joystick)
 end
 
 function love.keypressed(key, unicode)
@@ -411,7 +420,9 @@ function love.draw()
 
     love.graphics.setScissor()
 
-    --cga_print(joystickButton, 1, 1)
+    --if gamepadButton then
+    --    cga_print(gamepadButton:upper(), 1, 1)
+    --end
     --if wrapper.game.player then
     --    local txt = wrapper.game.player.position.x .. ' ' ..
     --                wrapper.game.player.position.y

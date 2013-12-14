@@ -179,7 +179,8 @@ function FOVFinder:shadow_cast()
             --        local transTile = cone:translate_octant(tile)
 
             --        love.graphics.setColor(255, 255, 255)
-            --        love.graphics.setLine(1, 'rough')
+            --        love.graphics.setLineWidth(1)
+            --        love.graphics.setLineStyle(rough')
             --        love.graphics.rectangle('line',
             --                                transTile.x * TILE_W,
             --                                transTile.y * TILE_H,
