@@ -62,8 +62,6 @@ end
 function Game:draw_metadata()
     love.graphics.setColor(255, 255, 255)
 
-    self.player.statusBar:draw()
-
     if self.player.isDead then
         if not self.summary then
             self.summary = GameSummary(self)
@@ -71,6 +69,8 @@ function Game:draw_metadata()
 
         self.summary:draw()
     end
+
+    self.player.statusBar:draw()
 end
 
 function Game:generate()
@@ -401,14 +401,8 @@ function Game:update(dt)
 
     self.player.statusBar:update()
 
-    if self.player.isDead then
-        if not self.playerDeadTimer then
-            self.playerDeadTimer = self.time
-        end
-
-        if self.time >= self.playerDeadTimer + 3 then
-            self.player.statusBar:show_context_message({'enter'}, 'NEW GAME')
-        end
+    if self.summary then
+        self.summary:update()
     end
 
     if self.paused then
@@ -446,11 +440,4 @@ function Game:update(dt)
             self:switch_to_room(self.player.room)
         end
     end
-
-    -- Switch rooms when player is on an exit
-    --for _, e in pairs(self.currentRoom.exits) do
-    --    if tiles_overlap(self.player.position, e) then
-    --        break
-    --    end
-    --end
 end
