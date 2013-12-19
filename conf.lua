@@ -12,6 +12,7 @@ function love.conf(t)
     -- Keep authentic 4:3 pixel aspect ratio
     --SCALE_Y = SCALE_Y * 1.2
 
+    t.window.title = 'TEMPLE OF ANPUT'
     t.window.width = BASE_SCREEN_W * SCALE_X
     t.window.height = BASE_SCREEN_H * SCALE_Y
 

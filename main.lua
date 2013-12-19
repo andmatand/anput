@@ -5,7 +5,6 @@ require('class.wrapper')
 require('util.graphics')
 
 function love.load()
-    love.window.setTitle('TEMPLE OF ANPUT')
     if love.graphics.isCreated() == false then
         print('failed to create a window')
     end
