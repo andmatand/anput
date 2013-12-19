@@ -317,79 +317,77 @@ function love.keypressed(key, unicode)
     elseif ctrl and key == '-' then
         set_scale(SCALE_X - 1)
 
-    -- DEBUG commands
     elseif ctrl and shift then
         if key == 'f1' then
             DEBUG = not DEBUG
             wrapper.game.currentRoom.bricksDirty = true
-        elseif key == 'i' then
-            wrapper.game.player.isInvincible =
-                not wrapper.game.player.isInvincible
-        elseif key == 'j' then
-            jump_to_room(wrapper.game.currentRoom.index + 1)
-        elseif key == 'k' then
-            jump_to_room(wrapper.game.currentRoom.index - 1)
-        elseif key == 'up' or key == 'right' or key == 'down' or
-               key == 'left' then
-            jump_to_room_in_direction(key)
-        elseif key == 'a' then
-            local artifact = Item('ankh')
-            wrapper.game.player:pick_up(artifact)
-        elseif key == 'b' then
-            if not wrapper.game.player.armory.weapons.bow then
-                local bow = Weapon('bow')
-                wrapper.game.player:pick_up(bow)
-            end
-            wrapper.game.player.armory.weapons.bow:add_ammo(20)
-        elseif key == 'c' then
-            --for _, c in pairs(wrapper.game.currentRoom:get_characters()) do
-            --    if c.name then
-            --        c.ai:chase(wrapper.game.player)
-            --    end
-            --end
+        end
 
-            local camel = Camel()
-            camel.state = 'caught'
-            camel.ai.level.globetrot.prob = nil
-            camel.isCaught = true
-            camel.ai.level.follow.prob = 10
-            camel.ai.level.follow.target = wrapper.game.player
-            camel:set_position(wrapper.game.currentRoom:get_free_tile())
-            wrapper.game.currentRoom:add_object(camel)
-        elseif key == 'd' then
-            wrapper.game:set_demo_mode(not wrapper.game.demoMode)
-            print('demo mode: ', wrapper.game.demoMode)
-        elseif key == 'e' then
-            local elixir = Item('elixir')
-            wrapper.game.player:pick_up(elixir)
-        elseif key == 'f' then
-            local firestaff = Weapon('firestaff')
-            wrapper.game.player:pick_up(firestaff)
-        elseif key == 'g' then
-            -- Give the player some goodies!
-            for i = 1, 7 do
-                local item = Item('shinything')
-                wrapper.game.player:pick_up(item)
-            end
-        elseif key == 'h' then
-            wrapper.game.player:add_health(100)
-        elseif key == 'o' then
-            local horn = Horn()
-            wrapper.game.player:pick_up(horn)
-        elseif key == 'p' then
-            local potion = Item('potion')
-            wrapper.game.player:pick_up(potion)
-        elseif key == 's' then
-            if wrapper.game.currentRoom then
-                for _, spike in pairs(wrapper.game.currentRoom.spikes) do
-                    spike:trigger()
+        -- DEBUG commands
+        if DEBUG then
+            if key == 'i' then
+                wrapper.game.player.isInvincible =
+                    not wrapper.game.player.isInvincible
+            elseif key == 'j' then
+                jump_to_room(wrapper.game.currentRoom.index + 1)
+            elseif key == 'k' then
+                jump_to_room(wrapper.game.currentRoom.index - 1)
+            elseif key == 'up' or key == 'right' or key == 'down' or
+                   key == 'left' then
+                jump_to_room_in_direction(key)
+            elseif key == 'a' then
+                local artifact = Item('ankh')
+                wrapper.game.player:pick_up(artifact)
+            elseif key == 'b' then
+                if not wrapper.game.player.armory.weapons.bow then
+                    local bow = Weapon('bow')
+                    wrapper.game.player:pick_up(bow)
                 end
+                wrapper.game.player.armory.weapons.bow:add_ammo(20)
+            elseif key == 'c' then
+                local camel = Camel()
+                camel.state = 'caught'
+                camel.ai.level.globetrot.prob = nil
+                camel.isCaught = true
+                camel.ai.level.follow.prob = 10
+                camel.ai.level.follow.target = wrapper.game.player
+                camel:set_position(wrapper.game.currentRoom:get_free_tile())
+                wrapper.game.currentRoom:add_object(camel)
+            elseif key == 'd' then
+                wrapper.game:set_demo_mode(not wrapper.game.demoMode)
+                print('demo mode: ', wrapper.game.demoMode)
+            elseif key == 'e' then
+                local elixir = Item('elixir')
+                wrapper.game.player:pick_up(elixir)
+            elseif key == 'f' then
+                local firestaff = Weapon('firestaff')
+                wrapper.game.player:pick_up(firestaff)
+            elseif key == 'g' then
+                -- Give the player some goodies!
+                for i = 1, 7 do
+                    local item = Item('shinything')
+                    wrapper.game.player:pick_up(item)
+                end
+            elseif key == 'h' then
+                wrapper.game.player:add_health(100)
+            elseif key == 'o' then
+                local horn = Horn()
+                wrapper.game.player:pick_up(horn)
+            elseif key == 'p' then
+                local potion = Item('potion')
+                wrapper.game.player:pick_up(potion)
+            elseif key == 's' then
+                if wrapper.game.currentRoom then
+                    for _, spike in pairs(wrapper.game.currentRoom.spikes) do
+                        spike:trigger()
+                    end
+                end
+            elseif key == 't' then
+                local thunderstaff = ThunderStaff()
+                wrapper.game.player:pick_up(thunderstaff)
+            elseif key == 'z' then
+                wrapper.game.player:receive_damage(100, wrapper.game.player)
             end
-        elseif key == 't' then
-            local thunderstaff = ThunderStaff()
-            wrapper.game.player:pick_up(thunderstaff)
-        elseif key == 'z' then
-            wrapper.game.player:receive_damage(100, wrapper.game.player)
         end
     else
         wrapper:key_pressed(key)
