@@ -68,14 +68,15 @@ function Intro:choose_speech()
          {m = 'PLEASE HURRY'}},
 
         {{m = 'OUR ' ..
-              (math.random(0, 1) == 0 and 'PRIZED' or 'PRICELESS') .. ' ' ..
+              (love.math.random(0, 1) == 0 and 'PRIZED' or 'PRICELESS') ..
+              ' ' ..
               'EGYPTIAN ARTIFACT HAS BEEN STOLEN BY A MASKED ' ..
-              (math.random(0, 1) == 0 and 'MAN' or 'WOMAN')},
+              (love.math.random(0, 1) == 0 and 'MAN' or 'WOMAN')},
          {m = 'APREHEND THE THIEF AND RECOVER THE ARTIFACT'},
          {p = 'I\'M ON IT, CHIEF'}}
     }
 
-    n = math.random(1, #choices)
+    n = love.math.random(1, #choices)
     return choices[n]
 end
 

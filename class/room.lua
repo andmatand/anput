@@ -423,7 +423,7 @@ end
 function Room:get_free_tile()
     local freeTiles = copy_table(self.freeTiles)
     while #freeTiles > 0 do
-        local index = math.random(1, #freeTiles)
+        local index = love.math.random(1, #freeTiles)
         if self:tile_walkable(freeTiles[index]) then
             return freeTiles[index]
         else

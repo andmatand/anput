@@ -12,7 +12,7 @@ end
 
 function Sound:play()
     if self.varyPitch then
-        self.source:setPitch(1 + math.random(-8, 8) / 100)
+        self.source:setPitch(1 + love.math.random(-8, 8) / 100)
     end
 
     if self.source:isStopped() then

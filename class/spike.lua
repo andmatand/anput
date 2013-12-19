@@ -35,7 +35,7 @@ function Spike:update()
     if self.state == 'extending' then
         self:extend()
     elseif self.state == 'retracting' then
-        if math.random(1, 3) > 1 then
+        if love.math.random(1, 3) > 1 then
             self:retract()
         end
     end

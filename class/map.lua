@@ -20,6 +20,10 @@ Map = class('Map')
 
 function Map:init(args)
     self.game = args.game
+
+    -- Create a PRNG that will be used for all deterministic map generation
+    self.prng = love.math.newRandomGenerator(os.time())
+    print('\nPRNG seed for map: ' .. self.prng:getSeed())
 end
 
 function Map:generate()
@@ -53,7 +57,7 @@ function Map:add_first_secret_room()
     local nodes = copy_table(self.nodes)
 
     while #nodes > 0 do
-        local index = math.random(1, #nodes)
+        local index = self.prng:random(1, #nodes)
         local node = nodes[index]
 
         if node.distanceFromStart > 1 and
@@ -104,8 +108,8 @@ function Map:add_temple_exit()
     -- Find the wall opposite the first room's exit
     local dir = opposite_direction(exit:get_direction())
 
-    local x = math.random(2, ROOM_W - 2)
-    local y = math.random(2, ROOM_H - 2)
+    local x = self.prng:random(2, ROOM_W - 2)
+    local y = self.prng:random(2, ROOM_H - 2)
 
     if dir == 1 then
         -- North
@@ -130,24 +134,6 @@ function Map:add_temple_exit()
     local exitToInside = Exit({x = -1, y = 10, room = self.game.outside})
     exitToInside.targetRoom = self.rooms[1]
     table.insert(self.game.outside.exits, exitToInside)
-end
-
-function move_random(node)
-    if math.random(0, 1) == 0 then
-        -- Move x
-        if math.random(0, 1) == 0 then
-            node.x = node.x - 1
-        else
-            node.x = node.x + 1
-        end
-    else
-        -- Move y
-        if math.random(0, 1) == 0 then
-            node.y = node.y - 1
-        else
-            node.y = node.y + 1
-        end
-    end
 end
 
 function Map:find_branch_neighbors(src)
@@ -234,13 +220,13 @@ function Map:add_branches()
           #startingTiles > 0 do
         -- Choose a random starting positon on the main path
         local start = table.remove(startingTiles,
-                                   math.random(1, #startingTiles))
+                                   self.prng:random(1, #startingTiles))
         start.sourceNode = start
         local neighbors = self:find_branch_neighbors(start)
 
         while #neighbors > 0 do
             -- Choose a random neighbor position and remove it from future use
-            local pos = table.remove(neighbors, math.random(1, #neighbors))
+            local pos = table.remove(neighbors, self.prng:random(1, #neighbors))
             pos.sourceNode = start
             pos.distanceFromStart = start.distanceFromStart + 1
 
@@ -249,13 +235,13 @@ function Map:add_branches()
             table.insert(newBranch, pos)
             numBranches = numBranches + 1
 
-            local maxLength = 10--math.random(4, 10)
+            local maxLength = 10
             while #newBranch < maxLength do
                 local possibleMoves = self:find_branch_neighbors(pos)
 
                 if #possibleMoves > 0 then
                     -- Move randomly to one of the open neighbors
-                    pos = possibleMoves[math.random(1, #possibleMoves)]
+                    pos = possibleMoves[self.prng:random(1, #possibleMoves)]
                     pos.sourceNode = start
                     pos.distanceFromStart =
                         newBranch[#newBranch].distanceFromStart + 1
@@ -301,14 +287,14 @@ function Map:generate_path()
     local rings = {}
     --rings[1] = {radius = math.floor((canvas.width / 2) * .9)}
     --rings[2] = {radius = math.floor((canvas.width / 2) * .5)}
-    rings[1] = {radius = math.random(5, 8)}
+    rings[1] = {radius = self.prng:random(5, 8)}
     rings[1] = {radius = 5}
     rings[2] = {radius = 3}
 
     -- Position the source somewhere outside ring 1
-    local x = math.random(canvas.x1, canvas.x2)
-    local y = math.random(canvas.y1, canvas.y2)
-    local dir = math.random(1, 4)
+    local x = self.prng:random(canvas.x1, canvas.x2)
+    local y = self.prng:random(canvas.y1, canvas.y2)
+    local dir = self.prng:random(1, 4)
     if dir == 1 then
         y = 0
     elseif dir == 2 then
@@ -350,7 +336,7 @@ function Map:generate_path()
         -- the ring's gap.side
         local tmpNodes = copy_table(nodes)
         while #tmpNodes > 0 do
-            local n = table.remove(tmpNodes, math.random(1, #tmpNodes))
+            local n = table.remove(tmpNodes, self.prng:random(1, #tmpNodes))
 
             if manhattan_distance(n, nodes[ring.gap.side]) <= ring.radius then
                 ring.gap.x = n.x
@@ -403,8 +389,8 @@ function Map:generate_rooms()
             if n.occupied then
                 local linkedExit
 
-                local x = math.random(2, ROOM_W - 2)
-                local y = math.random(2, ROOM_H - 2)
+                local x = self.prng:random(2, ROOM_W - 2)
+                local y = self.prng:random(2, ROOM_H - 2)
                 if j == 1 then
                     y = -1 -- North
 
@@ -455,7 +441,7 @@ function Map:generate_rooms()
 
     for _, r in pairs(rooms) do
         -- Give the room a specifc random seed
-        r.randomSeed = math.random(self.game.randomSeed + r.index)
+        r.randomSeed = self.prng:getSeed() + r.index
 
         -- Assign difficulty to each room based on distance from first room
         -- compared to artifact room
@@ -565,13 +551,13 @@ function Map:add_required_objects()
 
     -- Put a bow in one of the 5 earliest rooms
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
-    local bowRoom = rooms[math.random(1, #rooms)]
+    local bowRoom = rooms[self.prng:random(1, #rooms)]
     local bow = Weapon('bow')
     table.insert(bowRoom.requiredObjects, bow)
 
     -- Put the wizard in one of the 5 earliest rooms
     local rooms = self:get_rooms_by_distance(1, 5, {isSecret = false})
-    local wizardRoom = rooms[math.random(1, #rooms)]
+    local wizardRoom = rooms[self.prng:random(1, #rooms)]
     add_npc_to_room(Wizard(), wizardRoom)
 
     -- Add hkay "magician" to the wizard's room
@@ -605,7 +591,7 @@ function Map:add_required_objects()
             local rooms
             rooms = self:get_rooms_by_distance(2, room.distanceFromStart - 1,
                                                {isSecret = false})
-            add_npc_to_room(Camel(), rooms[math.random(1, #rooms)])
+            add_npc_to_room(Camel(), rooms[self.prng:random(1, #rooms)])
         elseif room.roadblock == 'set' then
             -- Add the "Swty" hieroglyphs to the room
             room.requiredHieroglyphs = {{'sw', 't_y', 'set'}}
@@ -636,7 +622,7 @@ function Map:add_required_objects()
     local numShinyThings = 0
     while numShinyThings < 7 do
         -- Pick a random early room
-        local roomNum = math.random(1, #easyRooms)
+        local roomNum = self.prng:random(1, #easyRooms)
 
         -- If this is not the first room
         if easyRooms[roomNum].index ~= 1 then
@@ -668,7 +654,7 @@ function Map:add_roadblocks()
     -- Pick which roadblocks to use
     local roadblocks = {}
     for i = 1, numRoadblocks do
-        local index = math.random(1, #roadblockTypes)
+        local index = self.prng:random(1, #roadblockTypes)
         local addType = roadblockTypes[index]
 
         table.remove(roadblockTypes, index)
@@ -733,12 +719,13 @@ function Map:add_doors()
         -- random chance is met, and the room is not secret, and the room is
         -- not a roadblock
         if r.distanceFromStart > 0 and not r.artifactRoom and
-           math.random(1, 2) == 1 and not r.isSecret and not r.roadblock then
+           self.prng:random(1, 2) == 1 and not r.isSecret and
+           not r.roadblock then
            -- Choose one of the exits in this room
            local exits = copy_table(r.exits)
            local exit = nil
            while #exits > 0 do
-               local index = math.random(1, #exits)
+               local index = self.prng:random(1, #exits)
                local e = exits[index]
 
                -- If this exit is already concealed (by a falsebrick or a door)

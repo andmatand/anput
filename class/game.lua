@@ -74,11 +74,6 @@ function Game:draw_metadata()
 end
 
 function Game:generate()
-    self.randomSeed = os.time() + math.random(0, 1000)
-    --self.randomSeed = 1361157016
-    math.randomseed(self.randomSeed)
-    print('\nrandom seed for game: ' .. self.randomSeed)
-
     -- Generate a new map
     self.map = Map({game = self})
     self.rooms = self.map:generate()
@@ -266,7 +261,7 @@ function Game:spawn_more_monsters()
     -- difficulty
     local rooms = copy_table(self.rooms)
     while #rooms > 0 do
-        local index = math.random(1, #rooms)
+        local index = love.math.random(1, #rooms)
         local room = rooms[index]
 
         local ok = false
@@ -310,7 +305,7 @@ function Game:spawn_more_monsters()
             end
 
             if #possibleMonsterTypes > 0 then
-                local index = math.random(1, #possibleMonsterTypes)
+                local index = love.math.random(1, #possibleMonsterTypes)
                 local newMonsterType = possibleMonsterTypes[index]
                 local newMonster = Monster(self, newMonsterType)
                 local position = room:get_free_tile()
@@ -324,7 +319,7 @@ function Game:spawn_more_monsters()
                     newMonster:set_position(room:get_free_tile())
                     room:add_object(newMonster)
 
-                    if math.random(1, 3) == 1 then
+                    if love.math.random(1, 3) == 1 then
                         -- Choose a random item type
                         local roomFiller = RoomFiller(room)
                         local itemTypes = roomFiller:get_item_types()
@@ -344,10 +339,9 @@ end
 function Game:switch_to_room(room)
     --if DEBUG then
         print('switching to room ' .. room.index)
-        print('  random seed: ' .. room.randomSeed)
+        print('  PRNG seed: ' .. room.randomSeed)
         print('  distance from start: ' .. room.distanceFromStart)
         print('  difficulty: ' .. room.difficulty)
-
     --end
 
     self.previousRoom = self.currentRoom
