@@ -149,8 +149,12 @@ function Wrapper:joystick_removed(joystick)
             self.holdableKeys[k]:release('joystick')
         end
 
-        -- Act as if the pause key was pressed
-        self:send_keypress(KEYS.PAUSE)
+        if self.game then
+            if not self.game.paused then
+                -- Act as if the pause key was pressed
+                self:send_keypress(KEYS.PAUSE)
+            end
+        end
 
         -- Look for an alternate joystick
         self:find_joystick()
