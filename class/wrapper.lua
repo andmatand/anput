@@ -1,3 +1,4 @@
+require('util.assets')
 require('class.game')
 require('class.holdablekey')
 require('class.intro')
@@ -366,16 +367,18 @@ function Wrapper:manage_roombuilder_thread()
     end
 end
 
-
 function Wrapper:restart()
     self.game = Game(self)
-    self.intro = Intro()
     self.state = 'boot'
 end
 
 function Wrapper:update(dt)
     if self.state == 'boot' then
+        -- Do nothing, so we can get a black frame drawn as fast as possible
         return
+    elseif self.state == 'load' then
+        load_assets()
+        self.intro = Intro()
     end
 
     self:joystick_directional_input('WALK')
@@ -451,9 +454,10 @@ function Wrapper:update(dt)
                 self.game.generatedAllRooms = true
             end
         else
+            -- Generate the map, etc.
             self.game:generate()
 
-            -- Start the intro after the map is done generating
+            -- Start the intro
             self.state = 'intro'
         end
     end
