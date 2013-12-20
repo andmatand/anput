@@ -185,13 +185,13 @@ function Wrapper:joystick_directional_input(group)
     end
 
     local key
-    if dpad == 'dpup' or y == -1 then
+    if dpad == 'dpup' or y <= -AXIS_THRESHOLD then
         key = KEYS[group].NORTH
-    elseif dpad == 'dpright' or x == 1 then
+    elseif dpad == 'dpright' or x >= AXIS_THRESHOLD then
         key = KEYS[group].EAST
-    elseif dpad == 'dpdown' or y == 1 then
+    elseif dpad == 'dpdown' or y >= AXIS_THRESHOLD then
         key = KEYS[group].SOUTH
-    elseif dpad == 'dpleft' or x == -1 then
+    elseif dpad == 'dpleft' or x <= -AXIS_THRESHOLD then
         key = KEYS[group].WEST
     end
 

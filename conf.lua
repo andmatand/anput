@@ -56,4 +56,6 @@ function love.conf(t)
                     EAST  = 'dpright',
                     SOUTH = 'dpdown',
                     WEST  = 'dpleft'}
+    AXIS_THRESHOLD = .8 -- Sensitivity for analog sticks.  Range is from 0 - 1,
+                        -- lower being more sensitive)
 end
