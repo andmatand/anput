@@ -1,3 +1,4 @@
+require('util.assets')
 require('class.game')
 require('class.holdablekey')
 require('class.intro')
@@ -58,8 +59,13 @@ function Wrapper:init()
     self.fpsLimitTimer = 0
 
     -- Create a new thread for building rooms in the background
-    self.roomBuilderThread = love.thread.newThread('roombuilder_thread',
-                                                   'thread/roombuilder.lua')
+    self.roomBuilderThread = love.thread.newThread('thread/roombuilder.lua')
+
+    -- Create channels to communicate with the roombuilder thread
+    self.roomBuilderInputChannel = love.thread.getChannel('roombuilder_input')
+    self.roomBuilderOutputChannel = love.thread.getChannel('roombuilder_output')
+
+    -- Start the roombuilder thread
     self.roomBuilderThread:start()
 
     --local chunk = love.filesystem.load('thread/roombuilder.lua')
@@ -73,6 +79,8 @@ function Wrapper:init()
     for _, key in pairs(KEYS.SHOOT) do
         self.holdableKeys[key] = HoldableKey(self, key)
     end
+
+    self:find_joystick()
 
     -- Create a game right away, so we can start generating rooms in the
     -- background
@@ -108,32 +116,87 @@ function Wrapper:draw()
     end
 end
 
+function Wrapper:joystick_added(joystick)
+    -- If we don't already have a joystick
+    if not self.joystick then
+        -- Set the newly connected joystick as our current joystick
+        self.joystick = joystick
+    end
+end
+
+function Wrapper:find_joystick()
+    -- If there are any joysticks connected
+    if love.joystick.getJoystickCount() > 0 then
+        -- Set the first gamepad joystick as our current joystick
+        for _, joystick in pairs(love.joystick.getJoysticks()) do
+            if joystick:isGamepad() then
+                self.joystick = joystick
+            end
+        end
+    else
+        self.joystick = nil
+    end
+end
+
+function Wrapper:joystick_removed(joystick)
+    -- If the removed joystick was our current joystick
+    if joystick == self.joystick then
+        -- Relase all holdable joystick keys
+        for name, k in pairs(KEYS['WALK']) do
+            self.holdableKeys[k]:release('joystick')
+        end
+        for name, k in pairs(KEYS['SHOOT']) do
+            self.holdableKeys[k]:release('joystick')
+        end
+
+        if self.game then
+            if not self.game.paused then
+                -- Act as if the pause key was pressed
+                self:send_keypress(KEYS.PAUSE)
+            end
+        end
+
+        -- Look for an alternate joystick
+        self:find_joystick()
+    end
+end
+
 function Wrapper:joystick_directional_input(group)
-    -- If there is no joystick detected
-    if love.joystick.getNumJoysticks() < 1 then
+    -- If we don't have a joystick
+    if not self.joystick then
         return
     end
 
-    -- Handle joystick input for walking
-    local x = love.joystick.getAxis(1, JOYSTICK[group .. '_AXIS_X'])
-    local y = love.joystick.getAxis(1, JOYSTICK[group .. '_AXIS_Y'])
-    local hat
-    if JOYSTICK[group .. '_HAT'] then
-        hat = love.joystick.getHat(1, JOYSTICK[group .. '_HAT'])
+    -- Get axis input
+    local x = self.joystick:getGamepadAxis(GAMEPAD[group .. '_AXIS_X'])
+    local y = self.joystick:getGamepadAxis(GAMEPAD[group .. '_AXIS_Y'])
+
+    local dpad
+
+    -- If a table of buttons are defined for this directional input group
+    if GAMEPAD[group] and type(GAMEPAD[group]) == 'table' then
+        -- Get d-pad input
+        for name, button in pairs(GAMEPAD[group]) do
+            if self.joystick:isGamepadDown(button) then
+                dpad = button
+                break
+            end
+        end
     end
 
     local key
-    if hat == 'u' or y == -1 then
+    if dpad == 'dpup' or y <= -AXIS_THRESHOLD then
         key = KEYS[group].NORTH
-    elseif hat == 'r' or x == 1 then
+    elseif dpad == 'dpright' or x >= AXIS_THRESHOLD then
         key = KEYS[group].EAST
-    elseif hat == 'd' or y == 1 then
+    elseif dpad == 'dpdown' or y >= AXIS_THRESHOLD then
         key = KEYS[group].SOUTH
-    elseif hat == 'l' or x == -1 then
+    elseif dpad == 'dpleft' or x <= -AXIS_THRESHOLD then
         key = KEYS[group].WEST
     end
 
     if key then
+        -- Press the correct holdable key
         self.holdableKeys[key]:press('joystick')
     end
 
@@ -145,17 +208,17 @@ function Wrapper:joystick_directional_input(group)
     end
 end
 
-function Wrapper:joystick_pressed(joystick, button)
+function Wrapper:gamepad_pressed(joystick, button)
     -- If this input is not for the correct joystick
-    if joystick ~= JOYSTICK_NUM then
+    if joystick ~= self.joystick then
         return
     end
 
     -- Check if the button was one of the defined joystick buttons
-    for name, b in pairs(JOYSTICK) do
+    for name, b in pairs(GAMEPAD) do
         if name ~= 'SHOOT_AXIS_X' and name ~= 'SHOOT_AXIS_Y' and
-           name ~= 'SHOOT_HAT' and name ~= 'WALK_AXIS_X' and
-           name ~= 'WALK_AXIS_Y' and name ~= 'WALK_HAT' then
+           name ~= 'SHOOT' and name ~= 'WALK_AXIS_X' and
+           name ~= 'WALK_AXIS_Y' and name ~= 'WALK' then
             if button == b then
                 -- Act as if the equivalent keyboard key was pressed
                 self:send_keypress(KEYS[name])
@@ -164,17 +227,16 @@ function Wrapper:joystick_pressed(joystick, button)
     end
 end
 
-function Wrapper:joystick_released(joystick, button)
+function Wrapper:gamepad_released(joystick, button)
     -- If this input is not for the correct joystick
-    if joystick ~= JOYSTICK_NUM then
+    if joystick ~= self.joystick then
         return
     end
 
     -- Check if the button was one of the defined joystick buttons
-    for name, b in pairs(JOYSTICK) do
+    for name, b in pairs(GAMEPAD) do
         if button == b then
             -- Act as if the equivalent keyboard key was released
-            --self:key_released(KEYS[k])
             self:send_keyrelease(KEYS[name])
         end
     end
@@ -231,9 +293,9 @@ function Wrapper:send_keyrelease(key)
 end
 
 function Wrapper:manage_roombuilder_thread()
-    -- Check the brick_layer thread for a message containing a pseudo-room
-    -- object
-    local result = self.roomBuilderThread:get('result')
+    -- Check the roomBuilder output channel for a message containing a
+    -- pseudo-room object
+    local result = self.roomBuilderOutputChannel:pop()
 
     -- If we got a message
     if result then
@@ -280,8 +342,8 @@ function Wrapper:manage_roombuilder_thread()
         end
     end
 
-    -- If the roombuilder thread does not have any input message
-    if not self.roomBuilderThread:peek('input') then
+    -- If the roombuilder input channel does not have a message
+    if not self.roomBuilderInputChannel:peek() then
         -- Find the next room that is not built or being built
         local nextRoom = nil
         for _, r in pairs(self.game:get_adjacent_rooms()) do
@@ -302,27 +364,36 @@ function Wrapper:manage_roombuilder_thread()
         if nextRoom then
             nextRoom.isBeingBuilt = true
 
-            -- Send another pseduo-room message
+            -- Send another pseduo-room message to the roombuilder thread
             local input = serialize_room(nextRoom)
-            self.roomBuilderThread:set('input', input)
+            self.roomBuilderInputChannel:push(input)
         end
     end
 end
 
-
 function Wrapper:restart()
     self.game = Game(self)
-    self.intro = Intro()
     self.state = 'boot'
 end
 
 function Wrapper:update(dt)
     if self.state == 'boot' then
+        -- Do nothing, so we can get a black frame drawn as fast as possible
         return
+    elseif self.state == 'load' then
+        load_assets()
+        self.intro = Intro()
     end
 
     self:joystick_directional_input('WALK')
     self:joystick_directional_input('SHOOT')
+    if self.joystickVibration then
+        self.joystickVibration:update(dt)
+
+        if not self.joystickVibration.isVibrating then
+            self.joystickVibration = nil
+        end
+    end
 
     -- Add to timer to limit FPS
     self.fpsLimitTimer = self.fpsLimitTimer + dt
@@ -387,10 +458,29 @@ function Wrapper:update(dt)
                 self.game.generatedAllRooms = true
             end
         else
+            -- Generate the map, etc.
             self.game:generate()
 
-            -- Start the intro after the map is done generating
+            -- Start the intro
             self.state = 'intro'
         end
     end
+end
+
+function Wrapper:vibrate_joystick(left, right, duration)
+    if not self.joystick or not self.joystick:isVibrationSupported() then
+        return
+    end
+
+    -- If we already have a vibration
+    if self.joystickVibration then
+        -- Stop it
+        self.joystickVibration:stop()
+    end
+
+    --  Create a new vibration
+    self.joystickVibration = Vibration(self.joystick, left, right, duration)
+
+    -- Start the vibration
+    self.joystickVibration:start()
 end

@@ -23,6 +23,12 @@ function Projectile:init(owner, dir)
 
     self.frame = 1
     self.animateTimer = 0
+
+    -- Determine who shot us out, and give them credit in their log
+    local shooter = get_ultimate_owner(self)
+    if shooter.log then
+        shooter.log:add_shot()
+    end
 end
 
 function Projectile:draw(manualPosition)
@@ -40,7 +46,6 @@ function Projectile:draw(manualPosition)
     local r, sx, sy = get_rotation(self.dir)
 
     -- Set the color
-    love.graphics.setColorMode('modulate')
     if self.color then
         love.graphics.setColor(self.color)
     else

@@ -1,9 +1,10 @@
 CheapPathFinder = class("CheapPathFinder")
 
-function CheapPathFinder:init(src, dest, bounds)
+function CheapPathFinder:init(src, dest, bounds, prng)
     self.src = src
     self.dest = dest
     self.bounds = bounds
+    self.prng = prng
 end
 
 function CheapPathFinder:plot()
@@ -17,8 +18,8 @@ function CheapPathFinder:plot()
         local moveX = false
         local moveY = false
 
-        if pos.x ~= self.dest.x and (math.random(0, 1) == 0 or
-                                pos.y == self.dest.y) then
+        if pos.x ~= self.dest.x and (self.prng:random(0, 1) == 0 or
+                                     pos.y == self.dest.y) then
             moveX = true
         else
             moveY = true

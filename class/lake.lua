@@ -27,7 +27,7 @@ end
 function Lake:draw(fov)
     -- Enable the stencil
     love.graphics.push()
-    love.graphics.setStencil(self.stencil)
+    love.graphics.setStencil(self.stencilFunction)
 
     --if DEBUG then love.graphics.setStencil() end
 
@@ -35,7 +35,6 @@ function Lake:draw(fov)
         self:create_spritebatch(self.frameNumber)
     end
 
-    love.graphics.setColorMode('modulate')
     love.graphics.setColor(255, 255, 255, LIGHT)
     love.graphics.draw(self.spriteBatches[self.frameNumber],
                        self.offset.x * SCALE_X, self.offset.y * SCALE_Y,
@@ -92,7 +91,7 @@ function Lake:create_spritebatch(frameNumber)
 end
 
 function Lake:refresh_stencil()
-    local stencilFunction =
+    self.stencilFunction =
         function()
             love.graphics.setColor(255, 255, 255, 255)
             for _, t in pairs(self.tiles) do
@@ -101,8 +100,6 @@ function Lake:refresh_stencil()
                                         upscale_x(1), upscale_y(1))
             end
         end
-
-    self.stencil = love.graphics.newStencil(stencilFunction)
 end
 
 function Lake:update()

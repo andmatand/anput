@@ -27,7 +27,7 @@ function MapDisplay:draw(currentRoom)
                             self.position.y + self.mapOffset.y)
 
     for _, n in pairs(self.nodes) do
-        if n.room.visited or DEBUG then
+        if n.room.isVisited or DEBUG then
             if n.room == currentRoom and self.flash.state then
                 love.graphics.setColor(MAGENTA)
             elseif n.room == self.map.artifactRoom then
@@ -78,7 +78,7 @@ function MapDisplay:find_map_offset()
     local n, e, s, w
 
     for _, node in pairs(self.nodes) do
-        if node.room.visited or DEBUG then
+        if node.room.isVisited or DEBUG then
             if not n or node.y < n then
                 n = node.y
             end

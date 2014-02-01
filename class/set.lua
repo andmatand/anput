@@ -99,7 +99,7 @@ function Set:update()
        self.state == 'post-teleport' then
         -- Change to a random color
         local colors = {CYAN, MAGENTA, WHITE}
-        self.color = colors[math.random(1, #colors)]
+        self.color = colors[love.math.random(1, #colors)]
 
         if self.teleportFlashTimer:update() then
             self.teleportFlashTimer:reset()

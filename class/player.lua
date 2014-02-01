@@ -1,6 +1,7 @@
 require('class.character')
 require('class.statusbar')
 require('class.switch')
+require('class.vibration')
 
 Player = class('Player', Character)
 
@@ -97,9 +98,30 @@ function Player:hit(patient)
     -- Ignore screen edge
     if patient == nil then
         return false
+    elseif instanceOf(Brick, patient) or instanceOf(Door, patient) then
+        if not self.hitSomethingLastFrame then
+            self:vibrate_gamepad_from_hit(self.dir, .25)
+        end
     end
 
     return Player.super.hit(self, patient)
+end
+
+function Player:vibrate_gamepad_from_hit(dir, amount, duration)
+    local left = 0
+    local right = 0
+    local duration = duration or .1
+
+    if dir == 1 or dir == 3 then
+        left = amount / 1.5
+        right = amount / 1.5
+    elseif dir == 2 then
+        right = amount 
+    elseif dir == 4 then
+        left = amount
+    end
+
+    self.game.wrapper:vibrate_joystick(left, right, duration);
 end
 
 function Player:key_held(key)
@@ -195,6 +217,22 @@ function Player:pick_up(item)
     if Player.super.pick_up(self, item) then
         -- Add this new item our status bar's pop-up queue
         self.statusBar:add_new_item(item)
+
+        return true
+    else
+        return false
+    end
+end
+
+function Player:receive_hit(agent)
+    if Player.super.receive_hit(self, agent) then
+        local hitDir = agent.dir or 1
+
+        if instanceOf(Spike, agent) then
+            self:vibrate_gamepad_from_hit(1, 1, .4)
+        else
+            self:vibrate_gamepad_from_hit(hitDir, .5)
+        end
 
         return true
     else

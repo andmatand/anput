@@ -17,7 +17,6 @@ function Outside:init()
     museumDance.frameCallbacks = {}
     museumDance.frameCallbacks[1] = function()
         sounds.thud:play()
-        sounds.theme:play()
     end
     museumDance.frameCallbacks[2] = function() sounds.shootArrow:play() end
 
@@ -47,14 +46,12 @@ function Outside:init()
 
     self.museumAvatar = {draw =
         function (position)
-            love.graphics.setColorMode('modulate')
             love.graphics.setColor(WHITE)
             love.graphics.draw(outsideImg.museum.avatar,
                                position.x, position.y, 0, SCALE_X, SCALE_Y)
         end}
     self.playerAvatar = {draw =
         function (position)
-            love.graphics.setColorMode('modulate')
             love.graphics.setColor(WHITE)
             love.graphics.draw(puppets.player:get_drawable(),
                                position.x, position.y, 0, SCALE_X, SCALE_Y)

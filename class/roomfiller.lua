@@ -11,6 +11,9 @@ RoomFiller = class('RoomFiller')
 function RoomFiller:init(room)
     self.room = room
 
+    -- Create a PRNG initialized with the room's speicfic random seed
+    self.prng = love.math.newRandomGenerator(self.room.randomSeed)
+
     -- Make a table of tiles in which (walkable) items may be placed
     self.itemTiles = copy_table(self.room.freeTiles)
     
@@ -86,7 +89,7 @@ function RoomFiller:position_switches()
 
     for _, switch in pairs(self.room.requiredSwitches) do
         while #bricks > 0 do
-            local index = math.random(1, #bricks)
+            local index = self.prng:random(1, #bricks)
             local brick = bricks[index]
 
             local ok = false
@@ -156,7 +159,7 @@ function RoomFiller:add_spikes()
     local minLength = 3
     local maxLength
 
-    if self.room.difficulty < 5 or math.random(1, 3) ~= 1 then
+    if self.room.difficulty < 5 or self.prng:random(1, 3) ~= 1 then
         -- Do not put any spikes in this room
         self.addedSpikes = true
         return
@@ -164,8 +167,8 @@ function RoomFiller:add_spikes()
 
     -- Set the maximum number of spikes in a row, depending on the room's size
     -- and difficulty
-    maxLength = math.random(0, #self.room.bricks * .02 *
-                            (self.room.difficulty * .1))
+    maxLength = self.prng:random(0, #self.room.bricks * .02 *
+                                    (self.room.difficulty * .1))
 
     if maxLength < minLength then
         maxLength = minLength
@@ -217,7 +220,7 @@ function RoomFiller:add_spikes()
         local maxDelay = minDelay * 3
 
         -- Choose a random spikeTimer delay for this room
-        local delay = math.random(minDelay, maxDelay)
+        local delay = self.prng:random(minDelay, maxDelay)
 
         -- Decrease the delay a bit based on the room's difficulty
         delay = delay - (self.room.difficulty / 4)
@@ -277,7 +280,7 @@ function RoomFiller:find_spike_positions(minLength, maxLength)
 
     local bricks = copy_table(self.room.bricks)
     while #bricks > 0 do
-        local index = math.random(1, #bricks)
+        local index = self.prng:random(1, #bricks)
         local sourceBrick = bricks[index]
 
         local ok, spikeDirections = test_tile(sourceBrick:get_position(),
@@ -341,13 +344,13 @@ end
 
 function RoomFiller:give_random_items_to_monster(monster, possibleItemTypes)
     -- Choose a random item type
-    local itemType = possibleItemTypes[math.random(1, #possibleItemTypes)]
+    local itemType = possibleItemTypes[self.prng:random(1, #possibleItemTypes)]
     local num
 
     -- If this is an arrow
     if itemType == 'arrow' then
         -- Give the monster several arrows
-        num = math.random(1, 10)
+        num = self.prng:random(1, 10)
     else
         num = 1
     end
@@ -403,7 +406,7 @@ function RoomFiller:position_hieroglyph(letters, orientation)
     -- Find a long enough row of bricks
     local padding = 1
     while #goodBricks > 0 do
-        brick = goodBricks[math.random(1, #goodBricks)]
+        brick = goodBricks[self.prng:random(1, #goodBricks)]
 
         local bricksInARow = {brick}
         local previousBrick = brick
@@ -493,12 +496,12 @@ function RoomFiller:add_items()
     -- If this is a secret room
     if self.room.isSecret then
         -- Add some goodies
-        local numGoodies = math.random(4, 9)
+        local numGoodies = self.prng:random(4, 9)
         local goodies = {}
 
         for i = 1, numGoodies do
             -- Choose a random item type
-            local itemType = itemTypes[math.random(1, #itemTypes)]
+            local itemType = itemTypes[self.prng:random(1, #itemTypes)]
 
             -- If the type name is the name of a weapon type
             if WEAPON_TYPE[itemType] then
@@ -520,21 +523,21 @@ function RoomFiller:add_items()
                 break
             end
 
-            if math.random(1, 3) == 1 then
+            if self.prng:random(1, 3) == 1 then
                 self:give_random_items_to_monster(m, itemTypes)
             end
         end
 
         -- Place items in nooks
         for _, nook in pairs(self.room.nooks) do
-            if math.random(1, 2) == 1 then
+            if self.prng:random(1, 2) == 1 then
                 -- Choose a random item type
-                local itemType = itemTypes[math.random(1, #itemTypes)]
+                local itemType = itemTypes[self.prng:random(1, #itemTypes)]
 
                 local newItem = Item(itemType)
 
                 -- Position the item randomly in the nook
-                newItem:set_position(nook[math.random(1, #nook)])
+                newItem:set_position(nook[self.prng:random(1, #nook)])
 
                 self.room:add_object(newItem)
             end
@@ -554,9 +557,9 @@ function RoomFiller:add_monsters(max)
     end
 
     if self.room.isSecret and #self.room.exits == 1 then
-        if math.random(1, 4) == 1 then
+        if self.prng:random(1, 4) == 1 then
             -- Make this a snake den
-            local numSnakes = math.random(#self.room.freeTiles * .1,
+            local numSnakes = self.prng:random(#self.room.freeTiles * .1,
                                           #self.room.freeTiles * .2)
 
             local snakes = {}
@@ -598,17 +601,6 @@ function RoomFiller:add_monsters(max)
         end
     end
 
-    -- DEBUG
-    --print('actual difficulty: ' .. totalDifficulty)
-
-    --if #monsters > 0 then
-    --    -- Iterate through the existing items in the room
-    --    for _, item in pairs(self.room.items) do
-    --        -- Give the item to a random monster
-    --        monsters[math.random(1, #monsters)]:pick_up(item)
-    --    end
-    --end
-
     self:position_objects(monsters)
 
     self.addedMonsters = true
@@ -628,7 +620,7 @@ function RoomFiller:add_turrets()
 
     -- Set the maximum number of turrets in a row, depending on the room's size
     -- and difficulty
-    local max = math.random(0, #self.room.bricks * .02 *
+    local max = self.prng:random(0, #self.room.bricks * .02 *
                             (self.room.difficulty * .1))
     --print('max turrets:', max)
 
@@ -658,7 +650,7 @@ function RoomFiller:find_turret_positions(min, max)
         local srcPos, shootableDirs
         while #bricks > 0 do
             -- Pick a random brick's position as the starting position
-            local brickIndex = math.random(1, #bricks)
+            local brickIndex = self.prng:random(1, #bricks)
 
             srcPos = bricks[brickIndex]:get_position()
 
@@ -793,7 +785,7 @@ function RoomFiller:position_objects(objects)
     for _, o in pairs(objects) do
         while #self.itemTiles > 0 do
             -- Pick a random free tile
-            local tileIndex = math.random(1, #self.itemTiles)
+            local tileIndex = self.prng:random(1, #self.itemTiles)
             local position = self.itemTiles[tileIndex]
 
             -- Remove this tile from future consideration

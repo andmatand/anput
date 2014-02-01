@@ -200,7 +200,7 @@ function Character:direction_to(position)
     -- If the target position is the same as our position
     if tiles_overlap(self.position, position) then
         -- Return a random direction
-        return math.random(1, 4)
+        return love.math.random(1, 4)
     end
 
     return direction_to(self.position, position)
@@ -221,7 +221,6 @@ function Character:draw(pos)
 
     if self.flashTimer == 0 or self.isThundershocked or
        self.room.game.paused then
-        love.graphics.setColorMode('modulate')
 
         if self.isThundershocked then
             love.graphics.setColor(WHITE)
@@ -262,7 +261,7 @@ function Character:draw(pos)
             offsetDir = self.dir
         elseif self.isThundershocked then
             -- Shake around from being all electrified
-            offsetDir = math.random(1, 4)
+            offsetDir = love.math.random(1, 4)
         end
 
         if offsetDir and not self.isDead then
@@ -364,7 +363,7 @@ function Character:drop_item_group(items)
             -- Try to find a free neighboring tile
             while #tempNeighbors > 0 do
                 -- Choose a random neighboring tile
-                local index = math.random(1, #tempNeighbors)
+                local index = love.math.random(1, #tempNeighbors)
                 local n = tempNeighbors[index]
 
                 -- If the spot is free
@@ -385,7 +384,7 @@ function Character:drop_item_group(items)
                 -- Find a neighboring tile which is inside the room, regardless
                 -- of whether or not it already contains an item
                 while #tempNeighbors > 0 do
-                    local index = math.random(1, #tempNeighbors)
+                    local index = love.math.random(1, #tempNeighbors)
                     local n = tempNeighbors[index]
 
                     local roomTile = self.room.tileCache:get_tile(n)
@@ -609,7 +608,7 @@ function Character:receive_damage(amount, agent)
 
     if perpetrator.log then
         -- Give the perp credit for the hit
-        perpetrator.log:add_hit(self)
+        perpetrator.log:add_hit(self, agent)
     end
 
     self.health = self.health - amount

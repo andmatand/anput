@@ -206,7 +206,7 @@ function AI:choose_action()
     for action, properties in pairs(self.level) do
         -- If this action is not permanently disabled
         if properties.prob then
-            if math.random(properties.prob, 10) == 10 then
+            if love.math.random(properties.prob, 10) == 10 then
                 if self:do_action(action) then
                     if self.owner.tag then
                         print('  chose action ' .. action)
@@ -358,7 +358,7 @@ function AI:do_action(action)
         end
     elseif action == 'wander' then
         -- Step in a random direction
-        self.owner:step(math.random(1, 4))
+        self.owner:step(love.math.random(1, 4))
         return true
     end
 
@@ -460,7 +460,7 @@ function AI:dodge(sprite, searchDir, followPathImmediately)
         else
             previousSearchPosition = {x = x, y = y}
             while #laterals > 0 do
-                index = math.random(1, #laterals)
+                index = love.math.random(1, #laterals)
                 choice = laterals[index]
 
                 local ok, character = self.owner.room:tile_walkable(choice)
@@ -565,7 +565,7 @@ function AI:find_exit()
     -- Find a random exit in the room
     local exits = copy_table(self.owner.room.exits)
     repeat
-        local index = math.random(1, #exits)
+        local index = love.math.random(1, #exits)
         local exit = exits[index]
 
         local ok = true
@@ -595,7 +595,7 @@ function AI:find_exit()
     -- If we still haven't chosen an exit, just choose one of the exits we have
     -- already been through
     if #visitedExits > 0 then
-        return visitedExits[math.random(1, #visitedExits)]
+        return visitedExits[love.math.random(1, #visitedExits)]
     end
 end
 
@@ -675,7 +675,7 @@ function AI:find_random_position()
     local positions = copy_table(self.owner.room.freeTiles)
 
     repeat
-        local index = math.random(1, #positions)
+        local index = love.math.random(1, #positions)
         local pos = positions[index]
 
         local ok = true
@@ -737,7 +737,7 @@ function AI:flee_from(threat)
     local dist = 0
     local movements = 0
     while #dirs > 0 and movements < 2 do
-        local index = math.random(1, #dirs)
+        local index = love.math.random(1, #dirs)
         local dir = dirs[index]
 
         repeat
@@ -749,7 +749,7 @@ function AI:flee_from(threat)
                 -- Randomly stop early and shorten the path, to look more
                 -- erratic like a bug
                 if dist >= 3 then
-                    if math.random(1, 4) == 1 then
+                    if love.math.random(1, 4) == 1 then
                         break
                     end
                 end
@@ -935,7 +935,7 @@ function AI:globetrot()
     local exits = copy_table(self.owner.room.exits)
 
     while #exits > 0 do
-        local index = math.random(1, #exits)
+        local index = love.math.random(1, #exits)
         local e = exits[index]
 
         if not e:is_hidden() and

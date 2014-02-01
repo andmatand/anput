@@ -14,7 +14,7 @@ function Door:init(position, dir)
     self.timer = {delay = .2, value = love.timer.getTime()}
     self.drawGlyph = true
 
-    local stencilFunction =
+    self.stencilFunction =
         function()
             love.graphics.setColor(255, 255, 255, 255)
             love.graphics.rectangle('fill',
@@ -22,12 +22,9 @@ function Door:init(position, dir)
                                     upscale_y(self.position.y),
                                     upscale_x(1), upscale_y(1))
         end
-    self.stencil = love.graphics.newStencil(stencilFunction)
 end
 
 function Door:draw(alpha)
-    love.graphics.setColorMode('modulate')
-
     if self.drawBlackness then
         -- Draw the blackness inside (used for Outside)
         love.graphics.setColor(BLACK)
@@ -39,7 +36,7 @@ function Door:draw(alpha)
 
     if self.state == 'opening' or self.state == 'closing' then
         love.graphics.push()
-        love.graphics.setStencil(self.stencil)
+        love.graphics.setStencil(self.stencilFunction)
     end
 
     local rotation = 0

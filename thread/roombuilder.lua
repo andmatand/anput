@@ -1,4 +1,5 @@
 require('love.filesystem')
+require('love.math')
 require('util.oo')
 require('class.exit')
 require('class.roombuilder')
@@ -8,7 +9,6 @@ ROOM_H = 24
 
 -- The roombuilder thread returns a pseudo-room object with bricks when given a
 -- pseudo-room object with exits
-thread = love.thread.getThread('roombuilder_thread')
 
 function parse_room(string)
     -- Load the message as Lua code
@@ -94,11 +94,15 @@ function serialize_room(room)
     return msg
 end
 
+-- Get references to the existing roombuilder channels (created in wrapper.lua)
+local inputChannel = love.thread.getChannel('roombuilder_input')
+local outputChannel = love.thread.getChannel('roombuilder_output')
+
 while true do
     -- Wait for a message containing a pseudo room object
-    local input = thread:demand('input')
+    local input = inputChannel:demand()
 
-    -- Create a fake room object
+    -- Create a pseudo room object
     local room = parse_room(input)
     
     -- Create a roombuilder object
@@ -107,9 +111,10 @@ while true do
 
     -- Try buidling the room
     if roomBuilder:build() then
-        -- Convert the pseudo room object to a string of Lua code, and set it
-        -- as our message
+        -- Convert the pseudo room object to a string of Lua code
         local output = serialize_room(room)
-        thread:set('result', output)
+
+        -- Send the pseudo room object as a message back to the main thread
+        outputChannel:push(output)
     end
 end

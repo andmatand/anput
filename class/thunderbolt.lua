@@ -31,8 +31,8 @@ function Thunderbolt:find_points()
         else
             -- Choose a random point somewhere within the unscaled screen
             -- coordinates of this tile
-            x = math.random(n.x * TILE_W, (n.x + 1) * TILE_W - 1)
-            y = math.random(n.y * TILE_H, (n.y + 1) * TILE_H - 1)
+            x = love.math.random(n.x * TILE_W, (n.x + 1) * TILE_W - 1)
+            y = love.math.random(n.y * TILE_H, (n.y + 1) * TILE_H - 1)
         end
 
         table.insert(self.points, {x = x, y = y})
@@ -46,7 +46,8 @@ function Thunderbolt:draw()
     end
 
     love.graphics.setColor(WHITE)
-    love.graphics.setLine(SCALE_X, 'rough')
+    love.graphics.setLineWidth(SCALE_X)
+    love.graphics.setLineStyle('rough')
 
     for i = 1, #self.points - 1 do
         local p1 = self.points[i]

@@ -14,7 +14,7 @@ Room = class('Room')
 function Room:init(args)
     self.isGenerated = false
     self.isSecret = false
-    self.visited = false
+    self.isVisited = false
     self.bricksDirty = true
     self.physicsEnabled = true
 
@@ -208,7 +208,8 @@ function Room:draw()
         -- Show tiles in FOV
         for _, tile in pairs(self.fov) do
             love.graphics.setColor(0, 255, 0)
-            love.graphics.setLine(1, 'rough')
+            love.graphics.setLineWidth(1)
+            love.graphics.setLineStyle('rough')
             love.graphics.rectangle('line',
                                     upscale_x(tile.x), upscale_y(tile.y),
                                     upscale_x(1), upscale_y(1))
@@ -329,8 +330,7 @@ function Room:draw_spikes()
                 end
 
             love.graphics.push()
-            local stencil = love.graphics.newStencil(stencilFunction)
-            love.graphics.setStencil(stencil)
+            love.graphics.setStencil(stencilFunction)
 
             if spike.hasBeenSeen[i] or DEBUG then
                 spike:draw(nil, lightness)
@@ -415,7 +415,7 @@ end
 function Room:get_free_tile()
     local freeTiles = copy_table(self.freeTiles)
     while #freeTiles > 0 do
-        local index = math.random(1, #freeTiles)
+        local index = love.math.random(1, #freeTiles)
         if self:tile_walkable(freeTiles[index]) then
             return freeTiles[index]
         else

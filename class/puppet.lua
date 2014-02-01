@@ -49,7 +49,6 @@ function Puppet:draw(customPosition)
             sx = -sx
         end
 
-        love.graphics.setColorMode('modulate')
         love.graphics.setColor(self.color or WHITE)
         love.graphics.draw(drawable, x, y, 0, sx, sy)
     end

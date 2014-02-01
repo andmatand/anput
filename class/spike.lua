@@ -35,7 +35,7 @@ function Spike:update()
     if self.state == 'extending' then
         self:extend()
     elseif self.state == 'retracting' then
-        if math.random(1, 3) > 1 then
+        if love.math.random(1, 3) > 1 then
             self:retract()
         end
     end
@@ -44,7 +44,9 @@ function Spike:update()
         for _, c in pairs(self.room:get_characters()) do
             for _, tile in pairs(self:get_visible_tiles()) do
                 if tiles_overlap(tile, c:get_position()) then
-                    c:receive_damage(50, self)
+                    if c:receive_hit(self) then
+                        c:receive_damage(50, self)
+                    end
                 end
             end
         end

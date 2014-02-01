@@ -30,6 +30,9 @@ function RoomBuilder:init(room)
     self.occupiedTileCache = TileCache()
 
     self.lakeSources = {}
+
+    -- Create a PRNG initialized with the room's speicfic random seed
+    self.prng = love.math.newRandomGenerator(self.room.randomSeed)
 end
 
 function RoomBuilder:add_branches()
@@ -45,7 +48,7 @@ function RoomBuilder:add_branches()
         if not previoiusPosition then
             -- Pick a random brick in the room
             while #seedBricks > 0 do
-                local index = math.random(1, #seedBricks)
+                local index = self.prng:random(1, #seedBricks)
                 local pos = seedBricks[index]
 
                 -- Remove this brick from future consideration
@@ -64,7 +67,7 @@ function RoomBuilder:add_branches()
             -- Find a position adjacent to the previous position
             local neighbors = adjacent_tiles(previoiusPosition)
             while #neighbors > 0 do
-                local index = math.random(1, #neighbors)
+                local index = self.prng:random(1, #neighbors)
                 local pos = neighbors[index]
 
                 local ok = true
@@ -115,7 +118,7 @@ function RoomBuilder:add_branches()
                 lake.tiles = remove_tiles_from_table({position}, lake.tiles)
             end
 
-            if math.random(1, 5) == 1 then
+            if self.prng:random(1, 5) == 1 then
                 previoiusPosition = nil
             else
                 previoiusPosition = position
@@ -168,16 +171,16 @@ function RoomBuilder:add_required_zone()
 
         if orientation == 'horizontal' then
             -- Make a somewhat vertical rectangle
-            rectangle.w = math.random(3, 10)
-            rectangle.h = math.random(10, 15)
+            rectangle.w = self.prng:random(3, 10)
+            rectangle.h = self.prng:random(10, 15)
         elseif orientation == 'vertical' then
             -- Make a somewhat horizontal rectangle
-            rectangle.w = math.random(10, 15)
-            rectangle.h = math.random(3, 10)
+            rectangle.w = self.prng:random(10, 15)
+            rectangle.h = self.prng:random(3, 10)
         elseif orientation == 'diagonal' then
             -- Make a somewhat square rectangle
-            rectangle.w = math.random(5, 10)
-            rectangle.h = math.random(5, 10)
+            rectangle.w = self.prng:random(5, 10)
+            rectangle.h = self.prng:random(5, 10)
         end
 
         table.insert(self.lakeSources,
@@ -235,9 +238,6 @@ function RoomBuilder:build()
         return false
     end
 
-    -- Initialize PRNG with the room's speicfied random seed
-    math.randomseed(self.room.randomSeed)
-
     local timer
     if DEBUG then
         timer = love.timer.getTime()
@@ -289,7 +289,7 @@ function RoomBuilder:cleanup_untouchable_bricks()
 
             if tiles_touching(b, t) then
                 ok = true
-            elseif math.random(0, 1) == 1 then
+            elseif self.prng:random(0, 1) == 1 then
                 if tiles_touching_diagonally(b, t) then
                     ok = true
                 end
@@ -449,8 +449,8 @@ end
 
 function RoomBuilder:plot_midpaths()
     -- Pick a random point in the middle of the room
-    self.midPoint = {x = math.random(1, ROOM_W - 2),
-                     y = math.random(1, ROOM_H - 2)}
+    self.midPoint = {x = self.prng:random(1, ROOM_W - 2),
+                     y = self.prng:random(1, ROOM_H - 2)}
 
     -- Plot paths from all exits to the midpoint
     for _, e in pairs(self.exits) do
@@ -463,7 +463,8 @@ function RoomBuilder:plot_midpaths()
 
         local cpf = CheapPathFinder(e:get_doorway(), self.midPoint,
                                     {x1 = 0, y1 = 0,
-                                     x2 = ROOM_W - 1, y2 = ROOM_H - 1})
+                                     x2 = ROOM_W - 1, y2 = ROOM_H - 1},
+                                     self.prng)
         local tiles = cpf:plot()
 
         -- Append these tiles to occupiedTiles and midPaths
@@ -507,7 +508,7 @@ function RoomBuilder:plot_walls()
         local destinations = {}
         -- Find a free tile which is close to the midpoint
         while #exit.freeTiles > 0 do
-            local index = math.random(1, #exit.freeTiles)
+            local index = self.prng:random(1, #exit.freeTiles)
             local tile = exit.freeTiles[index]
 
             if manhattan_distance(tile, self.midPoint) <= 5 then
