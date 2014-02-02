@@ -5,6 +5,7 @@ Credits = class('Credits')
 
 function Credits:init()
     self.timer = Timer(FPS_LIMIT * 6)
+    self.isPaused = false
 
     self.index = 0
     self.credits = {
@@ -18,7 +19,13 @@ function Credits:init()
         {'STARRING', 'MAGICIAN'},
         {'STARRING', 'KHNUM'},
         {'STARRING', 'SET'},
-        {'INTRODUCING', 'CAMEL'},
+        {'AND INTRODUCING', 'CAMEL'},
+
+        {'PROGRAMMER', 'ANDREW ANDERSON'},
+        {'SPECIAL THANKS', 'WWW.HOMESTARRUNNER.COM/SBEMAIL4.HTML'},
+        {'SPECIAL THANKS', 'LOVE\nLOVE2D.ORG'},
+        {'SPECIAL THANKS', 'EGYPT'},
+        {'WINNER', 'YOU'}
     }
     --self.credits = {
     --    {'ORIGINAL INSPIRATION', 'WWW.HOMESTARRUNNER.COM/SBEMAIL4.HTML'},
@@ -37,15 +44,25 @@ function Credits:init()
     --}
 end
 
---function Credits:update()
---    if self.timer:update() then
---        self.timer:reset()
---
---        if self.index < #self.credits then
---            self.index = self.index + 1
---        end
---    end
---end
+function Credits:play()
+    self.isPaused = false
+end
+
+function Credits:pause()
+    self.isPaused = true
+end
+
+function Credits:update()
+    if self.isPaused then return end
+
+    if self.timer:update() then
+        self.timer:reset()
+
+        if self.index < #self.credits then
+            self:advance()
+        end
+    end
+end
 
 function Credits:advance()
     if self.index < #self.credits then

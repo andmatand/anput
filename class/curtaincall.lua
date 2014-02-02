@@ -111,18 +111,52 @@ function CurtainCall:init(leader, outside, credits)
                                   {image = images.npc.camel.default,
                                    delay = DANCE_DELAY}})
 
-    -- Add a Camel puppet
-    table.insert(self.queue, Puppet({image = images.npc.camel.default,
-                                     color = CYAN,
-                                     walkAnimation = camelWalk,
-                                     danceAnimation = camelDance}))
+    -- Create the Camel
+    self.camel = {}
+    self.camel.puppet = Puppet({image = images.npc.camel.default,
+                                color = CYAN,
+                                walkAnimation = camelWalk,
+                                danceAnimation = camelDance})
+    self.camel.puppet.enabled = false;
+    self.camel.timer = Timer(200)
+    self.camel.timer.value = 10
+
+    -- Position the camel puppet offscreen, facing east
+    self.camel.puppet:set_position({x = -1, y = GRID_H - 5})
+    self.camel.puppet.dir = 2
+
+    -- Add the camel puppet to the outside puppets
+    table.insert(self.outside.puppets, self.camel.puppet)
+end
+
+function CurtainCall:update_camel()
+    if not self.camel.puppet.enabled then return end
+
+    if self.camel.timer:update() then
+        self.camel.timer:reset()
+
+        -- Make the camel run across the screen
+        self.camel.puppet:walk(self.camel.puppet.dir, GRID_W + 1)
+    end
+
+    local x = self.camel.puppet:get_position().x
+
+    -- If the camel is off the west side of the screen
+    if x < 0 then
+        -- Turn east
+        self.camel.puppet.dir = 2
+    -- If the camel is off the east side of the screen
+    elseif x > GRID_W - 1 then
+        -- Turn west
+        self.camel.puppet.dir = 4
+    end
 end
 
 function CurtainCall:update()
-    -- If there are still puppets in the curtain-call queue
-    if self.queue[1] then
-        -- If we've waited long enough for the previous puppet to take a bow
-        if self.currentPuppet.state == 'dance' and self.bowTimer:update() then
+    -- If we've waited long enough for the previous puppet to take a bow
+    if self.currentPuppet.state == 'dance' and self.bowTimer:update() then
+        -- If there are still puppets in the curtain-call queue
+        if self.queue[1] then
             -- Pop the first puppet off the curtain-call queue
             local puppet = table.remove(self.queue, 1)
 
@@ -142,6 +176,16 @@ function CurtainCall:update()
 
             -- Advance to the next credit
             self.credits:advance()
+        else
+            -- If the camel is not enabled yet
+            if not self.camel.puppet.enabled then
+                -- Enable the camel
+                self.camel.puppet.enabled = true
+
+                -- Let the credits advance on their own from here on
+                self.credits:play()
+                self.credits.timer:move_to_end()
+            end
         end
     end
 
@@ -175,4 +219,6 @@ function CurtainCall:update()
             end
         end
     end
+
+    self:update_camel()
 end

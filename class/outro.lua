@@ -1,6 +1,7 @@
 require('class.credits')
 require('class.curtaincall')
 require('class.outside')
+require('class.timer')
 
 Outro = class('Outro')
 
@@ -36,6 +37,30 @@ function Outro:init(game)
     end
 
     self.outside:add_dialogue(self:choose_speech())
+
+    -- Load the dance music
+    self.danceMusic = {}
+    self.danceMusic.sounds = {Sound('res/sfx/funky-i.wav'),
+                              Sound('res/sfx/funky-iv.wav'),
+                              Sound('res/sfx/funky-v.wav'),
+                              Sound('res/sfx/funky-i-hits.wav'),
+                              Sound('res/sfx/funky-iv-hits.wav'),
+                              Sound('res/sfx/funky-v-hits.wav')}
+    self.danceMusic.playlist = {1, 1,
+                                2, 1,
+                                3, 2,
+                                1, 1,
+                                4, 4,
+                                5, 4,
+                                6, 5,
+                                4, 4}
+    self.danceMusic.playlistIndex = 1
+    self.danceMusic.timer = Timer(DANCE_DELAY * 4)
+
+    -- DEBUG: speed up the music a little bit
+    for _, sound in pairs(self.danceMusic.sounds) do
+        sound.source:setPitch(1.05)
+    end
 end
 
 function Outro:key_pressed(key)
@@ -132,8 +157,7 @@ function Outro:update()
         -- If the dialogue is finished
         if self.outside.messageQueue:is_empty() then
             self.puppets.player:walk(4, 20, 2)
-            self.state = 'win walk'
-        end
+            self.state = 'win walk' end
     elseif self.state == 'win walk' then
         if self.puppets.player.position.x == 11 then
             self.delayStart = love.timer.getTime()
@@ -152,14 +176,18 @@ function Outro:update()
         end
     elseif self.state == 'win music' then
         if love.timer.getTime() >= self.delayStart + .5 then
-            --sounds.danceMusic:play()
-            sounds.khnum.encounter:play()
+            sounds.victoryTheme:play()
             self.delayStart = love.timer.getTime()
             self.state = 'win listen'
         end
     elseif self.state == 'win listen' then
         if love.timer.getTime() >= self.delayStart + 4 then
             self.state = 'win dance'
+
+            -- Ensure that the dance music starts playing at the same
+            -- time the dancing starts
+            self.danceMusic.timer:move_to_end()
+
             self.delayStart = love.timer.getTime()
         end
     elseif self.state == 'win dance' then
@@ -169,8 +197,10 @@ function Outro:update()
             -- Turn the player to the right
             self.puppets.player.dir = 2
 
-            -- Start the credits
+            -- Start the credits, paused (so that they only advance manually
+            -- for now)
             self.credits = Credits()
+            self.credits:pause()
 
             -- Start the curtain call
             self.curtainCall = CurtainCall(self.puppets.player, self.outside,
@@ -197,5 +227,29 @@ function Outro:update()
     
     if self.curtainCall then
         self.curtainCall:update()
+    end
+
+    if self.credits then
+        self.credits:update()
+    end
+
+    if self.state == 'win dance' or self.state == 'credits' then
+        self:play_dance_music()
+    end
+end
+
+function Outro:play_dance_music()
+    if self.danceMusic.timer:update() then
+        self.danceMusic.timer:reset()
+
+        local soundIndex
+        soundIndex = self.danceMusic.playlist[self.danceMusic.playlistIndex]
+
+        self.danceMusic.sounds[soundIndex]:play()
+        self.danceMusic.playlistIndex = self.danceMusic.playlistIndex + 1
+
+        if self.danceMusic.playlistIndex > #self.danceMusic.playlist then
+            self.danceMusic.playlistIndex = 1
+        end
     end
 end

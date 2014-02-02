@@ -14,11 +14,11 @@ function Outside:init()
                                     delay = DANCE_DELAY},
                                   {image = outsideImg.museum.image1,
                                    delay = DANCE_DELAY}})
-    museumDance.frameCallbacks = {}
-    museumDance.frameCallbacks[1] = function()
-        sounds.thud:play()
-    end
-    museumDance.frameCallbacks[2] = function() sounds.shootArrow:play() end
+    --museumDance.frameCallbacks = {}
+    --museumDance.frameCallbacks[1] = function()
+    --    sounds.thud:play()
+    --end
+    --museumDance.frameCallbacks[2] = function() sounds.shootArrow:play() end
 
     puppets.museum = Puppet({image = outsideImg.museum.image1,
                              danceAnimation = museumDance,

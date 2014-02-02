@@ -1,3 +1,5 @@
+require('class.timer')
+
 Animation = class('Animation')
 
 function Animation:init(frames)
@@ -19,8 +21,7 @@ function Animation:advance_to_frame(num)
 
     self.currentFrame = {index = num,
                          image = self.frames[num].image,
-                         delay = self.frames[num].delay,
-                         timer = 0}
+                         timer = Timer(self.frames[num].delay)}
 
     self.isStopped = false
 end
@@ -31,7 +32,7 @@ end
 
 function Animation:is_at_beginning()
     if self.currentFrame.index == 1 and
-       self.currentFrame.timer == 0 then
+       self.currentFrame.timer:is_at_beginning() then
         return true
     else
         return false
@@ -48,11 +49,7 @@ function Animation:update()
         return
     end
 
-    if self.currentFrame.timer < self.currentFrame.delay then
-        self.currentFrame.timer = self.currentFrame.timer + 1
-    end
-
-    if self.currentFrame.timer == self.currentFrame.delay then
+    if self.currentFrame.timer:update() then
         if self.currentFrame.index + 1 <= #self.frames then
             self:advance_to_frame(self.currentFrame.index + 1)
         else

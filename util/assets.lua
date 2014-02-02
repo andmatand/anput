@@ -133,6 +133,7 @@ function load_assets()
     -- Sounds
     sounds = {}
     sounds.theme = Sound('res/sfx/theme.wav')
+    sounds.victoryTheme = Sound('res/sfx/victory-theme.wav')
     sounds.door = {open1 = Sound('res/sfx/door-open1.wav'),
                    open2 = Sound('res/sfx/door-open2.wav'),
                    open3 = Sound('res/sfx/door-open3.wav'),

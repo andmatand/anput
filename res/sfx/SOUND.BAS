@@ -1,10 +1,35 @@
+DECLARE SUB PlaySound (num)
+
 '' This is the QBASIC source code which generates the authentic old-timey
 '' sounds for Temple of Anput.  The sounds were recorded by running QBASIC
 '' under DOSBox and using DOSBox's audio-recording feature.
 
+PlaySound (39)
+
+
+'PlaySound (34)
+'PlaySound (34)
+'PlaySound (35)
+'PlaySound (34)
+'PlaySound (36)
+'PlaySound (35)
+
+'PlaySound (37)
+'PlaySound (37)
+'PlaySound (38)
+'PlaySound (37)
+'PlaySound (39)
+'PlaySound (38)
+'PlaySound (37)
+'PlaySound (37)
+
+PLAY "p3"
+
+SUB PlaySound (num)
+
 PLAY "mb t130 l40"
 
-SELECT CASE 32 '' Change this number to hear different sounds
+SELECT CASE num
 CASE 1
     '' theme
     PLAY "l10 o3  cd-e gg+ b g+g > l5c"
@@ -137,9 +162,47 @@ CASE 31
 CASE 32
     '' Set teleport
     PLAY "l30 o1 e-a g->c <a>e- cg- e-a"
+CASE 33 '' VICTORY THEME
+    PLAY "l10 o3  cd-e ga b ag > l5c << l20 cdcdc."
+CASE 34 '' funky dance I
+    PLAY "t210 ms"
+    PLAY "o0 l8 c p8 l4 c l8 >c p8 l4 <c l8 b- p8 ae- p8 e l8 c p8"
+CASE 35 '' funky dance IV
+    PLAY "t210 ms"
+    PLAY "o0 l8 f p8 l4 f l8 >e- p8 <f >e-d <f >dc <f b-a-a"
+CASE 36 '' funky dance V
+    PLAY "t210 ms"
+    PLAY "o0 l8 g p8 l4 g l8 >f p8 l8 e p8 <b-b p8 l4 g l8 dgf+"
+CASE 37 '' funky dance I with hits
+    PLAY "t210 ms"
+    PLAY "o0 l8 c p8 l4 c l8 >c"
+    PLAY "o3 l32ce p16"
+    PLAY "o0 l8 <c"
+    PLAY "o3 l32<b->d p16"
+    PLAY "o0 l8 b- p8 ae- p8"
+    PLAY "o0 l8 ec"
+    PLAY "o3 l32 <b->d p16"
+CASE 38 '' funky dance IV with hits
+    PLAY "t210 ms"
+    PLAY "o0 l8 f p8 l4 f l8 >e-"
+    PLAY "o3 l32 fa p16"
+    PLAY "o0 l8 <f >e-d"
+    PLAY "o3 l32 e-g p16"
+    PLAY "o0 l8 >dc"
+    PLAY "o3 l32 df p16"
+    PLAY "o0 l8 b-a-"
+    PLAY "o3 l32 ce- p16"
+CASE 39 '' funky dance V with hits
+    'PLAY "o0 l8 g p8 l4 g l8 >f p8 l8 e p8 <b-b p8 l4 g l8 dgf+"
+    PLAY "t210 ms"
+    PLAY "o0 l8 g p8 l4 g l8 >f"
+    PLAY "o3 l32 gb p16"
+    PLAY "o0 l8 >e"
+    PLAY "o3 l32 a>c p16"
+    PLAY "o0 l8 b-b"
+    PLAY "o3 l32 b>d p16"
+    PLAY "o0 l4 g l8 dgf+"
 END SELECT
 
-PLAY "p3"
-'PLAY "l10 o3 mn cde-b >c <b a- g c."
-
+END SUB
 

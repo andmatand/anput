@@ -4,7 +4,7 @@ require('class.tile')
 -- A Puppet is an actor for the Outside scenes
 Puppet = class('Puppet', Tile)
 
-DANCE_DELAY = 5
+DANCE_DELAY = 7
 
 function Puppet:init(args)
     Puppet.super.init(self)
@@ -72,7 +72,6 @@ end
 
 function Puppet:dance()
     self.state = 'dance'
-    self.danceTimer = DANCE_DELAY
 end
 
 function Puppet:turn_around()
