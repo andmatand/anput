@@ -21,27 +21,13 @@ function Credits:init()
         {'STARRING', 'SET'},
         {'AND INTRODUCING', 'CAMEL'},
 
-        {'PROGRAMMER', 'ANDREW ANDERSON'},
-        {'SPECIAL THANKS', 'WWW.HOMESTARRUNNER.COM/SBEMAIL4.HTML'},
-        {'SPECIAL THANKS', 'LOVE\nLOVE2D.ORG'},
+        {'CREATED BY', 'ANDREW ANDERSON'},
+        {'SHINY THING ANIMATION', 'AUBRIANNE ANDERSON'},
+        {'SPECIAL THANKS', 'LÖVE\nLOVE2D.ORG'},
+        {'SPECIAL THANKS', 'EVERYONE WHO PLAYTESTED'},
         {'SPECIAL THANKS', 'EGYPT'},
         {'WINNER', 'YOU'}
     }
-    --self.credits = {
-    --    {'ORIGINAL INSPIRATION', 'WWW.HOMESTARRUNNER.COM/SBEMAIL4.HTML'},
-    --    {'INSPIRATION', 'ADVENTURE\nFOR ATARI 2600'},
-    --    {'INSPIRATION', 'FEZ'},
-    --    {'INSPIRATION', 'THE LEGEND OF ZELDA'},
-    --    {'INSPIRATION', 'NETHACK'},
-    --    {'INSPIRATION', 'EGYPT'},
-    --    {'SHINY THING ANIMATION', 'AUBRIANNE ANDERSON'},
-    --    {'MORAL SUPPORT', 'AUBRIANNE ANDERSON'},
-    --    {'EVERYTHING ELSE', 'ANDREW ANDERSON'},
-    --    {'SPECIAL THANKS', 'LOVE\nLOVE2D.ORG'},
-    --    {'SPECIAL THANKS', 'LUA\nLUA.ORG'},
-    --    {'SPECIAL THANKS', 'EVERYONE WHO PLAYTESTED THE GAME'},
-    --    {'WINNER', 'YOU'},
-    --}
 end
 
 function Credits:play()
