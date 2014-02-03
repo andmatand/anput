@@ -10,31 +10,15 @@ function Outside:init()
     self.puppets = {}
     local puppets = self.puppets
 
-    local museumDance = Animation({{image = outsideImg.museum.image2,
-                                    delay = DANCE_DELAY},
-                                  {image = outsideImg.museum.image1,
-                                   delay = DANCE_DELAY}})
-    --museumDance.frameCallbacks = {}
-    --museumDance.frameCallbacks[1] = function()
-    --    sounds.thud:play()
-    --end
-    --museumDance.frameCallbacks[2] = function() sounds.shootArrow:play() end
-
     puppets.museum = Puppet({image = outsideImg.museum.image1,
-                             danceAnimation = museumDance,
                              position = {x = 3, y = 9}})
 
     puppets.temple = Puppet({image = outsideImg.temple.image,
                              position = {x = 14, y = 9},
                              color = MAGENTA})
 
-    local playerDance = Animation({{image = outsideImg.player.dance,
-                                    delay = DANCE_DELAY},
-                                  {image = playerImg.default,
-                                   delay = DANCE_DELAY}})
     local playerY = 2 * puppets.temple.position.y - 1
     puppets.player = Puppet({image = playerImg.default,
-                             danceAnimation = playerDance,
                              position = {x = 11, y = playerY}})
     puppets.player.isPlayer = true
     

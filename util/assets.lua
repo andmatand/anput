@@ -3,11 +3,6 @@ function load_assets()
     local loadTimeStart = love.timer.getTime()
 
     -- Shorthand Functions
-    local function new_image(filename)
-        local img = love.graphics.newImage('res/img/' .. filename)
-        --img:setfilter('nearest', 'nearest')
-        return img
-    end
     local function load_images(directory, names)
         local images = {}
         for _, n in pairs(names) do
@@ -125,15 +120,12 @@ function load_assets()
     -- Outside Images
     outsideImg = {}
     outsideImg.museum = {image1 = new_image('museum1.png'),
-                         image2 = new_image('museum2.png'),
                          avatar = new_image('museum-avatar.png')}
     outsideImg.temple = {image = new_image('temple.png')}
-    outsideImg.player = {dance = new_image('player-dance.png')}
 
     -- Sounds
     sounds = {}
     sounds.theme = Sound('res/sfx/theme.wav')
-    sounds.victoryTheme = Sound('res/sfx/victory-theme.wav')
     sounds.door = {open1 = Sound('res/sfx/door-open1.wav'),
                    open2 = Sound('res/sfx/door-open2.wav'),
                    open3 = Sound('res/sfx/door-open3.wav'),

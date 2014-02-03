@@ -131,6 +131,11 @@ function get_rotation(dir)
     return r, sx, sy
 end
 
+function new_image(filename)
+    local img = love.graphics.newImage('res/img/' .. filename)
+    return img
+end
+
 function toggle_fullscreen()
     local w, h, flags = love.window.getMode()
 

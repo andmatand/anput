@@ -2,6 +2,7 @@ require('class.credits')
 require('class.curtaincall')
 require('class.outside')
 require('class.timer')
+require('util.graphics')
 
 Outro = class('Outro')
 
@@ -38,6 +39,26 @@ function Outro:init(game)
 
     self.outside:add_dialogue(self:choose_speech())
 
+    -- Set the museum's dance animation
+    outsideImg.museum.image2 = new_image('museum2.png')
+    local museumDance = Animation({{image = outsideImg.museum.image2,
+                                    delay = DANCE_DELAY},
+                                  {image = outsideImg.museum.image1,
+                                   delay = DANCE_DELAY}})
+    self.outside.puppets.museum.danceAnimation = museumDance
+
+
+    -- Set the players's dance animation
+    outsideImg.player = {dance = new_image('player-dance.png')}
+    local playerDance = Animation({{image = outsideImg.player.dance,
+                                    delay = DANCE_DELAY},
+                                  {image = playerImg.default,
+                                   delay = DANCE_DELAY}})
+    self.outside.puppets.player.danceAnimation = playerDance
+
+    -- Load the victory theme
+    sounds.victoryTheme = Sound('res/sfx/victory-theme.wav')
+
     -- Load the dance music
     self.danceMusic = {}
     self.danceMusic.sounds = {Sound('res/sfx/funky-i.wav'),
@@ -57,7 +78,7 @@ function Outro:init(game)
     self.danceMusic.playlistIndex = 1
     self.danceMusic.timer = Timer(DANCE_DELAY * 4)
 
-    -- DEBUG: speed up the music a little bit
+    -- Speed up the music a little bit, to better match the dance speed
     for _, sound in pairs(self.danceMusic.sounds) do
         sound.source:setPitch(1.05)
     end

@@ -13,6 +13,11 @@ function CurtainCall:init(leader, outside, credits)
     self.walkDistance = 18
     self.bowTimer = Timer(FPS_LIMIT * 3)
 
+    -- Create a dance animation for the archer puppet
+    images.monsters.cat.dance = new_image('cat-dance.png')
+    images.monsters.archer.dance = new_image('archer-bow-dance.png')
+    images.monsters.ghost.dance = new_image('ghost-dance.png')
+
     -- Create all the monster puppets that will come out at the curtain call
     local monsterTypes = {'scarab', 'bird', 'cat', 'cobra', 'mummy', 'archer',
                           'ghost'}
@@ -20,16 +25,16 @@ function CurtainCall:init(leader, outside, credits)
         -- Find the table of images for this monster
         local img = images.monsters[name]
 
-        local image
+        local defaultImage
         local walkAnimation
         local danceAnimation
 
         -- If this monster has a default image
         if img.default then
-            image = img.default
+            defaultImage = img.default
         -- If this monster has a bow image
         elseif img.bow then
-            image = img.bow
+            defaultImage = img.bow
         end
 
         -- If this monster has a walk image
@@ -49,18 +54,29 @@ function CurtainCall:init(leader, outside, credits)
             walkAnimation = Animation(frames)
         end
 
-        if img.default and (img.walk or img.step) then
-            local image2 = img.walk or img.step
+        if defaultImage and (img.walk or img.step or img.dance) then
+            local image1, image2
+
+            if img.dance then
+                image1 = img.dance
+                image2 = defaultImage
+            elseif img.walk then
+                image1 = defaultImage
+                image2 = img.walk
+            elseif img.step then
+                image1 = defaultImage
+                image2 = img.step
+            end
 
             -- Create a default dance animation
-            danceAnimation = Animation({{image = img.default,
+            danceAnimation = Animation({{image = image1,
                                          delay = DANCE_DELAY},
                                         {image = image2,
                                          delay = DANCE_DELAY}})
         end
 
         -- Create a puppet for this monster
-        local puppet = Puppet({image = image,
+        local puppet = Puppet({image = defaultImage,
                                walkAnimation = walkAnimation,
                                danceAnimation = danceAnimation,
                                color = CYAN})
@@ -91,8 +107,17 @@ function CurtainCall:init(leader, outside, credits)
     self.queue[4].danceAnimation = cobraDance
 
     -- Add a Wizard puppet
-    table.insert(self.queue, Puppet({image = images.npc.wizard.firestaff,
-                                     color = CYAN}))
+    local wizard = Puppet({image = images.npc.wizard.firestaff,
+                           color = CYAN})
+    table.insert(self.queue, wizard)
+
+    -- Create a dance animation for the wizard puppet
+    local wizardDance = Animation({{image =
+                                    new_image('wizard-firestaff-dance.png'),
+                                    delay = DANCE_DELAY},
+                                   {image = images.npc.wizard.firestaff,
+                                    delay = DANCE_DELAY}})
+    wizard.danceAnimation = wizardDance
 
     -- Add a Khnum puppet
     local khnum = Puppet({image = images.npc.khnum.default,
