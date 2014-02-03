@@ -91,12 +91,39 @@ function CurtainCall:init(leader, outside, credits)
     self.queue[4].danceAnimation = cobraDance
 
     -- Add a Wizard puppet
-    table.insert(self.queue, Puppet({image = images.npc.wizard.default,
+    table.insert(self.queue, Puppet({image = images.npc.wizard.firestaff,
                                      color = CYAN}))
 
     -- Add a Khnum puppet
-    table.insert(self.queue, Puppet({image = images.npc.khnum.default,
-                                     color = CYAN}))
+    local khnum = Puppet({image = images.npc.khnum.default,
+                          color = CYAN})
+    khnum.name = 'khnum'
+    table.insert(self.queue, khnum)
+
+    -- Create two golem puppets
+    self.golems = {}
+    local x = 21
+    for i = 1, 2 do
+        local spawn = Animation(images.monsters.golem.spawn)
+        spawn.loop = false
+
+        local dance = Animation({{image = images.monsters.golem.default,
+                                  delay = DANCE_DELAY},
+                                 {image = images.monsters.golem.attack,
+                                  delay = DANCE_DELAY}})
+
+        local puppet = Puppet({image = images.monsters.golem.default,
+                               color = MAGENTA,
+                               danceAnimation = spawn})
+        puppet.realDanceAnimation = dance
+        puppet.name = 'golem'
+
+        puppet:set_position({x = x, y = self.leader.position.y})
+        x = x + 2
+
+        table.insert(self.golems, puppet)
+    end
+    self.golemSpawnTimer = Timer(DANCE_DELAY * 2)
 
     -- Add a Set puppet
     table.insert(self.queue, Puppet({image = images.npc.set.default,
@@ -164,9 +191,17 @@ function CurtainCall:update()
             puppet:set_position({x = 31, y = self.leader.position.y})
             puppet.dir = 4
 
+            if puppet.name == 'khnum' then
+                self.walkDistance = self.walkDistance - 1
+            end
+
             -- Make the puppet start walking left
             puppet:walk(4, self.walkDistance, .5)
             self.walkDistance = self.walkDistance - 1
+
+            if puppet.name == 'khnum' then
+                self.walkDistance = self.walkDistance - 1
+            end
 
             -- Add the puppet to the outside puppets table
             table.insert(self.outside.puppets, puppet)
@@ -191,7 +226,38 @@ function CurtainCall:update()
 
     -- If the current puppet is standing
     if self.currentPuppet.state == 'stand' then
+        local okayToStartDancing = false
+
         if self.leader.danceAnimation:is_at_beginning() then
+            okayToStartDancing = true
+        end
+
+        -- If the puppet is Khnum, and he hasn't summoned the golems yet
+        if self.currentPuppet.name == 'khnum' and not self.spawnedGolems then
+            okayToStartDancing = false
+            if self.golemSpawnTimer:update() then
+                self.credits:advance()
+
+                -- Spawn the golems
+                for _, golem in pairs(self.golems) do
+                    golem:dance()
+                    table.insert(self.outside.puppets, golem)
+                end
+                self.spawnedGolems = true
+            end
+        elseif self.currentPuppet.name == 'khnum' and self.spawnedGolems then
+            if okayToStartDancing and
+               self.golems[1].danceAnimation:is_stopped() then
+                -- Change the golems' animation to the actual dance animation
+                for _, golem in pairs(self.golems) do
+                    golem.danceAnimation = golem.realDanceAnimation
+                end
+            else
+                okayToStartDancing = false
+            end
+        end
+
+        if okayToStartDancing then
             -- Make the puppet start dancing
             self.currentPuppet:dance()
 
@@ -211,7 +277,7 @@ function CurtainCall:update()
             -- around
             for _, puppet in pairs(self.outside.puppets) do
                 if puppet ~= self.leader and puppet ~= danceLeader and
-                   puppet.state == 'dance' then
+                   puppet.name ~= 'golem' and puppet.state == 'dance' then
                     -- Set this puppet's direction to the same as the dance
                     -- leader
                     puppet.dir = danceLeader.dir

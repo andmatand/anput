@@ -18,6 +18,7 @@ function Credits:init()
         {'WITH', 'GHOST'},
         {'STARRING', 'MAGICIAN'},
         {'STARRING', 'KHNUM'},
+        {'STARRING', 'KHNUM\nAND THE CLAY GOLEMS'},
         {'STARRING', 'SET'},
         {'AND INTRODUCING', 'CAMEL'},
 
