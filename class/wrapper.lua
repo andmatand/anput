@@ -372,6 +372,9 @@ function Wrapper:manage_roombuilder_thread()
 end
 
 function Wrapper:restart()
+    -- Stop all playing sounds
+    love.audio.stop()
+
     self.game = Game(self)
     self.state = 'boot'
 end
