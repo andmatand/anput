@@ -3,6 +3,11 @@ require('class.timer')
 
 CurtainCall = class('CurtainCall')
 
+local function CreateDance(image1, image2)
+    return Animation({{image = image1, delay = DANCE_DELAY},
+                      {image = image2, delay = DANCE_DELAY}})
+end
+
 function CurtainCall:init(leader, outside, credits)
     self.leader = leader
     self.outside = outside
@@ -69,10 +74,7 @@ function CurtainCall:init(leader, outside, credits)
             end
 
             -- Create a default dance animation
-            danceAnimation = Animation({{image = image1,
-                                         delay = DANCE_DELAY},
-                                        {image = image2,
-                                         delay = DANCE_DELAY}})
+            danceAnimation = CreateDance(image1, image2)
         end
 
         -- Create a puppet for this monster
@@ -83,6 +85,12 @@ function CurtainCall:init(leader, outside, credits)
 
         -- Add this puppet to the queue
         table.insert(self.queue, puppet)
+        
+        -- If this is the mummy puppet
+        if name == 'mummy' then
+            -- Save a pointer to this puppet, for quick access later
+            self.mummy = puppet
+        end
     end
 
     -- Create a walk animation for the scarab puppet
@@ -100,10 +108,8 @@ function CurtainCall:init(leader, outside, credits)
     self.queue[2].walkAnimation = birdWalk
 
     -- Create a dance animation for the cobra puppet
-    local cobraDance = Animation({{image = images.monsters.cobra.walk[2].image,
-                                   delay = DANCE_DELAY},
-                                  {image = images.monsters.cobra.walk[1].image,
-                                   delay = DANCE_DELAY}})
+    local cobraDance = CreateDance(images.monsters.cobra.walk[2].image,
+                                   images.monsters.cobra.walk[1].image)
     self.queue[4].danceAnimation = cobraDance
 
     -- Add a Wizard puppet
@@ -112,11 +118,8 @@ function CurtainCall:init(leader, outside, credits)
     table.insert(self.queue, wizard)
 
     -- Create a dance animation for the wizard puppet
-    local wizardDance = Animation({{image =
-                                    new_image('wizard-firestaff-dance.png'),
-                                    delay = DANCE_DELAY},
-                                   {image = images.npc.wizard.firestaff,
-                                    delay = DANCE_DELAY}})
+    local wizardDance = CreateDance(new_image('wizard-firestaff-dance.png'),
+                                    images.npc.wizard.firestaff)
     wizard.danceAnimation = wizardDance
 
     -- Add a Khnum puppet
@@ -125,6 +128,11 @@ function CurtainCall:init(leader, outside, credits)
     khnum.name = 'khnum'
     table.insert(self.queue, khnum)
 
+    -- Create a dance animation for the Khnum puppet
+    local khnumDance = CreateDance(new_image('khnum-dance.png'),
+                                   images.npc.khnum.default)
+    khnum.danceAnimation = khnumDance
+
     -- Create two golem puppets
     self.golems = {}
     local x = 21
@@ -132,10 +140,8 @@ function CurtainCall:init(leader, outside, credits)
         local spawn = Animation(images.monsters.golem.spawn)
         spawn.loop = false
 
-        local dance = Animation({{image = images.monsters.golem.default,
-                                  delay = DANCE_DELAY},
-                                 {image = images.monsters.golem.attack,
-                                  delay = DANCE_DELAY}})
+        local dance = CreateDance(images.monsters.golem.default,
+                                  images.monsters.golem.attack)
 
         local puppet = Puppet({image = images.monsters.golem.default,
                                color = MAGENTA,
@@ -151,17 +157,21 @@ function CurtainCall:init(leader, outside, credits)
     self.golemSpawnTimer = Timer(DANCE_DELAY * 2)
 
     -- Add a Set puppet
-    table.insert(self.queue, Puppet({image = images.npc.set.default,
-                                     color = CYAN}))
+    local set = Puppet({image = images.npc.set.default, color = CYAN})
+    table.insert(self.queue, set)
+
+    -- Create a dance animation for the Set
+    local setDance = CreateDance(new_image('set-dance.png'),
+                                 images.npc.set.default)
+    set.danceAnimation = setDance
 
     -- Create a walk animation for the camel
     local camelWalk = Animation({{image = images.npc.camel.step, delay = 3},
                                  {image = images.npc.camel.default, delay = 3}})
+
     -- Create a dance animation for the camel
-    local camelDance = Animation({{image = images.npc.camel.step,
-                                   delay = DANCE_DELAY},
-                                  {image = images.npc.camel.default,
-                                   delay = DANCE_DELAY}})
+    local camelDance = CreateDance(images.npc.camel.step,
+                                   images.npc.camel.default)
 
     -- Create the Camel
     self.camel = {}
@@ -292,23 +302,7 @@ function CurtainCall:update()
     end
 
     if self.leader.danceAnimation:is_at_beginning() then
-        -- Find the first non-leader puppet turn
-        local danceLeader = self.outside.puppets[3]
-
-        if danceLeader then
-            danceLeader:turn_around()
-
-            -- Make all the puppets except the player and danceLeader turn
-            -- around
-            for _, puppet in pairs(self.outside.puppets) do
-                if puppet ~= self.leader and puppet ~= danceLeader and
-                   puppet.name ~= 'golem' and puppet.state == 'dance' then
-                    -- Set this puppet's direction to the same as the dance
-                    -- leader
-                    puppet.dir = danceLeader.dir
-                end
-            end
-        end
+        self.mummy:turn_around()
     end
 
     self:update_camel()
