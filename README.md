@@ -1,15 +1,23 @@
 ![screenshot 1](http://i.imgur.com/J8ZTQUc.png "SCREENSHOT!")
 
 #Temple of Anput
-* featuring procedurally generated dungeon action and CGA graphics!
-* written using the awesome [LÖVE](http://love2d.org) framework
-* not completely finished yet; doesn't have much of an ending
 
 ##Download
 These are pre-packaged versions of the source code that are updated whenever I
 make a new commit:
 * [Windows Executable](http://unfinishedblog.org/temp/anput-win32.zip)
-* [Cross-Platform Game File](http://unfinishedblog.org/temp/anput.love) (Linux, Mac OS X, Windows; requires [LÖVE](http://love2d.org) 0.9.0)
+* [Cross-Platform Game File](http://unfinishedblog.org/temp/anput.love) (Linux,
+  Mac OS X, Windows; requires [LÖVE](http://love2d.org) 0.9.0)
+
+##Features
+* procedurally generated dungeon action
+* CGA graphics
+* written using the awesome [LÖVE](http://love2d.org) framework
+
+##Roadmap
+* A few more NPCs
+* Pause Menu with Quit/New Game options for people who don't read what the
+  keyboard shortcuts are
 
 ##History
 One day in 2003, I was watching
