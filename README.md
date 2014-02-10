@@ -5,9 +5,9 @@
 ##Download
 These are pre-packaged versions of the source code that are updated whenever I
 make a new commit:
-* [Windows Executable](http://unfinishedblog.org/temp/anput-win32.zip)
-* [Cross-Platform Game File](http://unfinishedblog.org/temp/anput.love) (Linux,
-  Mac OS X, Windows; requires [LÖVE](http://love2d.org) 0.9.0)
+* [Windows Executable](http://www.templeofanput.com/download/anput-win32.zip)
+* [Cross-Platform Game File](http://www.templeofanput.com/download/anput.love)
+  (Linux, Mac OS X, Windows; requires [LÖVE](http://love2d.org) 0.9.0)
 
 ##Features
 * procedurally generated dungeon action
