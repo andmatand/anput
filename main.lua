@@ -62,6 +62,12 @@ function love.load()
     wrapper = Wrapper()
 end
 
+function love.focus(focus)
+    if not focus then
+        wrapper:pause()
+    end
+end
+
 function love.update(dt)
     wrapper:update(dt)
 end

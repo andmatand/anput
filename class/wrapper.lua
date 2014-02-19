@@ -149,12 +149,7 @@ function Wrapper:joystick_removed(joystick)
             self.holdableKeys[k]:release('joystick')
         end
 
-        if self.game then
-            if not self.game.paused then
-                -- Act as if the pause key was pressed
-                self:send_keypress(KEYS.PAUSE)
-            end
-        end
+        self:pause()
 
         -- Look for an alternate joystick
         self:find_joystick()
@@ -367,6 +362,15 @@ function Wrapper:manage_roombuilder_thread()
             -- Send another pseduo-room message to the roombuilder thread
             local input = serialize_room(nextRoom)
             self.roomBuilderInputChannel:push(input)
+        end
+    end
+end
+
+function Wrapper:pause()
+    if self.game then
+        if not self.game.paused then
+            -- Act as if the pause key was pressed
+            self:send_keypress(KEYS.PAUSE)
         end
     end
 end
