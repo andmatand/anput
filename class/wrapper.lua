@@ -2,7 +2,18 @@ require('util.assets')
 require('class.game')
 require('class.holdablekey')
 require('class.intro')
+require('class.inventorymenu')
 require('class.outro')
+require('class.pausemenu')
+
+-- State enumeration
+STATE = {BOOT = 1,
+         LOAD = 2,
+         INTRO = 3,
+         GAME = 4,
+         INVENTORY_MENU = 5,
+         PAUSE_MENU = 6,
+         OUTRO = 7}
 
 -- Local functions
 local function serialize_table(tbl)
@@ -82,6 +93,8 @@ function Wrapper:init()
 
     self:find_joystick()
 
+    self.pauseMenu = PauseMenu()
+
     -- Create a game right away, so we can start generating rooms in the
     -- background
     self:restart()
@@ -104,14 +117,19 @@ function Wrapper:directional_key_released(group, key)
 end
 
 function Wrapper:draw()
-    if self.state == 'boot' then
+    if self.state == STATE.BOOT then
         -- Start generating the game after we have drawn a black frame
-        self.state = 'load'
-    elseif self.state == 'intro' then
+        self.state = STATE.LOAD
+    elseif self.state == STATE.INTRO then
         self.intro:draw()
-    elseif self.state == 'game' then
+    elseif self.state == STATE.GAME then
         self.game:draw()
-    elseif self.state == 'outro' then
+    elseif self.state == STATE.INVENTORY_MENU then
+        self.game:draw()
+        self.inventoryMenu:draw()
+    elseif self.state == STATE.PAUSE_MENU then
+        self.pauseMenu:draw()
+    elseif self.state == STATE.OUTRO then
         self.outro:draw()
     end
 end
@@ -253,18 +271,70 @@ function Wrapper:key_pressed(key)
             self:directional_key_pressed(name, key)
         else
             if key == k then
-                self:send_keypress(KEYS[name])
+                -- If the keypress was consumed
+                if self:send_keypress(KEYS[name]) then
+                    break
+                end
             end
         end
     end
 end
 
 function Wrapper:send_keypress(key)
-    if self.state == 'intro' then
+    if self.state == STATE.INTRO then
         self.intro:key_pressed(key)
-    elseif self.state == 'game' then
+    elseif self.state == STATE.GAME then
         self.game:key_pressed(key)
-    elseif self.state == 'outro' then
+
+        if key == KEYS.INVENTORY then
+            -- Pause the game
+            self.game:pause()
+
+            -- Play a sound
+            sounds.pause:play()
+
+            -- Refresh the inventory menu
+            self.inventoryMenu:refresh_items()
+
+            -- Change state to the inventory menu
+            self.state = STATE.INVENTORY_MENU
+
+            -- Consume the keypress
+            return true
+        elseif key == KEYS.PAUSE then
+            -- Play a sound
+            sounds.pause:play()
+
+            -- Change state to the pause menu
+            self.state = STATE.PAUSE_MENU
+
+            -- Consume the keypress
+            return true
+        end
+    elseif self.state == STATE.INVENTORY_MENU then
+        self.inventoryMenu:key_pressed(key)
+
+        if key == KEYS.INVENTORY or key == KEYS.EXIT then
+            -- Unpause the game
+            self.game:unpause()
+
+            -- Go back to the game
+            self.state = STATE.GAME
+
+            -- Consume the keypress
+            return true
+        end
+    elseif self.state == STATE.PAUSE_MENU then
+        self.pauseMenu:key_pressed(key)
+
+        if key == KEYS.PAUSE or key == KEYS.EXIT then
+            -- Go back to the game
+            self.state = STATE.GAME
+
+            -- Consume the keypress
+            return true
+        end
+    elseif self.state == STATE.OUTRO then
         self.outro:key_pressed(key)
     end
 end
@@ -282,8 +352,12 @@ function Wrapper:key_released(key)
 end
 
 function Wrapper:send_keyrelease(key)
-    if self.state == 'game' then
+    if self.state == STATE.GAME then
         self.game:key_released(key)
+    elseif self.state == STATE.INVENTORY_MENU then
+        self.inventoryMenu:key_released(key)
+    elseif self.state == STATE.PAUSE_MENU then
+        self.pauseMenu:key_released(key)
     end
 end
 
@@ -368,7 +442,7 @@ end
 
 function Wrapper:pause()
     if self.game then
-        if not self.game.paused then
+        if self.state == STATE.GAME then
             -- Act as if the pause key was pressed
             self:send_keypress(KEYS.PAUSE)
         end
@@ -380,14 +454,15 @@ function Wrapper:restart()
     love.audio.stop()
 
     self.game = Game(self)
-    self.state = 'boot'
+
+    self.state = STATE.BOOT
 end
 
 function Wrapper:update(dt)
-    if self.state == 'boot' then
+    if self.state == STATE.BOOT then
         -- Do nothing, so we can get a black frame drawn as fast as possible
         return
-    elseif self.state == 'load' then
+    elseif self.state == STATE.LOAD then
         load_assets()
         self.intro = Intro()
     end
@@ -405,39 +480,42 @@ function Wrapper:update(dt)
     -- Add to timer to limit FPS
     self.fpsLimitTimer = self.fpsLimitTimer + dt
 
-    if self.state == 'game' then
+    if self.state == STATE.GAME then
         -- Add to game time
         self.game:add_time(dt)
     end
 
     -- Change states
-    if self.state == 'intro' and self.intro.finished then
+    if self.state == STATE.INTRO and self.intro.finished then
         -- Free the memory used by the intro
         self.intro = nil
 
         -- Switch state to the game
-        self.state = 'game'
-    elseif self.state == 'game' and self.game.finished then
+        self.state = STATE.GAME
+    elseif self.state == STATE.GAME and self.game.finished then
         -- Create a new outro object
         self.outro = Outro(self.game)
 
-        self.state = 'outro'
-    elseif self.state == 'outro' and self.outro.state == 'go back inside' then
+        self.state = STATE.OUTRO
+    elseif self.state == STATE.OUTRO and
+           self.outro.state == 'go back inside' then
         -- Free the memory used by the outro
         self.outro = nil
 
-        self.state = 'game'
+        self.state = STATE.GAME
         self.game.finished = false
         self.game:move_player_to_start()
     end
 
     -- If we have waited long enough between frames
     if self.fpsLimitTimer > 1 / FPS_LIMIT then
-        if self.state == 'intro' then
+        if self.state == STATE.INTRO then
             self.intro:update()
-        elseif self.state == 'game' then
+        elseif self.state == STATE.GAME then
             self.game:update()
-        elseif self.state == 'outro' then
+        elseif self.state == STATE.INVENTORY_MENU then
+            self.inventoryMenu:update()
+        elseif self.state == STATE.OUTRO then
             self.outro:update()
         end
 
@@ -467,9 +545,10 @@ function Wrapper:update(dt)
         else
             -- Generate the map, etc.
             self.game:generate()
+            self.inventoryMenu = InventoryMenu(self.game.player)
 
             -- Start the intro
-            self.state = 'intro'
+            self.state = STATE.INTRO
         end
     end
 end

@@ -13,6 +13,7 @@ function love.load()
     KEYS = {CONTEXT = 1,
             ELIXIR = 2,
             EXIT = 3,
+            INVENTORY = 5,
             PAUSE = 6,
             POTION = 7,
             SKIP_CUTSCENE = 8,

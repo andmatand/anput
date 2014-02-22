@@ -1,5 +1,4 @@
 require('class.gamesummary')
-require('class.inventorymenu')
 require('class.map')
 require('class.player')
 require('util.tables')
@@ -11,7 +10,7 @@ Game = class('Game')
 function Game:init(wrapper)
     self.wrapper = wrapper
 
-    self.paused = false
+    self.isPaused = false
     self.time = 0
     self.tutorial = {playerMoved = false,
                      playerShot = false}
@@ -24,13 +23,13 @@ function Game:init(wrapper)
 end
 
 function Game:add_time(seconds)
-    if not self.paused then
+    if not self.isPaused then
         self.time = self.time + seconds
     end
 end
 
 function Game:draw()
-    if self.paused then
+    if self.isPaused then
         SCALE_X = SCALE_X * 2
         SCALE_Y = SCALE_Y * 2
 
@@ -45,17 +44,14 @@ function Game:draw()
 
     self.currentRoom:draw()
 
-    if self.paused then
+    if self.isPaused then
         love.graphics.pop()
         SCALE_X = SCALE_X / 2
         SCALE_Y = SCALE_Y / 2
-    end
 
-    self:draw_metadata()
-
-    if self.paused then
-        self.inventoryMenu:draw()
         self.map:draw(self.currentRoom)
+    else
+        self:draw_metadata()
     end
 end
 
@@ -87,9 +83,6 @@ function Game:generate()
     self:move_player_to_start()
 
     self:position_sword()
-
-    -- Create an inventory menu
-    self.inventoryMenu = InventoryMenu(self.player)
 end
 
 function Game:get_adjacent_rooms()
@@ -118,34 +111,10 @@ function Game:key_pressed(key)
         end
     end
 
-    -- Toggle pause
-    if key == KEYS.PAUSE then
-        if self.paused then
-            self:unpause()
-        else
-            self:pause()
-        end
-    end
-
-    -- If the game is paused
-    if self.paused then
-        -- Route input to inventory menu
-        if self.inventoryMenu:key_pressed(key) then
-            -- InventoryMenu:key_pressed() evaluates to true when the user
-            -- exits the menu
-            self.paused = false
-        end
-    end
-
     self.player:key_pressed(key)
 end
 
 function Game:key_released(key)
-    if self.paused then
-        -- Route input to the inventory menu
-        self.inventoryMenu:key_released(key)
-    end
-
     if (self.player.attackedDir == 1 and key == KEYS.WALK.NORTH) or
        (self.player.attackedDir == 2 and key == KEYS.WALK.EAST) or
        (self.player.attackedDir == 3 and key == KEYS.WALK.SOUTH) or
@@ -174,13 +143,8 @@ function Game:move_player_to_start()
 end
 
 function Game:pause()
-    if not self.paused then
-        sounds.pause:play()
-
-        -- Refresh the inventory menu
-        self.inventoryMenu:refresh_items()
-
-        self.paused = true
+    if not self.isPaused then
+        self.isPaused = true
     end
 end
 
@@ -382,12 +346,16 @@ function Game:switch_to_room(room)
 end
 
 function Game:unpause()
-    if self.paused then
-        self.paused = false
+    if self.isPaused then
+        self.isPaused = false
     end
 end
 
 function Game:update(dt)
+    if self.isPaused then
+        self.map:update()
+    end
+
     if not self.playedTheme then
         sounds.theme:play()
         self.playedTheme = true
@@ -397,12 +365,6 @@ function Game:update(dt)
 
     if self.summary then
         self.summary:update()
-    end
-
-    if self.paused then
-        self.inventoryMenu:update()
-        self.map:update()
-        return
     end
 
     self:holdable_key_input()
