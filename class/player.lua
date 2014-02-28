@@ -179,7 +179,7 @@ function Player:key_pressed(key)
     end
 
     -- If the game is paused
-    if self.room.game.paused then
+    if self.room.game:is_paused() then
         -- Don't allow input below here
         return
     end

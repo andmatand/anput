@@ -2,7 +2,6 @@ require('class.camel')
 require('class.exit')
 require('class.falsebrick')
 require('class.khnum')
-require('class.mapdisplay')
 require('class.monster')
 require('class.pathfinder')
 require('class.room')
@@ -42,9 +41,6 @@ function Map:generate()
     self:add_doors()
     self:add_required_objects()
     self:add_hieroglyphs()
-
-    -- Create a display of this map
-    self.display = MapDisplay(self)
 
     return self.rooms
 end
@@ -265,10 +261,6 @@ function Map:add_hieroglyphs()
 
     -- DEBUG
     --self.rooms[2].requiredHieroglyphs = {{'s', 'tsh'}}
-end
-
-function Map:draw(currentRoom)
-    self.display:draw(currentRoom)
 end
 
 function Map:generate_path()
@@ -781,10 +773,6 @@ function Map:add_door(exit, addSwitch)
     end
 
     return insideDoor
-end
-
-function Map:update()
-    self.display:update()
 end
 
 

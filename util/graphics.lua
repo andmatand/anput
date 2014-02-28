@@ -56,11 +56,13 @@ function cga_print(text, x, y, options)
             xPos = x - ((font:getWidth(line) * SCALE_X) / 2)
         end
 
-        -- Draw a black background behind this line of text
-        love.graphics.setColor(BLACK)
-        love.graphics.rectangle('fill', xPos, y + upscale_y(i),
-                                SCALE_X * font:getWidth(line),
-                                font:getHeight() * SCALE_Y)
+        if options.bg ~= false then
+            -- Draw a black background behind this line of text
+            love.graphics.setColor(BLACK)
+            love.graphics.rectangle('fill', xPos, y + upscale_y(i),
+                                    SCALE_X * font:getWidth(line),
+                                    font:getHeight() * SCALE_Y)
+        end
 
         -- Set the color
         if options.color then
@@ -141,22 +143,30 @@ function toggle_fullscreen()
 
     -- If we are already in fullscreen
     if flags.fullscreen then
+        set_fullscreen(false)
+    else
+        set_fullscreen(true)
+    end
+end
+
+function set_fullscreen(enable)
+    if enable then
+        -- Get the desktop resolution
+        local _, _, flags = love.window.getMode()
+        local w, h = love.window.getDesktopDimensions(flags.display)
+        local desktopResolution = {width = w, height = h}
+
+        -- Find the largest scale that will fit within the desktop resolution
+        local scale = 1
+        while BASE_SCREEN_W * (scale + 1) <= desktopResolution.width and
+              BASE_SCREEN_H * (scale + 1) <= desktopResolution.height do
+            scale = scale + 1
+        end
+
+        set_scale(scale, desktopResolution, true)
+    else
         set_scale(3, nil, false)
-        return
     end
-
-    -- Get the desktop resolution
-    local w, h = love.window.getDesktopDimensions(flags.display)
-    local desktopResolution = {width = w, height = h}
-
-    -- Find the largest scale that will fit within the desktop resolution
-    local scale = 1
-    while BASE_SCREEN_W * (scale + 1) <= desktopResolution.width and
-          BASE_SCREEN_H * (scale + 1) <= desktopResolution.height do
-        scale = scale + 1
-    end
-
-    set_scale(scale, desktopResolution, true)
 end
 
 function set_scale(scale, resolution, fullscreen)
@@ -200,7 +210,7 @@ function set_scale(scale, resolution, fullscreen)
 
     -- Load the font at the correct scale
     local img = love.graphics.newImage('res/font/cga.png')
-    local glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÖ 0123456789:.,\'"!?%/'
+    local glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÖ 0123456789:.,\'"!?%/►◄'
     font = love.graphics.newImageFont(img, glyphs)
     love.graphics.setFont(font)
 end

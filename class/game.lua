@@ -1,5 +1,6 @@
 require('class.gamesummary')
 require('class.map')
+require('class.mapdisplay')
 require('class.player')
 require('util.tables')
 require('util.tile')
@@ -49,10 +50,10 @@ function Game:draw()
         SCALE_X = SCALE_X / 2
         SCALE_Y = SCALE_Y / 2
 
-        self.map:draw(self.currentRoom)
-    else
-        self:draw_metadata()
+        self.mapDisplay:draw(self.currentRoom)
     end
+
+    self:draw_metadata()
 end
 
 function Game:draw_metadata()
@@ -75,6 +76,9 @@ function Game:generate()
     self.rooms = self.map:generate()
     roomGenTimer = love.timer.getTime()
     self.generatedAllRooms = false
+
+    -- Create the map display
+    self.mapDisplay = MapDisplay(self.map)
 
     -- Create a player
     self.player = Player(self)
@@ -102,6 +106,10 @@ function Game:holdable_key_input()
             self.player:key_held(key.keyValue)
         end
     end
+end
+
+function Game:is_paused()
+    return (self.isPaused == true)
 end
 
 function Game:key_pressed(key)
@@ -352,16 +360,17 @@ function Game:unpause()
 end
 
 function Game:update(dt)
-    if self.isPaused then
-        self.map:update()
-    end
-
     if not self.playedTheme then
         sounds.theme:play()
         self.playedTheme = true
     end
 
     self.player.statusBar:update()
+
+    if self.isPaused then
+        self.mapDisplay:update()
+        return
+    end
 
     if self.summary then
         self.summary:update()

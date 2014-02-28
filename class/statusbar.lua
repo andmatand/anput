@@ -41,7 +41,7 @@ function StatusBar:draw()
     local x = 0
     local y = self.position.y
 
-    if self.game.paused then
+    if self.game:is_paused() then
         -- Draw a black background behind the entire statusbar line
         love.graphics.setColor(BLACK)
         love.graphics.rectangle('fill', x, upscale_y(y),
@@ -91,7 +91,7 @@ function StatusBar:draw()
         end
     end
 
-    if not self.game.paused then
+    if not self.game:is_paused() then
         -- Display the most recently picked up item for a few seconds
         self:draw_new_item()
 
@@ -232,7 +232,7 @@ function StatusBar:update()
 end
 
 function StatusBar:can_show_new_items()
-    if self.game.paused or self.contextMessage.text then
+    if self.game:is_paused() or self.contextMessage.text then
         return false
     else
         return true
@@ -253,7 +253,6 @@ function StatusBar:update_new_items()
 
         -- If the item has not gone all the way down offscreen yet
         if self.newItems[1].toast:is_visible() then
-            -- If the game is not paused
             if self:can_show_new_items() then
                 -- Update the item's animation
                 self.newItems[1].item:update()

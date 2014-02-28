@@ -220,7 +220,7 @@ function Character:draw(pos)
     end
 
     if self.flashTimer == 0 or self.isThundershocked or
-       self.room.game.paused then
+       self.room.game:is_paused() then
 
         if self.isThundershocked then
             love.graphics.setColor(WHITE)

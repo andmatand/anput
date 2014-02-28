@@ -3,8 +3,9 @@ require('class.game')
 require('class.holdablekey')
 require('class.intro')
 require('class.inventorymenu')
+require('class.mainpausemenu')
+require('class.menumanager')
 require('class.outro')
-require('class.pausemenu')
 
 -- State enumeration
 STATE = {BOOT = 1,
@@ -93,7 +94,8 @@ function Wrapper:init()
 
     self:find_joystick()
 
-    self.pauseMenu = PauseMenu()
+    -- Create a menu manager
+    self.pauseMenuManager = MenuManager()
 
     -- Create a game right away, so we can start generating rooms in the
     -- background
@@ -128,7 +130,7 @@ function Wrapper:draw()
         self.game:draw()
         self.inventoryMenu:draw()
     elseif self.state == STATE.PAUSE_MENU then
-        self.pauseMenu:draw()
+        self.pauseMenuManager:draw()
     elseif self.state == STATE.OUTRO then
         self.outro:draw()
     end
@@ -305,6 +307,10 @@ function Wrapper:send_keypress(key)
             -- Play a sound
             sounds.pause:play()
 
+            -- Create a main pause menu and add it to the menu manager
+            local mainPauseMenu = MainPauseMenu(self.pauseMenuManager)
+            self.pauseMenuManager:push(mainPauseMenu)
+
             -- Change state to the pause menu
             self.state = STATE.PAUSE_MENU
 
@@ -312,9 +318,8 @@ function Wrapper:send_keypress(key)
             return true
         end
     elseif self.state == STATE.INVENTORY_MENU then
-        self.inventoryMenu:key_pressed(key)
-
-        if key == KEYS.INVENTORY or key == KEYS.EXIT then
+        -- If the inventoryMenu sends the signal that it exited
+        if self.inventoryMenu:key_pressed(key) then
             -- Unpause the game
             self.game:unpause()
 
@@ -324,16 +329,18 @@ function Wrapper:send_keypress(key)
             -- Consume the keypress
             return true
         end
-    elseif self.state == STATE.PAUSE_MENU then
-        self.pauseMenu:key_pressed(key)
 
-        if key == KEYS.PAUSE or key == KEYS.EXIT then
+        -- Also send the keypress to the game (for switching weapons)
+        self.game:key_pressed(key)
+    elseif self.state == STATE.PAUSE_MENU then
+        -- If the pauseMenuManager sends the signal that it exited
+        if self.pauseMenuManager:key_pressed(key) then
             -- Go back to the game
             self.state = STATE.GAME
-
-            -- Consume the keypress
-            return true
         end
+
+        -- Consume the keypress
+        return true
     elseif self.state == STATE.OUTRO then
         self.outro:key_pressed(key)
     end
@@ -357,7 +364,7 @@ function Wrapper:send_keyrelease(key)
     elseif self.state == STATE.INVENTORY_MENU then
         self.inventoryMenu:key_released(key)
     elseif self.state == STATE.PAUSE_MENU then
-        self.pauseMenu:key_released(key)
+        self.pauseMenuManager:key_released(key)
     end
 end
 
@@ -515,6 +522,11 @@ function Wrapper:update(dt)
             self.game:update()
         elseif self.state == STATE.INVENTORY_MENU then
             self.inventoryMenu:update()
+
+            -- Also update the game (for the status bar and map)
+            self.game:update()
+        elseif self.state == STATE.PAUSE_MENU then
+            self.pauseMenuManager:update()
         elseif self.state == STATE.OUTRO then
             self.outro:update()
         end
@@ -545,6 +557,8 @@ function Wrapper:update(dt)
         else
             -- Generate the map, etc.
             self.game:generate()
+
+            -- Create the inventory menu
             self.inventoryMenu = InventoryMenu(self.game.player)
 
             -- Start the intro
@@ -560,7 +574,7 @@ function Wrapper:vibrate_joystick(left, right, duration)
 
     -- If we already have a vibration
     if self.joystickVibration then
-        -- Stop it
+        -- Stop the vibration
         self.joystickVibration:stop()
     end
 

@@ -155,7 +155,9 @@ function love.keypressed(key, unicode)
     elseif ctrl and key == 'q' then
         love.event.quit()
     elseif ctrl and (key == '=' or key == '+') then
-        set_scale(SCALE_X + 1)
+        if (SCALE_X < 5) then
+            set_scale(SCALE_X + 1)
+        end
     elseif ctrl and key == '-' then
         set_scale(SCALE_X - 1)
 

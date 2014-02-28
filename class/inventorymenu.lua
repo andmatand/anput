@@ -1,3 +1,4 @@
+require('util.input')
 require('util.tile')
 
 local function add_padding(pos)
@@ -11,18 +12,6 @@ local function first_line(string)
         return string:sub(1, pos - 1)
     else
         return string
-    end
-end
-
-local function get_direction_input(key)
-    if key == KEYS.WALK.NORTH or key == KEYS.SHOOT.NORTH then
-        return 1
-    elseif key == KEYS.WALK.EAST or key == KEYS.SHOOT.EAST then
-        return 2
-    elseif key == KEYS.WALK.SOUTH or key == KEYS.SHOOT.SOUTH then
-        return 3
-    elseif key == KEYS.WALK.WEST or key == KEYS.SHOOT.WEST then
-        return 4
     end
 end
 
@@ -49,7 +38,7 @@ function InventoryMenu:init(owner)
                           {x = 2, y = 2}}
 
     self.selectedSlot = 1
-    self.flashTimer = {delay = 4, value = 0, state = false}
+    self.flashTimer = {delay = 5, value = 0, state = false}
     self.selectorColor = MAGENTA
 end
 
@@ -138,10 +127,6 @@ end
 function InventoryMenu:key_pressed(key)
     local dir = get_direction_input(key)
 
-    if key == KEYS.EXIT then
-        return true
-    end
-
     -- If a direction key was pressed
     if dir then
         local currentPosition = self.slotPositions[self.selectedSlot]
@@ -165,6 +150,8 @@ function InventoryMenu:key_pressed(key)
     elseif key == KEYS.DROPITEM and self.selectedItem then
         self:reset_flash_timer()
         self.owner:drop_items({self.selectedItem})
+    elseif key == KEYS.INVENTORY or key == KEYS.EXIT then
+        return true
     end
 end
 
@@ -199,7 +186,7 @@ end
 
 function InventoryMenu:update()
     -- Update the flash timer
-    if self.flashTimer.value > 0 then
+    if self.flashTimer.value > 1 then
         self.flashTimer.value = self.flashTimer.value - 1
     else
         self.flashTimer.value = self.flashTimer.delay
