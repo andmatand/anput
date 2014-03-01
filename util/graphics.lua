@@ -197,6 +197,9 @@ function set_scale(scale, resolution, fullscreen)
                   resolution.width .. 'x' .. resolution.height)
             return
         end
+
+        -- Set default image filter to show ALL the pixels
+        love.graphics.setDefaultFilter('nearest', 'nearest')
     end
 
     SCALE_X = scale

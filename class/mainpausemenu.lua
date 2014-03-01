@@ -33,6 +33,7 @@ function MainPauseMenu:execute_item(index)
                                       callback))
     elseif index == 4 then -- QUIT
         callback = function()
+            save_settings()
             love.event.quit()
         end
 

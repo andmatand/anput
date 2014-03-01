@@ -36,6 +36,32 @@ function search_table(tbl, search)
     end
 end
 
+function serialize_table(tbl)
+    local str = '{'
+    local i = 0
+    for k, v in pairs(tbl) do
+        i = i + 1
+        if i > 1 then
+            str = str .. ', '
+        end
+
+        str = str .. k .. ' = '
+
+        if type(v) == 'string' then
+            str = str .. "'" .. v .. "'"
+        elseif type(v) == 'number' then
+            str = str .. v
+        elseif type(v) == 'table' then
+            str = str .. serialize_table(v)
+        elseif type(v) == 'boolean' then
+            str = str .. tostring(v)
+        end
+    end
+    str = str .. '}'
+
+    return str
+end
+
 function tables_have_equal_values(t1, t2)
     for k, v in pairs(t1) do
         if v ~= t2[k] then

@@ -1,6 +1,6 @@
 function love.conf(t)
-    GAME_TITLE = 'TEMPLE OF ANPUT'
     t.modules.physics = false
+    t.modules.system = false
     t.version = '0.9.0'
 
     BASE_SCREEN_W = 320
@@ -13,9 +13,8 @@ function love.conf(t)
     -- Keep authentic 4:3 pixel aspect ratio
     --SCALE_Y = SCALE_Y * 1.2
 
-    t.window.title = GAME_TITLE
-    t.window.width = BASE_SCREEN_W * SCALE_X
-    t.window.height = BASE_SCREEN_H * SCALE_Y
+    -- Defer window creation until love.window.setMode is called in main.lua
+    t.window = nil
 
     -- Keyboard Bindings
     KEYBOARD = {}

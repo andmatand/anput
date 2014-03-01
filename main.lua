@@ -3,35 +3,26 @@ require('class.golem')
 require('class.sound')
 require('class.wrapper')
 require('util.graphics')
+require('util.settings')
 
 function love.load()
-    if love.graphics.isCreated() == false then
-        print('failed to create a window')
-    end
     love.mouse.setVisible(false)
 
-    KEYS = {CONTEXT = 1,
-            ELIXIR = 2,
-            EXIT = 3,
-            INVENTORY = 5,
-            PAUSE = 6,
-            POTION = 7,
-            SKIP_CUTSCENE = 8,
-            SKIP_DIALOGUE = 9,
-            SWITCH_WEAPON = 11,
-            SHOOT = {NORTH = 12,
-                     EAST = 13,
-                     SOUTH = 14,
-                     WEST = 15},
-            WALK = {NORTH = 16,
-                    EAST = 17,
-                    SOUTH = 18,
-                    WEST = 19},
-            WEAPON_SLOT_1 = 20,
-            WEAPON_SLOT_2 = 21,
-            WEAPON_SLOT_3 = 22,
-            WEAPON_SLOT_4 = 23,
-            WEAPON_SLOT_5 = 24}
+    load_settings()
+
+    if settings.fullscreen then
+        set_fullscreen(true)
+    else
+        set_scale(SCALE_X, nil, false)
+    end
+
+    if love.graphics.isCreated() == false then
+        print('failed to create a window')
+        love.event.quit()
+    end
+
+    GAME_TITLE = 'TEMPLE OF ANPUT'
+    love.window.setTitle(GAME_TITLE)
 
     -- Set the width and height of the tile grid (in # of tiles)
     GRID_W = BASE_SCREEN_W / TILE_W
@@ -40,11 +31,6 @@ function love.load()
     -- These dimensions are in number of tiles (not pixels)
     ROOM_W = GRID_W
     ROOM_H = GRID_H - 1
-
-    -- Set default image filter to show ALL the pixels
-    love.graphics.setDefaultFilter('nearest', 'nearest')
-
-    set_scale(SCALE_X, nil, false)
 
     -- Colors
     BLACK = {0, 0, 0}
@@ -56,7 +42,6 @@ function love.load()
     LIGHT = 255
     DARK = 15
 
-    --mute = true
     FPS_LIMIT = 15
 
     -- Create a new wrapper object
@@ -153,6 +138,7 @@ function love.keypressed(key, unicode)
             and key == 'return') then
         toggle_fullscreen()
     elseif ctrl and key == 'q' then
+        save_settings()
         love.event.quit()
     elseif ctrl and (key == '=' or key == '+') then
         if (SCALE_X < 5) then

@@ -1,4 +1,5 @@
 require('util.assets')
+require('util.tables')
 require('class.game')
 require('class.holdablekey')
 require('class.intro')
@@ -15,31 +16,6 @@ STATE = {BOOT = 1,
          INVENTORY_MENU = 5,
          PAUSE_MENU = 6,
          OUTRO = 7}
-
--- Local functions
-local function serialize_table(tbl)
-    local str = '{'
-    local i = 0
-    for k, v in pairs(tbl) do
-        i = i + 1
-        if i > 1 then
-            str = str .. ', '
-        end
-
-        str = str .. k .. ' = '
-
-        if type(v) == 'string' then
-            str = str .. "'" .. v .. "'"
-        elseif type(v) == 'number' then
-            str = str .. v
-        elseif type(v) == 'table' then
-            str = str .. serialize_table(v)
-        end
-    end
-    str = str .. '}'
-
-    return str
-end
 
 local function serialize_room(room)
     local msg = ''

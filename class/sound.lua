@@ -4,10 +4,6 @@ function Sound:init(file)
     self.file = file
 
     self.source = love.audio.newSource(self.file, 'static')
-
-    -- Set the volume pretty low to prevent hearing ugly artifacts of DOSBox's
-    -- fake PC speaker sounds
-    self.source:setVolume(.2)
 end
 
 function Sound:play()

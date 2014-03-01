@@ -16,7 +16,7 @@ function VideoMenu:init()
     VideoMenu.super.init(self, 'VIDEO OPTIONS', names, options)
     self.y = self.y - 1
 
-    self:ensure_setting_accuracy()
+    self:match_actual_settings()
 end
 
 function VideoMenu:apply_option(index)
@@ -30,11 +30,10 @@ end
 function VideoMenu:update()
     VideoMenu.super.update(self)
 
-    self:ensure_setting_accuracy()
+    self:match_actual_settings()
 end
 
--- Update settings that could have changed via other keyboard shortcuts
-function VideoMenu:ensure_setting_accuracy()
+function VideoMenu:match_actual_settings()
     local _, _, flags = love.window.getMode()
     if flags.fullscreen then
         self.items[1]:select_option(2)
