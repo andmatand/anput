@@ -96,7 +96,7 @@ function Intro:update()
     if self.state == 'talk' then
         if self.outside.messageQueue:is_empty() then
             self.state = 'walk'
-            self.outside.puppets.player:walk(2, 19, 1)
+            self.outside.puppets.player:walk(2, 19, 2)
         end
     elseif self.state == 'walk' then
         if self.outside.puppets.player:get_position().x == 30 then
