@@ -1,10 +1,26 @@
-function apply_sound_setting(enabled)
-    if enabled then
+local function set_all_sound_volumes_in_table(sounds, volume)
+    for _, sound in pairs(sounds) do
+        if instanceOf(Sound, sound) then
+            sound.source:setVolume(volume)
+        elseif type(sound) == 'table' then
+            set_all_sound_volumes_in_table(sound, volume)
+        end
+    end
+end
+
+function apply_sound_setting()
+    if settings.sound then
         -- Set the volume pretty low to prevent hearing ugly artifacts of
         -- DOSBox's fake PC speaker sounds
         love.audio.setVolume(.2)
     else
         love.audio.setVolume(0)
+    end
+
+    -- If the global table of sounds is loaded
+    if sounds then
+        -- Ensure all playing sounds are set to the master volume
+        set_all_sound_volumes_in_table(sounds, love.audio.getVolume())
     end
 end
 
@@ -48,8 +64,6 @@ function load_settings()
         print('error loading settings; using defaults')
         load_default_settings()
     end
-
-    apply_sound_setting(settings.sound)
 end
 
 function save_settings()

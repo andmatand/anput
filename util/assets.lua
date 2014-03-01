@@ -160,6 +160,8 @@ function load_assets()
     sounds.spikes = Sound('res/sfx/spikes-trigger.wav')
     sounds.trap = Sound('res/sfx/trap.wav')
 
+    apply_sound_setting()
+
     LOADED_ASSETS = true
     print('loaded assets in ' .. love.timer.getTime() - loadTimeStart)
 end
