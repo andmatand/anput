@@ -83,10 +83,10 @@ function Mouth:shut()
     -- If we have a room
     if self.room then
         -- Find the message we were saying
-        for i, m in pairs(self.room.messages) do
+        for i, m in pairs(self.room.messageQueue.messages) do
             if m.mouth == self then
                 -- Remove the message from the queue
-                table.remove(self.room.messages, i)
+                table.remove(self.room.messageQueue.messages, i)
 
                 self.isSpeaking = false
                 break
