@@ -304,12 +304,15 @@ function Wrapper:send_keypress(key)
             -- Consume the keypress
             return true
         elseif key == KEYS.PAUSE then
-            -- Play a sound
-            sounds.pause:play()
-
             -- Create a main pause menu and add it to the menu manager
             local mainPauseMenu = MainPauseMenu(self.pauseMenuManager)
             self.pauseMenuManager:push(mainPauseMenu)
+
+            -- Pause all playing sounds
+            love.audio.pause()
+
+            -- Play the pause sound
+            sounds.pause:play()
 
             -- Change state to the pause menu
             self.state = STATE.PAUSE_MENU
@@ -335,6 +338,9 @@ function Wrapper:send_keypress(key)
     elseif self.state == STATE.PAUSE_MENU then
         -- If the pauseMenuManager sends the signal that it exited
         if self.pauseMenuManager:key_pressed(key) then
+            -- Resume all paused sounds
+            love.audio.resume()
+
             -- Go back to the game
             self.state = STATE.GAME
         end
