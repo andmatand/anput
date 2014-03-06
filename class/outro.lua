@@ -3,6 +3,7 @@ require('class.curtaincall')
 require('class.outside')
 require('class.timer')
 require('util.graphics')
+require('util.settings')
 
 Outro = class('Outro')
 
@@ -82,6 +83,12 @@ function Outro:init(game)
     for _, sound in pairs(self.danceMusic.sounds) do
         sound.source:setPitch(1.05)
     end
+
+    -- Compensate for bug in OpenAL apparently
+    for _, sound in pairs(self.danceMusic.sounds) do
+        sound.source:setVolume(sounds.thud.source:getVolume())
+    end
+    apply_sound_setting()
 end
 
 function Outro:key_pressed(key)
