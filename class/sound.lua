@@ -1,9 +1,7 @@
 Sound = class('Sound')
 
 function Sound:init(file)
-    self.file = file
-
-    self.source = love.audio.newSource(self.file, 'static')
+    self.source = love.audio.newSource(file, 'static')
 end
 
 function Sound:play()
