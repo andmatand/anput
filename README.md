@@ -27,7 +27,7 @@ For builds, see [templeofanput.com](http://www.templeofanput.com)
 * Increase/Decrease Graphics Scaling: Ctrl +/-
 * Quit: Ctrl + Q
 
-##Gamepad Controls (XBox 360 and similar)
+##Gamepad Controls (Xbox 360 and similar)
 * Move: Left Joystick, D-Pad
 * Shoot: Right Joystick
 * Inventory/Map: Back
