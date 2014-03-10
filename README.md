@@ -6,7 +6,7 @@ made with [LÖVE](http://love2d.org)
 For builds, see [templeofanput.com](http://www.templeofanput.com)
 
 ##Keyboard Controls
-###Gameplay
+###In-Game
 * Move: WASD
 * Shoot: Up, Down, Left, Right
 * Inventory/Map: Space
@@ -28,6 +28,7 @@ For builds, see [templeofanput.com](http://www.templeofanput.com)
 * Quit: Ctrl + Q
 
 ##Gamepad Controls (Xbox 360 and similar)
+###In-Game
 * Move: Left Joystick, D-Pad
 * Shoot: Right Joystick
 * Inventory/Map: Back
