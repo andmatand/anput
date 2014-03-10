@@ -1,51 +1,43 @@
 ![screenshot 1](http://i.imgur.com/J8ZTQUc.png "SCREENSHOT!")
 
-#Temple of Anput
+#TEMPLE OF ANPUT
+made with [LÖVE](http://love2d.org)
 
-##Download
-These are pre-packaged versions of the source code that are updated whenever I
-make a new commit:
-* [Windows Executable](http://www.templeofanput.com/download/anput-win32.zip)
-* [Cross-Platform Game File](http://www.templeofanput.com/download/anput.love)
-  (Linux, Mac OS X, Windows; requires [LÖVE](http://love2d.org) 0.9.0)
+For builds, see [templeofanput.com](http://www.templeofanput.com)
 
-##Features
-* procedurally generated dungeon action
-* CGA graphics
-* written using the awesome [LÖVE](http://love2d.org) framework
-
-##Roadmap
-* A few more NPCs
-* Pause Menu with Quit/New Game options for people who don't read what the
-  keyboard shortcuts are
-
-##History
-One day in 2003, I was watching
-[Strong Bad Email #4](http://www.homestarrunner.com/sbemail4.html).  At the
-end, Strong Bad plays a game that is supposed to be
-[Temple of Apshai](http://en.wikipedia.org/wiki/Temple_of_Apshai) but is
-apparently just a mock-up of a generic CGA-era dungeon crawler.  I saw this and
-thought it would be cool to play a real game with that look and feel, so I
-wrote a simple one in QBASIC.  Eight years later, I rediscovered my old
-unfinished program and thought a more developed remake of it would be a fun
-project for trying out Lua and the LÖVE framework.
-
-##Controls
+##Keyboard Controls
 ###Gameplay
-* move: wasd
-* switch weapon: 1 - 5, or Shift
-* shoot: arrow buttons
-* pause: spacebar
-* use elixir: e
-* use potion: p
-* context-sensitive button: enter
+* Move: WASD
+* Shoot: Up, Down, Left, Right
+* Inventory/Map: Space
+* Pause Menu: Esc
+* Switch Weapon: 1 - 5, Shift
+* Use Elixir: E
+* Use Potion: P
+* Context-Sensitive Action Button: Enter
+* Skip Dialogue: .
 
 ###Inventory
-* use item: enter
-* drop item: delete
+* Use Item: Enter
+* Drop Item: Delete
 
 ###System-Wide
-* fullscreen: f11, Alt + Enter
-* new game: Ctrl + n
-* increase/decrease graphics scaling: Ctrl +/-
-* quit: Ctrl + q, or close the window
+* Toggle Fullscreen: F11, Alt + Enter
+* New Game: Ctrl + N
+* Increase/Decrease Graphics Scaling: Ctrl +/-
+* Quit: Ctrl + Q
+
+##Gamepad Controls (XBox 360 and similar)
+* Move: Left Joystick, D-Pad
+* Shoot: Right Joystick
+* Inventory/Map: Back
+* Pause Menu: Start
+* Switch Weapon: Y
+* Use Elixir: X
+* Use Potion: B
+* Context-Sensitive Action Button: A
+* Skip Dialogue: B
+
+###Inventory
+* Use Item: A
+* Drop Item: X
