@@ -1,7 +1,7 @@
 #Temple of Anput
 * featuring procedurally generated dungeon action and CGA graphics!
 * written using the awesome [LÖVE](http://love2d.org) framework
-* not finished yet; this is essentially an engine demo
+* not finished yet; This is essentially an engine demo.
 
 ##Download
 These are pre-packaged versions of the source code that are updated whenever I
