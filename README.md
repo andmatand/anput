@@ -35,7 +35,7 @@ project for trying out Lua and the LÖVE framework.
 * drop item: delete
 
 ###System-Wide
-* fullscreen: f11, Alt + Enter
-* new game: Ctrl + n
-* increase/decrease graphics scaling: Ctrl +/-
-* quit: Ctrl + q, or close the window
+* fullscreen: `f11`, `Alt + Enter`
+* new game: `Ctrl + n`
+* increase/decrease graphics scaling: `Ctrl +/-`
+* quit: `Ctrl + q`, or close the window
