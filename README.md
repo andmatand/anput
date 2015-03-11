@@ -1,9 +1,7 @@
-![screenshot 1](http://i.imgur.com/J8ZTQUc.png "SCREENSHOT!")
-
 #TEMPLE OF ANPUT
 made with [LÖVE](http://love2d.org)
 
-For builds, see [templeofanput.com](http://www.templeofanput.com)
+For builds, see [kittenm4ster.itch.io/anput](http://kittenm4ster.itch.io/anput)
 
 ##Keyboard Controls
 ###In-Game
