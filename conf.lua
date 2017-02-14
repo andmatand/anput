@@ -1,7 +1,7 @@
 function love.conf(t)
     t.modules.physics = false
     t.modules.system = false
-    t.version = '0.9.0'
+    t.version = '0.10.2'
     love.filesystem.setIdentity('anput')
 
     BASE_SCREEN_W = 320
@@ -23,7 +23,7 @@ function love.conf(t)
     KEYBOARD.DROP = 'delete'
     KEYBOARD.ELIXIR = 'e'
     KEYBOARD.EXIT = 'escape'
-    KEYBOARD.INVENTORY = ' '
+    KEYBOARD.INVENTORY = 'space'
     KEYBOARD.PAUSE = 'escape'
     KEYBOARD.POTION = 'p'
     KEYBOARD.SKIP_CUTSCENE = 'escape'

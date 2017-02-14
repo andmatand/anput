@@ -36,7 +36,8 @@ function Door:draw(alpha)
 
     if self.state == 'opening' or self.state == 'closing' then
         love.graphics.push()
-        love.graphics.setStencil(self.stencilFunction)
+        love.graphics.stencil(self.stencilFunction)
+        love.graphics.setStencilTest('equal', 1)
     end
 
     local rotation = 0
@@ -70,7 +71,7 @@ function Door:draw(alpha)
     end
 
     if self.state == 'opening' or self.state == 'closing' then
-        love.graphics.setStencil()
+        love.graphics.setStencilTest()
         love.graphics.pop()
     end
 end

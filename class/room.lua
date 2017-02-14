@@ -248,8 +248,6 @@ end
 
 function Room:draw_bricks()
     if self.bricksDirty then
-        self.brickBatch:bind()
-
         -- Clear old bricks
         self.brickBatch:clear()
 
@@ -276,12 +274,10 @@ function Room:draw_bricks()
             end
         end
 
-        self.brickBatch:unbind()
-
         self.bricksDirty = false
     end
 
-    --love.graphics.setColor(WHITE)
+    love.graphics.setColor(255, 255, 255)
     love.graphics.draw(self.brickBatch, upscale_x(0), upscale_y(0),
                        0, SCALE_X, SCALE_Y)
 end
@@ -306,6 +302,8 @@ function Room:draw_objects_with_fov_alpha(objects)
 end
 
 function Room:draw_spikes()
+    love.graphics.setColor(255, 255, 255)
+
     for _, spike in pairs(self.spikes) do
         local tiles = spike:get_visible_tiles()
         for i, tile in pairs(tiles) do
@@ -330,13 +328,14 @@ function Room:draw_spikes()
                 end
 
             love.graphics.push()
-            love.graphics.setStencil(stencilFunction)
+            love.graphics.stencil(stencilFunction)
+            love.graphics.setStencilTest('equal', 1)
 
             if spike.hasBeenSeen[i] or DEBUG then
                 spike:draw(nil, lightness)
             end
 
-            love.graphics.setStencil()
+            love.graphics.setStencilTest()
             love.graphics.pop()
         end
     end

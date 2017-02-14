@@ -122,7 +122,7 @@ function love.joystickremoved(joystick)
     wrapper:joystick_removed(joystick)
 end
 
-function love.keypressed(key, unicode)
+function love.keypressed(key, scancode)
     local ctrl, shift
     if love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl') then
         ctrl = true
@@ -220,12 +220,12 @@ function love.keypressed(key, unicode)
             end
         end
     else
-        wrapper:key_pressed(key)
+        wrapper:key_pressed(scancode)
     end
 end
 
-function love.keyreleased(key, unicode)
-    wrapper:key_released(key)
+function love.keyreleased(key, scancode)
+    wrapper:key_released(scancode)
 end
 
 function love.draw()

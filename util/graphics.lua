@@ -198,6 +198,9 @@ function set_scale(scale, resolution, fullscreen)
             return
         end
 
+        -- store the fullscreen setting
+        settings.fullscreen = newFlags.fullscreen
+
         -- Set default image filter to show ALL the pixels
         love.graphics.setDefaultFilter('nearest', 'nearest')
     end
@@ -214,7 +217,7 @@ function set_scale(scale, resolution, fullscreen)
     -- Load the font at the correct scale
     local img = love.graphics.newImage('res/font/cga.png')
     local glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÖ 0123456789:.,\'"!?%/►◄'
-    font = love.graphics.newImageFont(img, glyphs)
+    font = love.graphics.newImageFont(img, glyphs, 1)
     love.graphics.setFont(font)
 end
 

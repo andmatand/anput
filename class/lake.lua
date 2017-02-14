@@ -27,9 +27,8 @@ end
 function Lake:draw(fov)
     -- Enable the stencil
     love.graphics.push()
-    love.graphics.setStencil(self.stencilFunction)
-
-    --if DEBUG then love.graphics.setStencil() end
+    love.graphics.stencil(self.stencilFunction)
+    love.graphics.setStencilTest('equal', 1)
 
     if not self.spriteBatches[self.frameNumber] then
         self:create_spritebatch(self.frameNumber)
@@ -63,7 +62,7 @@ function Lake:draw(fov)
 
     -- Remove the stencil
     love.graphics.pop()
-    love.graphics.setStencil()
+    love.graphics.setStencilTest()
 end
 
 function Lake:create_spritebatch(frameNumber)
@@ -73,7 +72,6 @@ function Lake:create_spritebatch(frameNumber)
     local image = self.frames[frameNumber]
     local sb = love.graphics.newSpriteBatch(image, box_area(self.drawBox))
 
-    sb:bind()
     sb:clear()
     for y = self.drawBox.y1, self.drawBox.y2 do
         for x = self.drawBox.x1, self.drawBox.x2 do
@@ -85,7 +83,6 @@ function Lake:create_spritebatch(frameNumber)
             end
         end
     end
-    sb:unbind()
 
     self.spriteBatches[frameNumber] = sb
 end

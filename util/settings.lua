@@ -9,15 +9,11 @@ local function set_all_sound_volumes_in_table(sounds, volume)
 end
 
 function apply_sound_setting()
-    --if settings.sound then
-    --    -- Set the volume pretty low to prevent hearing ugly artifacts of
-    --    -- DOSBox's fake PC speaker sounds
-    --    love.audio.setVolume(.2)
-    --else
-    --    love.audio.setVolume(0)
-    --end
+    local volume
 
     if settings.sound then
+        -- Set the volume pretty low to prevent hearing ugly artifacts of
+        -- DOSBox's fake PC speaker sounds
         volume = .2
     else
         volume = 0
