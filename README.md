@@ -1,10 +1,10 @@
-#TEMPLE OF ANPUT
+# TEMPLE OF ANPUT
 made with [LÖVE](http://love2d.org)
 
 For builds, see [kittenm4ster.itch.io/anput](http://kittenm4ster.itch.io/anput)
 
-##Keyboard Controls
-###In-Game
+## Keyboard Controls
+### In-Game
 * Move: WASD
 * Shoot: Up, Down, Left, Right
 * Inventory/Map: Space
@@ -15,18 +15,18 @@ For builds, see [kittenm4ster.itch.io/anput](http://kittenm4ster.itch.io/anput)
 * Context-Sensitive Action Button: Enter
 * Skip Dialogue: .
 
-###Inventory
+### Inventory
 * Use Item: Enter
 * Drop Item: Delete
 
-###System-Wide
+### System-Wide
 * Toggle Fullscreen: F11, Alt + Enter
 * New Game: Ctrl + N
 * Increase/Decrease Graphics Scaling: Ctrl +/-
 * Quit: Ctrl + Q
 
-##Gamepad Controls (Xbox 360 and similar)
-###In-Game
+## Gamepad Controls (Xbox 360 and similar)
+### In-Game
 * Move: Left Joystick, D-Pad
 * Shoot: Right Joystick
 * Inventory/Map: Back
@@ -37,6 +37,6 @@ For builds, see [kittenm4ster.itch.io/anput](http://kittenm4ster.itch.io/anput)
 * Context-Sensitive Action Button: A
 * Skip Dialogue: B
 
-###Inventory
+### Inventory
 * Use Item: A
 * Drop Item: X
