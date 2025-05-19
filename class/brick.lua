@@ -13,7 +13,7 @@ function Brick:class_name()
 end
 
 function Brick:draw(alpha)
-    love.graphics.setColor(255, 0, 255, alpha)
+    love.graphics.setColor(1, 0, 1, alpha)
     love.graphics.rectangle('fill', upscale_x(self.x), upscale_y(self.y),
                             TILE_W, TILE_H)
 end

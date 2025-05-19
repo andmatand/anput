@@ -161,7 +161,7 @@ function Room:draw()
     if DEBUG then
         -- Show freeTiles
         for _, t in pairs(self.freeTiles) do
-            love.graphics.setColor(255, 255, 255, 25)
+            love.graphics.setColor(1, 1, 1, 25 / 255)
             love.graphics.rectangle('fill', upscale_x(t.x), upscale_x(t.y),
                                     upscale_x(1), upscale_y(1))
         end
@@ -169,9 +169,9 @@ function Room:draw()
         -- Show midPaths
         for _, tile in pairs(self.midPaths) do
             if tiles_overlap(tile, self.midPoint) then
-                love.graphics.setColor(255, 0, 0, 255)
+                love.graphics.setColor(1, 0, 0, 1)
             else
-                love.graphics.setColor(100, 100, 100, 200)
+                love.graphics.setColor(100/255, 100/255, 100/255, 200/255)
             end
             love.graphics.rectangle('fill',
                                     upscale_x(tile.x), upscale_y(tile.y),
@@ -180,7 +180,7 @@ function Room:draw()
 
         -- Show zone tiles
         --for _, tile in pairs(self.zoneTiles) do
-        --    love.graphics.setColor(255, 243, 48, 180)
+        --    love.graphics.setColor(1, 243 / 255, 48 / 255, 180 / 255)
         --    love.graphics.rectangle('fill',
         --                            upscale_x(tile.x), upscale_y(tile.y),
         --                            upscale_x(1), upscale_y(1))
@@ -189,7 +189,7 @@ function Room:draw()
         -- Show nook tiles
         for _, nook in pairs(self.nooks) do
             for _, tile in pairs(nook) do
-                love.graphics.setColor(255, 243, 48, 180)
+                love.graphics.setColor(1, 243/255, 48/255, 180/255)
                 love.graphics.rectangle('fill',
                                         upscale_x(tile.x), upscale_y(tile.y),
                                         upscale_x(1), upscale_y(1))
@@ -198,7 +198,7 @@ function Room:draw()
 
         -- Show spikes
         for _, spike in pairs(self.spikes) do
-            love.graphics.setColor(0, 200, 50, 180)
+            love.graphics.setColor(0, 200/255, 50/255, 180/255)
             love.graphics.rectangle('fill',
                                     upscale_x(spike.position.x),
                                     upscale_y(spike.position.y),
@@ -207,7 +207,7 @@ function Room:draw()
 
         -- Show tiles in FOV
         for _, tile in pairs(self.fov) do
-            love.graphics.setColor(0, 255, 0)
+            love.graphics.setColor(0, 1, 0)
             love.graphics.setLineWidth(1)
             love.graphics.setLineStyle('rough')
             love.graphics.rectangle('line',
@@ -217,7 +217,7 @@ function Room:draw()
 
         -- Show turrets
         for _, t in pairs(self.turrets) do
-            love.graphics.setColor(0, 0, 255, 255)
+            love.graphics.setColor(0, 0, 1, 1)
             love.graphics.rectangle('fill',
                                     upscale_x(t.position.x),
                                     upscale_y(t.position.y),
@@ -227,7 +227,7 @@ function Room:draw()
         -- Show false bricks
         for _, b in pairs(self.bricks) do
             if instanceOf(FalseBrick, b) then
-                love.graphics.setColor(50, 50, 255, 255)
+                love.graphics.setColor(50/255, 50/255, 1, 1)
                 love.graphics.rectangle('fill', upscale_x(b.x), upscale_x(b.y),
                                         upscale_x(1), upscale_y(1))
             end
@@ -237,7 +237,7 @@ function Room:draw()
         for _, c in pairs(self:get_characters()) do
             if c.ai and c.ai.path.destination then
                 local pos = c.ai.path.destination
-                love.graphics.setColor(220, 100, 0, 200)
+                love.graphics.setColor(220/255, 100/255, 0, 200/255)
                 love.graphics.rectangle('fill',
                                         upscale_x(pos.x), upscale_y(pos.y),
                                         upscale_x(1), upscale_y(1))
@@ -277,7 +277,7 @@ function Room:draw_bricks()
         self.bricksDirty = false
     end
 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(OPAQUE)
     love.graphics.draw(self.brickBatch, upscale_x(0), upscale_y(0),
                        0, SCALE_X, SCALE_Y)
 end
@@ -295,14 +295,14 @@ function Room:draw_objects_with_fov_alpha(objects)
         if DEBUG then alpha = LIGHT end
 
         if object.hasBeenSeen or DEBUG then
-            love.graphics.setColor(255, 255, 255, alpha)
+            love.graphics.setColor(1, 1, 1, alpha)
             object:draw(alpha)
         end
     end
 end
 
 function Room:draw_spikes()
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(OPAQUE)
 
     for _, spike in pairs(self.spikes) do
         local tiles = spike:get_visible_tiles()

@@ -105,7 +105,7 @@ function draw_progress_bar(barInfo, x, y, w, h)
     love.graphics.rectangle('fill', x, y, w, h)
 
     -- Draw black bar inside
-    love.graphics.setColor(0, 0, 0)
+    love.graphics.setColor(BLACK)
     love.graphics.rectangle('fill', bar.x, bar.y, bar.w, bar.h)
 
     -- Set width of bar

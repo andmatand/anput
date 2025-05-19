@@ -57,7 +57,7 @@ function Game:draw()
 end
 
 function Game:draw_metadata()
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(OPAQUE)
 
     if self.player.isDead then
         if not self.summary then
