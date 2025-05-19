@@ -67,7 +67,7 @@ function Item:draw(manualPosition)
     if self.color then
         love.graphics.setColor(self.color)
     else
-        love.graphics.setColor(255, 255, 255)
+        love.graphics.setColor(OPAQUE)
     end
 
     local drawable

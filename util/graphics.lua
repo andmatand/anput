@@ -215,9 +215,8 @@ function set_scale(scale, resolution, fullscreen)
     SCREEN_Y = (resolution.height / 2) - ((BASE_SCREEN_H * SCALE_Y) / 2)
 
     -- Load the font at the correct scale
-    local img = love.graphics.newImage('res/font/cga.png')
     local glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÖ 0123456789:.,\'"!?%/►◄'
-    font = love.graphics.newImageFont(img, glyphs, 1)
+    font = love.graphics.newImageFont('res/font/cga.png', glyphs, 1)
     love.graphics.setFont(font)
 end
 

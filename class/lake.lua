@@ -34,7 +34,7 @@ function Lake:draw(fov)
         self:create_spritebatch(self.frameNumber)
     end
 
-    love.graphics.setColor(255, 255, 255, LIGHT)
+    love.graphics.setColor(OPAQUE)
     love.graphics.draw(self.spriteBatches[self.frameNumber],
                        self.offset.x * SCALE_X, self.offset.y * SCALE_Y,
                        0, SCALE_X, SCALE_Y)
@@ -49,7 +49,7 @@ function Lake:draw(fov)
             if tile.hasBeenSeen then
                 love.graphics.setColor(0, 0, 0, LIGHT - DARK)
             else
-                love.graphics.setColor(0, 0, 0, 255)
+                love.graphics.setColor(0, 0, 0, 1)
             end
 
             love.graphics.rectangle('fill',
@@ -90,7 +90,7 @@ end
 function Lake:refresh_stencil()
     self.stencilFunction =
         function()
-            love.graphics.setColor(255, 255, 255, 255)
+            love.graphics.setColor(OPAQUE)
             for _, t in pairs(self.tiles) do
                 love.graphics.rectangle('fill',
                                         upscale_x(t.x), upscale_y(t.y),

@@ -34,13 +34,16 @@ function love.load()
 
     -- Colors
     BLACK = {0, 0, 0}
-    WHITE = {255, 255, 255}
-    CYAN = {85, 255, 255}
-    MAGENTA = {255, 85, 255}
+    WHITE = {1, 1, 1}
+    CYAN = {85 / 255, 1, 1}
+    MAGENTA = {1, 85 / 255, 1}
 
     -- Alpha values
-    LIGHT = 255
-    DARK = 15
+    LIGHT = 1
+    DARK = 15 / 255
+
+    -- For when color is just used as a transparency modulation
+    OPAQUE = {1, 1, 1, 1}
 
     FPS_LIMIT = 15
 

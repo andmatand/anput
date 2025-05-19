@@ -9,9 +9,9 @@ function Sound:play()
         self.source:setPitch(1 + love.math.random(-8, 8) / 100)
     end
 
-    if self.source:isStopped() then
+    if not self.source:isPlaying() then
         self.source:play()
     else
-        self.source:rewind()
+        self.source:seek(0)
     end
 end

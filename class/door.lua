@@ -16,7 +16,7 @@ function Door:init(position, dir)
 
     self.stencilFunction =
         function()
-            love.graphics.setColor(255, 255, 255, 255)
+            love.graphics.setColor(OPAQUE)
             love.graphics.rectangle('fill',
                                     upscale_x(self.position.x),
                                     upscale_y(self.position.y),

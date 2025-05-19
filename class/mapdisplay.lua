@@ -35,14 +35,14 @@ function MapDisplay:draw(currentRoom)
             elseif n.room:contains_npc() then
                 love.graphics.setColor(CYAN)
             elseif DEBUG and n.room.roadblock then
-                love.graphics.setColor(255, 0, 0)
+                love.graphics.setColor(1, 0, 0)
             elseif DEBUG and n.firstSecretRoom then
-                love.graphics.setColor(0, 0, 255)
+                love.graphics.setColor(0, 0, 1)
             elseif DEBUG and n.room.isSecret then
-                love.graphics.setColor(255, 243, 48)
+                love.graphics.setColor(1, 243 / 255, 48 / 255)
             elseif DEBUG and n.sourceNode ~= n then
                 -- This is a branch
-                love.graphics.setColor(0, 243, 48)
+                love.graphics.setColor(0, 243 / 255, 48 / 255)
             else
                 love.graphics.setColor(WHITE)
             end
@@ -55,7 +55,7 @@ function MapDisplay:draw(currentRoom)
 
     if DEBUG and not self.flash.state then
         -- Draw hotLava
-        love.graphics.setColor(255, 0, 100)
+        love.graphics.setColor(1, 0, 100 / 255)
         for _, n in pairs(self.map.hotLava) do
             love.graphics.rectangle('fill',
                                     n.x * self.nodeSize, n.y * self.nodeSize,

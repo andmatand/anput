@@ -285,7 +285,7 @@ function Wrapper:send_keypress(key)
             self.pauseMenuManager:push(mainPauseMenu)
 
             -- Pause all playing sounds
-            love.audio.pause()
+            self.paused_sources = love.audio.pause()
 
             -- Play the pause sound
             sounds.pause:play()
@@ -315,7 +315,7 @@ function Wrapper:send_keypress(key)
         -- If the pauseMenuManager sends the signal that it exited
         if self.pauseMenuManager:key_pressed(key) then
             -- Resume all paused sounds
-            love.audio.resume()
+            love.audio.play(self.paused_sources)
 
             -- Go back to the game
             self.state = STATE.GAME

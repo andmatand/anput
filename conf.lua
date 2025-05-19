@@ -1,8 +1,10 @@
 function love.conf(t)
+    t.accelerometerjoystick = false
+    t.identity = 'anput'
     t.modules.physics = false
     t.modules.system = false
-    t.version = '0.10.2'
-    love.filesystem.setIdentity('anput')
+    t.modules.touch = false
+    t.version = '11.4'
 
     BASE_SCREEN_W = 320
     BASE_SCREEN_H = 200
