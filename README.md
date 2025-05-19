@@ -1,8 +1,6 @@
 # TEMPLE OF ANPUT
 made with [LÖVE](http://love2d.org)
 
-For builds, see [kittenm4ster.itch.io/anput](http://kittenm4ster.itch.io/anput)
-
 ## Keyboard Controls
 ### In-Game
 * Move: WASD
